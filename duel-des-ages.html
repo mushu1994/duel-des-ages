@@ -1,0 +1,1428 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Duel des Âges : jeu de civilisation à deux, contre l'IA ou à 2 joueurs, avec les modules Panthéon et Agora.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Duel des Âges</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
+<style>
+/* Plateau nocturne lapis-lazuli, accents bronze ; plateau central + colonne latérale (marché des jetons, Panthéon, Sénat, chronique) */
+:root{
+  --night:#0f1430; --night2:#161d40; --panel:#1c2450; --panel2:#26306a; --line:#384480;
+  --ink:#f0ead8; --mute:#a9a8c4; --bronze:#d9a54f; --bronze-d:#8f6427;
+  --p0:#eab85a; --p1:#7cc6da; --good:#74c98f; --bad:#e8705f;
+  --display:'Marcellus',Georgia,'Times New Roman',serif;
+  --body:'Alegreya Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --c-brown:#8a5a34; --c-grey:#7f8492; --c-red:#b33d2b; --c-green:#3a8b4c; --c-blue:#3668b0;
+  --c-yellow:#cf9d1f; --c-purple:#74469a; --c-temple:#cfc3a1; --c-senate:#2a2a34;
+  --parch:#efe5cb; --parch-ink:#231d14;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--night);background-image:radial-gradient(1200px 600px at 50% -10%,#24306b 0%,transparent 70%),radial-gradient(800px 500px at 100% 100%,#1b2350 0%,transparent 70%);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.4;min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--night)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,[data-a]:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:rgba(15,20,48,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:12px;padding-block:10px;flex-wrap:wrap}
+.logo{font-family:var(--display);font-size:22px;letter-spacing:.04em;color:var(--bronze);white-space:nowrap}
+.status{flex:1;min-width:0;font-weight:500;color:var(--mute)}
+.status b{color:var(--ink)}
+@media (max-width:640px){.logo{font-size:19px}.status{order:9;flex-basis:100%;font-size:14px}.hbtn{padding:4px 8px;font-size:13px}.top .spacer{flex:1}}
+.age-pill{font-family:var(--display);border:1px solid var(--bronze-d);color:var(--bronze);padding:2px 10px;border-radius:999px;font-size:14px}
+.hbtn{background:transparent;border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:var(--ink);font-size:14px}
+.hbtn:hover{border-color:var(--bronze)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;padding-block:16px 40px}
+@media (max-width:920px){.layout{grid-template-columns:minmax(0,1fr)}}
+main,aside{min-width:0;display:flex;flex-direction:column;gap:14px}
+
+/* Cité */
+.city{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;position:relative}
+.city.active{border-color:var(--pc);box-shadow:0 0 0 1px var(--pc) inset}
+.city.p0{--pc:var(--p0)} .city.p1{--pc:var(--p1)}
+.city-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.city-name{font-family:var(--display);font-size:18px;color:var(--pc)}
+.turnflag{font-size:12px;text-transform:uppercase;letter-spacing:.08em;background:var(--pc);color:#151515;border-radius:4px;padding:1px 6px;font-weight:800}
+.purse{margin-left:auto;display:flex;gap:8px;align-items:center}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute);min-width:62px}
+.pr{display:inline-flex;align-items:center;gap:2px;background:var(--night2);border-radius:6px;padding:2px 5px;font-variant-numeric:tabular-nums;font-size:13px}
+.pr.zero{opacity:.38}
+.pr.ch{border:1px dashed var(--bronze-d)}
+.pr.tr{border:1px solid var(--c-yellow)}
+.pr i{font-style:normal;color:var(--mute);font-size:11px}
+.chip{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:5px;background:var(--cc);color:#fff;font-weight:800;font-size:12px;padding:0 4px;font-variant-numeric:tabular-nums}
+.col-brown{--cc:var(--c-brown)}.col-grey{--cc:var(--c-grey)}.col-red{--cc:var(--c-red)}.col-green{--cc:var(--c-green)}.col-blue{--cc:var(--c-blue)}.col-yellow{--cc:var(--c-yellow)}.col-purple{--cc:var(--c-purple)}.col-temple{--cc:var(--c-temple)}.col-senate{--cc:var(--c-senate)}
+.chip.col-temple{color:#2a2414}
+.wonders{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+@media (max-width:520px){.wonders{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.wtile{background:linear-gradient(180deg,#2c3672,#222a5a);border:1px solid var(--line);border-radius:8px;padding:5px 6px;display:flex;flex-direction:column;gap:3px;min-width:0;text-align:left}
+.wtile.built{background:linear-gradient(180deg,#5b4317,#3a2a0f);border-color:var(--bronze)}
+.wtile.dead{opacity:.32;filter:grayscale(1)}
+.wn{font-family:var(--display);font-size:14px;line-height:1.15;overflow:hidden;text-overflow:ellipsis}
+.wdesc{display:flex;flex-direction:column;gap:1px;font-size:12px;line-height:1.25;color:#e8e2cf}
+.wdesc span::before{content:"▸ ";color:var(--bronze)}
+.wtile.built .wdesc{color:#fff3d6}
+.wcl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);margin-right:3px}
+.wtile[data-a]{cursor:pointer}
+.wtile[data-a]:hover{border-color:var(--bronze)}
+.wsplash{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:36;padding:16px}
+.wsplash>div{background:linear-gradient(180deg,#6a4c18,#2e2109);border:2px solid var(--bronze);color:#fff3d6;border-radius:16px;padding:18px 26px;max-width:460px;box-shadow:0 0 60px rgba(255,190,80,.45);animation:wsp 2.6s ease-out forwards;text-align:center}
+.wsplash h4{margin:0 0 4px;font-family:var(--display);font-weight:400;font-size:clamp(24px,5vw,34px);color:#ffd77a}
+.wsplash .by{font-size:13px;opacity:.8;margin-bottom:10px}
+.wsplash ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:16px;font-weight:700}
+@keyframes wsp{0%{opacity:0;transform:scale(.6) rotate(-3deg)}12%{opacity:1;transform:scale(1.05)}20%{transform:scale(1)}85%{opacity:1}100%{opacity:0}}
+.wfx,.wc{display:flex;flex-wrap:wrap;gap:2px;align-items:center;--is:14px}
+.wtile .badge{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--bronze)}
+.extras{display:flex;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--mute)}
+.xbtn{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:3px 8px;font-size:13px}
+.xbtn.hot{border-color:var(--bronze);color:var(--bronze)}
+
+/* Icônes */
+.ic{width:var(--is,14px);height:var(--is,14px);display:inline-block;vertical-align:middle;flex:none}
+.coin{display:inline-grid;place-items:center;width:var(--is,16px);height:var(--is,16px);border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe08a,#c9921c 70%);color:#3a2604;font-weight:800;font-size:calc(var(--is,16px)*.62);font-variant-numeric:tabular-nums;flex:none;border:1px solid #8a5f0e}
+.coin.big{--is:24px}
+.coin.neg{background:radial-gradient(circle at 35% 30%,#ffb3a6,#b2412f 70%);color:#fff;border-color:#6d1f13;width:auto;padding:0 3px;border-radius:999px}
+.vp{display:inline-grid;place-items:center;min-width:var(--is,16px);height:var(--is,16px);border-radius:4px;background:#2f6a3b;color:#e8ffe9;font-weight:800;font-size:calc(var(--is,16px)*.62);padding:0 2px;clip-path:polygon(50% 0,100% 22%,100% 78%,50% 100%,0 78%,0 22%);flex:none}
+.sci{display:inline-grid;place-items:center;width:var(--is,16px);height:var(--is,16px);border-radius:4px;background:#1f5e2c;color:#e9f6d8;flex:none}
+.sci svg{width:82%;height:82%}
+.cube{display:inline-block;width:calc(var(--is,14px)*.75);height:calc(var(--is,14px)*.75);background:#d8d8e0;border:1px solid #333;transform:rotate(45deg);margin:0 1px}
+.cube.p0{background:var(--p0)} .cube.p1{background:var(--p1)}
+.gtag{display:inline-block;font-size:calc(var(--is,14px)*.62);line-height:1;padding:2px 3px;border-radius:3px;background:rgba(0,0,0,.35);color:#fff;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+.gtag.x{background:#7a1f14}
+.choice,.trade,.per{display:inline-flex;align-items:center;gap:1px;background:rgba(0,0,0,.22);border-radius:3px;padding:1px}
+.choice i,.per i{font-style:normal;font-size:calc(var(--is,14px)*.6);color:#fff;opacity:.8}
+.trade{outline:1px solid #ffe08a}
+.minichip{display:inline-block;width:calc(var(--is,14px)*.8);height:calc(var(--is,14px)*.95);border-radius:2px;background:var(--cc);border:1px solid rgba(0,0,0,.4)}
+.mtag{display:inline-grid;place-items:center;font-size:calc(var(--is,14px)*.6);font-weight:800;width:var(--is,14px);height:var(--is,14px);background:#3c2a0c;color:#ffd77a;border-radius:3px}
+
+/* Piste militaire */
+.track{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.cap{font-family:var(--display);font-size:12px;writing-mode:horizontal-tb;white-space:nowrap;max-width:64px;overflow:hidden;text-overflow:ellipsis}
+.cap.p0{color:var(--p0)} .cap.p1{color:var(--p1);text-align:right}
+.cells{flex:1;display:grid;grid-template-columns:repeat(19,minmax(0,1fr));gap:2px;min-width:0}
+.cell{height:26px;border-radius:3px;background:#262f62;position:relative;display:grid;place-items:center}
+.cell.z1{background:#2e3a78}.cell.z2{background:#3a3a7a}.cell.z3{background:#55306a}
+.cell.mid{background:#4b5596}
+.cell.end{background:#7a2a2a}
+.pawn{width:70%;aspect-ratio:1;max-width:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff9d8a,#b8261a 70%);border:1px solid #4a0c06;box-shadow:0 0 8px rgba(255,90,70,.6);position:relative;z-index:2}
+.loot{position:absolute;bottom:-9px;font-size:10px;font-weight:800;color:#3a2604;background:#e7b84a;border-radius:3px;padding:0 3px;line-height:14px;z-index:1}
+.mil-legend{display:flex;justify-content:space-between;font-size:11px;color:var(--mute);margin-top:-6px;padding:0 4px}
+
+/* Structure */
+.board-card{background:linear-gradient(180deg,rgba(38,48,106,.55),rgba(22,29,64,.4));border:1px solid var(--line);border-radius:14px;padding:14px 10px 18px}
+.board-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 4px 10px;flex-wrap:wrap}
+.board-title h2{margin:0;font-family:var(--display);font-weight:400;font-size:20px;color:var(--bronze)}
+.board-title span{font-size:13px;color:var(--mute)}
+.struct-wrap{max-width:640px;margin:0 auto;width:100%;container-type:inline-size}
+.struct{position:relative;width:100%}
+.slot{position:absolute;--cw:15.3cqw;width:var(--cw);height:calc(var(--cw)*1.4);transition:transform .15s ease, filter .15s}
+.slot.acc{cursor:pointer}
+.slot.acc .card{box-shadow:0 0 0 2px var(--bronze),0 4px 12px rgba(0,0,0,.5)}
+.slot.acc:hover{transform:translateY(-4px)}
+.slot.hl{transform:translateY(-8px) scale(1.06);z-index:50!important}
+.slot.hl .card{box-shadow:0 0 0 3px var(--p1),0 0 22px var(--p1)}
+.slot.wait .card{filter:brightness(.82)}
+.cw{width:var(--cw);height:calc(var(--cw)*1.4);flex:none}
+.card{width:100%;height:100%;border-radius:calc(var(--cw)*.08);background:var(--parch);color:var(--parch-ink);display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(0,0,0,.45);box-shadow:0 3px 8px rgba(0,0,0,.45);--is:calc(var(--cw)*.2);position:relative}
+.card .band{background:var(--cc);min-height:42%;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:calc(var(--cw)*.025);padding:calc(var(--cw)*.04)}
+.card.col-temple .band{background:linear-gradient(135deg,#e7dcb8,#b9a77a)}
+.card.col-senate .band{background:linear-gradient(135deg,#3a3a46,#1d1d24);border-bottom:1px solid #9a9ab0}
+.card .nm{font-weight:700;font-size:clamp(6.5px,calc(var(--cw)*.115),14px);line-height:1.1;padding:calc(var(--cw)*.035) calc(var(--cw)*.05) 0;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card .cost{margin-top:auto;display:flex;flex-wrap:wrap;gap:1px;padding:calc(var(--cw)*.04);align-items:center;--is:calc(var(--cw)*.17)}
+.chain{display:inline-grid;place-items:center;border-radius:50%;flex:none}
+.chain .chs{width:72%;height:72%}
+.chain.give{position:absolute;top:calc(var(--cw)*.04);right:calc(var(--cw)*.04);width:calc(var(--cw)*.27);height:calc(var(--cw)*.27);background:#fdf8ea;color:#2a2114;border:1px solid rgba(0,0,0,.5);box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.chain.need{width:calc(var(--cw)*.22);height:calc(var(--cw)*.22);background:#2a2114;color:#ffd77a;border:1px solid #c9a14a;margin-left:auto}
+.card .cost{align-items:center}
+.lk{font-size:calc(var(--cw)*.085);font-weight:800;background:#e2d3a8;border:1px solid #9b8550;border-radius:3px;padding:0 2px;color:#5a4416}
+.card.back{background:linear-gradient(145deg,var(--b1),var(--b2));display:grid;place-items:center;color:rgba(255,255,255,.85);font-family:var(--display);font-size:calc(var(--cw)*.32)}
+.card.back.a1{--b1:#7a5a26;--b2:#4b3512}.card.back.a2{--b1:#2d5b8f;--b2:#173352}.card.back.a3{--b1:#6a3c86;--b2:#3a1f4c}
+.card.back::after{content:"";position:absolute;inset:calc(var(--cw)*.06);border:1px solid rgba(255,255,255,.3);border-radius:calc(var(--cw)*.05)}
+.seal{position:absolute;top:calc(var(--cw)*-.08);right:calc(var(--cw)*-.08);width:calc(var(--cw)*.34);height:calc(var(--cw)*.34);border-radius:50%;background:var(--sc);border:2px solid #f3e6c0;display:grid;place-items:center;font-family:var(--display);font-size:calc(var(--cw)*.17);color:#fff;z-index:3;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.offer{position:absolute;top:calc(var(--cw)*-.08);left:calc(var(--cw)*-.08);min-width:calc(var(--cw)*.34);height:calc(var(--cw)*.34);border-radius:999px;background:#f3e6c0;color:#3a2a10;display:grid;place-items:center;font-weight:800;font-size:calc(var(--cw)*.15);z-index:3;border:2px solid #b68a3a;padding:0 2px}
+
+/* Colonne latérale */
+.side-box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.side-box h3{margin:0 0 8px;font-family:var(--display);font-weight:400;font-size:17px;color:var(--bronze);display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.side-box h3 small{font-family:var(--body);font-size:12px;color:var(--mute)}
+.tokens{display:flex;flex-wrap:wrap;gap:8px}
+.tok{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#4fa265,#1f5a30 75%);border:2px solid #9cd4a7;color:#fff;font-family:var(--display);font-size:12px;display:grid;place-items:center;text-align:center;line-height:1.05;padding:2px}
+.tok.sm{width:32px;height:32px;font-size:10px;border-width:1px}
+.pan{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.gslot{background:var(--night2);border:1px dashed var(--line);border-radius:8px;min-height:74px;padding:4px;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
+.gslot.full{border-style:solid;border-color:var(--gc);background:linear-gradient(180deg,color-mix(in srgb,var(--gc) 35%,var(--night2)),var(--night2))}
+.gslot.can{cursor:pointer;box-shadow:0 0 0 2px var(--bronze)}
+.gslot .gn{font-family:var(--display);font-size:13px}
+.gslot .gcu{font-size:9px;color:var(--mute);text-transform:uppercase;letter-spacing:.03em;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gslot{min-width:0}
+.senate{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.chamber{background:var(--night2);border:1px solid var(--line);border-radius:8px;padding:5px 6px;font-size:12px;display:flex;flex-direction:column;gap:3px;text-align:left}
+.chamber.c0{border-color:var(--p0);box-shadow:0 0 0 1px var(--p0) inset}
+.chamber.c1{border-color:var(--p1);box-shadow:0 0 0 1px var(--p1) inset}
+.chamber b{font-family:var(--display);font-weight:400;font-size:13px}
+.chamber .cnt{display:flex;justify-content:space-between;font-variant-numeric:tabular-nums;font-weight:800}
+.chamber .cnt .a{color:var(--p0)} .chamber .cnt .b{color:var(--p1)}
+.log{font-size:13px;color:var(--mute);display:flex;flex-direction:column;gap:3px;max-height:260px;overflow:auto}
+.log div:first-child{color:var(--ink)}
+.log .age{color:var(--bronze);font-family:var(--display)}
+.discard-btn{width:100%;text-align:left;background:var(--night2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px}
+
+/* Modale */
+#modal{position:fixed;inset:0;z-index:40;background:rgba(5,8,22,.72);display:grid;place-items:center;padding:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#modal[hidden]{display:none}
+.mpanel{background:var(--night2);border:1px solid var(--bronze-d);border-radius:14px;max-width:620px;width:100%;max-height:min(86vh,860px);overflow:auto;padding:16px 18px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.mpanel.wide{max-width:860px}
+.mpanel h3{margin:0 0 6px;font-family:var(--display);font-weight:400;font-size:22px;color:var(--bronze);text-wrap:balance}
+.sub{color:var(--mute);margin:0 0 10px;font-size:14px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.opt{display:flex;gap:10px;align-items:center;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.opt:hover:not(:disabled){border-color:var(--bronze)}
+.opt:disabled{opacity:.42;cursor:not-allowed}
+.opt .ot{display:flex;flex-direction:column;gap:2px;min-width:0}
+.opt .ot b{font-family:var(--display);font-weight:400;font-size:16px}
+.opt .ot span{font-size:13px;color:var(--mute)}
+.opts.grid .opt{flex-direction:column;align-items:stretch}
+.opts.grid .wtile{--is:18px}
+.opts.grid .wn{font-size:16px}
+.sheet{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.sheet ul{margin:0;padding-left:18px;font-size:14px}
+.sheet>div:last-child{flex:1;min-width:180px}
+.acts{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.act{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-align:left}
+.act b{font-weight:700}
+.act span{font-size:12px;color:var(--mute)}
+.act.main{border-color:var(--bronze)}
+.act:disabled{opacity:.4;cursor:not-allowed}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:9px;padding:8px 14px;margin-top:12px}
+.cardgrid{display:flex;flex-wrap:wrap;gap:8px;--cw:76px}
+.colhead{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute);margin:12px 0 6px}
+table.score{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;margin:8px 0}
+table.score td,table.score th{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right}
+table.score td:first-child,table.score th:first-child{text-align:left}
+table.score tr.tot td{font-weight:800;font-size:17px;border-bottom:none;color:var(--bronze)}
+table.score th.p0{color:var(--p0)} table.score th.p1{color:var(--p1)}
+
+/* Menu */
+.menu{max-width:760px;margin:0 auto;padding-block:40px 60px;display:flex;flex-direction:column;gap:22px}
+.menu h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,8vw,72px);line-height:1;margin:0;color:var(--bronze);text-wrap:balance;letter-spacing:.02em}
+.menu .lead{font-size:18px;max-width:58ch;color:var(--ink);margin:0}
+.pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.pbtn{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:4px}
+.pbtn b{font-family:var(--display);font-weight:400;font-size:19px}
+.pbtn span{color:var(--mute);font-size:14px}
+.pbtn.on{border-color:var(--bronze);background:linear-gradient(180deg,#3a3418,var(--panel));box-shadow:0 0 0 1px var(--bronze) inset}
+.menu h2{font-family:var(--display);font-weight:400;font-size:15px;text-transform:uppercase;letter-spacing:.14em;color:var(--mute);margin:0 0 8px}
+.go{background:linear-gradient(180deg,#e6b45d,#a87526);color:#22170a;border:none;border-radius:12px;padding:14px 22px;font-family:var(--display);font-size:20px;align-self:flex-start}
+.preview{display:flex;gap:8px;--cw:70px;flex-wrap:wrap}
+.rules h4{font-family:var(--display);font-weight:400;color:var(--bronze);margin:14px 0 4px;font-size:17px}
+.rules p,.rules li{font-size:14px;max-width:65ch}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--panel2);border:1px solid var(--bronze-d);border-radius:999px;padding:8px 16px;z-index:30;font-size:14px;max-width:calc(100% - 32px);text-align:center}
+/* Illustrations, lisibilité, tour, animations */
+.card .band{background-size:cover;background-position:center bottom;position:relative}
+.fxbox{display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:calc(var(--cw)*.025);background:rgba(250,244,226,.9);border-radius:calc(var(--cw)*.06);padding:calc(var(--cw)*.03) calc(var(--cw)*.045);box-shadow:0 1px 3px rgba(0,0,0,.4);max-width:100%}
+.card{--is:calc(var(--cw)*.24)}
+.card .cost{--is:calc(var(--cw)*.19)}
+.ic{filter:drop-shadow(0 0 .5px rgba(0,0,0,.6))}
+.pr .ic{--is:20px}
+.pr{padding:3px 6px;font-size:14px}
+.pr .rn{font-size:11px;color:var(--mute)}
+.hrow{display:flex;align-items:center;gap:12px;padding-block:10px}
+.hrow .spacer{flex:1}
+.home{font-size:13px;color:var(--mute);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:4px 8px}.home:hover{color:var(--ink);border-color:var(--bronze)}
+.short{display:none}@media (max-width:520px){.long{display:none}.short{display:inline}}
+.turnbar{background:var(--tc);color:#16120a;transition:background .3s}
+.turnbar .wrap{display:flex;align-items:center;gap:10px;padding-block:7px;font-size:15px;font-weight:700;flex-wrap:wrap}
+.turnbar .who{font-family:var(--display);font-size:19px;font-weight:400}
+.turnbar .hint{font-weight:500;opacity:.85}
+.turnbar .dot{width:12px;height:12px;border-radius:50%;background:#16120a;animation:blink 1.2s ease-in-out infinite}
+.turnbar.done{background:var(--panel2);color:var(--ink)}
+.turnbar.done .dot{display:none}
+@keyframes blink{50%{opacity:.25}}
+.city.active{animation:glow 2s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 1px var(--pc) inset,0 0 22px color-mix(in srgb,var(--pc) 45%,transparent)}}
+.city:not(.active){opacity:.82}
+.city .ptsbig{display:inline-flex;align-items:center;gap:4px;font-weight:800;font-variant-numeric:tabular-nums;font-size:15px;background:#2f6a3b;color:#e8ffe9;border-radius:6px;padding:2px 8px}
+.slot.acc .card{box-shadow:0 0 0 3px var(--tc,var(--bronze)),0 4px 14px rgba(0,0,0,.5);animation:accp 1.6s ease-in-out infinite}
+@keyframes accp{50%{box-shadow:0 0 0 3px var(--tc,var(--bronze)),0 0 18px var(--tc,var(--bronze))}}
+.qbtn{width:24px;height:24px;border-radius:50%;border:1px solid var(--bronze-d);background:transparent;color:var(--bronze);font-weight:800;font-size:13px;padding:0}
+.ff .city.p1{transform:rotate(180deg)}
+.mpanel.flip,.splash.flip div,.turnbar.flip .wrap{transform:rotate(180deg)}
+.splash.flip div{animation-name:splashf}
+@keyframes splashf{0%{opacity:0;transform:rotate(180deg) scale(.7)}15%{opacity:1;transform:rotate(180deg) scale(1.04)}25%{transform:rotate(180deg)}75%{opacity:1}100%{opacity:0;transform:rotate(180deg)}}
+.float{position:fixed;z-index:45;pointer-events:none;font-weight:800;font-size:20px;display:flex;align-items:center;gap:4px;animation:floatUp 1.6s ease-out forwards;text-shadow:0 2px 6px rgba(0,0,0,.8);white-space:nowrap;transform:translate(-50%,0)}
+.float.gain{color:#ffd76a}.float.loss{color:#ff7a66}.float.pts{color:#8ff0a6}
+@keyframes floatUp{0%{opacity:0;transform:translate(-50%,6px) scale(.7)}15%{opacity:1;transform:translate(-50%,0) scale(1.15)}100%{opacity:0;transform:translate(-50%,-56px) scale(1)}}
+.pawn.moved{animation:pawnpop .7s ease-out}
+@keyframes pawnpop{0%{transform:scale(1.8)}100%{transform:scale(1)}}
+.splash{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:35}
+.splash div{background:var(--tc);color:#16120a;font-family:var(--display);font-size:clamp(26px,6vw,46px);padding:14px 34px;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:splash 1.25s ease-out forwards;text-align:center}
+.splash small{display:block;font-family:var(--body);font-size:15px;font-weight:700;opacity:.8}
+@keyframes splash{0%{opacity:0;transform:scale(.7)}15%{opacity:1;transform:scale(1.04)}25%{transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:scale(.96)}}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+.tab{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px}
+.tab.on{border-color:var(--bronze);color:var(--bronze)}
+.legend{width:100%;border-collapse:collapse;--cw:150px}
+.legend td{padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:14px}
+.legend td:first-child{width:72px;--is:24px;white-space:nowrap}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:8px;font-size:14px}
+.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;background:var(--bronze);color:#1a1205;font-weight:800;display:grid;place-items:center}
+.ex{background:var(--panel);border-left:3px solid var(--bronze);border-radius:6px;padding:8px 10px;font-size:14px;margin:10px 0}
+.glist{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;font-size:13px}
+.glist div{background:var(--panel);border-radius:6px;padding:6px 8px}
+/* Cités visuelles */
+.stacks{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;min-height:30px}
+.stack{display:flex;flex-direction:column;position:relative;cursor:pointer;--cw:50px}
+.stack .cw+.cw{margin-top:calc(var(--cw)*-1.4 + 23px)}
+.stack .scount{position:absolute;top:-7px;right:-7px;z-index:5;background:var(--night);border:1px solid var(--line);color:var(--ink);font-size:11px;font-weight:800;border-radius:999px;min-width:18px;height:18px;display:grid;place-items:center;padding:0 4px}
+.stack .card .nm{display:none}
+.empty-city{font-size:13px;color:var(--mute);padding:6px 0}
+.cw.arrive{animation:arrive .7s ease-out}
+@keyframes arrive{0%{transform:scale(1.35);filter:brightness(1.6)}100%{transform:none;filter:none}}
+/* Animations de cartes */
+.flying{position:fixed;z-index:44;pointer-events:none;will-change:transform}
+.slot.flipin .card{animation:flipin .65s ease-out both}
+@keyframes flipin{0%{transform:perspective(500px) rotateY(90deg);filter:brightness(1.8)}100%{transform:none;filter:none}}
+.slot.deal{animation:deal .5s ease-out both}
+@keyframes deal{0%{opacity:0;transform:translateY(-40px) rotate(-6deg)}100%{opacity:1;transform:none}}
+.wtile.wbuild{animation:wbuild 1.4s ease-out}
+@keyframes wbuild{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,200,90,0)}30%{transform:scale(1.12);box-shadow:0 0 30px 8px rgba(255,200,90,.8)}100%{transform:none;box-shadow:0 0 0 0 rgba(255,200,90,0)}}
+/* Menaces */
+.threats{display:flex;flex-wrap:wrap;gap:6px}
+.threat{background:#5a1a16;border:1px solid var(--bad);color:#ffd9d2;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700;animation:thr 1.6s ease-in-out infinite}
+@keyframes thr{50%{background:#7a2219}}
+.alerts{display:flex;flex-direction:column;gap:6px;margin:0 4px 10px}
+.alert{border-radius:8px;padding:6px 10px;font-size:14px;font-weight:600;border:1px solid var(--bad);background:rgba(120,30,25,.35)}
+.alert b{color:var(--ac)}
+.warn{position:absolute;bottom:calc(var(--cw)*-.07);right:calc(var(--cw)*-.07);z-index:4;background:var(--bad);color:#fff;font-weight:800;border-radius:999px;padding:1px 5px;font-size:clamp(9px,calc(var(--cw)*.13),13px);box-shadow:0 2px 6px rgba(0,0,0,.5);white-space:nowrap}
+.warn.win{background:var(--good);color:#0b2414}
+.slot.danger .card{outline:3px solid var(--bad);outline-offset:1px}
+/* Bataille */
+.flyshield{position:fixed;z-index:46;pointer-events:none;width:44px;height:44px;margin:-22px 0 0 -22px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6)) drop-shadow(0 0 10px rgba(255,80,50,.7))}
+.flyshield svg{width:100%;height:100%}
+.clash{position:fixed;z-index:46;pointer-events:none;transform:translate(-50%,-50%);font-family:var(--display);font-size:34px;color:#ffd0c4;text-shadow:0 0 18px #ff3b1f,0 2px 4px #000;animation:clash 1.1s ease-out forwards;white-space:nowrap}
+@keyframes clash{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-90%) scale(1)}}
+.shake{animation:shake .5s linear}
+@keyframes shake{10%,50%,90%{transform:translateX(-5px)}30%,70%{transform:translateX(5px)}}
+.burst{position:fixed;z-index:45;pointer-events:none;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;background:radial-gradient(circle,rgba(255,220,150,.95),rgba(255,90,40,.6) 40%,transparent 70%);animation:burst .6s ease-out forwards}
+@keyframes burst{0%{transform:scale(.2);opacity:1}100%{transform:scale(1.6);opacity:0}}
+/* Chances de victoire */
+.odds{display:flex;flex-direction:column;gap:14px;margin:8px 0}
+.odd .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.odd .nm{font-family:var(--display);font-size:20px;color:var(--oc)}
+.odd .pct{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--oc)}
+.bar{height:14px;border-radius:999px;background:var(--night);overflow:hidden;display:flex}
+.bar span{display:block;height:100%}
+.bar .b0{background:var(--p0)}.bar .b1{background:var(--p1)}.bar .bd{background:var(--mute)}
+.split{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.split span{font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+.crit{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px;margin-top:6px}
+.crit td,.crit th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:center}
+.crit td:first-child,.crit th:first-child{text-align:left;color:var(--mute)}
+.crit .lead{color:var(--good);font-weight:800}
+.crit th.p0{color:var(--p0)}.crit th.p1{color:var(--p1)}
+.spin{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--bronze);border-radius:50%;animation:spin 1s linear infinite;margin:10px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.float,.splash{display:none}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-W" viewBox="0 0 20 20"><rect x="1.5" y="4" width="17" height="5.6" rx="2.8" fill="#a8733b" stroke="#4a2c0e" stroke-width="1.1"/><rect x="1.5" y="10.4" width="17" height="5.6" rx="2.8" fill="#86592a" stroke="#4a2c0e" stroke-width="1.1"/><circle cx="4.3" cy="6.8" r="2" fill="#f0c98e" stroke="#4a2c0e" stroke-width=".8"/><circle cx="4.3" cy="13.2" r="2" fill="#e6bb7c" stroke="#4a2c0e" stroke-width=".8"/><path d="M8 6.8H16M8 13.2H16" stroke="#5c3a16" stroke-width=".7"/></symbol>
+  <symbol id="i-S" viewBox="0 0 20 20"><path d="M2.5 16 L5 6.5 L11 3 L17.5 8 L16 17 Z" fill="#b7bdc7" stroke="#3d424b" stroke-width="1.2"/><path d="M5 6.5 L10 10.5 L11 3 M10 10.5 L16 17 M10 10.5 L2.5 16" stroke="#5d626c" stroke-width=".9" fill="none"/></symbol>
+  <symbol id="i-C" viewBox="0 0 20 20"><rect x="1.5" y="4" width="17" height="12" rx="1" fill="#d0683f" stroke="#5e2410" stroke-width="1.2"/><path d="M1.5 10H18.5M10 4V10M5.5 10V16M14.5 10V16" stroke="#5e2410" stroke-width="1.1"/></symbol>
+  <symbol id="i-G" viewBox="0 0 20 20"><path d="M7.8 1.8h4.4v4.3l3.8 4.6V17a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 17v-6.3l3.8-4.6Z" fill="#86dbee" stroke="#155c70" stroke-width="1.2"/><path d="M5.5 12.5h9" stroke="#fff" stroke-width="1" opacity=".75"/><path d="M7 15h2" stroke="#fff" stroke-width="1.2" opacity=".8"/></symbol>
+  <symbol id="i-P" viewBox="0 0 20 20"><path d="M4 3.5h11.5v13H4z" fill="#f0e2b4" stroke="#6e5a2e" stroke-width="1.1"/><ellipse cx="4" cy="10" rx="1.8" ry="6.5" fill="#d9c58c" stroke="#6e5a2e" stroke-width="1"/><ellipse cx="15.5" cy="10" rx="1.8" ry="6.5" fill="#d9c58c" stroke="#6e5a2e" stroke-width="1"/><path d="M7 7H13M7 10H13M7 13H11" stroke="#6e5a2e"/></symbol>
+  <symbol id="i-sh" viewBox="0 0 20 20"><path d="M10 1.8 L17.5 4.5 V10 C17.5 14.2 14 17.2 10 18.6 C6 17.2 2.5 14.2 2.5 10 V4.5Z" fill="#c9412e" stroke="#6a170c" stroke-width="1.2"/><path d="M10 4V16" stroke="#f3b9a8" stroke-width="1"/></symbol>
+  <symbol id="s-sphere" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><ellipse cx="10" cy="10" rx="7" ry="2.6"/><path d="M10 3V17"/></symbol>
+  <symbol id="s-roue" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="1.8"/><path d="M10 3V17M3 10H17M5 5L15 15M15 5L5 15"/></symbol>
+  <symbol id="s-cadran" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 14.5 A7.5 7.5 0 0 1 17.5 14.5 Z"/><path d="M10 14.5 L10 7.5 M10 14.5 L5 10 M10 14.5 L15 10"/></symbol>
+  <symbol id="s-mortier" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 10 H17 A7 6.5 0 0 1 3 10Z" fill="currentColor" fill-opacity=".35"/><path d="M11 9 L16 2.5"/><path d="M7 17.5H13"/></symbol>
+  <symbol id="s-aplomb" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2V9"/><path d="M6 9H14L10 17Z" fill="currentColor" fill-opacity=".35"/><path d="M5 2H15"/></symbol>
+  <symbol id="s-plume" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 16 C7 9 11 5 17 2.5 C15.5 8 11.5 13 5 16Z" fill="currentColor" fill-opacity=".35"/><path d="M5 16 L2.5 18.5"/></symbol>
+  <symbol id="s-balance" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3V16M4 5.5H16M6.5 17.5H13.5"/><path d="M4 5.5 L2 11 H6Z M16 5.5 L14 11 H18Z" fill="currentColor" fill-opacity=".35"/></symbol>
+  <symbol id="ch-0" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 4v6a4.5 4.5 0 0 0 9 0V4" fill="none" stroke-width="2.4"/><path d="M4 4h3M13 4h3"/></symbol>
+  <symbol id="ch-1" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 15.5L15 5M13 4l3 3M6 11l3 3M3.5 16.5l2-2"/></symbol>
+  <symbol id="ch-2" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17V8h8v9M5 8V4h2v2h2V4h2v2h2V4h2v4M9 17v-3h2v3" fill="none"/></symbol>
+  <symbol id="ch-3" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5c3-1 5-1 7 1 2-2 4-2 7-1v11c-3-1-5-1-7 1-2-2-4-2-7-1zM10 6v11" fill="none"/></symbol>
+  <symbol id="ch-4" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="3" fill="none"/><circle cx="10" cy="10" r="6.5" fill="none" stroke-dasharray="2.4 1.7" stroke-width="2.6"/></symbol>
+  <symbol id="ch-5" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3.5a7 7 0 1 0 3.5 11 6 6 0 0 1-3.5-11z" stroke="none"/></symbol>
+  <symbol id="ch-6" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5c4-1.5 8-1.5 12 0 0 6-2 10-6 11-4-1-6-5-6-11z" fill="none"/><path d="M7 8.5h2M11 8.5h2M7.5 12.5c1.5 1 3.5 1 5 0"/></symbol>
+  <symbol id="ch-7" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3c-3 5-5 7-5 10a5 5 0 0 0 10 0c0-3-2-5-5-10z" stroke="none"/></symbol>
+  <symbol id="ch-8" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h4M8.5 3c0 2.5-3.5 3.5-3.5 7.5S7 17 10 17s5-2.5 5-6.5S11.5 5.5 11.5 3M5.5 7.5c-1.5 0-2 2-1 3M14.5 7.5c1.5 0 2 2 1 3" fill="none"/></symbol>
+  <symbol id="ch-9" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7" fill="none"/><circle cx="10" cy="10" r="4" fill="none"/><circle cx="10" cy="10" r="1.3" stroke="none"/></symbol>
+  <symbol id="ch-10" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a6 6 0 0 1 12 0v3H4zM10 4v10M4 14h12" fill="none"/></symbol>
+  <symbol id="ch-11" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17V3c6 0 11 5 11 14z" fill="none"/><path d="M8 6v11M11 8v9M13.5 11v6"/></symbol>
+  <symbol id="ch-12" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11c3 3.5 9 3.5 12 0l2.5-3-3.5 1.5H5zM10 9V7M10 7c-1-1.5 0-3 1-3.5" fill="none"/></symbol>
+  <symbol id="ch-13" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10M5 17h10M7 4.5v12M10 4.5v12M13 4.5v12"/></symbol>
+  <symbol id="ch-14" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="3.4" stroke="none"/><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.3 4.3l2.1 2.1M13.6 13.6l2.1 2.1M4.3 15.7l2.1-2.1M13.6 6.4l2.1-2.1"/></symbol>
+  <symbol id="ch-15" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9L10 4l7 5zM5 9.5v6.5M10 9.5v6.5M15 9.5v6.5M3 17h14" fill="none"/></symbol>
+  <symbol id="ch-16" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8c2 4 2 10 0 14H6c-2-4-2-10 0-14zM4.8 7h10.4M4.8 13h10.4" fill="none"/></symbol>
+</svg>
+
+<div id="app"></div>
+<div id="modal" hidden></div>
+
+<script>
+/* ===================== DONNÉES ===================== */
+const RES=['W','S','C','G','P'];
+const RN={W:'Bois',S:'Pierre',C:'Argile',G:'Verre',P:'Papyrus'};
+const COLN={brown:'Matière première',grey:'Produit manufacturé',red:'Militaire',green:'Scientifique',blue:'Civile',yellow:'Commerciale',purple:'Guilde',temple:'Grand temple',senate:'Politique'};
+const SCIN={sphere:'Sphère armillaire',roue:'Roue',cadran:'Cadran solaire',mortier:'Mortier',aplomb:'Fil à plomb',plume:'Plume',balance:'Balance'};
+
+const AGE={1:[
+ ['Chantier forestier','brown','',{prod:'W'}],['Exploitation forestière','brown','1$',{prod:'W'}],
+ ['Carrière','brown','',{prod:'S'}],['Taille de pierre','brown','1$',{prod:'S'}],
+ ['Argilière','brown','',{prod:'C'}],["Fosse d'argile",'brown','1$',{prod:'C'}],
+ ['Verrerie','grey','1$',{prod:'G'}],['Atelier de papyrus','grey','1$',{prod:'P'}],
+ ['Tour de guet','red','',{sh:1}],['Écuries','red','W',{sh:1,link:'Fer'}],
+ ['Garnison','red','C',{sh:1,link:'Épée'}],['Palissade','red','2$',{sh:1,link:'Tour'}],
+ ['Officine','green','G',{sci:'roue',pts:1}],['Atelier','green','P',{sci:'aplomb',pts:1}],
+ ['Scriptorium','green','2$',{sci:'plume',link:'Livre'}],['Herboristerie','green','2$',{sci:'mortier',link:'Engrenage'}],
+ ['Autel','blue','',{pts:3,link:'Lune'}],['Théâtre','blue','',{pts:3,link:'Masque'}],['Bains','blue','S',{pts:3,link:'Goutte'}],
+ ['Taverne','yellow','',{coins:4,link:'Jarre'}],['Dépôt de bois','yellow','3$',{trade:'W'}],
+ ['Dépôt de pierre','yellow','3$',{trade:'S'}],["Dépôt d'argile",'yellow','3$',{trade:'C'}],
+],2:[
+ ['Scierie','brown','2$',{prod:'WW'}],['Briqueterie','brown','2$',{prod:'CC'}],['Carrière profonde','brown','2$',{prod:'SS'}],
+ ['Souffleur de verre','grey','',{prod:'G'}],['Séchoir à papyrus','grey','',{prod:'P'}],
+ ['Murailles','red','SS',{sh:2}],['Champ de tir','red','SWP',{sh:2,link:'Cible'}],["Place d'armes",'red','CCG',{sh:2,link:'Casque'}],
+ ['Haras','red','CW',{sh:1,from:'Fer'}],['Caserne','red','3$',{sh:1,from:'Épée'}],
+ ['Bibliothèque','green','SWG',{sci:'plume',pts:2,from:'Livre'}],['Dispensaire','green','CCS',{sci:'mortier',pts:2,from:'Engrenage'}],
+ ['École','green','WPP',{sci:'roue',pts:1,link:'Harpe'}],['Laboratoire','green','WGG',{sci:'aplomb',pts:1,link:'Lampe'}],
+ ['Tribunal','blue','WWG',{pts:5}],['Statue','blue','CC',{pts:4,from:'Masque',link:'Colonne'}],
+ ['Temple','blue','WP',{pts:4,from:'Lune',link:'Soleil'}],['Aqueduc','blue','SSS',{pts:5,from:'Goutte'}],['Rostres','blue','SW',{pts:4,link:'Fronton'}],
+ ['Forum','yellow','3$ C',{choice:'GP'}],['Caravansérail','yellow','2$ GP',{choice:'WSC'}],
+ ['Douane','yellow','4$',{trade:'GP'}],['Brasserie','yellow','',{coins:6,link:'Tonneau'}],
+],3:[
+ ['Arsenal','red','CCCWW',{sh:3}],['Prétoire','red','8$',{sh:3}],['Fortifications','red','SSCP',{sh:2,from:'Tour'}],
+ ['Atelier de siège','red','WWWG',{sh:2,from:'Cible'}],['Cirque','red','CCSS',{sh:2,from:'Casque'}],
+ ['Académie','green','SWGG',{sci:'cadran',pts:3}],['Étude','green','WWGP',{sci:'cadran',pts:3}],
+ ['Université','green','CCGP',{sci:'sphere',pts:2,from:'Harpe'}],['Observatoire','green','SPP',{sci:'sphere',pts:2,from:'Lampe'}],
+ ['Palais','blue','CSWGG',{pts:7}],['Hôtel de ville','blue','SSSWW',{pts:7}],['Obélisque','blue','SSG',{pts:5}],
+ ['Jardins','blue','CCWW',{pts:6,from:'Colonne'}],['Sanctuaire','blue','CWPP',{pts:6,from:'Soleil'}],['Basilique','blue','CCSP',{pts:5,from:'Fronton'}],
+ ['Chambre de commerce','yellow','PP',{pts:3,coinPer:['grey',3]}],['Port','yellow','WGP',{pts:3,coinPer:['brown',2]}],
+ ['Armurerie','yellow','SSG',{pts:3,coinPer:['red',1]}],['Phare','yellow','CCG',{pts:3,coinPer:['yellow',1],from:'Jarre'}],
+ ['Arène','yellow','CSW',{pts:3,coinPer:['wonder',2],from:'Tonneau'}],
+]};
+const GUILDS=[
+ ['Guilde des marchands','purple','CWGP',{guild:'yellow'}],['Guilde des armateurs','purple','CSGP',{guild:'brgr'}],
+ ['Guilde des bâtisseurs','purple','SSCCWG',{guild:'wonder'}],['Guilde des magistrats','purple','WWCP',{guild:'blue'}],
+ ['Guilde des savants','purple','CCWW',{guild:'green'}],['Guilde des tacticiens','purple','SSCP',{guild:'red'}],
+ ['Guilde des usuriers','purple','SSWW',{guild:'coins'}],
+];
+const TEMPLES=[['Grand temple solaire','temple','SSGP',{temple:1}],['Grand temple lunaire','temple','WWCP',{temple:1}],['Grand temple des astres','temple','CCSG',{temple:1}]];
+const AGORA={1:[['Tribun','senate','',{senator:1}],['Orateur','senate','1$',{senator:1,pts:1}],['Conspirateur','senate','2$',{consp:1}]],
+ 2:[['Sénateur','senate','W',{senator:2}],['Consul','senate','P',{senator:2,pts:1}],['Comploteur','senate','3$',{consp:1}]],
+ 3:[['Censeur','senate','SG',{senator:2,pts:2}],['Factieux','senate','4$',{consp:1,pts:1}]]};
+const GUILD_TXT={yellow:'cartes jaunes',brgr:'cartes marron et grises',blue:'cartes bleues',green:'cartes vertes',red:'cartes rouges'};
+
+const WONDERS=[
+ {n:'Pyramides de Gizeh',cost:'SSSP',e:{pts:9}},
+ {n:'Colosse de Rhodes',cost:'CCCG',e:{sh:2,pts:3}},
+ {n:"Phare d'Alexandrie",cost:'WSPP',e:{choice:'WSC',pts:4}},
+ {n:'Jardins de Babylone',cost:'WWGP',e:{coins:6,replay:1,pts:3}},
+ {n:"Temple d'Artémis",cost:'WSGP',e:{coins:12,replay:1}},
+ {n:"Mausolée d'Halicarnasse",cost:'CCGGP',e:{discardBuild:1,pts:2}},
+ {n:'Statue de Zeus',cost:'SSWPP',e:{destroy:'brown',sh:1,pts:3}},
+ {n:'Grande Bibliothèque',cost:'WWWGP',e:{library:1,pts:4}},
+ {n:'Circus Maximus',cost:'SSWG',e:{destroy:'grey',sh:1,pts:3}},
+ {n:'Via Appia',cost:'SSCCP',e:{coins:3,oppLose:3,replay:1,pts:3}},
+ {n:'Le Pirée',cost:'WWSC',e:{choice:'GP',replay:1,pts:2}},
+ {n:'Le Sphinx',cost:'SCGG',e:{replay:1,pts:6}},
+];
+const W_PAN={n:'Temple de Karnak',cost:'SSCGP',e:{freeGod:1,pts:2}};
+const W_AGO={n:'Curie de Pompée',cost:'SSWP',e:{cubes:2,replay:1,pts:2}};
+
+const TOKENS={
+ agri:{n:'Agriculture',a:'Agri',d:'+6 pièces et 4 points.'},
+ archi:{n:'Architecture',a:'Archi',d:'Vos merveilles coûtent 2 ressources de moins.'},
+ eco:{n:'Économie',a:'Éco',d:"Vous recevez l'argent que l'adversaire dépense pour acheter des ressources."},
+ loi:{n:'Loi',a:'Loi',d:'Compte comme un symbole scientifique (Balance).'},
+ macon:{n:'Maçonnerie',a:'Maç',d:'Vos cartes bleues coûtent 2 ressources de moins.'},
+ math:{n:'Mathématiques',a:'Math',d:'3 points par jeton progrès possédé, celui-ci compris.'},
+ philo:{n:'Philosophie',a:'Philo',d:'7 points.'},
+ strat:{n:'Stratégie',a:'Strat',d:'Chaque nouvelle carte rouge donne 1 bouclier de plus.'},
+ theo:{n:'Théologie',a:'Théo',d:'Toutes vos futures merveilles vous font rejouer.'},
+ urba:{n:'Urbanisme',a:'Urba',d:'+6 pièces, puis +4 pièces à chaque construction gratuite par chaînage.'},
+};
+const CULT={gr:{n:'Grecs',c:'#4f86d4',l:'Γ'},eg:{n:'Égyptiens',c:'#c99a2e',l:'☥'},me:{n:'Mésopotamiens',c:'#bd6235',l:'M'},ph:{n:'Phéniciens',c:'#9a54b8',l:'Φ'},ro:{n:'Romains',c:'#c34646',l:'R'}};
+const GODS=[
+ {n:'Zeus',cu:'gr',fx:{discardStruct:1,sh:1},d:'Défaussez une carte accessible de la structure et gagnez 1 bouclier.'},
+ {n:'Athéna',cu:'gr',fx:{boardToken:1},d:'Prenez un jeton progrès du marché.'},
+ {n:'Hermès',cu:'gr',fx:{coins:7},d:'+7 pièces.'},
+ {n:'Anubis',cu:'eg',fx:{discardBuild:1},d:'Construisez gratuitement une carte de la défausse.'},
+ {n:'Râ',cu:'eg',fx:{replay:1,pts:3},d:'3 points et rejouez immédiatement.'},
+ {n:'Isis',cu:'eg',fx:{pts:7},d:'7 points.'},
+ {n:'Enki',cu:'me',fx:{library:1},d:'Choisissez un jeton progrès parmi 3 jetons hors jeu.'},
+ {n:'Ishtar',cu:'me',fx:{sci:'balance'},d:'Gagnez le symbole scientifique Balance.'},
+ {n:'Marduk',cu:'me',fx:{sh:2,coins:3},d:'2 boucliers et +3 pièces.'},
+ {n:'Baal',cu:'ph',fx:{steal:1},d:"Prenez une carte marron ou grise de l'adversaire dans votre cité."},
+ {n:'Tanit',cu:'ph',fx:{coins:12},d:'+12 pièces.'},
+ {n:'Astarté',cu:'ph',fx:{coins:4,oppLose:4},d:"+4 pièces, l'adversaire en perd 4."},
+ {n:'Mars',cu:'ro',fx:{sh:2},d:'2 boucliers.'},
+ {n:'Minerve',cu:'ro',fx:{tradeAll:1},d:'Jusqu’à la fin, chaque ressource achetée vous coûte 1 pièce.'},
+ {n:'Vénus',cu:'ro',fx:{pts:6,coins:2},d:'6 points et +2 pièces.'},
+];
+const DECREES={
+ disc:{n:'Discipline',d:'+1 bouclier par carte rouge que vous construisez.'},
+ peage:{n:'Péage',d:"L'adversaire paie 1 pièce de plus par ressource achetée."},
+ mecenat:{n:'Mécénat',d:'+2 pièces quand vous construisez une carte bleue.'},
+ acad:{n:'Académie',d:'+2 pièces quand vous construisez une carte verte.'},
+ fisc:{n:'Fiscalité',d:'+2 pièces quand vous défaussez une carte.'},
+ travaux:{n:'Grands travaux',d:'Vos merveilles coûtent 1 ressource de moins.'},
+ monop:{n:'Monopole',d:"+1 pièce par ressource que l'adversaire achète."},
+ presea:{n:'Préséance',d:'+2 pièces quand vous construisez une carte jaune.'},
+};
+const CONSP=[
+ {n:'Extorsion',fx:{stealHalf:1},d:"Prenez la moitié des pièces de l'adversaire."},
+ {n:'Sabotage',fx:{destroy:'browngrey'},d:"Détruisez une carte marron ou grise de l'adversaire."},
+ {n:'Coup militaire',fx:{sh:3},d:'3 boucliers.'},
+ {n:"Coup d'État",fx:{removeCubes:2,cubes:1},d:"Retirez 2 cubes adverses du Sénat, puis placez 1 cube."},
+ {n:'Pillage',fx:{discardBuild:1},d:'Construisez gratuitement une carte de la défausse.'},
+ {n:'Espionnage',fx:{boardToken:1},d:'Prenez un jeton progrès du marché.'},
+ {n:'Incendie',fx:{discardStruct:2},d:'Défaussez 2 cartes accessibles de la structure.'},
+ {n:'Blocus',fx:{oppLose:6},d:"L'adversaire perd 6 pièces."},
+ {n:'Usurpation',fx:{cubes:3,cubeSame:1},d:'Placez 3 cubes dans une même chambre.'},
+ {n:'Trésor caché',fx:{coins:6,pts:3},d:'+6 pièces et 3 points.'},
+];
+const CHAINS=["Fer", "Épée", "Tour", "Livre", "Engrenage", "Lune", "Masque", "Goutte", "Jarre", "Cible", "Casque", "Harpe", "Lampe", "Colonne", "Soleil", "Fronton", "Tonneau"];
+const chI=n=>`<svg class="chs" aria-label="${n}"><use href="#ch-${CHAINS.indexOf(n)}"/></svg>`;
+const L1=[[-1,1],[-2,0,2],[-3,-1,1,3],[-4,-2,0,2,4],[-5,-3,-1,1,3,5]];
+const L2=[[-5,-3,-1,1,3,5],[-4,-2,0,2,4],[-3,-1,1,3],[-2,0,2],[-1,1]];
+const L3=[[-1,1],[-2,0,2],[-3,-1,1,3],[-2,2],[-3,-1,1,3],[-2,0,2],[-1,1]];
+
+/* ===================== OUTILS ===================== */
+const IS_NODE=typeof window==='undefined';
+const $=id=>document.getElementById(id);
+let G=null,GEN=0,UID=0,uiResolve=null,askResolve=null,sheetActs=[],modalForced=false;
+let MENU={mode:'ai',pantheon:true,agora:true,level:'normal'};
+let FF=false;try{FF=localStorage.getItem('salle-ff')==='1';}catch(e){}
+let SIM=false;
+const sleep=ms=>{const g=GEN;if(G&&G.fast)return g===GEN?Promise.resolve():Promise.reject('abort');return new Promise((r,j)=>{setTimeout(()=>g===GEN?r():j('abort'),ms)});};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const roman=n=>['','I','II','III'][n];
+const argmax=a=>a.reduce((bi,v,i)=>v>a[bi]?i:bi,0);
+const plural=(n,w)=>`${n} ${w}${n>1?'s':''}`;
+function pc(s){const o={coins:0,res:{}};if(!s)return o;s.split(' ').forEach(t=>{if(!t)return;if(t.endsWith('$'))o.coins=+t.slice(0,-1);else for(const ch of t)o.res[ch]=(o.res[ch]||0)+1;});return o;}
+const isAI=i=>G.mode==='aiai'||(G.mode==='ai'&&i===1);
+function log(t,cls){G.log.unshift({t,cls});if(G.log.length>60)G.log.pop();}
+function mkP(name){return{name,coins:7,cards:[],wonders:[],tokens:[],sci:{},bonus:0,gods:0,offerings:[],consp:[],tradeAll:false};}
+
+/* ===================== RÈGLES ===================== */
+const has=(p,t)=>p.tokens.includes(t);
+const count=(p,col)=>p.cards.filter(c=>c.col===col).length;
+const builtW=p=>p.wonders.filter(w=>w.built).length;
+function fixedProd(p){const o={W:0,S:0,C:0,G:0,P:0};p.cards.forEach(c=>{if((c.col==='brown'||c.col==='grey')&&c.e.prod)for(const r of c.e.prod)o[r]++;});return o;}
+function choiceSrc(p){const l=[];p.cards.forEach(c=>{if(c.e.choice)l.push(c.e.choice)});p.wonders.forEach(w=>{if(w.built&&w.e.choice)l.push(w.e.choice)});return l;}
+function fixedTrade(p){const s=new Set();p.cards.forEach(c=>{if(c.e.trade)for(const r of c.e.trade)s.add(r)});return s;}
+function controller(ch){return ch.cubes[0]>ch.cubes[1]?0:ch.cubes[1]>ch.cubes[0]?1:null;}
+function ctl(key){if(!G.mods.agora)return null;const ch=G.senate.find(c=>c.d===key);return ch?controller(ch):null;}
+function unitPrice(pi,r){const p=G.P[pi],o=G.P[1-pi];let v=(p.tradeAll||fixedTrade(p).has(r))?1:2+fixedProd(o)[r];if(ctl('peage')===1-pi)v+=1;return v;}
+function chainOk(p,card){return !!card.e.from&&p.cards.some(c=>c.e.link===card.e.from);}
+function costInfo(pi,cost,kind,col){
+  const p=G.P[pi];const need={};const fp=fixedProd(p);
+  for(const r in cost.res)need[r]=Math.max(0,cost.res[r]-fp[r]);
+  let disc=0;
+  if(kind==='wonder'){if(has(p,'archi'))disc+=2;if(ctl('travaux')===pi)disc+=1;}
+  if(kind==='card'&&col==='blue'&&has(p,'macon'))disc+=2;
+  const ch=choiceSrc(p);const price={};RES.forEach(r=>price[r]=unitPrice(pi,r));
+  let best=null;
+  const rec=(i)=>{
+    if(i===ch.length){const u=[];for(const r in need)for(let k=0;k<need[r];k++)u.push(price[r]);u.sort((a,b)=>b-a);const rest=u.slice(disc);const t=rest.reduce((a,b)=>a+b,0);if(!best||t<best.trade)best={trade:t,units:rest.length};return;}
+    let used=false;for(const r of ch[i]){if(need[r]>0){used=true;need[r]--;rec(i+1);need[r]++;}}if(!used)rec(i+1);
+  };
+  rec(0);
+  return{trade:best.trade,units:best.units,total:cost.coins+best.trade,chain:false};
+}
+function cardCost(pi,card){if(chainOk(G.P[pi],card))return{chain:true,total:0,trade:0,units:0};return costInfo(pi,card.cost,'card',card.col);}
+function wonderCost(pi,w){return costInfo(pi,w.cost,'wonder');}
+function pay(pi,ci){const p=G.P[pi],o=G.P[1-pi];p.coins-=ci.total;if(ci.trade>0&&has(o,'eco'))o.coins+=ci.trade;if(ci.units&&ctl('monop')===1-pi)o.coins+=ci.units;}
+function accessible(s){return !s.taken&&G.struct.every(t=>!(t.row===s.row+1&&Math.abs(t.x-s.x)===1)||t.taken);}
+function revealNew(){G.struct.forEach(s=>{if(!s.taken&&!s.up&&accessible(s)){s.up=true;s.flip=true;}});}
+function win(pi,type){if(!G.over)G.over={winner:pi,type};}
+function guildMax(t){const v=G.P.map(p=>t==='yellow'?count(p,'yellow'):t==='brgr'?count(p,'brown')+count(p,'grey'):t==='wonder'?builtW(p):t==='coins'?Math.floor(p.coins/3):count(p,t));return Math.max(...v);}
+function guildPts(t){return t==='wonder'?2*guildMax(t):guildMax(t);}
+function guildCoins(t){return ['wonder','coins'].includes(t)?0:guildMax(t);}
+function coinPerAmt(p,[w,n]){return n*(w==='wonder'?builtW(p):count(p,w));}
+function discardGain(pi){return 2+count(G.P[pi],'yellow')+(ctl('fisc')===pi?2:0);}
+function godCost(pi,i){const off=G.P[pi].offerings;return Math.max(0,G.pcost[i]-(off.length?Math.max(...off):0));}
+
+async function military(pi,n){
+  if(!n)return;
+  await battleFx(pi,n);const dir=pi===0?1:-1;
+  for(let k=0;k<n;k++){
+    G.conflict+=dir;const c=G.conflict;
+    for(const L of G.loot){if(!L.taken&&L.at===c){L.taken=true;const loser=c>0?1:0;const amt=Math.min(G.P[loser].coins,L.v);G.P[loser].coins-=amt;log(`${G.P[loser].name} subit un pillage : −${amt} pièces.`);}}
+    if(Math.abs(c)>=9){G.conflict=Math.sign(c)*9;win(pi,'militaire');return;}
+  }
+}
+async function addSci(pi,sym){
+  const p=G.P[pi];p.sci[sym]=(p.sci[sym]||0)+1;
+  if(Object.keys(p.sci).length>=6){win(pi,'scientifique');return;}
+  if(p.sci[sym]===2&&G.board.length){log(`${p.name} réunit une paire de symboles ${SCIN[sym]}.`);await chooseToken(pi,G.board,'board');}
+}
+async function chooseToken(pi,list,src){
+  if(!list.length)return;
+  const p=G.P[pi];
+  const i=await ask(pi,`${p.name} : choisis un jeton progrès`,list.map(t=>({html:`<span class="tok">${TOKENS[t].a}</span>`,label:TOKENS[t].n,desc:TOKENS[t].d,v:tokenValue(pi,t)})));
+  const t=list[i];
+  if(src==='board')G.board.splice(G.board.indexOf(t),1);else G.box.splice(G.box.indexOf(t),1);
+  p.tokens.push(t);sfx('token');log(`${p.name} prend le jeton ${TOKENS[t].n}.`);
+  if(t==='agri'||t==='urba')p.coins+=6;
+  if(t==='loi')await addSci(pi,'balance');
+}
+
+async function buildCard(pi,card,free){
+  const p=G.P[pi];
+  if(!free){const ci=cardCost(pi,card);pay(pi,ci);if(ci.chain&&has(p,'urba'))p.coins+=4;if(ci.chain)log(`${p.name} construit ${card.n} gratuitement (chaînage).`);else log(`${p.name} construit ${card.n}${ci.total?` pour ${plural(ci.total,'pièce')}`:''}.`);}
+  else log(`${p.name} construit ${card.n} gratuitement.`);
+  p.cards.push(card);G.arrive=card.id;
+  await cardFx(pi,card);
+}
+async function cardFx(pi,card){
+  const p=G.P[pi],e=card.e;
+  if(e.coins)p.coins+=e.coins;
+  if(e.coinPer)p.coins+=coinPerAmt(p,e.coinPer);
+  if(e.guild)p.coins+=guildCoins(e.guild);
+  if(card.col==='blue'&&ctl('mecenat')===pi)p.coins+=2;
+  if(card.col==='green'&&ctl('acad')===pi)p.coins+=2;
+  if(card.col==='yellow'&&ctl('presea')===pi)p.coins+=2;
+  if(e.sh){let s=e.sh;if(card.col==='red'){if(has(p,'strat'))s++;if(ctl('disc')===pi)s++;}await military(pi,s);if(G.over)return;}
+  if(e.sci){await addSci(pi,e.sci);if(G.over)return;}
+  if(e.senator)await placeCubes(pi,e.senator);
+  if(e.consp)await conspirator(pi);
+}
+function discardCard(pi,card){const g=discardGain(pi);G.P[pi].coins+=g;G.discard.push(card);log(`${G.P[pi].name} défausse ${card.n} (+${g} pièces).`);}
+async function buildWonder(pi,wi,card){
+  const p=G.P[pi],w=p.wonders[wi];const ci=wonderCost(pi,w);pay(pi,ci);
+  w.built=true;w.justBuilt=true;G.built++;log(`${p.name} bâtit ${w.n}.`,'big');
+  if(G.built===7)G.P.forEach(q=>q.wonders.forEach(x=>{if(!x.built&&!x.dead){x.dead=true;log(`${x.n} ne sera jamais bâtie (7 merveilles atteintes).`);}}));
+  render();wonderSplash(pi,w);if(!G.fast)await sleep(isAI(pi)?2300:1600);
+  const prevSrc=G.fxSrc;G.fxSrc=w.n;
+  const rep=await applyFx(pi,w.e,{wonder:true});
+  G.fxSrc=prevSrc;
+  return rep||has(p,'theo');
+}
+async function applyFx(pi,fx,opt={}){
+  const p=G.P[pi],o=G.P[1-pi];
+  if(fx.coins)p.coins+=fx.coins;
+  if(fx.pts&&!opt.wonder)p.bonus+=fx.pts;
+  if(fx.oppLose){const a=Math.min(o.coins,fx.oppLose);o.coins-=a;log(`${o.name} perd ${plural(a,'pièce')}.`);}
+  if(fx.stealHalf){const a=Math.floor(o.coins/2);o.coins-=a;p.coins+=a;log(`${p.name} extorque ${plural(a,'pièce')}.`);}
+  if(fx.tradeAll)p.tradeAll=true;
+  if(fx.destroy)await destroyFx(pi,fx.destroy);
+  if(fx.steal)await stealFx(pi);
+  if(fx.sh){await military(pi,fx.sh);if(G.over)return false;}
+  if(fx.sci){await addSci(pi,fx.sci);if(G.over)return false;}
+  if(fx.library){const pool=shuffle(G.box).slice(0,3);await chooseToken(pi,pool,'box');if(G.over)return false;}
+  if(fx.boardToken){await chooseToken(pi,G.board,'board');if(G.over)return false;}
+  if(fx.discardStruct)for(let k=0;k<fx.discardStruct;k++)await discardStructFx(pi);
+  if(fx.removeCubes)await removeCubesFx(pi,fx.removeCubes);
+  if(fx.cubes)await placeCubes(pi,fx.cubes,fx.cubeSame);
+  if(G.over)return false;
+  if(fx.discardBuild)await discardBuildFx(pi);
+  if(G.over)return false;
+  if(fx.freeGod)await freeGodFx(pi);
+  if(G.over)return false;
+  return !!fx.replay;
+}
+async function destroyFx(pi,kind){
+  const o=G.P[1-pi];const ok=c=>kind==='browngrey'?(c.col==='brown'||c.col==='grey'):c.col===kind;
+  const list=o.cards.filter(ok);if(!list.length){log('Aucune carte à détruire.');return;}
+  const i=await ask(pi,`Détruis une carte de ${o.name}`,list.map(c=>({html:miniCard(c,56),label:c.n,desc:fxText(c.e).join(' · '),v:(c.e.prod||'').length*2+(fixedProd(G.P[pi])[c.e.prod?.[0]]?0:1)})));
+  const c=list[i];o.cards.splice(o.cards.indexOf(c),1);G.discard.push(c);log(`${G.P[pi].name} détruit ${c.n} chez ${o.name}.`);
+}
+async function stealFx(pi){
+  const o=G.P[1-pi];const list=o.cards.filter(c=>c.col==='brown'||c.col==='grey');if(!list.length){log('Aucune carte à prendre.');return;}
+  const i=await ask(pi,`Prends une carte de ${o.name}`,list.map(c=>({html:miniCard(c,56),label:c.n,desc:fxText(c.e).join(' · '),v:(c.e.prod||'').length*2})));
+  const c=list[i];o.cards.splice(o.cards.indexOf(c),1);G.P[pi].cards.push(c);log(`${G.P[pi].name} s'empare de ${c.n}.`);
+}
+async function discardStructFx(pi){
+  const list=G.struct.filter(accessible);if(!list.length)return;
+  const i=await ask(pi,'Défausse une carte accessible de la structure',list.map(s=>({html:miniCard(s.card,56),label:s.card.n,desc:fxText(s.card.e).join(' · '),v:Math.min(cardValue(1-pi,s.card),40)})));
+  const s=list[i];s.taken=true;G.discard.push(s.card);log(`${G.P[pi].name} fait défausser ${s.card.n}.`);revealNew();
+}
+async function discardBuildFx(pi){
+  if(!G.discard.length){log('La défausse est vide.');return;}
+  const list=G.discard.slice();
+  const i=await ask(pi,'Construis gratuitement une carte de la défausse',list.map(c=>({html:miniCard(c,56),label:c.n,desc:fxText(c.e).join(' · '),v:cardValue(pi,c)})));
+  const c=list[i];G.discard.splice(G.discard.indexOf(c),1);await buildCard(pi,c,true);
+}
+async function freeGodFx(pi){
+  if(!G.mods.pantheon)return;const idx=G.pan.map((g,i)=>g?i:-1).filter(i=>i>=0);if(!idx.length){log('Aucun dieu à invoquer.');return;}
+  const i=await ask(pi,'Invoque gratuitement un dieu',idx.map(k=>godOpt(pi,G.pan[k])));
+  const g=G.pan[idx[i]];G.pan[idx[i]]=null;G.P[pi].gods++;log(`${G.P[pi].name} invoque ${g.n}.`,'big');await applyFx(pi,g.fx);
+}
+function godOpt(pi,g){return{html:`<span class="tok" style="background:${CULT[g.cu].c}">${CULT[g.cu].l}</span>`,label:`${g.n} · ${CULT[g.cu].n}`,desc:g.d,v:fxValue(pi,g.fx)};}
+
+/* Panthéon */
+async function placeGod(pi,cu){
+  const deck=G.gdecks[cu];const free=G.pan.indexOf(null);if(free<0||!deck.length)return;
+  const two=deck.splice(0,2);
+  const i=two.length>1?await ask(pi,`Sceau des ${CULT[cu].n} : choisis le dieu qui rejoint le Panthéon`,two.map(g=>godOpt(pi,g))):0;
+  const g=two.splice(i,1)[0];deck.push(...two);G.pan[free]=g;log(`${g.n} rejoint le Panthéon (coût ${G.pcost[free]}).`);
+}
+async function invokeGodInner(pi,slot){
+  const p=G.P[pi],g=G.pan[slot];const c=godCost(pi,slot);
+  if(p.offerings.length&&c<G.pcost[slot]){const m=Math.max(...p.offerings);p.offerings.splice(p.offerings.indexOf(m),1);}
+  p.coins-=c;G.pan[slot]=null;p.gods++;log(`${p.name} invoque ${g.n} (${plural(c,'pièce')}).`,'big');
+  return await applyFx(pi,g.fx);
+}
+
+/* Agora */
+function controlsAll(pi){return G.senate.every(ch=>controller(ch)===pi);}
+function chamberScore(pi,ch){
+  const m=ch.cubes[pi],o=ch.cubes[1-pi];
+  if(G.senate.filter(c=>c!==ch).every(c=>controller(c)===pi)&&m+1>o)return 999;
+  if(m<=o&&m+1>o)return 5;if(m===o+1)return 2.2;if(m>o)return 0.6;return 1.5-(o-m)*0.4;
+}
+function chamberOpt(pi,ch){return{label:DECREES[ch.d].n,desc:`${DECREES[ch.d].d} — cubes ${G.P[0].name} ${ch.cubes[0]} · ${G.P[1].name} ${ch.cubes[1]}`,html:`<span class="cube p${pi}" style="--is:18px"></span>`,v:chamberScore(pi,ch)};}
+async function placeCubes(pi,n,same){
+  if(!G.mods.agora)return;const p=G.P[pi];
+  if(same){const i=await ask(pi,`${p.name} : place ${n} cubes dans une chambre`,G.senate.map(ch=>chamberOpt(pi,ch)));G.senate[i].cubes[pi]+=n;log(`${p.name} place ${n} cubes en ${DECREES[G.senate[i].d].n}.`);}
+  else for(let k=0;k<n;k++){const i=await ask(pi,`${p.name} : place un cube d'influence (${k+1}/${n})`,G.senate.map(ch=>chamberOpt(pi,ch)));G.senate[i].cubes[pi]++;log(`${p.name} place un cube en ${DECREES[G.senate[i].d].n}.`);if(controlsAll(pi))break;}
+  if(controlsAll(pi))win(pi,'politique');
+}
+async function removeCubesFx(pi,n){
+  for(let k=0;k<n;k++){const list=G.senate.filter(ch=>ch.cubes[1-pi]>0);if(!list.length)return;
+    const i=await ask(pi,"Retire un cube d'influence adverse",list.map(ch=>({...chamberOpt(pi,ch),html:`<span class="cube p${1-pi}" style="--is:18px"></span>`,v:(controller(ch)===1-pi?3:0)-ch.cubes[1-pi]*0.3})));
+    list[i].cubes[1-pi]--;log(`${G.P[pi].name} retire un cube adverse en ${DECREES[list[i].d].n}.`);}
+  if(controlsAll(pi))win(pi,'politique');
+}
+async function conspirator(pi){
+  const p=G.P[pi];
+  const i=G.cdeck.length?await ask(pi,`${p.name} : conspirateur`,[{label:'Ourdir un complot',desc:'Pioche 2 complots, garde-en 1 secrètement, à déclencher au début d’un prochain tour.',v:3},{label:"Placer 1 cube d'influence",desc:'Renforce ta présence au Sénat.',v:2}]):1;
+  if(i===1){await placeCubes(pi,1);return;}
+  const two=G.cdeck.splice(0,2);const j=two.length>1?await ask(pi,'Choisis le complot à préparer',two.map(c=>({label:c.n,desc:c.d,v:fxValue(pi,c.fx)}))):0;
+  const c=two.splice(j,1)[0];G.cdeck.push(...two);p.consp.push(c);log(`${p.name} prépare un complot.`);
+}
+async function triggerConsp(pi,idx){const p=G.P[pi];const c=p.consp.splice(idx,1)[0];log(`${p.name} déclenche le complot « ${c.n} ».`,'big');const ps=G.fxSrc;G.fxSrc=`complot ${c.n}`;await applyFx(pi,c.fx);G.fxSrc=ps;}
+async function invokeGod(pi,slot){const g=G.pan[slot];const ps=G.fxSrc;G.fxSrc=g?g.n:ps;const r=await invokeGodInner(pi,slot);G.fxSrc=ps;return r;}
+
+/* ===================== IA ===================== */
+const resVal=a=>[0,2.6,1.6,0.35][a];
+function cardValue(pi,card){
+  const p=G.P[pi],a=G.age,e=card.e;let v=0;
+  v+=e.pts||0;if(e.coins)v+=e.coins/3;
+  if(e.prod){const fp=fixedProd(p);const op=fixedProd(G.P[1-pi]);for(const r of e.prod)v+=(fp[r]?0.45:1)*resVal(a)*(op[r]?1:1.25);}
+  if(e.choice)v+=(4-a)*1.1;if(e.trade)v+=e.trade.length*(4-a)*0.8;if(e.link&&a<3)v+=1.3;
+  if(e.sh){let s=e.sh;if(card.col==='red'){if(has(p,'strat'))s++;if(ctl('disc')===pi)s++;}const c=G.conflict*(pi===0?1:-1);if(c+s>=9)return 999;v+=s*1.5+(c<=-3?s:0)+(c+s>=6&&c<6?2:0)+(c<=-6?3:0);}
+  if(e.sci){const n=p.sci[e.sci]||0,d=Object.keys(p.sci).length;if(n===0){if(d+1>=6)return 999;v+=1.5+d*1.15;}else if(n===1)v+=G.board.length?4:0.5;else v+=0.3;}
+  if(e.coinPer)v+=coinPerAmt(p,e.coinPer)/3;
+  if(e.guild)v+=guildPts(e.guild)+guildCoins(e.guild)/3;
+  if(e.temple)v+=4+2*p.gods+(G.mods.pantheon?1:0);
+  if(e.senator)v+=e.senator*2+1;if(e.consp)v+=3;
+  return v;
+}
+function fxValue(pi,fx){
+  const p=G.P[pi];let v=0;const dir=pi===0?1:-1;
+  v+=(fx.pts||0)+(fx.coins||0)/3+(fx.oppLose||0)/3.5;
+  if(fx.sh){if(G.conflict*dir+fx.sh>=9)return 999;v+=fx.sh*1.6;}
+  if(fx.sci){if(!p.sci[fx.sci]){if(Object.keys(p.sci).length+1>=6)return 999;v+=3;}else v+=2;}
+  if(fx.replay)v+=3;if(fx.choice)v+=(4-(G.age||1))*1.2;if(fx.destroy)v+=2.5;if(fx.steal)v+=3;
+  if(fx.library||fx.boardToken)v+=3.5;if(fx.discardBuild)v+=Math.max(1,...G.discard.map(c=>Math.min(cardValue(pi,c),30)));
+  if(fx.stealHalf)v+=G.P[1-pi].coins/6;if(fx.tradeAll)v+=(4-(G.age||1))*1.5;if(fx.discardStruct)v+=1.5*fx.discardStruct;
+  if(fx.cubes)v+=1.8*fx.cubes;if(fx.removeCubes)v+=1.5*fx.removeCubes;if(fx.freeGod)v+=(G.pan&&G.pan.some(x=>x))?5:0;
+  return v;
+}
+function tokenValue(pi,t){const p=G.P[pi],d=Object.keys(p.sci).length;switch(t){
+  case 'loi':return p.sci.balance?2:(d+1>=6?999:4+d*0.6);case 'philo':return 7;case 'agri':return 6;case 'math':return 3*(p.tokens.length+1);
+  case 'theo':return G.age<3?5:2;case 'strat':return G.age<3?4.5:2.5;case 'eco':return 3.5;case 'archi':return p.wonders.some(w=>!w.built&&!w.dead)?4.5:0.5;
+  case 'urba':return G.age<3?4.5:2.5;case 'macon':return G.age<3?3:1.5;}return 1;}
+function exposure(pi,s){
+  let worst=0;
+  G.struct.forEach(t=>{if(t.taken||t.row!==s.row-1||Math.abs(t.x-s.x)!==1)return;
+    const cov=G.struct.filter(u=>u.row===t.row+1&&Math.abs(u.x-t.x)===1&&u!==s);
+    if(cov.every(u=>u.taken)){const v=t.up?Math.min(cardValue(1-pi,t.card),40):2.5;worst=Math.max(worst,v);}});
+  return worst*0.3;
+}
+const LEVELS={facile:{den:0.15,ex:0,noise:4,n:'Facile'},normal:{den:0.55,ex:0.3,noise:0.6,n:'Normal'},difficile:{den:0.75,ex:0.5,noise:0.1,n:'Difficile'}};
+async function aiTurn(pi){
+  await sleep(G.fast?0:700);
+  const p=G.P[pi];const W=LEVELS[G.level||'normal'];
+  if(p.consp.length)return{type:'consp',idx:argmax(p.consp.map(c=>fxValue(pi,c.fx)))};
+  const opts=[];
+  G.struct.filter(accessible).forEach(s=>{
+    const c=s.card;const den=Math.min(cardValue(1-pi,c),W===LEVELS.difficile?80:40)*W.den;const ex=exposure(pi,s)*W.ex/0.3;
+    const ci=cardCost(pi,c);
+    if(ci.total<=p.coins)opts.push({v:cardValue(pi,c)-ci.total/3.2+den-ex+(ci.chain?1:0),a:{type:'build',slot:s.i}});
+    opts.push({v:discardGain(pi)/3.5+den-ex-0.8,a:{type:'discard',slot:s.i}});
+    if(G.built<7)p.wonders.forEach((w,wi)=>{if(w.built||w.dead)return;const wc=wonderCost(pi,w);if(wc.total<=p.coins)opts.push({v:fxValue(pi,w.e)+(has(p,'theo')&&!w.e.replay?3:0)-wc.total/3.2+den-ex+0.6,a:{type:'wonder',slot:s.i,wi}});});
+  });
+  if(G.mods.pantheon&&G.age>=2)G.pan.forEach((g,i)=>{if(!g)return;const c=godCost(pi,i);if(c<=p.coins)opts.push({v:fxValue(pi,g.fx)-c/3.2-0.5,a:{type:'god',slot:i}});});
+  opts.forEach(o=>o.v+=Math.random()*W.noise);
+  opts.sort((a,b)=>b.v-a.v);
+  const best=opts[0].a;
+  if(best.type!=='god'&&!G.fast){G.hl=best.slot;render();await sleep(550);G.hl=null;}
+  return best;
+}
+
+/* ===================== DÉROULEMENT ===================== */
+async function ask(pi,title,opts,cfg={}){
+  if(!opts.length)return -1;
+  if(isAI(pi)){if(!G.fast)await sleep(320);if(G.level==='facile'&&Math.random()<0.35)return Math.random()*opts.length|0;return argmax(opts.map(o=>o.v||0));}
+  render();
+  return new Promise(res=>{
+    askResolve=i=>{askResolve=null;closeModal(true);res(i);};
+    const sub=cfg.sub||(G.fxSrc?`Effet de ${esc(G.fxSrc)}`:'');
+    openModal(`<h3>${esc(title)}</h3>${sub?`<p class="sub">${sub}</p>`:''}<div class="opts ${cfg.wide?'grid':''}">${opts.map((o,i)=>`<button class="opt" data-a="ask" data-v="${i}" ${o.disabled?'disabled':''}>${o.html||''}<span class="ot">${o.label?`<b>${esc(o.label)}</b>`:''}${o.desc?`<span>${esc(o.desc)}</span>`:''}</span></button>`).join('')}</div>`,{forced:true,wide:cfg.wide,who:pi});
+  });
+}
+function waitHuman(pi){return new Promise(res=>{uiResolve=res;G.awaiting=pi;render();});}
+
+function newGame(mode,mods,level){
+  GEN++;uiResolve=askResolve=null;closeModal(true);UID=0;
+  G={mode,mods,fast:mode==='aiai'&&IS_NODE,age:0,cur:0,conflict:0,built:0,board:[],box:[],discard:[],struct:[],rows:5,log:[],
+    loot:[{at:3,v:2},{at:6,v:5},{at:-3,v:2},{at:-6,v:5}].map(x=>({...x,taken:false})),
+    level:level||'normal',P:[mkP(mode==='hot'?'Joueur 1':'Toi'),mkP(mode==='hot'?'Joueur 2':'IA')],awaiting:null,hl:null,over:null};
+  if(mode==='aiai'){G.P[0].name='IA Aube';G.P[1].name='IA Crépuscule';}
+  const tk=shuffle(Object.keys(TOKENS));G.board=tk.slice(0,5);G.box=tk.slice(5);
+  if(mods.pantheon){G.pan=[null,null,null,null,null];G.pcost=[3,4,4,5,6];G.gdecks={};for(const k in CULT)G.gdecks[k]=shuffle(GODS.filter(g=>g.cu===k));}
+  if(mods.agora){G.senate=shuffle(Object.keys(DECREES)).slice(0,6).map(d=>({d,cubes:[0,0]}));G.cdeck=shuffle(CONSP);}
+  log('Nouvelle partie. Sélection des merveilles.');
+  const run=runGame();
+  if(!IS_NODE)run.catch(e=>{if(e!=='abort')console.error(e);});
+  return run;
+}
+async function runGame(res){
+  let first=0,last=1,startAge=1,startPi=null;
+  if(res&&res.age){startAge=res.age;first=res.first;}
+  else if(res){startAge=G.age;startPi=res.pi;last=res.last;}else await draft();
+  for(let age=startAge;age<=3;age++){
+    let pi;
+    if(startPi!=null){pi=startPi;startPi=null;G.newAge=true;}
+    else{setupAge(age);log(`Âge ${roman(age)}`,'age');G.newAge=true;pi=first;}
+    while(G.struct.some(s=>!s.taken)){
+      saveGame(pi,last);
+      const na=G.newAge,changed=G.cur!==pi||na;G.newAge=false;
+      G.cur=pi;render();
+      if(changed||G.replayed)splash(pi,G.replayed?'Tour supplémentaire':na?`Début de l’Âge ${roman(age)}`:'');G.replayed=false;
+      if(!G.fast&&(changed)&&isAI(pi))await sleep(400);
+      const rep=await playTurn(pi);last=pi;
+      if(G.over){clearSave();render();return showEnd();}
+      if(rep&&G.struct.some(s=>!s.taken)){log(`${G.P[pi].name} rejoue.`);G.replayed=true;}else pi=1-pi;
+    }
+    if(age<3){first=G.conflict>0?1:G.conflict<0?0:1-last;log(`${G.P[first].name} ouvre l'Âge ${roman(age+1)}.`);
+      if(!SIM&&!G.fast&&!IS_NODE)await showOdds(age+1,first);}
+  }
+  G.over={winner:null,type:'civile'};clearSave();render();return showEnd();
+}
+/* Sauvegarde : la partie reprend après un rechargement ou une mise à jour de la page */
+const SAVE_KEY='duel-des-ages-save';
+function saveGame(pi,last){
+  if(IS_NODE||SIM||G.mode==='aiai')return;
+  const data={v:1,pi,last,uid:UID,G:{...G,awaiting:null,hl:null,fast:false}};
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(data));}catch(e){}
+  window.__dda=data;
+}
+function clearSave(){if(IS_NODE||SIM)return;try{localStorage.removeItem(SAVE_KEY);}catch(e){}window.__dda=null;}
+function loadSave(){
+  let d=null;try{d=window.claude?.hot?.data?.dda||null;}catch(e){}
+  if(!d){try{d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');}catch(e){}}
+  return d&&d.v===1&&d.G&&!d.G.over?d:null;
+}
+function resumeGame(d){
+  GEN++;uiResolve=askResolve=null;closeModal(true);
+  G=d.G;UID=d.uid||500;G.awaiting=null;G.hl=null;G.replayed=false;
+  log('Partie reprise.');
+  const run=runGame({pi:d.pi,last:d.last});
+  run.catch(e=>{if(e!=='abort')console.error(e);});
+}
+async function draft(){
+  let pool=WONDERS.slice();if(G.mods.pantheon)pool.push(W_PAN);if(G.mods.agora)pool.push(W_AGO);
+  pool=shuffle(pool).slice(0,8).map(w=>({...w,cost:pc(w.cost),built:false,dead:false}));
+  const orders=[[0,1,1,0],[1,0,0,1]];
+  for(let r=0;r<2;r++){
+    G.draft=pool.slice(r*4,r*4+4);
+    for(const pi of orders[r]){
+      G.cur=pi;render();
+      const i=G.draft.length>1?await ask(pi,`${G.P[pi].name} : choisis une merveille`,G.draft.map(w=>({html:wonderHTML(w),v:fxValue(pi,w.e)})),{wide:true,sub:`Sélection ${r+1}/2 — ordre ${orders[r].map(x=>G.P[x].name).join(', ')}.`}):0;
+      const w=G.draft.splice(i,1)[0];G.P[pi].wonders.push(w);log(`${G.P[pi].name} choisit ${w.n}.`);
+    }
+  }
+  G.draft=null;
+}
+function setupAge(age){
+  G.age=age;const L=[null,L1,L2,L3][age];
+  const extra=[];if(G.mods.agora)extra.push(...AGORA[age]);
+  if(age===3){extra.push(...shuffle(GUILDS).slice(0,G.mods.pantheon?2:3));if(G.mods.pantheon)extra.push(...shuffle(TEMPLES).slice(0,2));}
+  const cards=shuffle(shuffle(AGE[age]).slice(0,20-extra.length).concat(extra)).map(d=>({n:d[0],col:d[1],cost:pc(d[2]),e:d[3],age,id:++UID}));
+  G.struct=[];let k=0;
+  L.forEach((row,r)=>row.forEach(x=>G.struct.push({i:G.struct.length,row:r,x,card:cards[k++],up:r%2===0,taken:false})));
+  G.rows=L.length;G.deal=true;
+  if(G.mods.pantheon&&age===1){const down=shuffle(G.struct.filter(s=>!s.up)).slice(0,5);const cu=shuffle(Object.keys(CULT));down.forEach((s,i)=>s.seal=cu[i]);}
+  if(G.mods.pantheon&&age===2){const down=shuffle(G.struct.filter(s=>!s.up)).slice(0,3);[2,3,4].forEach((v,i)=>down[i].offer=v);}
+  revealNew();
+}
+async function playTurn(pi){
+  let act;
+  while(true){
+    act=isAI(pi)?await aiTurn(pi):await waitHuman(pi);
+    G.awaiting=null;
+    if(act.type==='consp'){await triggerConsp(pi,act.idx);if(G.over)return false;if(!G.struct.some(s=>!s.taken))return false;continue;}
+    break;
+  }
+  if(act.type==='god')return await invokeGod(pi,act.slot);
+  const s=G.struct[act.slot];if(!s||s.taken)return false;
+  render();await flyCard(act.slot,pi,act);
+  s.taken=true;const card=s.card;let rep=false;
+  if(act.type==='build')await buildCard(pi,card,false);
+  else if(act.type==='discard')discardCard(pi,card);
+  else if(act.type==='wonder')rep=await buildWonder(pi,act.wi,card);
+  if(G.over)return false;
+  if(s.seal){await placeGod(pi,s.seal);}
+  if(s.offer){G.P[pi].offerings.push(s.offer);log(`${G.P[pi].name} reçoit une offrande (−${s.offer} sur une invocation).`);}
+  revealNew();
+  return rep;
+}
+
+/* ===================== SCORE ===================== */
+function score(pi){
+  const p=G.P[pi];const sum=col=>p.cards.filter(c=>c.col===col).reduce((a,c)=>a+(c.e.pts||0),0);
+  const c=G.conflict*(pi===0?1:-1);
+  const s={
+    civil:sum('blue'),sci:sum('green'),com:sum('yellow'),
+    guild:p.cards.filter(c=>c.e.guild).reduce((a,c)=>a+guildPts(c.e.guild),0),
+    wond:p.wonders.filter(w=>w.built).reduce((a,w)=>a+(w.e.pts||0),0),
+    prog:(has(p,'agri')?4:0)+(has(p,'philo')?7:0)+(has(p,'math')?3*p.tokens.length:0),
+    mil:c>=6?10:c>=3?5:c>=1?2:0,coins:Math.floor(p.coins/3),
+    div:p.cards.filter(c=>c.e.temple).length*(4+2*p.gods)+p.bonus,
+    pol:G.mods.agora?G.senate.filter(ch=>controller(ch)===pi).length+sum('senate'):0,
+  };
+  s.total=Object.values(s).reduce((a,b)=>a+b,0);return s;
+}
+function finalWinner(){if(G.over.winner!=null)return G.over.winner;const a=score(0),b=score(1);if(a.total!==b.total)return a.total>b.total?0:1;if(a.civil!==b.civil)return a.civil>b.civil?0:1;return null;}
+
+/* ===================== MENACES ===================== */
+function threats(pi){
+  const p=G.P[pi],t=[];const d=Object.keys(p.sci).length;
+  if(d>=4)t.push(`Science ${d}/6`);
+  const c=G.conflict*(pi===0?1:-1);if(c>=5)t.push(`Militaire : à ${9-c} case${9-c>1?'s':''} de la capitale`);
+  if(G.mods.agora){const n=G.senate.filter(ch=>controller(ch)===pi).length;if(n>=4)t.push(`Sénat ${n}/6`);}
+  return t;
+}
+function viewerOpp(){return G.mode==='ai'?1:1-G.cur;}
+
+/* ===================== AFFICHAGE ===================== */
+const ri=r=>`<svg class="ic" aria-label="${RN[r]}"><use href="#i-${r}"/></svg>`;
+const shI=`<svg class="ic" aria-label="bouclier"><use href="#i-sh"/></svg>`;
+const coin=n=>`<span class="coin">${n}</span>`;
+const vp=n=>`<span class="vp">${n}</span>`;
+const sciI=s=>`<span class="sci" title="${SCIN[s]}"><svg><use href="#s-${s}"/></svg></span>`;
+function perI(w){if(w==='wonder')return '<span class="mtag">M</span>';if(w==='brgr')return '<span class="minichip col-brown"></span><span class="minichip col-grey"></span>';if(w==='coins')return '<span class="coin">3</span>';return `<span class="minichip col-${w}"></span>`;}
+function fxIcons(e){let h='';
+  if(e.prod)h+=[...e.prod].map(ri).join('');
+  if(e.choice)h+=`<span class="choice">${[...e.choice].map(ri).join('<i>/</i>')}</span>`;
+  if(e.trade)h+=`<span class="trade">${[...e.trade].map(ri).join('')}${coin(1)}</span>`;
+  if(e.sh)h+=shI.repeat(e.sh);
+  if(e.sci)h+=sciI(e.sci);
+  if(e.coins)h+=coin(e.coins);
+  if(e.coinPer)h+=`<span class="per">${coin(e.coinPer[1])}<i>/</i>${perI(e.coinPer[0])}</span>`;
+  if(e.guild)h+=`<span class="per">${e.guild==='wonder'?vp(2):vp(1)}<i>/</i>${perI(e.guild)}</span>`;
+  if(e.temple)h+=`<span class="gtag">Temple</span>`;
+  if(e.senator)h+=`<span class="gtag">${'◆'.repeat(e.senator)}</span>`;
+  if(e.consp)h+=`<span class="gtag">Complot</span>`;
+  if(e.cubes)h+=`<span class="gtag">${'◆'.repeat(e.cubes)}</span>`;
+  if(e.replay)h+=`<span class="gtag">Rejoue</span>`;
+  if(e.destroy)h+=`<span class="gtag x">✕ ${e.destroy==='brown'?'marron':'grise'}</span>`;
+  if(e.discardBuild)h+=`<span class="gtag">Défausse</span>`;
+  if(e.library)h+=`<span class="gtag">Progrès</span>`;
+  if(e.oppLose)h+=`<span class="coin neg">−${e.oppLose}</span>`;
+  if(e.freeGod)h+=`<span class="gtag">Dieu</span>`;
+  if(e.pts)h+=vp(e.pts);
+  return h;}
+function costIcons(cost,e={}){let h='';if(cost.coins)h+=coin(cost.coins);RES.forEach(r=>{for(let k=0;k<(cost.res[r]||0);k++)h+=ri(r);});if(e.from)h+=`<span class="chain need" title="Gratuite si tu as le symbole ${e.from}">${chI(e.from)}</span>`;return h;}
+function sceneKey(c){return (c.col==='brown'||c.col==='grey')&&c.e.prod?c.e.prod[0]:c.col;}
+function cardHTML(c){return `<div class="card col-${c.col}"><div class="band" data-sc="${sceneKey(c)}"><span class="fxbox">${fxIcons(c.e)}</span>${c.e.link?`<span class="chain give" title="Donne le symbole ${c.e.link}">${chI(c.e.link)}</span>`:''}</div><div class="nm">${esc(c.n)}</div><div class="cost">${costIcons(c.cost,c.e)}</div></div>`;}
+function miniCard(c,w){return `<div class="cw" style="--cw:${w}px">${cardHTML(c)}</div>`;}
+function wonderHTML(w,id){return `<div class="wtile ${w.built?'built':''} ${w.dead?'dead':''} ${id&&w.justBuilt?'wbuild':''}" ${id?`id="${id}" data-a="wonder" data-v="${id}" role="button" tabindex="0"`:''}><div class="wn">${esc(w.n)}</div><div class="wfx">${fxIcons(w.e)}</div><div class="wdesc">${fxText(w.e).map(t=>`<span>${esc(t)}</span>`).join('')}</div><div class="wc"><span class="wcl">Coût</span>${costIcons(w.cost)}</div>${w.built?'<span class="badge">✓ Bâtie</span>':w.dead?'<span class="badge">Abandonnée</span>':''}</div>`;}
+function fxText(e){const L=[];
+  if(e.prod)L.push(`Produit ${[...e.prod].map(r=>RN[r]).join(' + ')}`);
+  if(e.choice)L.push(`Produit chaque tour au choix : ${[...e.choice].map(r=>RN[r]).join(' ou ')}`);
+  if(e.trade)L.push(`Achat de ${[...e.trade].map(r=>RN[r]).join(' et ')} à 1 pièce`);
+  if(e.sh)L.push(plural(e.sh,'bouclier'));
+  if(e.sci)L.push(`Symbole scientifique : ${SCIN[e.sci]}`);
+  if(e.coins)L.push(`+${e.coins} pièces`);
+  if(e.coinPer)L.push(`+${e.coinPer[1]} pièce(s) par ${e.coinPer[0]==='wonder'?'merveille bâtie':'carte '+({grey:'grise',brown:'marron',red:'rouge',yellow:'jaune'}[e.coinPer[0]])} de votre cité`);
+  if(e.guild)L.push(e.guild==='wonder'?'Fin de partie : 2 points par merveille dans la cité qui en a le plus':e.guild==='coins'?'Fin de partie : 1 point par lot de 3 pièces dans la cité la plus riche':`1 pièce maintenant et 1 point en fin de partie par ${GUILD_TXT[e.guild]} dans la cité qui en a le plus`);
+  if(e.temple)L.push('Fin de partie : 4 points + 2 par dieu que vous avez invoqué');
+  if(e.senator)L.push(`Placez ${plural(e.senator,'cube')} d'influence au Sénat`);
+  if(e.consp)L.push("Ourdissez un complot ou placez 1 cube d'influence");
+  if(e.cubes)L.push(`Placez ${plural(e.cubes,'cube')} d'influence`);
+  if(e.replay)L.push('Rejouez : vous jouez un 2ᵉ tour tout de suite');
+  if(e.destroy)L.push(`Détruisez une carte ${e.destroy==='brown'?'marron':e.destroy==='grey'?'grise':'marron ou grise'} de l'adversaire`);
+  if(e.discardBuild)L.push('Choisissez une carte de la défausse et construisez-la gratuitement');
+  if(e.library)L.push('Choisissez un jeton progrès parmi 3 tirés hors du marché');
+  if(e.oppLose)L.push(`L'adversaire perd ${e.oppLose} pièces`);
+  if(e.freeGod)L.push('Invoquez gratuitement un dieu du Panthéon');
+  if(e.pts)L.push(plural(e.pts,'point'));
+  return L;}
+function describe(c){const k=c.cost,parts=[];if(k.coins)parts.push(plural(k.coins,'pièce'));RES.forEach(r=>{if(k.res[r])parts.push(RN[r]+(k.res[r]>1?' ×'+k.res[r]:''))});
+  const L=['Coût : '+(parts.join(', ')||'gratuit')];
+  if(c.e.from)L.push(`Gratuite si vous possédez le symbole « ${c.e.from} »`);
+  if(c.e.link)L.push(`Donne le symbole de chaînage « ${c.e.link} »`);
+  return L.concat(fxText(c.e));}
+
+function turnbarHTML(){
+  if(G.over)return `<div class="turnbar done"><div class="wrap"><span class="who">Partie terminée</span></div></div>`;
+  const p=G.P[G.cur],ai=isAI(G.cur);
+  const who=G.mode==='ai'?(G.cur===0?'À toi de jouer':'L’IA joue'):`Tour de ${esc(p.name)}`;
+  const hint=G.draft?'Choisis une merveille':ai?'réfléchit…':G.awaiting===G.cur?'Touche une carte dorée'+(G.mods.pantheon&&G.age>=2?' ou un dieu du Panthéon':''):'Fais ton choix';
+  return `<div class="turnbar ${FF&&G.cur===1?'flip':''}" style="--tc:var(--p${G.cur})"><div class="wrap"><span class="dot"></span><span class="who">${who}</span><span class="hint">${hint}</span></div></div>`;
+}
+function statusText(){
+  if(!G)return '';if(G.over)return '<b>Partie terminée</b>';
+  if(G.draft)return `<b>${esc(G.P[G.cur].name)}</b> choisit une merveille`;
+  const p=G.P[G.cur];
+  if(isAI(G.cur))return `<b>${esc(p.name)}</b> réfléchit…`;
+  return G.mode==='hot'?`Au tour de <b>${esc(p.name)}</b>`:'<b>À toi de jouer</b> · touche une carte dorée';
+}
+function render(){
+  if(IS_NODE||SIM)return;
+  if(typeof document!=='undefined')document.body.classList.toggle('ff',!!(G&&FF));
+  if(!G){renderMenu();return;}
+  const scroll=window.scrollY;
+  $('app').innerHTML=`
+  <header class="top"><div class="wrap hrow">
+    <a class="home" href="index.html">← Salle de jeux</a><span class="logo">Duel des Âges</span>${G.age?`<span class="age-pill">Âge ${roman(G.age)}</span>`:''}
+    <span class="spacer"></span>
+    <button class="hbtn" data-a="ff" aria-pressed="${FF}" title="Pour poser l’écran à plat entre deux joueurs">${FF?'Face à face ✓':'Face à face'}</button><button class="hbtn" data-a="sound" aria-pressed="${!MUTED}" title="Activer ou couper le son">${MUTED?'Son coupé':'Son'}</button><button class="hbtn" data-a="rules">Aide</button><button class="hbtn" data-a="menu"><span class="long">Nouvelle partie</span><span class="short">Menu</span></button>
+  </div>${turnbarHTML()}</header>
+  <div class="wrap"><div class="layout">
+    <main>
+      ${cityHTML(1)}
+      ${trackHTML()}
+      <section class="board-card">
+        <div class="board-title"><h2>${G.draft?'Sélection des merveilles':`Structure de l'Âge ${roman(G.age)}`}</h2><span>${G.age?`${G.struct.filter(s=>!s.taken).length} cartes restantes · ${G.built}/7 merveilles`:''}</span></div>
+        ${G.draft?'':alertsHTML()}
+        ${G.draft?`<div class="wonders">${G.draft.map(w=>wonderHTML(w)).join('')}</div>`:structHTML()}
+      </section>
+      ${cityHTML(0)}
+    </main>
+    <aside>
+      ${tokensHTML()}
+      ${G.mods.pantheon?panHTML():''}
+      ${G.mods.agora?senateHTML():''}
+      <section class="side-box" id="discardbox"><h3>Défausse <small>${plural(G.discard.length,'carte')}</small></h3><button class="discard-btn" data-a="discards">Voir les cartes défaussées</button></section>
+      <section class="side-box"><h3>Chronique</h3><div class="log">${G.log.slice(0,40).map(l=>`<div class="${l.cls||''}">${esc(l.t)}</div>`).join('')}</div></section>
+    </aside>
+  </div></div>`;
+  window.scrollTo(0,scroll);
+  animateDiffs();
+  G.arrive=null;G.P.forEach(p=>p.wonders.forEach(w=>w.justBuilt=false));
+}
+function alertsHTML(){
+  const a=[0,1].map(pi=>{const t=threats(pi);return t.length?`<div class="alert" style="--ac:var(--p${pi})">⚠ <b>${esc(G.P[pi].name)}</b> approche de la victoire : ${t.join(' · ')}</div>`:'';}).join('');
+  return a?`<div class="alerts">${a}</div>`:'';
+}
+function structHTML(){
+  const step=12.1;const h=(G.rows-1)*step+15.3*1.4;
+  const slots=G.struct.filter(s=>!s.taken).map(s=>{
+    const acc=accessible(s);const mine=G.awaiting!=null&&acc;
+    const left=`calc(${(s.x+6)/12*100}cqw - 7.65cqw)`;const top=`${s.row*step}cqw`;
+    const inner=s.up?cardHTML(s.card):`<div class="card back a${G.age}">${roman(G.age)}</div>`;
+    const seal=s.seal?`<span class="seal" style="--sc:${CULT[s.seal].c}" title="Sceau des ${CULT[s.seal].n}">${CULT[s.seal].l}</span>`:'';
+    const off=s.offer?`<span class="offer" title="Offrande">−${s.offer}</span>`:'';
+    let warn='',dz='';
+    if(s.up&&acc&&!G.over){const o=viewerOpp();if(cardValue(o,s.card)>=999){warn=`<span class="warn" title="Cette carte ferait gagner ${esc(G.P[o].name)}">⚠ victoire adverse</span>`;dz='danger';}
+      else if(!isAI(1-o)&&cardValue(1-o,s.card)>=999)warn=`<span class="warn win" title="Cette carte te fait gagner">★ victoire</span>`;}
+    const fx=(s.flip?' flipin':'')+(G.deal?' deal':'');
+    return `<div class="slot ${mine?'acc':''} ${G.hl===s.i?'hl':''} ${dz}${fx}" style="left:${left};top:${top};z-index:${s.row+1};${G.deal?`animation-delay:${s.i*30}ms`:''}" data-a="slot" data-v="${s.i}" ${s.up?'tabindex="0" role="button"':''} aria-label="${s.up?esc(s.card.n):'Carte cachée'}">${inner}${seal}${off}${warn}</div>`;
+  }).join('');
+  if(G.deal)sfx('deal');else if(G.struct.some(s=>s.flip&&!s.taken))sfx('flip');
+  G.struct.forEach(s=>s.flip=false);G.deal=false;
+  return `<div class="struct-wrap"><div class="struct" style="height:${h}cqw;--tc:var(--p${G.awaiting??G.cur})">${slots}</div></div>`;
+}
+function cityHTML(pi){
+  const p=G.P[pi];const fp=fixedProd(p);const act=G.cur===pi&&!G.over;
+  const prod=RES.map(r=>`<span class="pr ${fp[r]?'':'zero'}" title="${RN[r]}">${ri(r)}<b>${fp[r]}</b><span class="rn">${RN[r]}</span></span>`).join('');
+  const ch=choiceSrc(p).map(s=>`<span class="pr ch">${[...s].map(ri).join('<i>/</i>')}</span>`).join('');
+  const tr=[...fixedTrade(p)].map(r=>`<span class="pr tr">${ri(r)}<b>=1</b></span>`).join('');
+  const cols=['brown','grey','red','green','blue','yellow','purple','temple','senate'].map(c=>{const n=count(p,c);return n?`<span class="chip col-${c}" title="${COLN[c]}">${n}</span>`:''}).join('')||'<span class="lbl" style="min-width:0">aucune carte</span>';
+  const sci=Object.entries(p.sci).map(([s,n])=>sciI(s)+(n>1?`<sup>×${n}</sup>`:'')).join('');
+  const toks=p.tokens.map(t=>`<button class="tok sm" data-a="tok" data-v="${t}" title="${TOKENS[t].n}">${TOKENS[t].a}</button>`).join('');
+  const showSecret=!isAI(pi)&&(G.mode!=='hot'||G.cur===pi);
+  const myTurn=G.awaiting===pi;
+  const extras=[];
+  if(G.mods.pantheon){extras.push(`Dieux invoqués : ${p.gods}`);if(p.offerings.length)extras.push(`Offrandes : ${p.offerings.map(o=>'−'+o).join(' ')}`);}
+  if(G.mods.agora&&p.consp.length)extras.push(myTurn&&showSecret?`<button class="xbtn hot" data-a="consp">Déclencher un complot (${p.consp.length})</button>`:`Complots prêts : ${p.consp.length}`);
+  if(p.tradeAll)extras.push('Minerve : achats à 1');
+  const stacks=['brown','grey','yellow','red','green','blue','purple','temple','senate'].map(col=>{const l=p.cards.filter(c=>c.col===col);if(!l.length)return '';
+    return `<div class="stack" id="stack${pi}-${col}" data-a="city" data-v="${pi}" title="${COLN[col]} : ${l.length}"><span class="scount">${l.length}</span>${l.map(c=>`<div class="cw ${c.id===G.arrive?'arrive':''}">${cardHTML(c)}</div>`).join('')}</div>`;}).join('');
+  const thr=threats(pi);
+  return `<section class="city p${pi} ${act?'active':''}" id="city${pi}">
+    <div class="city-head"><span class="city-name">${esc(p.name)}</span>${act?`<span class="turnflag">${G.draft?'choisit':'joue'}</span>`:''}
+      <span class="purse"><span class="ptsbig" id="pts${pi}" title="Score provisoire">${G.age?score(pi).total:0} pts</span><span class="coin big" id="purse${pi}">${p.coins}</span><button class="xbtn" data-a="city" data-v="${pi}">Voir la cité</button></span></div>
+    <div class="row"><span class="lbl">Ressources</span>${prod}${ch}${tr}</div>
+    ${thr.length?`<div class="threats">${thr.map(t=>`<span class="threat">⚠ ${t}</span>`).join('')}</div>`:''}
+    <div class="stacks" id="stacks${pi}">${stacks||'<span class="empty-city">Aucune carte construite pour l’instant.</span>'}</div>
+    ${sci||toks?`<div class="row"><span class="lbl">Savoirs</span>${sci}${toks}</div>`:''}
+    <div class="wonders">${p.wonders.map((w,wi)=>wonderHTML(w,`w${pi}-${wi}`)).join('')||'<span class="lbl">Merveilles à choisir</span>'}</div>
+    ${extras.length?`<div class="extras">${extras.map(x=>`<span>${x}</span>`).join('')}</div>`:''}
+  </section>`;
+}
+function trackHTML(){
+  let cells='';for(let v=-9;v<=9;v++){const loot=G.loot.find(l=>l.at===v&&!l.taken);const z=Math.abs(v);
+    cells+=`<div class="cell ${v===0?'mid':''} ${z===9?'end':''} z${z>=6?3:z>=3?2:z>=1?1:0}">${G.conflict===v?'<span class="pawn" aria-label="Pion conflit"></span>':''}${loot?`<span class="loot">−${loot.v}</span>`:''}</div>`;}
+  const c=G.conflict;const lead=c>0?G.P[0].name:c<0?G.P[1].name:null;
+  return `<div><div class="track" aria-label="Piste militaire"><span class="cap p0">${esc(G.P[0].name)}</span><div class="cells">${cells}</div><span class="cap p1">${esc(G.P[1].name)}</span></div>
+  <div class="mil-legend" style="margin-top:4px"><span>Conflit : ${lead?`${esc(lead)} mène de ${Math.abs(c)}`:'équilibre'}</span><span>2 · 5 · 10 points, victoire à 9</span></div></div>`;
+}
+function tokensHTML(){return `<section class="side-box"><h3>Jetons progrès <small>paire de symboles = 1 jeton</small></h3><div class="tokens">${G.board.map(t=>`<button class="tok" data-a="tok" data-v="${t}" title="${TOKENS[t].n}">${TOKENS[t].a}</button>`).join('')||'<span class="sub">Tous pris.</span>'}</div></section>`;}
+function panHTML(){
+  const pi=G.awaiting;
+  return `<section class="side-box"><h3>Panthéon <button class="qbtn" data-a="help" data-v="pantheon" aria-label="Aide Panthéon">?</button><small style="margin-left:auto">${G.age>=2?'invocation possible':'invocations dès l’Âge II'}</small></h3><div class="pan">${G.pan.map((g,i)=>{
+    const can=g&&pi!=null&&G.age>=2&&godCost(pi,i)<=G.P[pi].coins;
+    return g?`<button class="gslot full ${can?'can':''}" style="--gc:${CULT[g.cu].c}" data-a="god" data-v="${i}"><span class="coin">${pi!=null?godCost(pi,i):G.pcost[i]}</span><span class="gn">${g.n}</span><span class="gcu">${CULT[g.cu].n}</span></button>`:`<div class="gslot"><span class="coin">${G.pcost[i]}</span><span class="gcu">vide</span></div>`;}).join('')}</div></section>`;
+}
+function senateHTML(){return `<section class="side-box"><h3>Sénat <button class="qbtn" data-a="help" data-v="agora" aria-label="Aide Agora">?</button><small style="margin-left:auto">6 chambres = victoire politique</small></h3><div class="senate">${G.senate.map((ch,i)=>{const c=controller(ch);return `<button class="chamber ${c!=null?'c'+c:''}" data-a="chamber" data-v="${i}"><b>${DECREES[ch.d].n}</b><span class="cnt"><span class="a">${ch.cubes[0]}</span><span class="b">${ch.cubes[1]}</span></span></button>`;}).join('')}</div></section>`;}
+
+/* Modale */
+function openModal(html,cfg={}){if(IS_NODE)return;modalForced=!!cfg.forced;const who=cfg.who??(G?(G.awaiting??G.cur):0);const m=$('modal');m.innerHTML=`<div class="mpanel ${cfg.wide?'wide':''} ${FF&&G&&who===1?'flip':''}" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;const f=m.querySelector('button:not([disabled])');if(f)f.focus({preventScroll:true});}
+function closeModal(force){if(IS_NODE)return;if(modalForced&&!force)return;modalForced=false;$('modal').hidden=true;$('modal').innerHTML='';}
+function info(title,body){openModal(`<h3>${title}</h3>${body}<button class="ghost" data-a="close">Fermer</button>`);}
+
+function onSlot(i){
+  const s=G.struct[i];if(!s||s.taken)return;
+  if(!s.up){info('Carte cachée',`<p class="sub">Elle sera révélée dès qu’elle deviendra accessible.${s.seal?` Elle porte le sceau des ${CULT[s.seal].n} : la prendre fait entrer un dieu au Panthéon.`:''}${s.offer?` Elle porte une offrande de −${s.offer} pièces pour une invocation.`:''}</p>`);return;}
+  const c=s.card,pi=G.awaiting,can=pi!=null&&accessible(s);
+  sheetActs=[];let btns='';
+  const btn=(label,sub,dis,main)=>{const k=sheetActs.length-1;return `<button class="act ${main?'main':''}" data-a="act" data-v="${k}" ${dis?'disabled':''}><b>${label}</b><span>${sub}</span></button>`;};
+  if(can){const p=G.P[pi];const ci=cardCost(pi,c);
+    sheetActs.push({type:'build',slot:i});btns+=btn(ci.chain?'Construire — gratuit':`Construire — ${plural(ci.total,'pièce')}`,ci.chain?'Chaînage':ci.total>p.coins?`Il te manque ${ci.total-p.coins} pièce(s)`:ci.trade?`dont ${ci.trade} pour acheter ${plural(ci.units,'ressource')}`:'',ci.total>p.coins,true);
+    sheetActs.push({type:'discard',slot:i});btns+=btn(`Défausser — +${discardGain(pi)} pièces`,'2 + 1 par carte jaune','',false);
+    if(G.built<7)p.wonders.forEach((w,wi)=>{if(w.built||w.dead)return;const wc=wonderCost(pi,w);sheetActs.push({type:'wonder',slot:i,wi});btns+=btn(`Bâtir ${w.n} — ${plural(wc.total,'pièce')}`,fxText(w.e).join(' · '),wc.total>p.coins);});
+  }
+  openModal(`<div class="sheet">${miniCard(c,120)}<div><h3>${esc(c.n)}</h3><p class="sub">Carte ${COLN[c.col].toLowerCase()} · Âge ${roman(c.age)}</p><ul>${describe(c).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${can?`<div class="acts">${btns}</div>`:`<p class="sub" style="margin-top:12px">${G.awaiting==null?'Ce n’est pas ton tour.':'Carte recouverte : libère d’abord les cartes du dessous.'}</p>`}<button class="ghost" data-a="close">Fermer</button>`);
+}
+function resolveAct(a){closeModal(true);if(uiResolve){const r=uiResolve;uiResolve=null;G.awaiting=null;r(a);}}
+function onGod(i){
+  const g=G.pan[i];if(!g)return;const pi=G.awaiting;
+  const can=pi!=null&&G.age>=2&&godCost(pi,i)<=G.P[pi].coins;
+  sheetActs=[{type:'god',slot:i}];
+  const cst=pi!=null?godCost(pi,i):G.pcost[i];
+  openModal(`<h3>${g.n}</h3><p class="sub">${CULT[g.cu].n} · invocation ${plural(cst,'pièce')}${pi!=null&&G.P[pi].offerings.length?' (offrande déduite)':''}</p><p>${esc(g.d)}</p>${can?`<div class="acts"><button class="act main" data-a="act" data-v="0"><b>Invoquer — ${plural(cst,'pièce')}</b><span>Remplace la prise de carte ce tour</span></button></div>`:`<p class="sub">${G.age<2?'Les invocations commencent à l’Âge II.':pi==null?'Ce n’est pas ton tour.':'Pas assez de pièces.'}</p>`}<button class="ghost" data-a="close">Fermer</button>`);
+}
+function onConsp(){
+  const pi=G.awaiting;if(pi==null)return;const p=G.P[pi];
+  sheetActs=p.consp.map((c,idx)=>({type:'consp',idx}));
+  openModal(`<h3>Déclencher un complot</h3><p class="sub">Le complot se résout, puis tu joues ton tour normalement.</p><div class="acts">${p.consp.map((c,k)=>`<button class="act" data-a="act" data-v="${k}"><b>${c.n}</b><span>${esc(c.d)}</span></button>`).join('')}</div><button class="ghost" data-a="close">Plus tard</button>`);
+}
+function showCity(pi){
+  const p=G.P[pi];const order=['brown','grey','yellow','red','green','blue','purple','temple','senate'];
+  let h='';order.forEach(col=>{const l=p.cards.filter(c=>c.col===col);if(l.length)h+=`<div class="colhead">${COLN[col]} · ${l.length}</div><div class="cardgrid">${l.map(c=>miniCard(c,76)).join('')}</div>`;});
+  const sc=score(pi);
+  info(`Cité de ${esc(p.name)}`,`<p class="sub">${plural(p.coins,'pièce')} · score provisoire ${sc.total} points</p>${h||'<p class="sub">Aucune carte construite.</p>'}<div class="colhead">Merveilles</div><div class="wonders">${p.wonders.map(w=>wonderHTML(w)).join('')}</div>${p.tokens.length?`<div class="colhead">Jetons progrès</div><p>${p.tokens.map(t=>`<b>${TOKENS[t].n}</b> — ${TOKENS[t].d}`).join('<br>')}</p>`:''}${(!isAI(pi)&&(G.mode!=='hot'||G.cur===pi)&&p.consp.length)?`<div class="colhead">Complots préparés</div><p>${p.consp.map(c=>`<b>${c.n}</b> — ${c.d}`).join('<br>')}</p>`:''}`);
+}
+function showEnd(){
+  if(IS_NODE||SIM)return;
+  {const w=finalWinner();sfx(w==null?'turn':(G.mode==='ai'&&w===1)?'lose':'win');}
+  const w=finalWinner();const s=[score(0),score(1)];
+  const rows=[['civil','Bâtiments civils'],['sci','Bâtiments scientifiques'],['com','Bâtiments commerciaux'],['guild','Guildes'],['wond','Merveilles'],['prog','Jetons progrès'],['mil','Militaire'],['coins','Trésor (1 pt / 3 pièces)']];
+  if(G.mods.pantheon||G.mods.agora)rows.push(['div','Temples, dieux et complots']);if(G.mods.agora)rows.push(['pol','Sénat']);
+  const type=G.over.type;
+  const head=w==null?'Égalité parfaite':`${esc(G.P[w].name)} ${G.mode==='ai'&&w===0?'gagnes':'gagne'}`;
+  const sub={militaire:'Suprématie militaire : le pion conflit a atteint la capitale adverse.',scientifique:'Suprématie scientifique : 6 symboles différents réunis.',politique:'Suprématie politique : contrôle des 6 chambres du Sénat.',civile:'Victoire civile au décompte des points.'}[type];
+  openModal(`<h3>${head}</h3><p class="sub">${sub}</p>${type==='civile'?`<table class="score"><thead><tr><th></th><th class="p0">${esc(G.P[0].name)}</th><th class="p1">${esc(G.P[1].name)}</th></tr></thead><tbody>${rows.map(([k,l])=>`<tr><td>${l}</td><td>${s[0][k]}</td><td>${s[1][k]}</td></tr>`).join('')}<tr class="tot"><td>Total</td><td>${s[0].total}</td><td>${s[1].total}</td></tr></tbody></table>`:''}<div class="acts"><button class="act main" data-a="again"><b>Rejouer avec les mêmes réglages</b><span>${G.mode==='ai'?'Contre l’IA ('+LEVELS[G.level||'normal'].n.toLowerCase()+')':'2 joueurs'} · ${[G.mods.pantheon&&'Panthéon',G.mods.agora&&'Agora'].filter(Boolean).join(' + ')||'jeu de base'}</span></button></div><button class="ghost" data-a="close">Voir le plateau</button>`);
+}
+function renderMenu(){
+  const sample=[['Taverne','yellow','',{coins:4,link:'Jarre'}],['Murailles','red','SS',{sh:2}],['Bibliothèque','green','SWG',{sci:'plume',pts:2,from:'Livre'}],['Aqueduc','blue','SSS',{pts:5,from:'Goutte'}],['Sénateur','senate','W',{senator:2}]].map(d=>({n:d[0],col:d[1],cost:pc(d[2]),e:d[3]}));
+  $('app').innerHTML=`<div class="wrap"><div class="menu">
+    <a class="home" href="index.html" style="align-self:flex-start">← Salle de jeux</a>
+    <div class="preview">${sample.map(c=>miniCard(c,70)).join('')}</div>
+    <h1>Duel des Âges</h1>
+    <p class="lead">Deux civilisations, trois âges, une pyramide de cartes. Gagne par la science, par les armes, par le Sénat, ou au décompte des points.</p>
+    <div><h2>Adversaire</h2><div class="pick">
+      <button class="pbtn ${MENU.mode==='ai'?'on':''}" data-a="mode" data-v="ai"><b>Contre l’IA</b><span>Tu joues seul contre l’ordinateur.</span></button>
+      <button class="pbtn ${MENU.mode==='hot'?'on':''}" data-a="mode" data-v="hot"><b>2 joueurs</b><span>Chacun son tour sur le même écran.</span></button>
+    </div></div>
+    <div><h2>Disposition de l’écran</h2><div class="pick">
+      <button class="pbtn ${!FF?'on':''}" data-a="ffset" data-v="0"><b>Côte à côte</b><span>Un seul côté de l’écran, comme d’habitude.</span></button>
+      <button class="pbtn ${FF?'on':''}" data-a="ffset" data-v="1"><b>Face à face</b><span>Tablette ou téléphone à plat sur la table : la cité du joueur d’en face est retournée vers lui.</span></button></div></div>
+    ${MENU.mode==='ai'?`<div><h2>Niveau de l’IA</h2><div class="pick">${Object.entries(LEVELS).map(([k,l])=>`<button class="pbtn ${MENU.level===k?'on':''}" data-a="level" data-v="${k}"><b>${l.n}</b><span>${{facile:'Joue souvent au hasard. Idéal pour découvrir.',normal:'Joue bien et surveille ce qu’elle te laisse.',difficile:'Bloque tes victoires et calcule chaque carte libérée.'}[k]}</span></button>`).join('')}</div></div>`:''}
+    <div><h2>Extensions</h2><div class="pick">
+      <button class="pbtn ${MENU.pantheon?'on':''}" data-a="mod" data-v="pantheon" aria-pressed="${MENU.pantheon}"><b>Panthéon</b><span>Sceaux divins à l’Âge I, invocations de dieux dès l’Âge II, offrandes et grands temples.</span></button>
+      <button class="pbtn ${MENU.agora?'on':''}" data-a="mod" data-v="agora" aria-pressed="${MENU.agora}"><b>Agora</b><span>Sénat à 6 chambres et décrets, sénateurs, complots secrets, victoire politique.</span></button>
+    </div></div>
+    ${loadSave()?`<div class="ex"><b>Une partie est en cours.</b> ${(()=>{const d=loadSave();return `Âge ${roman(d.G.age)} · ${esc(d.G.P[0].name)} contre ${esc(d.G.P[1].name)}`})()} <button class="go" style="margin-top:8px;display:block" data-a="resume">Reprendre la partie</button></div>`:''}
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><button class="go" data-a="start">${loadSave()?'Nouvelle partie':'Lancer la partie'}</button><button class="hbtn" data-a="rules">Aide et règles</button><button class="hbtn" data-a="help" data-v="pantheon">Comprendre Panthéon</button><button class="hbtn" data-a="help" data-v="agora">Comprendre Agora</button></div>
+  </div></div>`;
+}
+function showRules(){info('Règles du jeu',`<div class="rules">
+<h4>Le tour</h4><p>À ton tour, prends une carte accessible de la structure (non recouverte) et fais-en une chose : la <b>construire</b> en payant son coût, la <b>défausser</b> contre 2 pièces + 1 par carte jaune, ou l’utiliser pour <b>bâtir une de tes merveilles</b>. Les cartes cachées se retournent quand elles se libèrent.</p>
+<h4>Ressources et commerce</h4><p>Les cartes marron et grises produisent des ressources chaque tour. Une ressource manquante s’achète à la banque : 2 pièces + 1 par exemplaire que produit l’adversaire. Les dépôts fixent ce prix à 1. Une carte dont tu possèdes le symbole de chaînage est gratuite.</p>
+<h4>Âges et merveilles</h4><p>Trois âges de 20 cartes. Chaque joueur choisit 4 merveilles au début ; 7 seulement peuvent être bâties au total. Le joueur le plus faible militairement ouvre l’âge suivant.</p>
+<h4>Trois victoires immédiates</h4><ul><li><b>Militaire</b> : pousse le pion conflit jusqu’à la capitale adverse (9 cases). Pillages à 3 et 6 cases.</li><li><b>Scientifique</b> : réunis 6 symboles scientifiques différents. Chaque paire identique donne un jeton progrès.</li><li><b>Politique</b> (Agora) : contrôle les 6 chambres du Sénat.</li></ul><p>Sinon, à la fin de l’Âge III, le plus de points gagne (égalité : points civils).</p>
+<h4>Panthéon</h4><p>À l’Âge I, 5 cartes cachées portent un sceau. La prendre te fait choisir un dieu parmi 2, qui entre au Panthéon. Dès l’Âge II, tu peux remplacer ta prise de carte par une invocation : paie le coût de l’emplacement. Les offrandes de l’Âge II réduisent ce coût. Les grands temples de l’Âge III valent 4 points + 2 par dieu que tu as invoqué.</p>
+<h4>Agora</h4><p>Les cartes politiques noires placent des cubes d’influence au Sénat. Chaque chambre est contrôlée par le joueur qui y a le plus de cubes, qui profite de son décret. Les conspirateurs préparent des complots secrets à déclencher au début d’un tour, avant ton action. Chaque chambre contrôlée vaut 1 point en fin de partie.</p></div>`);}
+
+/* Illustrations originales des cartes (fond de bandeau) */
+const D='rgba(20,12,4,.42)',D2='rgba(20,12,4,.25)',L='rgba(255,248,225,.35)';
+const tri=(x,y,w,h,f)=>`<path d="M${x} ${y}L${x-w} ${y+h}L${x+w} ${y+h}Z" fill="${f}"/>`;
+const SCENES={
+ W:`<path d="M0 60V44Q25 34 50 42T100 38V60Z" fill="${D2}"/>${[6,18,31,47,63,77,90].map((x,i)=>tri(x,10+(i%3)*5,8,32,D)+`<rect x="${x-1.2}" y="${42+(i%3)*5}" width="2.4" height="6" fill="${D}"/>`).join('')}`,
+ S:`<path d="M0 60V30L14 18L26 26L40 12L58 24L72 14L86 22L100 16V60Z" fill="${D2}"/><path d="M0 60V44H20V36H42V44H62V34H80V42H100V60Z" fill="${D}"/><path d="M20 36H42M62 34H80" stroke="${L}"/>`,
+ C:`<path d="M0 60V40Q50 26 100 40V60Z" fill="${D2}"/>${[[10,30],[22,30],[16,22],[70,32],[82,32],[76,24],[88,24]].map(([x,y])=>`<rect x="${x}" y="${y}" width="11" height="7" fill="${D}" stroke="${L}" stroke-width=".6"/>`).join('')}<ellipse cx="46" cy="50" rx="20" ry="5" fill="${D}"/>`,
+ G:`<path d="M30 58V30A20 20 0 0 1 70 30V58Z" fill="${D}"/><path d="M42 58V42A8 8 0 0 1 58 42V58Z" fill="rgba(255,190,90,.55)"/><path d="M48 10Q44 4 50 0M54 12Q58 6 52 2" stroke="${D}" stroke-width="2" fill="none"/>${[10,18,82,90].map(x=>`<path d="M${x-2} 44h4v4l3 4v8h-10v-8l3-4z" fill="${D}"/>`).join('')}`,
+ P:`<path d="M0 60V50Q50 44 100 50V60Z" fill="rgba(30,70,90,.35)"/>${[8,20,32,46,58,72,86,95].map((x,i)=>`<path d="M${x} 52V${22+(i%3)*6}" stroke="${D}" stroke-width="1.6"/><path d="M${x} ${22+(i%3)*6}l-6 -6M${x} ${22+(i%3)*6}l6 -6M${x} ${22+(i%3)*6}V${14+(i%3)*6}" stroke="${D}" stroke-width="1.2"/>`).join('')}`,
+ red:`<path d="M0 60V34h6v-4h6v4h6v-4h6v4h6v-4h6v4h6v-4h6v4h6v-4h6v4h6v-4h6v4h6v-4h6v4h6v-4h4V60Z" fill="${D}"/><rect x="10" y="16" width="16" height="44" fill="${D}"/><rect x="74" y="16" width="16" height="44" fill="${D}"/>${[10,14,18,22,74,78,82,86].map(x=>`<rect x="${x}" y="12" width="3" height="4" fill="${D}"/>`).join('')}<path d="M18 16V2l10 4-10 4" fill="${D}" stroke="${D}"/><path d="M42 60V46a8 8 0 0 1 16 0V60Z" fill="rgba(0,0,0,.5)"/>`,
+ green:`${[[12,10],[30,6],[70,8],[88,14],[50,4],[20,24],[80,26]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.4" fill="${L}"/>`).join('')}<circle cx="50" cy="34" r="18" fill="none" stroke="${D}" stroke-width="2.5"/><ellipse cx="50" cy="34" rx="18" ry="6" fill="none" stroke="${D}" stroke-width="2" transform="rotate(-25 50 34)"/><path d="M50 52V60M40 60H60" stroke="${D}" stroke-width="3"/>`,
+ blue:`<path d="M20 26L50 8L80 26Z" fill="${D}"/><rect x="18" y="26" width="64" height="4" fill="${D}"/>${[24,36,48,60,72].map(x=>`<rect x="${x}" y="31" width="5" height="21" fill="${D}"/>`).join('')}<rect x="14" y="52" width="72" height="3" fill="${D}"/><rect x="10" y="55" width="80" height="5" fill="${D}"/>`,
+ yellow:`<circle cx="82" cy="14" r="8" fill="rgba(255,240,180,.45)"/><path d="M4 30L20 22L36 30Z M40 30L56 22L72 30Z" fill="${D}"/><rect x="6" y="30" width="28" height="22" fill="${D2}"/><rect x="42" y="30" width="28" height="22" fill="${D2}"/>${[12,24,50,62,84].map(x=>`<path d="M${x} 60c-6 0-7-8-4-12l1-3h6l1 3c3 4 2 12-4 12z" fill="${D}"/>`).join('')}`,
+ purple:`<rect x="4" y="6" width="92" height="3" fill="${D}"/>${[14,40,66].map(x=>`<path d="M${x} 9h20v36l-10-7-10 7z" fill="${D}"/><circle cx="${x+10}" cy="22" r="4" fill="${L}"/>`).join('')}`,
+ temple:`${[0,1,2,3,4,5,6,7].map(i=>`<path d="M50 30L${50+60*Math.cos(Math.PI*(1+i/7))} ${30+60*Math.sin(Math.PI*(1+i/7))}" stroke="rgba(120,90,30,.35)" stroke-width="3"/>`).join('')}<path d="M28 30L50 16L72 30Z" fill="rgba(90,70,30,.5)"/>${[32,42,52,62].map(x=>`<rect x="${x}" y="31" width="5" height="22" fill="rgba(90,70,30,.5)"/>`).join('')}<rect x="24" y="53" width="52" height="7" fill="rgba(90,70,30,.5)"/>`,
+ senate:`${[38,28,18].map((r,i)=>`<path d="M${50-r} 60A${r} ${r} 0 0 1 ${50+r} 60" fill="none" stroke="rgba(220,220,240,${.22+i*.08})" stroke-width="5"/>`).join('')}<rect x="46" y="44" width="8" height="16" fill="rgba(220,220,240,.35)"/>`,
+};
+if(!IS_NODE){const st=document.createElement('style');st.textContent=Object.entries(SCENES).map(([k,v])=>`.card .band[data-sc="${k}"]{background-color:var(--cc);background-image:url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60" preserveAspectRatio="xMidYMax slice">${v}</svg>`)}")}`).join('\n');document.body.appendChild(st);}
+
+/* Animations : pièces, points, pion conflit, changement de tour */
+let prevStat=null;
+function floatAt(el,html,cls){if(!el)return;const r=el.getBoundingClientRect();if(!r.width)return;const d=document.createElement('div');d.className='float '+cls;d.innerHTML=html;d.style.left=(r.left+r.width/2)+'px';d.style.top=(r.top-6)+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1700);}
+function animateDiffs(){
+  if(!G||!G.age){prevStat=null;return;}
+  const now={gen:GEN,c:G.conflict,v:G.P.map((p,i)=>({c:p.coins,s:score(i).total}))};
+  if(prevStat&&prevStat.gen===GEN){
+    now.v.forEach((n,i)=>{const dc=n.c-prevStat.v[i].c,ds=n.s-prevStat.v[i].s;
+      if(dc)sfx(dc>0?'coin':'lose');
+      if(ds>0)setTimeout(()=>sfx('pts'),300);
+      if(dc)floatAt($('purse'+i),`${dc>0?'+':'−'}${Math.abs(dc)} <span class="coin">¤</span>`,dc>0?'gain':'loss');
+      if(ds)setTimeout(()=>floatAt($('pts'+i),`${ds>0?'+':'−'}${Math.abs(ds)} pts`,ds>0?'pts':'loss'),ds&&dc?250:0);});
+    if(now.c!==prevStat.c){const pw=document.querySelector('.pawn');if(pw){pw.classList.add('moved');floatAt(pw,`${shI} ${Math.abs(now.c-prevStat.c)}`,'loss');}}
+  }
+  prevStat=now;
+}
+async function flyCard(slot,pi,act){
+  if(IS_NODE||G.fast||SIM)return;
+  sfx('card');
+  try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;}catch(e){}
+  const src=document.querySelector(`.slot[data-v="${slot}"]`);if(!src)return;
+  const col=G.struct[slot].card.col;
+  const dst=act.type==='discard'?$('discardbox'):act.type==='wonder'?$(`w${pi}-${act.wi}`):($(`stack${pi}-${col}`)||$(`stacks${pi}`)||$(`city${pi}`));
+  if(!dst)return;
+  const a=src.getBoundingClientRect(),b=dst.getBoundingClientRect();
+  const clone=src.cloneNode(true);clone.className='flying';clone.removeAttribute('data-a');
+  Object.assign(clone.style,{left:a.left+'px',top:a.top+'px',width:a.width+'px',height:a.height+'px',zIndex:44});
+  clone.style.setProperty('--cw',a.width+'px');clone.style.animationDelay='0ms';
+  document.body.appendChild(clone);src.style.visibility='hidden';
+  const dx=b.left+b.width/2-(a.left+a.width/2),dy=b.top+Math.min(b.height,120)/2-(a.top+a.height/2);
+  const end=act.type==='discard'?{transform:`translate(${dx}px,${dy}px) scale(.3) rotate(-20deg)`,opacity:.15}:{transform:`translate(${dx}px,${dy}px) scale(.5)`,opacity:1};
+  const anim=clone.animate([{transform:'translate(0,0) scale(1)'},{transform:`translate(${dx*.45}px,${dy*.45-50}px) scale(1.18) rotate(${act.type==='wonder'?0:5}deg)`,offset:.45},end],{duration:700,easing:'cubic-bezier(.45,.05,.3,1)',fill:'forwards'});
+  await new Promise(r=>{anim.onfinish=r;setTimeout(r,900);});
+  clone.remove();
+}
+function wonderSplash(pi,w){
+  if(IS_NODE||G.fast||SIM)return;
+  sfx('wonder');
+  const d=document.createElement('div');d.className='wsplash';
+  d.innerHTML=`<div><h4>${esc(w.n)}</h4><div class="by">bâtie par ${esc(G.P[pi].name)}</div><ul>${fxText(w.e).map(t=>`<li>${esc(t)}</li>`).join('')}${has(G.P[pi],'theo')&&!w.e.replay?'<li>Rejouez (jeton Théologie)</li>':''}</ul></div>`;
+  document.body.appendChild(d);setTimeout(()=>d.remove(),2700);
+}
+/* ===================== SONS (synthétisés, aucun fichier) ===================== */
+let AC=null,MUTED=false;try{MUTED=(typeof localStorage!=='undefined')&&localStorage.getItem('dda-mute')==='1';}catch(e){}
+function ac(){if(IS_NODE)return null;if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}if(AC.state==='suspended')AC.resume().catch(()=>{});return AC;}
+let NB=null;
+function noiseBuf(a){if(NB)return NB;NB=a.createBuffer(1,a.sampleRate,a.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return NB;}
+function nz(a,t,dur,vol,ftype,f0,f1){const s=a.createBufferSource();s.buffer=noiseBuf(a);const f=a.createBiquadFilter();f.type=ftype;f.frequency.setValueAtTime(f0,t);if(f1)f.frequency.exponentialRampToValueAtTime(f1,t+dur);const g=a.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);s.connect(f).connect(g).connect(a.destination);s.start(t);s.stop(t+dur+.05);}
+function tn(a,t,freq,dur,type,vol,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(freq,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);const g=a.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.05);}
+function sfx(name){
+  if(IS_NODE||SIM||MUTED||(G&&G.fast))return;const a=ac();if(!a||a.state!=='running')return;const t=a.currentTime+.01;
+  switch(name){
+    case 'flip':nz(a,t,.05,.35,'bandpass',3200);nz(a,t+.07,.04,.25,'bandpass',2400);break;
+    case 'deal':for(let k=0;k<8;k++)nz(a,t+k*.07,.04,.22,'bandpass',2600+Math.random()*1200);break;
+    case 'card':nz(a,t,.22,.3,'lowpass',2600,500);nz(a,t+.2,.05,.25,'bandpass',1800);break;
+    case 'coin':[1900,2500,3100].forEach((f,k)=>tn(a,t+k*.06,f,.18,'triangle',.12));break;
+    case 'lose':tn(a,t,520,.25,'square',.05,260);tn(a,t+.12,380,.3,'square',.04,190);break;
+    case 'pts':tn(a,t,880,.25,'sine',.12);tn(a,t+.1,1320,.35,'sine',.1);break;
+    case 'token':tn(a,t,1046,.9,'sine',.12);tn(a,t+.02,1568,.7,'sine',.07);tn(a,t+.15,2093,.6,'sine',.05);break;
+    case 'turn':tn(a,t,392,.35,'sine',.08);tn(a,t+.08,587,.4,'sine',.06);break;
+    case 'battle':
+      for(let k=0;k<3;k++){tn(a,t+k*.16,140,.35,'sine',.5,45);nz(a,t+k*.16,.12,.35,'lowpass',400);}
+      nz(a,t+.5,.5,.4,'highpass',2500);tn(a,t+.5,2600,.25,'square',.04,1800);tn(a,t+.55,3400,.3,'square',.03,2400);
+      tn(a,t+.62,98,.6,'sawtooth',.08,60);break;
+    case 'wonder':[392,494,587,784].forEach((f,k)=>{tn(a,t+k*.09,f,1.4,'triangle',.08);tn(a,t+k*.09,f*2,1,'sine',.03);});break;
+    case 'win':[523,659,784,1046,784,1046].forEach((f,k)=>tn(a,t+k*.13,f,.35,'triangle',.12));break;
+  }
+}
+
+/* ===================== BATAILLE ===================== */
+async function battleFx(pi,n){
+  if(IS_NODE||SIM||G.fast)return;
+  try{if(matchMedia('(prefers-reduced-motion: reduce)').matches){sfx('battle');return;}}catch(e){}
+  const from=$('city'+pi),pawn=document.querySelector('.pawn'),track=document.querySelector('.track');
+  if(!from||!track)return;
+  sfx('battle');
+  const A=from.getBoundingClientRect(),B=(pawn||track).getBoundingClientRect();
+  const cl=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+  const ax=cl(A.left+A.width/2,40,innerWidth-40),ay=cl(A.top+A.height/2,60,innerHeight-60);
+  const bx=cl(B.left+B.width/2,40,innerWidth-40),by=cl(B.top+B.height/2,60,innerHeight-60);
+  const m=Math.min(n,5);
+  for(let k=0;k<m;k++){
+    const el=document.createElement('div');el.className='flyshield';el.innerHTML='<svg><use href="#i-sh"/></svg>';
+    el.style.left=(ax+(k-(m-1)/2)*40)+'px';el.style.top=ay+'px';document.body.appendChild(el);
+    const dx=bx-(ax+(k-(m-1)/2)*40),dy=by-ay;
+    const an=el.animate([{transform:'translate(0,0) scale(.6) rotate(0)',opacity:0},{transform:`translate(${dx*.3}px,${dy*.3-60}px) scale(1.5) rotate(-15deg)`,opacity:1,offset:.35},{transform:`translate(${dx}px,${dy}px) scale(.9) rotate(${pi?-10:10}deg)`,opacity:1}],{duration:700,delay:k*110,easing:'cubic-bezier(.5,0,.6,1)',fill:'forwards'});
+    an.onfinish=()=>el.remove();setTimeout(()=>el.remove(),1600);
+  }
+  await new Promise(r=>setTimeout(r,650+(m-1)*110));
+  const bu=document.createElement('div');bu.className='burst';bu.style.left=bx+'px';bu.style.top=by+'px';document.body.appendChild(bu);setTimeout(()=>bu.remove(),700);
+  const c=document.createElement('div');c.className='clash';c.style.left=bx+'px';c.style.top=(by-20)+'px';c.textContent=`⚔ ${n} bouclier${n>1?'s':''}`;document.body.appendChild(c);setTimeout(()=>c.remove(),1200);
+  track.classList.add('shake');setTimeout(()=>track.classList.remove('shake'),550);
+  await new Promise(r=>setTimeout(r,350));
+}
+
+/* ===================== CHANCES DE VICTOIRE (simulation Monte-Carlo) ===================== */
+async function simulate(n,age,first){
+  const real=G,realUID=UID;const res={w:[0,0,0],t:[{},{}]};
+  SIM=true;
+  try{
+    for(let k=0;k<n;k++){
+      G=JSON.parse(JSON.stringify(real));G.mode='aiai';G.fast=true;G.level='normal';G.over=null;G.log=[];G.awaiting=null;
+      await runGame({age,first});
+      const w=finalWinner();res.w[w==null?2:w]++;if(w!=null){const ty=G.over.type;res.t[w][ty]=(res.t[w][ty]||0)+1;}
+      if(k%8===7){G=real;SIM=false;await new Promise(r=>setTimeout(r,0));SIM=true;}
+    }
+  }finally{G=real;UID=realUID;SIM=false;}
+  return res;
+}
+function oddsCriteria(){
+  const rows=[['Score actuel',pi=>score(pi).total],['Avance militaire',pi=>Math.max(0,G.conflict*(pi?-1:1))],['Symboles scientifiques',pi=>Object.keys(G.P[pi].sci).length+'/6'],['Merveilles bâties',pi=>builtW(G.P[pi])+'/4'],['Pièces',pi=>G.P[pi].coins],['Ressources produites',pi=>Object.values(fixedProd(G.P[pi])).reduce((a,b)=>a+b,0)+choiceSrc(G.P[pi]).length],['Jetons progrès',pi=>G.P[pi].tokens.length]];
+  if(G.mods.agora)rows.push(['Chambres du Sénat',pi=>G.senate.filter(ch=>controller(ch)===pi).length+'/6']);
+  if(G.mods.pantheon)rows.push(['Dieux invoqués',pi=>G.P[pi].gods]);
+  return rows;
+}
+async function showOdds(age,first){
+  const N=200;
+  openModal(`<h3>Fin de l’Âge ${roman(age-1)}</h3><p class="sub">Calcul des chances : je joue ${N} fins de partie possibles à partir de la situation actuelle…</p><div class="spin"></div>`,{forced:true});
+  await new Promise(r=>setTimeout(r,60));
+  const r=await simulate(N,age,first);
+  const pct=r.w.map(x=>Math.round(x/N*100));
+  const TY={civile:'aux points',militaire:'militaire',scientifique:'scientifique',politique:'politique'};
+  const odd=pi=>{const t=r.t[pi];const parts=Object.entries(t).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span>${TY[k]} ${Math.round(v/N*100)} %</span>`).join('');
+    return `<div class="odd" style="--oc:var(--p${pi})"><div class="top"><span class="nm">${esc(G.P[pi].name)}</span><span class="pct">${pct[pi]} %</span></div>${parts?`<div class="split">${parts}</div>`:''}</div>`;};
+  const rows=oddsCriteria().map(([l,f])=>{const a=f(0),b=f(1);const na=parseFloat(a),nb=parseFloat(b);return `<tr><td>${l}</td><td class="${na>nb?'lead':''}">${a}</td><td class="${nb>na?'lead':''}">${b}</td></tr>`;}).join('');
+  const fav=pct[0]===pct[1]?null:pct[0]>pct[1]?0:1;
+  const gap=fav==null?0:Math.abs(pct[0]-pct[1]);const adv=gap>=40?'nettement ':gap>=15?'':'légèrement ';const verdict=fav==null?'Partie parfaitement équilibrée.':(G.mode==='ai'&&fav===0)?`Tu es ${adv}favori.`:`${esc(G.P[fav].name)} est ${adv}favori.`;
+  sfx('token');
+  return new Promise(res=>{
+    askResolve=()=>{askResolve=null;closeModal(true);res();};
+    openModal(`<h3>Bilan de l’Âge ${roman(age-1)}</h3><p class="sub">${verdict} Chances estimées en simulant ${N} fins de partie (IA contre IA, niveau normal).</p>
+      <div class="bar" aria-hidden="true"><span class="b0" style="width:${pct[0]}%"></span><span class="bd" style="width:${pct[2]?Math.round(r.w[2]/N*100):0}%"></span><span class="b1" style="width:${pct[1]}%"></span></div>
+      <div class="odds">${odd(0)}${odd(1)}</div>
+      ${r.w[2]?`<p class="sub">Égalités : ${Math.round(r.w[2]/N*100)} %</p>`:''}
+      <table class="crit"><thead><tr><th>Critère</th><th class="p0">${esc(G.P[0].name)}</th><th class="p1">${esc(G.P[1].name)}</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="acts"><button class="act main" data-a="ask" data-v="0"><b>Commencer l’Âge ${roman(age)}</b><span>${esc(G.P[first].name)} ${first===0&&G.mode==='ai'?'commences':'commence'}</span></button></div>`,{forced:true});
+  });
+}
+
+function splash(pi,sub){
+  if(IS_NODE||G.fast||SIM)return;
+  sfx('turn');
+  const name=G.P[pi].name;const txt=G.mode==='ai'?(pi===0?'À toi de jouer':'Tour de l’IA'):`${name}, à toi`;
+  const d=document.createElement('div');d.className='splash'+(FF&&pi===1?' flip':'');d.style.setProperty('--tc',`var(--p${pi})`);
+  d.innerHTML=`<div>${txt}${sub?`<small>${sub}</small>`:''}</div>`;document.body.appendChild(d);setTimeout(()=>d.remove(),1300);
+}
+
+/* Aide */
+const HELP_TABS=[['bases','Le tour'],['icones','Icônes'],['victoires','Victoires'],['pantheon','Panthéon'],['agora','Agora']];
+function helpBody(tab){
+  if(tab==='bases')return `<ol class="steps">
+   <li><span>Touche une carte <b>dorée</b> de la structure : seules les cartes non recouvertes sont jouables.</span></li>
+   <li><span>Choisis une action : <b>Construire</b> (tu paies son coût), <b>Défausser</b> (tu gagnes 2 pièces + 1 par carte jaune) ou <b>Bâtir une merveille</b> (la carte sert de fondation).</span></li>
+   <li><span>Il te manque une ressource ? Le jeu l’achète automatiquement à la banque : 2 pièces + 1 par exemplaire que l’adversaire produit. Le détail s’affiche sous le bouton Construire.</span></li>
+   <li><span>Le tour passe à l’adversaire, sauf si une merveille dit « Rejoue ».</span></li></ol>
+   <div class="ex"><b>Chaînage.</b> Une carte qui affiche un symbole doré comme <span class="chain need" style="--cw:110px;margin:0;display:inline-grid;vertical-align:middle">${chI('Lune')}</span> dans son coût est gratuite si tu possèdes déjà la carte qui donne ce symbole (ici l’Autel donne « Lune » et rend le Temple gratuit).</div>
+   <div class="ex"><b>Trois âges.</b> Âge I en pyramide, Âge II en pyramide inversée, Âge III en forme de serpent. Le joueur le plus faible militairement ouvre l’âge suivant.</div>`;
+  if(tab==='icones'){const row=(i,t,d)=>`<tr><td>${i}</td><td><b>${t}</b><br><span class="sub">${d}</span></td></tr>`;
+   return `<table class="legend">${RES.map(r=>row(ri(r),RN[r],{W:'Matière première (cartes marron).',S:'Matière première (cartes marron).',C:'Matière première (cartes marron).',G:'Produit manufacturé (cartes grises).',P:'Produit manufacturé (cartes grises).'}[r])).join('')}
+   ${row(`<span class="choice">${ri('W')}<i>/</i>${ri('S')}</span>`,'Production au choix','Chaque tour, fournit une des ressources affichées.')}
+   ${row(`<span class="trade">${ri('S')}${coin(1)}</span>`,'Dépôt','Cette ressource ne te coûte plus que 1 pièce à l’achat.')}
+   ${row(coin(3),'Pièces','Gain immédiat. En fin de partie, 3 pièces = 1 point.')}
+   ${row(`<span class="coin neg">−3</span>`,'Perte de pièces','L’adversaire perd ces pièces.')}
+   ${row(vp(3),'Points de victoire','Comptés en fin de partie.')}
+   ${row(shI+shI,'Boucliers','Chaque bouclier pousse le pion conflit d’une case vers l’adversaire.')}
+   ${Object.keys(SCIN).map(s=>row(sciI(s),SCIN[s],'Symbole scientifique. 2 identiques = 1 jeton progrès, 6 différents = victoire.')).join('')}
+   ${row(`<span class="chain give" style="position:static;--cw:90px">${chI('Lune')}</span>`,'Symbole de chaînage donné','En haut à droite d’une carte : une fois construite, elle te donne ce symbole.')}
+   ${row(`<span class="chain need" style="--cw:110px;margin:0">${chI('Lune')}</span>`,'Symbole de chaînage requis','En bas, dans le coût : la carte est gratuite si tu possèdes déjà ce symbole.')}
+   <tr><td colspan="2"><div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px">${CHAINS.map(n=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:13px"><span class="chain give" style="position:static;--cw:90px">${chI(n)}</span>${n}</span>`).join('')}</div></td></tr>
+   ${row(`<span class="per">${coin(2)}<i>/</i><span class="minichip col-brown"></span></span>`,'Gain par carte','Pièces ou points pour chaque carte de cette couleur.')}
+   ${row(`<span class="per">${coin(2)}<i>/</i><span class="mtag">M</span></span>`,'Par merveille','Pour chaque merveille bâtie.')}
+   ${row('<span class="gtag" style="--is:22px">◆◆</span>','Influence (Agora)','Cubes à placer dans les chambres du Sénat.')}
+   ${row('<span class="gtag" style="--is:22px">Rejoue</span>','Rejouer','Tu joues un tour supplémentaire immédiatement.')}
+   </table>`;}
+  if(tab==='victoires')return `<div class="ex"><b>Militaire</b> — le pion rouge atteint la capitale adverse (9 cases). En passant les cases 3 et 6, l’adversaire est pillé (−2 puis −5 pièces).</div><div class="ex"><b>Scientifique</b> — tu réunis 6 symboles scientifiques différents.</div><div class="ex"><b>Politique</b> (Agora) — tu contrôles les 6 chambres du Sénat en même temps.</div><div class="ex"><b>Civile</b> — à la fin de l’Âge III, le plus de points l’emporte. Ton score provisoire s’affiche en vert à côté de tes pièces.</div>`;
+  if(tab==='pantheon')return `<p>Panthéon ajoute des dieux que tout le monde peut invoquer. Le jeu se déroule en trois temps.</p><ol class="steps">
+   <li><span><b>Âge I : les sceaux.</b> Cinq cartes cachées portent une pastille de couleur (une par civilisation). Celui qui prend une de ces cartes, quelle que soit l’action, découvre 2 dieux de cette civilisation et en place un au Panthéon.</span></li>
+   <li><span><b>Âge II et III : les invocations.</b> À ton tour, au lieu de prendre une carte, touche un dieu dans le panneau Panthéon et paie le prix de son emplacement (3 à 6 pièces). Son pouvoir s’applique tout de suite, puis l’emplacement se vide.</span></li>
+   <li><span><b>Âge II : les offrandes.</b> Trois cartes portent une pastille « −2 », « −3 » ou « −4 ». En prenant la carte, tu gardes cette réduction pour ta prochaine invocation.</span></li>
+   <li><span><b>Âge III : les grands temples.</b> Ces cartes beiges valent 4 points + 2 par dieu que tu as invoqué. Plus tu invoques, plus ils rapportent.</span></li></ol>
+   <div class="ex"><b>Exemple.</b> Tu prends à l’Âge I une carte au sceau Φ (Phéniciens) : tu choisis entre Tanit et Baal, tu places Tanit. À l’Âge II, tu possèdes une offrande −3 : invoquer Tanit sur l’emplacement à 5 te coûte 2 pièces et t’en rapporte 12.</div>
+   <div class="colhead">Les 15 dieux</div><div class="glist">${GODS.map(g=>`<div><b style="color:${CULT[g.cu].c}">${g.n}</b> · ${CULT[g.cu].n}<br>${esc(g.d)}</div>`).join('')}</div>
+   <p class="sub" style="margin-top:10px">Merveille bonus : Temple de Karnak, qui invoque gratuitement un dieu du Panthéon.</p>`;
+  if(tab==='agora')return `<p>Agora ajoute un Sénat et des complots. On y gagne des avantages permanents, ou la partie entière.</p><ol class="steps">
+   <li><span><b>Les cartes noires.</b> Chaque âge contient des cartes politiques. Les <b>sénateurs</b> (◆) te font placer des cubes d’influence dans les chambres de ton choix.</span></li>
+   <li><span><b>Le contrôle.</b> Une chambre appartient au joueur qui y a strictement le plus de cubes. Son contour prend alors ta couleur. Tant que tu la contrôles, tu profites de son <b>décret</b> (touche une chambre pour le lire).</span></li>
+   <li><span><b>Les conspirateurs.</b> Ils te laissent choisir : placer 1 cube, ou ourdir un complot. Tu pioches 2 complots, tu en gardes 1 en secret.</span></li>
+   <li><span><b>Déclencher un complot.</b> Au début de l’un de tes tours, un bouton « Déclencher un complot » apparaît dans ta cité. Le complot se résout, puis tu joues ton tour normalement.</span></li>
+   <li><span><b>Victoire politique.</b> Contrôle les 6 chambres en même temps et tu gagnes immédiatement. Sinon chaque chambre contrôlée vaut 1 point en fin de partie.</span></li></ol>
+   <div class="colhead">Les décrets</div><div class="glist">${Object.values(DECREES).map(d=>`<div><b>${d.n}</b><br>${d.d}</div>`).join('')}</div>
+   <div class="colhead">Les complots</div><div class="glist">${CONSP.map(c=>`<div><b>${c.n}</b><br>${esc(c.d)}</div>`).join('')}</div>
+   <p class="sub" style="margin-top:10px">Merveille bonus : Curie de Pompée, qui place 2 cubes et fait rejouer.</p>`;
+  return '';
+}
+function showHelp(tab='bases'){
+  openModal(`<h3>Aide</h3><div class="tabs">${HELP_TABS.map(([k,l])=>`<button class="tab ${k===tab?'on':''}" data-a="help" data-v="${k}">${l}</button>`).join('')}</div><div class="rules">${helpBody(tab)}</div><button class="ghost" data-a="close">Fermer</button>`,{wide:true});
+}
+
+/* Événements */
+if(!IS_NODE){
+document.addEventListener('click',e=>{
+  if(!MUTED)ac();
+  if(e.target.id==='modal'){closeModal(false);return;}
+  const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,v=t.dataset.v;
+  switch(a){
+    case 'ask':if(askResolve)askResolve(+v);break;
+    case 'slot':if(G&&!G.draft)onSlot(+v);break;
+    case 'act':resolveAct(sheetActs[+v]);break;
+    case 'close':closeModal(false);break;
+    case 'city':showCity(+v);break;
+    case 'tok':info(TOKENS[v].n,`<p>${TOKENS[v].d}</p>`);break;
+    case 'god':onGod(+v);break;
+    case 'ff':FF=!FF;try{localStorage.setItem('salle-ff',FF?'1':'0');}catch(e){}render();break;
+    case 'ffset':FF=v==='1';try{localStorage.setItem('salle-ff',FF?'1':'0');}catch(e){}render();break;
+    case 'sound':MUTED=!MUTED;try{localStorage.setItem('dda-mute',MUTED?'1':'0');}catch(e){}if(!MUTED){ac();sfx('coin');}render();break;
+    case 'wonder':{const [pp,wi]=v.slice(1).split('-').map(Number);const w=G.P[pp].wonders[wi];const me=G.awaiting;
+      const c=me===pp&&!w.built&&!w.dead?wonderCost(pp,w):null;
+      info(esc(w.n),`<p class="sub">Merveille de ${esc(G.P[pp].name)} · ${w.built?'bâtie':w.dead?'abandonnée (7 merveilles déjà bâties)':'pas encore bâtie'}</p><ul>${fxText(w.e).map(t=>`<li>${esc(t)}</li>`).join('')}</ul><p>Coût : ${costIcons(w.cost)}${c?` — pour toi maintenant : <b>${plural(c.total,'pièce')}</b>${c.total>G.P[pp].coins?' (pas assez)':''}`:''}</p><p class="sub">Pour la bâtir : touche une carte dorée de la pyramide, puis choisis « Bâtir ${esc(w.n)} ». La carte sert de fondation et disparaît.</p>`);break;}
+    case 'consp':onConsp();break;
+    case 'chamber':{const ch=G.senate[+v];info(`Chambre : ${DECREES[ch.d].n}`,`<p>${DECREES[ch.d].d}</p><p class="sub">${esc(G.P[0].name)} ${ch.cubes[0]} cube(s) · ${esc(G.P[1].name)} ${ch.cubes[1]} cube(s). ${controller(ch)!=null?'Contrôlée par '+esc(G.P[controller(ch)].name)+'.':'Personne ne la contrôle.'}</p>`);break;}
+    case 'discards':info('Défausse',G.discard.length?`<div class="cardgrid">${G.discard.map(c=>miniCard(c,76)).join('')}</div>`:'<p class="sub">Aucune carte défaussée.</p>');break;
+    case 'rules':showHelp('bases');break;
+    case 'help':showHelp(v);break;
+    case 'menu':GEN++;uiResolve=askResolve=null;closeModal(true);G=null;render();window.scrollTo(0,0);break;
+    case 'mode':MENU.mode=v;render();break;
+    case 'level':MENU.level=v;render();break;
+    case 'mod':MENU[v]=!MENU[v];render();break;
+    case 'start':clearSave();newGame(MENU.mode,{pantheon:MENU.pantheon,agora:MENU.agora},MENU.level);window.scrollTo(0,0);break;
+    case 'again':clearSave();newGame(G.mode,G.mods,G.level);window.scrollTo(0,0);break;
+    case 'resume':{const d=loadSave();if(d){resumeGame(d);window.scrollTo(0,0);}break;}
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal(false);if((e.key==='Enter'||e.key===' ')&&e.target.matches('.slot')){e.preventDefault();e.target.click();}});
+try{window.claude?.hot?.snapshot?.(()=>({dda:window.__dda||null}));}catch(e){}
+let hotD=null;try{hotD=window.claude?.hot?.data?.dda||null;}catch(e){}
+if(hotD&&!hotD.G.over)resumeGame(hotD);else render();
+}
+if(IS_NODE)module.exports={newGame,get G(){return G},score,finalWinner};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Plus Bas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Plus Bas : retourne et échange tes cartes pour finir avec le plus petit total. 2 à 8 joueurs, contre l'IA ou entre amis.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Crépuscule alpin : bleu nuit, cartes vives par tranche de valeur ; pioche au centre, grilles des joueurs autour */
+:root{
+  --sky:#0e2233; --sky2:#13324a; --panel:#173a52; --panel2:#1f4964; --line:#2d5a78;
+  --ink:#eef6fb; --mute:#9dbbcc; --coral:#ff8a5b; --coral-d:#c95a30;
+  --c-neg:#4b4fd1; --c-zero:#47b9e6; --c-low:#4dbb63; --c-mid:#f0c241; --c-high:#e5574a; --c-13:#9b59d0; --c-m4:#1b1f5e; --c-star:#f5b800;
+  --p-on:#ffd36b;
+  --display:'Fredoka','Trebuchet MS',system-ui,sans-serif;
+  --body:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:dark;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--sky);background-image:linear-gradient(180deg,#0b1a28 0%,#13324a 60%,#1d4a5e 100%);background-attachment:fixed;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.4;min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:#0b1a28}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:none;padding:0}
+button:focus-visible,[data-a]:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:rgba(11,26,40,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;gap:10px;padding-block:10px;flex-wrap:wrap}
+.home{font-size:13px;color:var(--mute);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.home:hover{color:var(--ink);border-color:var(--coral)}
+.logo{font-family:var(--display);font-weight:700;font-size:24px;color:var(--coral)}
+.spacer{flex:1}
+.hbtn{border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:14px}
+.hbtn:hover{border-color:var(--coral)}
+.short{display:none}@media (max-width:560px){.long{display:none}.short{display:inline}}
+.turnbar{background:var(--tc,var(--coral));color:#1a1008}
+.turnbar .wrap{display:flex;align-items:center;gap:10px;padding-block:7px;flex-wrap:wrap;font-weight:700}
+.turnbar .who{font-family:var(--display);font-size:21px}
+.turnbar .hint{font-weight:600;opacity:.85}
+.turnbar .dot{width:11px;height:11px;border-radius:50%;background:#1a1008;animation:blink 1.2s ease-in-out infinite}
+.turnbar.flip .wrap{transform:rotate(180deg)}
+@keyframes blink{50%{opacity:.25}}
+.game{display:flex;flex-direction:column;gap:14px;padding-block:14px 40px}
+.others{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:10px}
+.pp{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.pp.active{border-color:var(--p-on);box-shadow:0 0 0 1px var(--p-on) inset,0 0 18px rgba(255,211,107,.25)}
+.pp.fin{border-style:dashed}
+.pp-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pp-name{font-family:var(--display);font-weight:600;font-size:18px}
+.flag{font-size:11px;text-transform:uppercase;letter-spacing:.08em;background:var(--p-on);color:#1a1008;border-radius:4px;padding:1px 6px;font-weight:800}
+.flag.f2{background:var(--coral)}
+.scores{margin-left:auto;display:flex;gap:6px}
+.sc{background:var(--sky2);border-radius:7px;padding:2px 8px;font-weight:800;font-variant-numeric:tabular-nums;font-size:13px}
+.sc small{font-weight:600;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(4,var(--cw));gap:5px;justify-content:center}
+.pp .grid{--cw:clamp(34px,8vw,46px)}
+.me .grid{--cw:clamp(58px,17vw,84px);gap:8px}
+.pcard{width:var(--cw);height:calc(var(--cw)*1.42);border-radius:calc(var(--cw)*.14);display:grid;place-items:center;position:relative;font-family:var(--display);font-weight:700;font-size:calc(var(--cw)*.44);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25);box-shadow:0 3px 8px rgba(0,0,0,.4);border:2px solid rgba(255,255,255,.85);flex:none;background:var(--cc);overflow:hidden}
+.pcard::before{content:attr(data-n);position:absolute;top:4%;left:8%;font-size:.34em;opacity:.9}
+.pcard::after{content:"";position:absolute;inset:14% 12%;border-radius:50%;background:rgba(255,255,255,.16)}
+.pcard span{position:relative;z-index:1}
+.v-neg{--cc:var(--c-neg)}.v-zero{--cc:var(--c-zero)}.v-low{--cc:var(--c-low)}.v-mid{--cc:var(--c-mid);color:#3a2a05;text-shadow:none}.v-high{--cc:var(--c-high)}.v-13{--cc:var(--c-13)}.v-m4{--cc:radial-gradient(circle at 50% 40%,#3a3fa8,var(--c-m4));border-color:#f5b800}
+.v-star{--cc:radial-gradient(circle at 50% 40%,#fff1a8,var(--c-star) 60%,#b37800);color:#5a3a00;text-shadow:none}
+.pcard.back{--cc:repeating-linear-gradient(45deg,#ff8a5b 0 6px,#f06b3b 6px 12px);border-color:#ffe3d4}
+.pcard.back::before{content:""}
+.pcard.back::after{inset:22% 18%;background:#fff3ec;border-radius:40% 40% 50% 50%;}
+.pcard.back span{color:#c95a30;font-size:.5em;text-shadow:none}
+.pcard.gone{background:transparent;border:2px dashed rgba(255,255,255,.18);box-shadow:none}
+.pcard.gone::after,.pcard.gone::before{display:none}
+.pcard.pick{cursor:pointer;outline:3px solid var(--p-on);outline-offset:2px;animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{50%{outline-color:rgba(255,211,107,.35)}}
+.pcard.peek span{opacity:.55}
+.pcard.peek::before{content:"vu";font-size:.26em;top:auto;bottom:6%;left:auto;right:8%;color:#fff3ec}
+.pcard.flipin{animation:flip .5s ease-out}
+@keyframes flip{0%{transform:rotateY(90deg)}100%{transform:none}}
+.table{background:radial-gradient(ellipse at 50% 40%,rgba(255,255,255,.06),transparent 70%);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.piles{display:flex;gap:18px;align-items:flex-end;justify-content:center;flex-wrap:wrap;--cw:clamp(62px,16vw,82px)}
+.pile{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--mute);font-weight:700}
+.pile .pcard{box-shadow:3px 3px 0 rgba(0,0,0,.3),6px 6px 0 rgba(0,0,0,.18),0 3px 8px rgba(0,0,0,.4)}
+.pile.can .pcard{cursor:pointer;outline:3px solid var(--p-on);outline-offset:3px}
+.hand{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--p-on);font-weight:800}
+.hand .pcard{transform:rotate(-4deg);box-shadow:0 0 0 3px var(--p-on),0 8px 18px rgba(0,0,0,.5)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.cbtn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-weight:800;font-size:14px}
+.cbtn.main{background:linear-gradient(180deg,#ffa47c,#e0683a);color:#2a1206;border-color:transparent}
+.prompt{font-weight:700;text-align:center;min-height:1.3em}
+.me{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.me.active{border-color:var(--p-on)}
+.ff .pp.rot{transform:rotate(180deg)}
+.log{font-size:13px;color:var(--mute);display:flex;flex-direction:column;gap:3px;max-height:200px;overflow:auto}
+.log div:first-child{color:var(--ink)}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.box h3{margin:0 0 6px;font-family:var(--display);font-weight:600;font-size:18px;color:var(--coral)}
+#modal{position:fixed;inset:0;z-index:40;background:rgba(5,12,20,.72);display:grid;place-items:center;padding:16px}
+#modal[hidden]{display:none}
+.mpanel{background:var(--sky2);border:1px solid var(--coral-d);border-radius:16px;max-width:620px;width:100%;max-height:min(86vh,860px);overflow:auto;padding:16px 18px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.mpanel.flip{transform:rotate(180deg)}
+.mpanel h3{margin:0 0 6px;font-family:var(--display);font-weight:700;font-size:25px;color:var(--coral)}
+.sub{color:var(--mute);margin:0 0 10px;font-size:14px}
+.acts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.act{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-align:left;font-weight:700}
+.act.main{border-color:var(--coral)}
+.ghost{border:1px solid var(--line);border-radius:9px;padding:8px 14px;margin-top:12px}
+table.res{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.res td,table.res th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
+table.res td:first-child,table.res th:first-child{text-align:left}
+table.res tr.win td{color:var(--p-on);font-weight:800}
+.menu{max-width:760px;margin:0 auto;padding-block:30px 60px;display:flex;flex-direction:column;gap:22px}
+.menu h1{font-family:var(--display);font-weight:700;font-size:clamp(52px,10vw,92px);line-height:.9;margin:0;color:var(--coral)}
+.menu .lead{font-size:18px;max-width:58ch;margin:0}
+.menu h2{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--mute);margin:0 0 8px}
+.pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.pbtn{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left;display:flex;flex-direction:column;gap:3px}
+.pbtn b{font-family:var(--display);font-weight:600;font-size:19px}
+.pbtn span{color:var(--mute);font-size:14px}
+.pbtn.on{border-color:var(--coral);background:linear-gradient(180deg,#2a4f68,var(--panel));box-shadow:0 0 0 1px var(--coral) inset}
+.stepper{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px;width:fit-content}
+.stepper b{font-family:var(--display);font-size:26px;min-width:28px;text-align:center;font-variant-numeric:tabular-nums}
+.stepper button{width:36px;height:36px;border-radius:50%;background:var(--panel2);font-weight:800;font-size:20px}
+.go{background:linear-gradient(180deg,#ffa47c,#e0683a);color:#2a1206;border-radius:12px;padding:14px 22px;font-family:var(--display);font-weight:700;font-size:22px;align-self:flex-start}
+.preview{display:flex;gap:8px;flex-wrap:wrap;--cw:54px}
+.ex{background:var(--panel);border-left:3px solid var(--coral);border-radius:6px;padding:8px 10px;font-size:14px;margin:10px 0}
+.rules p,.rules li{font-size:14px;max-width:65ch}
+.splash{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:35}
+.splash div{background:var(--p-on);color:#1a1008;font-family:var(--display);font-weight:700;font-size:clamp(26px,6vw,44px);padding:12px 30px;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:splash 1.2s ease-out forwards;text-align:center}
+.splash.flip div{animation-name:splashf}
+@keyframes splash{0%{opacity:0;transform:scale(.7)}15%{opacity:1;transform:scale(1.04)}25%{transform:scale(1)}75%{opacity:1}100%{opacity:0}}
+@keyframes splashf{0%{opacity:0;transform:rotate(180deg) scale(.7)}15%{opacity:1;transform:rotate(180deg) scale(1.04)}25%{transform:rotate(180deg)}75%{opacity:1}100%{opacity:0;transform:rotate(180deg)}}
+.float{position:fixed;z-index:45;pointer-events:none;font-family:var(--display);font-weight:700;font-size:24px;color:#9ff0b3;text-shadow:0 2px 6px rgba(0,0,0,.8);transform:translate(-50%,0);animation:floatUp 1.6s ease-out forwards}
+@keyframes floatUp{0%{opacity:0;transform:translate(-50%,6px) scale(.7)}15%{opacity:1;transform:translate(-50%,0) scale(1.15)}100%{opacity:0;transform:translate(-50%,-56px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.float,.splash{display:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal" hidden></div>
+<script>
+/* ===================== RÈGLES ET DONNÉES ===================== */
+const IS_NODE=typeof window==='undefined';
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let G=null,GEN=0,inputResolve=null,modalForced=false;
+let MENU={n:2,humans:1,level:'normal',ext:true,target:100};
+let FF=false;try{FF=localStorage.getItem('salle-ff')==='1';}catch(e){}
+const sleep=ms=>{const g=GEN;if(G&&G.fast)return Promise.resolve();return new Promise((r,j)=>setTimeout(()=>g===GEN?r():j('abort'),ms));};
+const AI_NAMES=['Léa','Hugo','Inès','Malo','Zoé','Nino','Jade'];
+function buildDeck(ext){
+  const d=[];const add=(v,n,extra={})=>{for(let k=0;k<n;k++)d.push({v,...extra});};
+  add(-2,5);add(-1,10);add(0,15);for(let v=1;v<=12;v++)add(v,10);
+  if(ext){add(13,10);add(-4,1);add(20,3,{star:1});}
+  return d;
+}
+const valOf=c=>c.v;
+function cls(c){if(c.star)return 'v-star';if(c.v===-4)return 'v-m4';if(c.v===13)return 'v-13';if(c.v<0)return 'v-neg';if(c.v===0)return 'v-zero';if(c.v<=4)return 'v-low';if(c.v<=8)return 'v-mid';return 'v-high';}
+const label=c=>c.star?'★':String(c.v);
+const isAI=i=>G.P[i].ai;
+function log(t){G.log.unshift(t);if(G.log.length>50)G.log.pop();}
+const visibleSum=p=>p.grid.reduce((a,s)=>a+(s.gone||!s.up?0:s.c.v),0);
+const hidden=p=>p.grid.map((s,i)=>(!s.gone&&!s.up)?i:-1).filter(i=>i>=0);
+const roundSum=p=>p.grid.reduce((a,s)=>a+(s.gone?0:s.c.v),0);
+function drawCard(){
+  if(!G.deck.length){const top=G.disc.pop();G.deck=shuffle(G.disc);G.disc=[top];log('La pioche est reformée avec la défausse.');}
+  return G.deck.pop();
+}
+function checkColumns(pi){
+  const p=G.P[pi];
+  for(let c=0;c<4;c++){
+    const s=[c,c+4,c+8].map(i=>p.grid[i]);
+    if(s.some(x=>x.gone||!x.up))continue;
+    const nums=s.filter(x=>!x.c.star).map(x=>x.c.v);
+    if(nums.length===0||nums.every(v=>v===nums[0])){
+      s.forEach(x=>{G.disc.push(x.c);x.gone=true;});
+      log(`${p.name} complète une colonne de ${nums.length?nums[0]:'★'} : elle disparaît !`);sfx('col');
+      floatOver(`g${pi}-${c}`,'Colonne !');
+    }
+  }
+}
+async function onReveal(pi,i){
+  const p=G.P[pi];const c=p.grid[i].c;
+  if(c.v===13&&!c.star&&G.ext){
+    const hs=hidden(p).filter(k=>p.peek[k]==null);if(!hs.length)return;
+    let k;
+    if(isAI(pi))k=hs[Math.random()*hs.length|0];
+    else{render();k=(await input(pi,{slots:hs,prompt:'Carte 13 : regarde en secret une de tes cartes cachées'})).slot;}
+    p.peek[k]=p.grid[k].c.v;log(`${p.name} regarde une de ses cartes cachées (effet du 13).`);
+    if(!isAI(pi))info('Carte regardée',`<p>Cette carte vaut <b style="font-size:22px">${label(p.grid[k].c)}</b>. Elle reste face cachée, mais tu la verras marquée « vu ».</p>`,pi);
+  }
+}
+async function reveal(pi,i){const p=G.P[pi];p.grid[i].up=true;p.grid[i].fresh=true;delete p.peek[i];sfx('flip');await onReveal(pi,i);}
+
+/* ===================== IA ===================== */
+const LEVELS={facile:{take:6,keep:4,noise:2.5,n:'Facile'},normal:{take:2.6,keep:1,noise:.6,n:'Normal'},difficile:{take:2.2,keep:.6,noise:.1,n:'Difficile'}};
+function expHidden(){return G.ext?5.7:5.07;}
+function known(p,i){const s=p.grid[i];if(s.gone)return null;if(s.up)return s.c;if(p.peek[i]!=null)return{v:p.peek[i]};return null;}
+function gain(pi,c,i){
+  const p=G.P[pi];const s=p.grid[i];if(s.gone)return -99;
+  const cur=known(p,i);const curV=cur?cur.v:expHidden();
+  const col=i%4;const others=[col,col+4,col+8].filter(k=>k!==i).map(k=>p.grid[k]);
+  const val=c.star?20:c.v;
+  let g=curV-val;
+  if(others.every(o=>!o.gone&&o.up)){
+    const nums=others.filter(o=>!o.c.star).map(o=>o.c.v).concat(c.star?[]:[c.v]);
+    if(nums.length===0||nums.every(v=>v===nums[0]))g=curV+others.reduce((a,o)=>a+(o.c.star?20:o.c.v),0);
+  }else if(!c.star&&c.v>=1&&others.some(o=>!o.gone&&o.up&&!o.c.star&&o.c.v===c.v))g+=Math.min(3,c.v*.4);
+  return g;
+}
+function estScore(pi){const p=G.P[pi];return p.grid.reduce((a,s,i)=>a+(s.gone?0:(known(p,i)?known(p,i).v:expHidden())),0);}
+function wouldEnd(pi,slotToFill){const p=G.P[pi];const h=hidden(p);return h.length===1&&h[0]===slotToFill;}
+function safeToEnd(pi){const mine=estScore(pi);return G.P.every((q,k)=>k===pi||estScore(k)>mine+2);}
+async function aiTurn(pi){
+  const W=LEVELS[G.level];const p=G.P[pi];await sleep(G.fast?0:650);
+  const top=G.disc[G.disc.length-1];
+  const best=c=>{let bi=-1,bv=-99;p.grid.forEach((s,i)=>{if(s.gone)return;let g=gain(pi,c,i)+Math.random()*W.noise*.3;if(wouldEnd(pi,i)&&!safeToEnd(pi))g-=8;if(g>bv){bv=g;bi=i;}});return{i:bi,g:bv};};
+  const bd=best(top);
+  if(bd.g>=W.take+Math.random()*W.noise){
+    G.hand=G.disc.pop();G.handFrom='disc';render();await sleep(G.fast?0:500);
+    await exchange(pi,bd.i);return;
+  }
+  G.hand=drawCard();G.handFrom='deck';render();await sleep(G.fast?0:600);
+  const b2=best(G.hand);const hs=hidden(p);
+  if(b2.g>=W.keep||!hs.length){await exchange(pi,b2.i);return;}
+  G.disc.push(G.hand);G.hand=null;log(`${p.name} défausse la carte piochée.`);
+  let opts=hs.slice();
+  if(opts.length===1&&!safeToEnd(pi)){const up=p.grid.map((s,i)=>(!s.gone&&s.up)?i:-1).filter(i=>i>=0);/* doit quand même retourner */}
+  const pref=opts.filter(i=>{const col=i%4;return [col,col+4,col+8].some(k=>k!==i&&p.grid[k].up&&!p.grid[k].gone);});
+  const k=(pref.length?pref:opts)[Math.random()*(pref.length?pref.length:opts.length)|0];
+  await reveal(pi,k);checkColumns(pi);
+}
+async function exchange(pi,i){
+  const p=G.P[pi];const s=p.grid[i];const old=s.c,wasUp=s.up;
+  s.c=G.hand;s.up=true;s.fresh=true;delete p.peek[i];
+  log(`${p.name} place ${label(G.hand)} à la place ${wasUp?'d’un '+label(old):'d’une carte cachée ('+label(old)+')'}.`);
+  G.hand=null;G.disc.push(old);sfx('card');
+  checkColumns(pi);
+}
+
+/* ===================== DÉROULEMENT ===================== */
+function input(pi,cfg){return new Promise(res=>{inputResolve=v=>{inputResolve=null;G.input=null;res(v);};G.input={pi,...cfg};render();});}
+function newGame(o){
+  GEN++;inputResolve=null;closeModal(true);
+  const n=o.n,h=Math.min(o.humans,n);
+  const P=[];for(let i=0;i<n;i++){const human=i<h;P.push({name:human?(h===1?'Toi':`Joueur ${i+1}`):AI_NAMES[i-h],ai:!human,total:0,hist:[],grid:[],peek:{}});}
+  G={P,level:o.level,ext:o.ext,target:o.target,fast:!!o.fast,round:0,deck:[],disc:[],cur:0,log:[],over:null,hand:null,input:null,mode:o.mode};
+  if(o.fast)G.P.forEach(p=>p.ai=true);
+  const run=runGame();if(!IS_NODE)run.catch(e=>{if(e!=='abort')console.error(e);});return run;
+}
+async function setupRound(){
+  G.round++;G.deck=shuffle(buildDeck(G.ext));G.disc=[];G.finisher=null;G.hand=null;
+  G.P.forEach(p=>{p.grid=Array.from({length:12},()=>({c:G.deck.pop(),up:false,gone:false}));p.peek={};});
+  G.disc.push(G.deck.pop());
+  log(`Manche ${G.round} : chacun retourne 2 cartes.`);
+  for(let pi=0;pi<G.P.length;pi++){
+    const p=G.P[pi];
+    for(let k=0;k<2;k++){
+      let i;const hs=hidden(p);
+      if(isAI(pi))i=hs[Math.random()*hs.length|0];
+      else{G.cur=pi;i=(await input(pi,{slots:hs,prompt:`${p.name} : retourne ${2-k} carte${k?'':'s'} de ta grille`})).slot;}
+      await reveal(pi,i);
+    }
+  }
+  let best=0;G.P.forEach((p,i)=>{if(visibleSum(p)>visibleSum(G.P[best]))best=i;});
+  G.cur=best;log(`${G.P[best].name} commence (plus gros total visible).`);
+}
+async function runGame(res){
+  if(!res)await setupRound();
+  while(!G.over){
+    const pi=G.cur;const p=G.P[pi];
+    if(G.finisher===pi){await endRound();if(G.over)break;await setupRound();continue;}
+    saveGame();splash(pi);render();
+    if(isAI(pi))await aiTurn(pi);else await humanTurn(pi);
+    G.P.forEach(q=>q.grid.forEach(s=>s.fresh=false));
+    if(G.finisher==null&&!hidden(p).length){G.finisher=pi;log(`${p.name} a retourné toutes ses cartes : dernier tour pour les autres !`);sfx('alert');}
+    G.cur=(pi+1)%G.P.length;
+    render();
+  }
+  clearSave();render();showEnd();
+}
+async function humanTurn(pi){
+  const p=G.P[pi];
+  const a=await input(pi,{piles:true,prompt:'Pioche une carte ou prends celle de la défausse'});
+  if(a.pile==='disc'){
+    G.hand=G.disc.pop();G.handFrom='disc';
+    const r=await input(pi,{slots:p.grid.map((s,i)=>s.gone?-1:i).filter(i=>i>=0),prompt:'Choisis la carte de ta grille à remplacer'});
+    await exchange(pi,r.slot);return;
+  }
+  G.hand=drawCard();G.handFrom='deck';sfx('card');
+  const hs=hidden(p);
+  const r=await input(pi,{slots:p.grid.map((s,i)=>s.gone?-1:i).filter(i=>i>=0),btns:hs.length?[['discard','Défausser et retourner une carte']]:[],prompt:'Place la carte piochée dans ta grille, ou défausse-la'});
+  if(r.btn==='discard'){
+    G.disc.push(G.hand);G.hand=null;log(`${p.name} défausse la carte piochée.`);
+    const r2=await input(pi,{slots:hidden(p),prompt:'Retourne une de tes cartes cachées'});
+    await reveal(pi,r2.slot);checkColumns(pi);return;
+  }
+  await exchange(pi,r.slot);
+}
+async function endRound(){
+  G.P.forEach(p=>p.grid.forEach(s=>{if(!s.gone)s.up=true;}));
+  const sums=G.P.map(roundSum);const fin=G.finisher;
+  const minOthers=Math.min(...sums.filter((_,i)=>i!==fin));
+  const scored=sums.slice();
+  if(sums[fin]>0&&sums[fin]>=minOthers){scored[fin]=sums[fin]*2;log(`${G.P[fin].name} n’a pas le plus petit total : son score est doublé.`);}
+  G.P.forEach((p,i)=>{p.total+=scored[i];p.hist.push(scored[i]);});
+  log(`Fin de la manche ${G.round}.`);
+  const max=Math.max(...G.P.map(p=>p.total));
+  if(max>=G.target){const min=Math.min(...G.P.map(p=>p.total));G.over={winners:G.P.map((p,i)=>p.total===min?i:-1).filter(i=>i>=0)};return;}
+  if(!G.fast)await roundModal(sums,scored);
+}
+function roundModal(sums,scored){
+  return new Promise(res=>{
+    render();
+    inputResolve=()=>{inputResolve=null;closeModal(true);res();};
+    openModal(`<h3>Fin de la manche ${G.round}</h3><p class="sub">Toutes les cartes sont retournées. Le premier à ${G.target} points perd ; le plus petit total gagne.</p>
+      <table class="res"><thead><tr><th>Joueur</th><th>Manche</th><th>Total</th></tr></thead><tbody>${G.P.map((p,i)=>`<tr><td>${esc(p.name)}${i===G.finisher?' ★':''}</td><td>${scored[i]}${scored[i]!==sums[i]?` <small>(${sums[i]}×2)</small>`:''}</td><td>${p.total}</td></tr>`).join('')}</tbody></table>
+      <div class="acts"><button class="act main" data-a="next">Manche suivante</button></div>`,{forced:true,who:0});
+  });
+}
+/* Sauvegarde */
+const SAVE_KEY='plus-bas-save';
+function saveGame(){if(IS_NODE||G.fast)return;const d={v:1,G:{...G,input:null}};try{localStorage.setItem(SAVE_KEY,JSON.stringify(d));}catch(e){}}
+function clearSave(){if(IS_NODE||G.fast)return;try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+function loadSave(){try{const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');return d&&d.v===1&&!d.G.over?d:null;}catch(e){return null;}}
+function resumeGame(d){GEN++;inputResolve=null;closeModal(true);G=d.G;if(G.hand){G.disc.push(G.hand);G.hand=null;}log('Partie reprise.');const r=runGame(true);r.catch(e=>{if(e!=='abort')console.error(e);});}
+
+/* ===================== AFFICHAGE ===================== */
+function cardH(c,extra='',attrs=''){return `<div class="pcard ${cls(c)} ${extra}" data-n="${label(c)}" ${attrs}><span>${label(c)}</span></div>`;}
+function slotH(pi,i){
+  const p=G.P[pi],s=p.grid[i];const inp=G.input&&G.input.pi===pi&&G.input.slots&&G.input.slots.includes(i);
+  const attrs=`data-a="slot" data-v="${pi}-${i}" id="g${pi}-${i%4}-${(i/4)|0}"`;
+  if(s.gone)return `<div class="pcard gone" ${attrs}></div>`;
+  if(s.up)return cardH(s.c,`${inp?'pick':''} ${s.fresh?'flipin':''}`,attrs);
+  const pk=p.peek[i]!=null&&!p.ai;
+  return `<div class="pcard back ${inp?'pick':''} ${pk?'peek':''}" ${attrs}><span>${pk?label({v:p.peek[i]}):'?'}</span></div>`;
+}
+function gridH(pi){return `<div class="grid">${[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>slotH(pi,i)).join('')}</div>`;}
+function panelH(pi,big){
+  const p=G.P[pi];const act=G.cur===pi&&!G.over;
+  return `<section class="${big?'me':'pp'} ${act?'active':''} ${G.finisher===pi?'fin':''} ${!big&&FF&&G.P.length===2?'rot':''}" id="pl${pi}">
+    <div class="pp-head"><span class="pp-name">${esc(p.name)}</span>${act?'<span class="flag">joue</span>':''}${G.finisher===pi?'<span class="flag f2">a tout retourné</span>':''}
+    <span class="scores"><span class="sc" title="Total visible de la manche"><small>visible </small>${visibleSum(p)}</span><span class="sc" id="tot${pi}" title="Total de la partie"><small>total </small>${p.total}</span></span></div>
+    ${gridH(pi)}</section>`;
+}
+function viewer(){
+  // la grille affichée en grand : le joueur humain dont c'est le tour, sinon le premier humain
+  if(!isAI(G.cur))return G.cur;
+  const h=G.P.findIndex(p=>!p.ai);return h<0?0:h;
+}
+function render(){
+  if(IS_NODE||(G&&G.fast))return;
+  if(!G){renderMenu();return;}
+  document.body.classList.toggle('ff',FF&&G.P.length===2);
+  const me=viewer();const inp=G.input;
+  const top=G.disc[G.disc.length-1];
+  const pilesCan=inp&&inp.piles;
+  const others=G.P.map((p,i)=>i).filter(i=>i!==me);
+  const who=isAI(G.cur)?`${G.P[G.cur].name} joue`:(G.P.filter(p=>!p.ai).length===1?'À toi de jouer':`Tour de ${G.P[G.cur].name}`);
+  const sc=window.scrollY;
+  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">←<span class="long"> Salle de jeux</span></a><span class="logo">Plus Bas</span><span class="spacer"></span>
+    ${G.P.length===2?`<button class="hbtn" data-a="ff">${FF?'Face à face ✓':'Face à face'}</button>`:''}<button class="hbtn" data-a="sound">${MUTED?'Son coupé':'Son'}</button><button class="hbtn" data-a="help">Aide</button><button class="hbtn" data-a="menu"><span class="long">Nouvelle partie</span><span class="short">Menu</span></button></div>
+    <div class="turnbar ${FF&&G.P.length===2&&G.cur!==me?'flip':''}"><div class="wrap"><span class="dot"></span><span class="who">${esc(who)}</span><span class="hint">Manche ${G.round} · fin de partie à ${G.target} points${G.finisher!=null?' · dernier tour !':''}</span></div></div></header>
+  <div class="wrap"><div class="game">
+    <div class="others">${others.map(i=>panelH(i,false)).join('')}</div>
+    <section class="table">
+      <div class="piles">
+        <div class="pile ${pilesCan?'can':''}"><button data-a="deck" aria-label="Piocher">${cardH({v:0},'back','')}</button>Pioche · ${G.deck.length}</div>
+        ${G.hand?`<div class="hand">${cardH(G.hand,'','id="handcard"')}${G.handFrom==='disc'?'Prise dans la défausse':'Carte piochée'}</div>`:''}
+        <div class="pile ${pilesCan&&top?'can':''}"><button data-a="disc" aria-label="Prendre la défausse">${top?cardH(top):'<div class="pcard gone"></div>'}</button>Défausse</div>
+      </div>
+      <div class="prompt">${inp&&inp.prompt?esc(inp.prompt):isAI(G.cur)?`${esc(G.P[G.cur].name)} réfléchit…`:''}</div>
+      ${inp&&inp.btns&&inp.btns.length?`<div class="btns">${inp.btns.map(([k,l])=>`<button class="cbtn" data-a="btn" data-v="${k}">${l}</button>`).join('')}</div>`:''}
+    </section>
+    ${panelH(me,true)}
+    <section class="box"><h3>Chronique</h3><div class="log">${G.log.slice(0,30).map(l=>`<div>${esc(l)}</div>`).join('')}</div></section>
+  </div></div>`;
+  window.scrollTo(0,sc);
+}
+function renderMenu(){
+  document.body.classList.remove('ff');
+  const sv=loadSave();
+  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">← Salle de jeux</a><span class="spacer"></span><button class="hbtn" data-a="help">Aide</button></div></header>
+  <div class="wrap"><div class="menu">
+    <div class="preview">${[{v:-2},{v:0},{v:3},{v:7},{v:11},{v:13},{v:20,star:1}].map(c=>cardH(c)).join('')}</div>
+    <h1>Plus Bas</h1>
+    <p class="lead">Chacun a une grille de 12 cartes cachées. Pioche, échange, retourne : celui qui finit la partie avec le plus petit total gagne. Aligne trois cartes identiques en colonne pour les faire disparaître.</p>
+    <div><h2>Nombre de joueurs</h2><div class="stepper"><button data-a="n" data-v="-1" aria-label="Moins">−</button><b>${MENU.n}</b><button data-a="n" data-v="1" aria-label="Plus">+</button></div></div>
+    <div><h2>Dont joueurs humains</h2><div class="stepper"><button data-a="h" data-v="-1" aria-label="Moins">−</button><b>${MENU.humans}</b><button data-a="h" data-v="1" aria-label="Plus">+</button></div><p class="sub" style="margin-top:6px">${MENU.humans===MENU.n?'Tous humains, sur le même écran.':`${MENU.n-MENU.humans} joueur(s) tenu(s) par l’ordinateur.`}</p></div>
+    ${MENU.humans<MENU.n?`<div><h2>Niveau de l’IA</h2><div class="pick">${Object.entries(LEVELS).map(([k,l])=>`<button class="pbtn ${MENU.level===k?'on':''}" data-a="level" data-v="${k}"><b>${l.n}</b></button>`).join('')}</div></div>`:''}
+    <div><h2>Extension</h2><div class="pick"><button class="pbtn ${MENU.ext?'on':''}" data-a="ext"><b>Cartes 13, −4 et Étoiles</b><span>14 cartes en plus : dix 13 qui font regarder une carte cachée, un −4, trois Étoiles jokers pour les colonnes (mais +20 si elles restent).</span></button></div></div>
+    <div><h2>Longueur</h2><div class="pick">${[[100,'Partie normale','Jusqu’à 100 points'],[50,'Partie courte','Jusqu’à 50 points']].map(([v,b,s])=>`<button class="pbtn ${MENU.target===v?'on':''}" data-a="target" data-v="${v}"><b>${b}</b><span>${s}</span></button>`).join('')}</div></div>
+    ${sv?`<div class="ex"><b>Une partie est en cours</b> (manche ${sv.G.round}).<br><button class="go" style="margin-top:8px" data-a="resume">Reprendre la partie</button></div>`:''}
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><button class="go" data-a="start">${sv?'Nouvelle partie':'Lancer la partie'}</button><button class="hbtn" data-a="help">Comment jouer</button></div>
+  </div></div>`;
+}
+function openModal(html,cfg={}){if(IS_NODE)return;modalForced=!!cfg.forced;const who=cfg.who??(G?G.cur:0);const m=$('modal');m.innerHTML=`<div class="mpanel ${FF&&G&&G.P.length===2&&who!==viewer()?'flip':''}" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;const f=m.querySelector('button');if(f)f.focus({preventScroll:true});}
+function closeModal(force){if(IS_NODE)return;if(modalForced&&!force)return;modalForced=false;$('modal').hidden=true;$('modal').innerHTML='';}
+function info(t,b,who){openModal(`<h3>${t}</h3>${b}<button class="ghost" data-a="close">Fermer</button>`,{who});}
+function showEnd(){
+  if(IS_NODE||G.fast)return;
+  const w=G.over.winners;const humanWin=w.some(i=>!G.P[i].ai);sfx(humanWin?'win':'turn');
+  const order=G.P.map((p,i)=>i).sort((a,b)=>G.P[a].total-G.P[b].total);
+  openModal(`<h3>${w.length>1?'Égalité':`${esc(G.P[w[0]].name)} ${G.P[w[0]].name==='Toi'?'gagnes':'gagne'}`}</h3><p class="sub">La partie s’arrête : un joueur a atteint ${G.target} points. Le plus petit total l’emporte.</p>
+  <table class="res"><thead><tr><th>Joueur</th>${G.P[0].hist.map((_,k)=>`<th>M${k+1}</th>`).join('')}<th>Total</th></tr></thead><tbody>${order.map(i=>`<tr class="${w.includes(i)?'win':''}"><td>${esc(G.P[i].name)}</td>${G.P[i].hist.map(h=>`<td>${h}</td>`).join('')}<td>${G.P[i].total}</td></tr>`).join('')}</tbody></table>
+  <div class="acts"><button class="act main" data-a="again">Rejouer avec les mêmes réglages</button></div><button class="ghost" data-a="close">Voir la table</button>`);
+}
+function showHelp(){openModal(`<h3>Comment jouer</h3><div class="rules">
+  <p><b>But :</b> finir la partie avec le moins de points. Elle s’arrête quand un joueur atteint ${MENU.target} points.</p>
+  <ol><li>Chacun reçoit 12 cartes face cachée (4 colonnes de 3) et en retourne 2. Le plus gros total commence.</li>
+  <li>À ton tour, <b>prends la carte de la défausse</b> et échange-la avec une carte de ta grille (cachée ou visible), <b>ou pioche</b> : garde la carte en l’échangeant, ou défausse-la et retourne une de tes cartes cachées.</li>
+  <li>La carte remplacée part dans la défausse, face visible.</li>
+  <li><b>Colonne :</b> trois cartes visibles identiques dans une colonne disparaissent, elles ne comptent plus.</li>
+  <li>Quand un joueur a retourné toutes ses cartes, chacun des autres joue un dernier tour. On retourne tout et on compte.</li>
+  <li>Si celui qui a fini n’a pas strictement le plus petit total de la manche (et que son total est positif), son score est <b>doublé</b>.</li></ol>
+  <div class="ex"><b>Extension.</b> Les <b>13</b> valent 13 points ; quand tu en retournes un, tu regardes en secret une de tes cartes cachées. Le <b>−4</b> vaut −4. Les <b>Étoiles ★</b> remplacent n’importe quelle valeur pour former une colonne, mais valent +20 si elles restent dans ta grille en fin de manche.</div>
+  <p>Couleurs : bleu foncé négatif, bleu clair 0, vert 1 à 4, jaune 5 à 8, rouge 9 à 12, violet 13.</p></div><button class="ghost" data-a="close">Fermer</button>`);}
+function splash(pi){if(IS_NODE||G.fast||isAI(pi)&&G.P.filter(p=>!p.ai).length===1&&G.P.length>2)return;const d=document.createElement('div');d.className='splash'+(FF&&G.P.length===2&&pi!==viewer()?' flip':'');d.innerHTML=`<div>${isAI(pi)?esc(G.P[pi].name)+' joue':G.P.filter(p=>!p.ai).length===1?'À toi de jouer':esc(G.P[pi].name)+', à toi'}</div>`;document.body.appendChild(d);setTimeout(()=>d.remove(),1200);sfx('turn');}
+function floatOver(id,txt){if(IS_NODE||G.fast)return;setTimeout(()=>{const el=document.getElementById(id+'-1');if(!el)return;const r=el.getBoundingClientRect();const d=document.createElement('div');d.className='float';d.textContent=txt;d.style.left=(r.left+r.width/2)+'px';d.style.top=r.top+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1700);},60);}
+let AC=null,MUTED=false;try{MUTED=localStorage.getItem('pb-mute')==='1';}catch(e){}
+function ac(){if(IS_NODE)return null;if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}if(AC.state==='suspended')AC.resume().catch(()=>{});return AC;}
+function tn(a,t,f,d,type,v,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);}
+function sfx(n){if(IS_NODE||MUTED||(G&&G.fast))return;const a=ac();if(!a||a.state!=='running')return;const t=a.currentTime+.01;
+  if(n==='flip')tn(a,t,1600,.08,'triangle',.08,900);if(n==='card')tn(a,t,700,.1,'triangle',.06,350);
+  if(n==='col')[523,659,784,1046].forEach((f,k)=>tn(a,t+k*.08,f,.25,'sine',.1));
+  if(n==='turn'){tn(a,t,523,.25,'sine',.06);tn(a,t+.08,784,.3,'sine',.05);}
+  if(n==='alert'){tn(a,t,880,.2,'square',.05);tn(a,t+.22,880,.2,'square',.05);}
+  if(n==='win')[523,659,784,1046,1318].forEach((f,k)=>tn(a,t+k*.12,f,.35,'triangle',.11));}
+
+/* ===================== ÉVÉNEMENTS ===================== */
+if(!IS_NODE){
+document.addEventListener('click',e=>{
+  if(!MUTED)ac();
+  if(e.target.id==='modal'){closeModal(false);return;}
+  const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,v=t.dataset.v;const inp=G&&G.input;
+  switch(a){
+    case 'slot':{if(!inp||!inp.slots)return;const[pi,i]=v.split('-').map(Number);if(pi!==inp.pi||!inp.slots.includes(i))return;inputResolve({slot:i});break;}
+    case 'deck':if(inp&&inp.piles)inputResolve({pile:'deck'});break;
+    case 'disc':if(inp&&inp.piles&&G.disc.length)inputResolve({pile:'disc'});break;
+    case 'btn':if(inp&&inp.btns)inputResolve({btn:v});break;
+    case 'next':if(inputResolve)inputResolve();break;
+    case 'close':closeModal(false);break;
+    case 'help':showHelp();break;
+    case 'ff':FF=!FF;try{localStorage.setItem('salle-ff',FF?'1':'0');}catch(e){}render();break;
+    case 'sound':MUTED=!MUTED;try{localStorage.setItem('pb-mute',MUTED?'1':'0');}catch(e){}render();break;
+    case 'menu':GEN++;inputResolve=null;closeModal(true);G=null;render();scrollTo(0,0);break;
+    case 'n':MENU.n=Math.max(2,Math.min(8,MENU.n+(+v)));MENU.humans=Math.min(MENU.humans,MENU.n);render();break;
+    case 'h':MENU.humans=Math.max(1,Math.min(MENU.n,MENU.humans+(+v)));render();break;
+    case 'level':MENU.level=v;render();break;
+    case 'ext':MENU.ext=!MENU.ext;render();break;
+    case 'target':MENU.target=+v;render();break;
+    case 'start':try{localStorage.removeItem(SAVE_KEY);}catch(e){}newGame(MENU);scrollTo(0,0);break;
+    case 'again':{const o={n:G.P.length,humans:G.P.filter(p=>!p.ai).length,level:G.level,ext:G.ext,target:G.target};newGame(o);scrollTo(0,0);break;}
+    case 'resume':{const d=loadSave();if(d)resumeGame(d);break;}
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal(false);});
+render();
+}
+if(IS_NODE)module.exports={newGame,get G(){return G}};
+</script>
+</body>
+</html>

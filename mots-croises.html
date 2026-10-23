@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mots croisés</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@600;800;900&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#22262e;--accent:#2b5fd9;--title:"Libre Franklin",system-ui,sans-serif;--ui:"Nunito Sans",system-ui,sans-serif;--bar:#fff;--titlec:#111}
+[hidden]{display:none!important}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui,"Nunito Sans",system-ui,sans-serif);min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bar,#0006);border-bottom:1px solid #fff2;flex-wrap:wrap}
+.top h1{font-family:var(--title,Georgia,serif);font-weight:800;font-size:24px;margin:0;color:var(--titlec,#fff);letter-spacing:.5px}
+.top h1 small{font-family:var(--ui);font-weight:600;font-size:13px;opacity:.75;margin-left:8px;letter-spacing:0}
+.back{color:inherit;opacity:.9;text-decoration:none;font-size:14px;border:1px solid #fff4;padding:5px 10px;border-radius:8px}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#ffffff1c;color:inherit;border:1px solid #ffffff40;border-radius:9px;padding:7px 12px;font-size:14px;font-weight:700}
+.btn:hover{background:#ffffff2e}.btn:disabled{opacity:.4;cursor:default}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.on{background:#fff;color:#222}
+.status{display:flex;align-items:center;gap:12px;padding:9px 16px;background:var(--pc,var(--accent));color:#fff;font-weight:800;min-height:44px;box-shadow:0 4px 14px #0005;transition:background .35s;flex-wrap:wrap}
+.status .who{font-family:var(--title,Georgia,serif);font-size:19px}
+.status .msg{font-weight:600}
+.status .right{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:14px}
+#modal{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:12px}
+#modal[hidden]{display:none}
+.mbox{background:#fbf6ea;color:#2a2418;border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;animation:pop .3s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.mbox h2{font-family:var(--title,Georgia,serif);font-size:26px;margin:0 0 6px}
+.mbox h4{font-family:var(--title,Georgia,serif);font-size:16px;margin:14px 0 6px}
+.mbox p,.mbox li{line-height:1.5}
+.mbox .btn{background:#ece3cf;color:#2a2418;border-color:#c9b98f}
+.mbox .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mbox .btn.on{background:#2a2418;color:#fff}
+.seg{display:inline-flex;border:1px solid #c9b98f;border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:#f6efdc;padding:7px 11px;font-weight:700;color:#2a2418;font-size:13.5px}
+.seg button.on{background:#2a2418;color:#fff}
+.prow{display:flex;gap:8px;align-items:center;margin:7px 0;flex-wrap:wrap}
+.prow .dot{width:16px;height:16px;border-radius:50%;background:var(--pc);border:2px solid #0004}
+.prow input[type=text]{font-family:inherit;font-weight:700;font-size:16px;padding:6px 9px;border-radius:8px;border:1px solid #c9b98f;background:#fff;color:#2a2418;-webkit-text-fill-color:#2a2418;caret-color:var(--accent);width:150px;color-scheme:light}
+.prow input[type=text]::placeholder{color:#a3926e;-webkit-text-fill-color:#a3926e;font-weight:600}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{border:1px solid #c9b98f;background:#f6efdc;border-radius:20px;padding:5px 12px;font-weight:800;color:#2a2418}
+.tabs button.on{background:#2a2418;color:#fff}
+.toast{position:fixed;left:50%;top:100px;transform:translateX(-50%);background:#1b1b1f;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 10px 30px #000a;z-index:70;font-weight:700;animation:toast 2.6s forwards;pointer-events:none;max-width:90vw;text-align:center}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.bannerx{position:fixed;inset:0;display:grid;place-items:center;z-index:65;pointer-events:none}
+.bannerx div{font-family:var(--title,Georgia,serif);font-weight:800;font-size:clamp(30px,6vw,64px);color:#fff;background:var(--bc,var(--accent));padding:10px 36px;border-radius:14px;box-shadow:0 20px 50px #000a;animation:ban 2.3s forwards;text-align:center}
+.bannerx small{display:block;font-family:var(--ui);font-size:.34em;font-weight:700}
+@keyframes ban{0%{transform:scale(2);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:0;transform:scale(.92)}}
+#cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);text-align:center;padding:20px}
+#cover[hidden]{display:none}
+#cover h2{font-family:var(--title,Georgia,serif);font-size:36px;margin:0 0 8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
+
+body{background:#ecebe6}
+.top{border-bottom:3px solid #111}.btn{background:#fff;border-color:#bbb;color:#222}.back{border-color:#bbb}
+.top h1{font-weight:900;letter-spacing:-.5px}
+.wrap{display:grid;grid-template-columns:auto minmax(260px,380px);gap:20px;justify-content:center;padding:16px 12px 40px}
+@media(max-width:860px){.wrap{grid-template-columns:1fr;justify-items:center}}
+.gridbox{background:#111;padding:3px;border-radius:4px;box-shadow:0 12px 30px #0003}
+#grid{display:grid;gap:2px;background:#111}
+.c{position:relative;background:#fff;display:grid;place-items:center;font-family:var(--title);font-weight:800;text-transform:uppercase;cursor:pointer;user-select:none}
+.c.blk{background:#111;cursor:default}
+.c .n{position:absolute;left:2px;top:0;font-size:9px;font-weight:800;color:#444}
+.c.word{background:#dbe6ff}.c.cur{background:#ffd34a}
+.c.bad{color:#d0261c}.c.rev{color:#2b5fd9}
+.c.done{animation:dn .6s}
+@keyframes dn{40%{background:#9fe3b0;transform:scale(1.1)}}
+.clues{background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 6px 18px #0002;max-height:calc(100vh - 170px);overflow:auto;width:min(94vw,380px)}
+.clues h3{font-family:var(--title);font-weight:900;margin:8px 0 6px;font-size:16px;border-bottom:2px solid #111}
+.cl{padding:4px 6px;border-radius:6px;cursor:pointer;font-size:15px;line-height:1.35}
+.cl b{display:inline-block;min-width:22px}
+.cl.on{background:#ffd34a}
+.cl.ok{color:#2f8a4a;text-decoration:line-through;text-decoration-color:#2f8a4a88}
+.curclue{width:100%;max-width:640px;background:#111;color:#fff;border-radius:8px;padding:8px 12px;font-weight:700;margin-bottom:8px;min-height:20px}
+.kbd{display:none;flex-direction:column;gap:5px;margin-top:10px;width:min(96vw,560px)}
+.kbd div{display:flex;gap:4px;justify-content:center}
+.kbd button{flex:1;max-width:42px;height:44px;border-radius:7px;border:0;background:#fff;font-weight:800;font-size:17px;box-shadow:0 2px 0 #aaa}
+.kbd button.w{max-width:70px;font-size:13px}
+@media (pointer:coarse){.kbd{display:flex}}
+#hidden{position:absolute;opacity:0;left:-1000px;width:1px;height:1px}
+.tools2{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;justify-content:center}
+</style></head><body>
+<header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Mots croisés</h1>
+<div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle grille</button></div></header>
+<div class="wrap"><div style="display:flex;flex-direction:column;align-items:center"><div class="curclue" id="curclue"></div><div class="gridbox"><div id="grid"></div></div>
+<div class="tools2"><button class="btn" data-a="check">Vérifier</button><button class="btn" data-a="letter">Révéler une lettre</button><button class="btn" data-a="word">Révéler le mot</button><button class="btn" data-a="dir">↔ / ↕</button></div>
+<div class="kbd" id="kbd"></div></div>
+<div class="clues" id="clues"></div></div>
+<input id="hidden" autocomplete="off" autocapitalize="characters">
+<div id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SVGNS='http://www.w3.org/2000/svg';
+function sel(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
+function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
+function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
+function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
+function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
+  c.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${(Math.random()-.5)*220}px,${innerHeight+40}px) rotate(${Math.random()*720}deg)`}],{duration:2200+Math.random()*1800,delay:Math.random()*700,easing:'ease-in'}).finished.then(()=>c.remove()); } }
+function store(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+/* sons */
+let MUTED=!!load('salle-mute'), AC=null, NOISE=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;} } if(AC.state==='suspended') AC.resume().catch(()=>{}); return AC; }
+function tn(a,t,f,d,type,v,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);}
+function nz(a,t,d,v,type,f){ if(!NOISE){NOISE=a.createBuffer(1,a.sampleRate,a.sampleRate);const c=NOISE.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;} const s=a.createBufferSource();s.buffer=NOISE;const fl=a.createBiquadFilter();fl.type=type;fl.frequency.value=f;const g=a.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl).connect(g).connect(a.destination);s.start(t);s.stop(t+d+.02); }
+function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') return; const t=a.currentTime+.01;
+  switch(n){
+    case 'click': tn(a,t,900,.06,'triangle',.06); break;
+    case 'move': nz(a,t,.08,.25,'bandpass',900); tn(a,t,220,.08,'sine',.08); break;
+    case 'capture': nz(a,t,.12,.35,'bandpass',1400); tn(a,t,520,.12,'triangle',.1,260); break;
+    case 'card': nz(a,t,.1,.22,'bandpass',2800); break;
+    case 'flip': nz(a,t,.06,.25,'highpass',3000); tn(a,t,1200,.05,'triangle',.04); break;
+    case 'dice': for(let k=0;k<6;k++) nz(a,t+k*.07+Math.random()*.03,.05,.3,'bandpass',1800+Math.random()*1200); break;
+    case 'ding': tn(a,t,1320,.5,'sine',.1); tn(a,t+.07,1760,.4,'sine',.06); break;
+    case 'error': tn(a,t,220,.25,'square',.05,160); break;
+    case 'win': [523,659,784,1046].forEach((f,k)=>tn(a,t+k*.12,f,.4,'triangle',.11)); break;
+    case 'lose': [392,330,262].forEach((f,k)=>tn(a,t+k*.16,f,.45,'triangle',.1)); break;
+    case 'splash': nz(a,t,.5,.3,'lowpass',800); break;
+    case 'boom': nz(a,t,.7,.6,'lowpass',300); tn(a,t,90,.6,'sawtooth',.15,40); break;
+    case 'pop': tn(a,t,600,.08,'sine',.1,900); break;
+  } }
+function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
+document.addEventListener('click',e=>{
+  if(!MUTED) ac();
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  const t=e.target.closest('[data-c]'); if(!t) return;
+  switch(t.dataset.c){
+    case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
+    case 'help': GAME.help(); break;
+    case 'new': GAME.menu(); break;
+    case 'close': closeModal(); break;
+  }
+});
+addEventListener('DOMContentLoaded',updSnd);
+
+const MCDATA=`ABEILLE|Elle butine et fabrique du miel
+ABRICOT|Fruit orangé à noyau
+ACTEUR|Il joue un rôle
+AIGLE|Rapace royal
+AIGUILLE|Elle coud ou indique l'heure
+AILE|Permet à l'oiseau de voler
+ALBUM|Recueil de photos ou de chansons
+AMI|Copain fidèle
+ANANAS|Fruit tropical à couronne
+ANCRE|Elle retient le bateau
+ANE|Il a de grandes oreilles et un caractère têtu
+ANGE|Il a des ailes et une auréole
+ARBRE|Chêne ou sapin
+ARC|Il lance des flèches
+ARGENT|Métal précieux ou monnaie
+ASTRE|Corps céleste
+ATLAS|Recueil de cartes
+AUTOMNE|Saison des feuilles mortes
+AVION|Il vole avec des passagers
+AVRIL|Mois du poisson
+BAGUE|Bijou pour le doigt
+BALAI|Il sert à nettoyer le sol
+BALEINE|Géant des mers
+BALLON|On le gonfle ou on le frappe
+BANANE|Fruit jaune courbé
+BATEAU|Il flotte sur l'eau
+BEURRE|On le tartine sur le pain
+BIBLIOTHEQUE|Lieu rempli de livres
+BIJOU|Collier ou bracelet
+BLE|Céréale du boulanger
+BOIS|Matière des arbres
+BOUGIE|Elle éclaire en fondant
+BOULANGER|Il fait le pain
+BOUSSOLE|Elle indique le nord
+BRAS|Membre supérieur
+BROSSE|Pour les cheveux ou les dents
+BUREAU|Meuble pour travailler
+CACAO|Base du chocolat
+CADEAU|On l'offre en fête
+CAFE|Boisson noire du matin
+CAHIER|On y écrit à l'école
+CAMION|Gros véhicule de transport
+CANARD|Il fait coin-coin
+CAROTTE|Légume orange que croque le lapin
+CARTE|À jouer ou géographique
+CASQUE|Il protège la tête
+CERISE|Petit fruit rouge à queue
+CERF|Il porte des bois
+CHAISE|Siège à dossier
+CHAMEAU|Il a deux bosses
+CHAMPIGNON|Il pousse en forêt après la pluie
+CHAT|Il miaule
+CHATEAU|Demeure de roi
+CHEVAL|Il galope et hennit
+CHIEN|Il aboie
+CHOCOLAT|Douceur à base de cacao
+CIEL|Il est bleu quand il fait beau
+CINEMA|On y voit des films
+CIRQUE|Spectacle de clowns et d'acrobates
+CITRON|Agrume acide
+CLE|Elle ouvre la porte
+CLOWN|Il fait rire au cirque
+COEUR|Il bat dans la poitrine
+COLLINE|Petite montagne
+COQ|Il chante au lever du jour
+COQUILLAGE|On le ramasse sur la plage
+CRABE|Il marche de côté
+CRAYON|Pour dessiner
+CROCODILE|Reptile aux grandes mâchoires
+CUISINE|Pièce où l'on prépare les repas
+DAUPHIN|Mammifère marin très intelligent
+DE|Cube à six faces
+DENT|Elle croque
+DESERT|Étendue de sable
+DESSIN|Œuvre au crayon
+DIMANCHE|Jour de repos
+DRAGON|Monstre qui crache du feu
+DRAPEAU|Emblème d'un pays
+EAU|Liquide vital
+ECHARPE|Elle tient chaud au cou
+ECHELLE|Pour monter sur le toit
+ECLAIR|Lumière de l'orage
+ECOLE|On y apprend à lire
+ECUREUIL|Il aime les noisettes
+ELEPHANT|Il a une trompe
+ENFANT|Petit d'homme
+EPEE|Arme du chevalier
+EPONGE|Elle absorbe l'eau
+ETE|Saison chaude
+ETOILE|Elle brille la nuit
+FARINE|Poudre pour faire du pain
+FEE|Elle a une baguette magique
+FENETRE|Elle laisse entrer la lumière
+FER|Métal qui rouille
+FERME|Exploitation agricole
+FEU|Il brûle
+FEUILLE|Elle tombe en automne
+FLEUR|Rose ou tulipe
+FLEUVE|Il se jette dans la mer
+FLUTE|Instrument à vent
+FORET|Grand ensemble d'arbres
+FOURMI|Petit insecte travailleur
+FRAISE|Fruit rouge des jardins
+FROMAGE|Camembert ou comté
+FUSEE|Elle part dans l'espace
+GATEAU|Dessert d'anniversaire
+GIRAFE|Elle a un très long cou
+GLACE|Eau gelée ou dessert
+GLOBE|Sphère terrestre
+GOMME|Elle efface
+GORILLE|Grand singe
+GRENOUILLE|Elle coasse
+GUITARE|Instrument à six cordes
+HAMAC|Lit suspendu
+HELICE|Elle fait tourner l'air
+HERISSON|Il a des piquants
+HIBOU|Oiseau de nuit
+HIVER|Saison froide
+HORLOGE|Elle donne l'heure
+HOTEL|On y dort en voyage
+ILE|Terre entourée d'eau
+IGLOO|Maison de glace
+INSECTE|Il a six pattes
+JAMBE|Membre inférieur
+JARDIN|On y cultive des fleurs
+JAUNE|Couleur du soleil
+JEU|Divertissement
+JOUET|Pour s'amuser
+JOURNAL|On le lit pour les nouvelles
+JUPE|Vêtement féminin
+KANGOUROU|Il saute avec une poche
+KAYAK|Petit bateau à pagaie
+KIWI|Fruit vert à peau velue
+LAC|Étendue d'eau douce
+LAIT|Boisson blanche de la vache
+LAMPE|Elle éclaire
+LAPIN|Il a de longues oreilles
+LETTRE|On la poste
+LIEVRE|Il court plus vite que la tortue
+LION|Roi des animaux
+LIT|On y dort
+LIVRE|On le lit
+LOUP|Il hurle à la lune
+LUNE|Elle éclaire la nuit
+LUNETTES|Elles corrigent la vue
+MAGICIEN|Il fait des tours
+MAIN|Elle a cinq doigts
+MAISON|Habitation
+MARIN|Homme de la mer
+MARTEAU|Il enfonce les clous
+MATIN|Début de journée
+MER|Grande étendue salée
+MERCREDI|Milieu de semaine
+MIEL|Produit par les abeilles
+MIROIR|Il reflète
+MONTAGNE|Sommet élevé
+MONTRE|Elle se porte au poignet
+MOTO|Deux-roues motorisé
+MOUTON|Il donne de la laine
+MUSEE|On y admire des œuvres
+MUSIQUE|Art des sons
+NEIGE|Flocons blancs
+NID|Maison de l'oiseau
+NOEL|Fête de fin décembre
+NUAGE|Il apporte la pluie
+NUIT|Quand il fait noir
+OCEAN|Atlantique ou Pacifique
+OEUF|La poule le pond
+OISEAU|Il vole et chante
+OMBRE|Elle nous suit au soleil
+ONGLE|Au bout du doigt
+OR|Métal jaune précieux
+ORAGE|Tonnerre et éclairs
+ORANGE|Fruit et couleur
+OREILLE|Elle entend
+OURS|Il hiberne
+PAIN|Baguette ou miche
+PAILLE|On boit avec
+PANDA|Ours noir et blanc
+PANIER|On y met les courses
+PAPILLON|Il était chenille
+PARAPLUIE|Il protège de la pluie
+PARC|Jardin public
+PATE|Spaghetti par exemple
+PEINTRE|Artiste au pinceau
+PHARE|Il guide les bateaux la nuit
+PIANO|Instrument à touches
+PIED|Au bout de la jambe
+PINGOUIN|Oiseau du froid
+PIRATE|Il cherche des trésors
+PIZZA|Spécialité italienne
+PLAGE|Sable au bord de la mer
+PLUIE|Elle mouille
+PLUME|Elle couvre l'oiseau
+POIRE|Fruit en forme de goutte
+POISSON|Il nage
+POMME|Fruit de la tentation
+PONT|Il enjambe la rivière
+PORTE|On la ferme à clé
+POULE|Elle pond des œufs
+PRINCE|Fils de roi
+PRINTEMPS|Saison des fleurs
+PUITS|On y puise l'eau
+PYRAMIDE|Tombeau égyptien
+RADIO|Elle diffuse la musique
+RAISIN|Il donne le vin
+RAT|Rongeur des villes
+RENARD|Rusé de la fable
+REQUIN|Prédateur des mers
+REVE|On le fait en dormant
+RIVIERE|Cours d'eau
+ROBOT|Machine automatique
+ROI|Il porte une couronne
+ROSE|Fleur à épines
+ROUE|Elle tourne
+ROUGE|Couleur de la fraise
+RUE|Voie dans la ville
+SABLE|Il compose la plage
+SAC|On y range ses affaires
+SALADE|Laitue assaisonnée
+SAPIN|Arbre de Noël
+SAVON|Il lave
+SEL|Il assaisonne
+SERPENT|Il rampe et siffle
+SINGE|Il grimpe aux arbres
+SKI|Sport de neige
+SOLEIL|Il nous chauffe
+SOURIS|Le chat la chasse
+STYLO|Il écrit à l'encre
+SUCRE|Il adoucit le café
+TABLE|Meuble pour manger
+TAMBOUR|Instrument à percussion
+TAPIS|Il couvre le sol
+TASSE|Pour le thé
+TELEPHONE|Il sonne
+TEMPETE|Vent très fort
+TENNIS|Sport de raquette
+TERRE|Notre planète
+TETE|Elle pense
+THE|Boisson chaude d'Asie
+TIGRE|Grand félin rayé
+TOMATE|Fruit rouge de la salade
+TORTUE|Elle porte sa maison
+TRAIN|Il roule sur des rails
+TRESOR|Coffre plein d'or
+TROMPETTE|Instrument à vent en cuivre
+TULIPE|Fleur de Hollande
+USINE|On y fabrique
+VACHE|Elle meugle
+VALISE|On la fait avant de partir
+VELO|Deux-roues à pédales
+VENT|Il souffle
+VERRE|On boit dedans
+VERT|Couleur de l'herbe
+VILLAGE|Petite commune
+VILLE|Grande agglomération
+VIOLON|Instrument à archet
+VOITURE|Automobile
+VOLCAN|Il crache de la lave
+WAGON|Voiture de train
+YAOURT|Laitage fermenté
+ZEBRE|Cheval rayé
+ZERO|Rien du tout
+ZOO|On y voit des animaux
+AMIRAL|Il commande la flotte
+ARTISTE|Créateur d'œuvres
+AUBERGE|Hôtel de campagne
+BAMBOU|Plante du panda
+BOXE|Sport de combat aux poings
+CANAPE|Siège pour plusieurs
+CARNAVAL|Fête masquée
+CIGALE|Elle chante tout l'été
+COMETE|Astre à queue lumineuse
+CRAVATE|Accessoire du costume
+DIAMANT|Pierre la plus dure
+DOMINO|Pièce à points
+ECLIPSE|Le soleil disparaît
+ENIGME|Devinette
+ETANG|Petite étendue d'eau
+FALAISE|Côte abrupte
+FANFARE|Orchestre de cuivres
+GALAXIE|Ensemble d'étoiles
+GRENIER|Sous le toit
+HARPE|Instrument à cordes pincées
+HORIZON|Ligne entre ciel et terre
+JONGLEUR|Il lance des balles
+LAVANDE|Fleur violette de Provence
+LICORNE|Cheval à une corne
+LOUPE|Elle grossit
+MARMOTTE|Elle siffle en montagne
+METEO|Prévisions du temps
+MOULIN|Il tourne au vent
+NAVIRE|Grand bateau
+OASIS|Point d'eau du désert
+OLIVE|Fruit de l'olivier
+ORCHESTRE|Ensemble de musiciens
+PAGAIE|Rame de canoë
+PELICAN|Oiseau à grand bec
+PLANETE|Mars ou Vénus
+POUCE|Gros doigt
+QUAI|On y attend le train
+RADEAU|Embarcation de fortune
+RECOLTE|Fruit du travail des champs
+SAUMON|Poisson qui remonte les rivières
+SIRENE|Mi-femme mi-poisson
+SOMMET|Point le plus haut
+TELESCOPE|Pour observer les étoiles
+TOUCAN|Oiseau au gros bec coloré
+TRICOT|Ouvrage à la laine
+TUNNEL|Passage souterrain
+VAPEUR|Eau en gaz
+VIRGULE|Signe de ponctuation`;
+
+/* ===== moteur ===== */
+const IS_NODE=typeof window==='undefined';
+const WORDS=MCDATA.trim().split('\n').map(l=>{ const [w,c]=l.split('|'); return {w:w.trim(),cl:c.trim()}; });
+function generate(level){
+  const cfg={facile:{n:10,min:3,max:7},normal:{n:14,min:4,max:9},difficile:{n:18,min:4,max:12}}[level]||{n:14,min:4,max:9};
+  let best=null;
+  for(let attempt=0;attempt<24;attempt++){
+    const S=27, g=Array.from({length:S},()=>new Array(S).fill(null)); const placed=[];
+    const pool=WORDS.filter(x=>x.w.length>=cfg.min&&x.w.length<=cfg.max).sort(()=>Math.random()-.5);
+    const fits=(w,r,c,d)=>{ const dr=d==='v'?1:0, dc=d==='h'?1:0; let cross=0;
+      const er=r-dr, ec=c-dc; if(er>=0&&ec>=0&&g[er][ec]) return -1; const ar=r+dr*w.length, acc=c+dc*w.length; if(ar<S&&acc<S&&g[ar]&&g[ar][acc]) return -1;
+      for(let k=0;k<w.length;k++){ const rr=r+dr*k, cc=c+dc*k; if(rr<0||cc<0||rr>=S||cc>=S) return -1; const cell=g[rr][cc];
+        if(cell){ if(cell.ch!==w[k]||cell[d]) return -1; cross++; }
+        else { const n1=d==='h'?[rr-1,cc]:[rr,cc-1], n2=d==='h'?[rr+1,cc]:[rr,cc+1]; for(const [a,b] of [n1,n2]) if(a>=0&&b>=0&&a<S&&b<S&&g[a][b]) return -1; } }
+      return cross; };
+    const put=(x,r,c,d)=>{ const dr=d==='v'?1:0, dc=d==='h'?1:0; for(let k=0;k<x.w.length;k++){ const rr=r+dr*k, cc=c+dc*k; g[rr][cc]=g[rr][cc]||{ch:x.w[k]}; g[rr][cc][d]=true; } placed.push({...x,r,c,d}); };
+    const first=pool.shift(); put(first,13,13-Math.floor(first.w.length/2),'h');
+    for(const x of pool){ if(placed.length>=cfg.n) break; if(placed.some(p=>p.w===x.w)) continue;
+      let cand=null, bv=-1;
+      for(let r=0;r<S;r++) for(let c=0;c<S;c++){ const cell=g[r][c]; if(!cell) continue;
+        for(let k=0;k<x.w.length;k++){ if(x.w[k]!==cell.ch) continue; for(const d of ['h','v']){ if(cell[d]) continue; const r0=d==='v'?r-k:r, c0=d==='h'?c-k:c; const cr=fits(x.w,r0,c0,d); if(cr<1) continue;
+          const v=cr*10-Math.abs(r0-13)-Math.abs(c0-13)+Math.random()*3; if(v>bv){bv=v;cand={r:r0,c:c0,d};} } } }
+      if(cand) put(x,cand.r,cand.c,cand.d); }
+    let r0=S,r1=0,c0=S,c1=0; placed.forEach(p=>{ const L=p.w.length; r0=Math.min(r0,p.r); c0=Math.min(c0,p.c); r1=Math.max(r1,p.d==='v'?p.r+L-1:p.r); c1=Math.max(c1,p.d==='h'?p.c+L-1:p.c); });
+    const score=placed.length*100-(r1-r0+1)*(c1-c0+1)*.6-Math.abs((r1-r0)-(c1-c0))*4;
+    if(!best||score>best.score) best={score,placed:placed.map(p=>({...p,r:p.r-r0,c:p.c-c0})),R:r1-r0+1,C:c1-c0+1};
+  }
+  // numérotation
+  const starts={}; best.placed.forEach(p=>{ const k=p.r*100+p.c; (starts[k]=starts[k]||[]).push(p); });
+  let n=1; Object.keys(starts).map(Number).sort((a,b)=>a-b).forEach(k=>{ starts[k].forEach(p=>p.n=n); n++; });
+  return best; }
+if(IS_NODE) module.exports={generate,WORDS};
+else {
+/* ===== interface ===== */
+let X=null, CUR={r:0,c:0,d:'h'}; const GAME={help,menu};
+function newGrid(level){ const g=generate(level); X={level,R:g.R,C:g.C,words:g.placed,sol:{},val:{},rev:{},bad:{},t0:Date.now(),done:false};
+  g.placed.forEach(p=>{ for(let k=0;k<p.w.length;k++){ const r=p.r+(p.d==='v'?k:0), c=p.c+(p.d==='h'?k:0); X.sol[r+','+c]=p.w[k]; } });
+  const w0=X.words.find(w=>w.n===1); CUR={r:w0.r,c:w0.c,d:w0.d}; store('mc-save',X); build(); render(true); }
+function build(){ const gr=$('#grid'); const cs=Math.floor(Math.min(46,(Math.min(innerWidth-30,640))/X.C, (innerHeight-230)/X.R)); gr.style.gridTemplate=`repeat(${X.R},${cs}px)/repeat(${X.C},${cs}px)`; gr.style.fontSize=(cs*.62)+'px';
+  let h=''; const nums={}; X.words.forEach(w=>nums[w.r+','+w.c]=w.n);
+  for(let r=0;r<X.R;r++) for(let c=0;c<X.C;c++){ const k=r+','+c; h+=X.sol[k]?`<div class="c" data-k="${k}">${nums[k]?`<span class="n">${nums[k]}</span>`:''}<span class="l"></span></div>`:'<div class="c blk"></div>'; }
+  gr.innerHTML=h;
+  const kb=['AZERTYUIOP','QSDFGHJKLM','WXCVBN'];
+  $('#kbd').innerHTML=kb.map((row,i)=>`<div>${row.split('').map(ch=>`<button data-key="${ch}">${ch}</button>`).join('')}${i===2?'<button class="w" data-key="⌫">⌫</button>':''}</div>`).join(''); }
+function wordAt(r,c,d){ return X.words.find(w=>w.d===d&&(d==='h'?w.r===r&&c>=w.c&&c<w.c+w.w.length:w.c===c&&r>=w.r&&r<w.r+w.w.length)); }
+function cellsOf(w){ return Array.from({length:w.w.length},(_,k)=>(w.r+(w.d==='v'?k:0))+','+(w.c+(w.d==='h'?k:0))); }
+function solved(w){ return cellsOf(w).every(k=>X.val[k]===X.sol[k]); }
+function render(){ let w=wordAt(CUR.r,CUR.c,CUR.d); if(!w){ CUR.d=CUR.d==='h'?'v':'h'; w=wordAt(CUR.r,CUR.c,CUR.d); }
+  const wc=w?cellsOf(w):[];
+  $$('#grid .c[data-k]').forEach(e=>{ const k=e.dataset.k; e.querySelector('.l').textContent=X.val[k]||''; e.classList.toggle('word',wc.includes(k)); e.classList.toggle('cur',k===CUR.r+','+CUR.c); e.classList.toggle('bad',!!X.bad[k]&&X.val[k]&&X.val[k]!==X.sol[k]); e.classList.toggle('rev',!!X.rev[k]); });
+  const list=d=>X.words.filter(x=>x.d===d).sort((a,b)=>a.n-b.n).map(x=>`<div class="cl ${x===w?'on':''} ${solved(x)?'ok':''}" data-w="${X.words.indexOf(x)}"><b>${x.n}.</b> ${esc(x.cl)} <small>(${x.w.length})</small></div>`).join('');
+  $('#clues').innerHTML=`<h3>Horizontalement</h3>${list('h')}<h3>Verticalement</h3>${list('v')}`;
+  $('#curclue').textContent=w?`${w.n}${w.d==='h'?' →':' ↓'}  ${w.cl}`:'';
+  const on=$('#clues .cl.on'); if(on) on.scrollIntoView({block:'nearest'}); }
+function move(dr,dc){ let r=CUR.r+dr, c=CUR.c+dc; while(r>=0&&c>=0&&r<X.R&&c<X.C){ if(X.sol[r+','+c]){ CUR.r=r; CUR.c=c; return; } r+=dr; c+=dc; } }
+function type(ch){ if(!X||X.done) return; const k=CUR.r+','+CUR.c;
+  if(ch==='⌫'){ if(!X.val[k]) { CUR.d==='h'?move(0,-1):move(-1,0); } X.val[CUR.r+','+CUR.c]=''; sfx('click'); save(); render(); return; }
+  X.val[k]=ch; delete X.bad[k]; sfx('click');
+  const w=wordAt(CUR.r,CUR.c,CUR.d); if(w){ const cs=cellsOf(w); const i=cs.indexOf(k); if(i<cs.length-1){ const [r,c]=cs[i+1].split(',').map(Number); CUR.r=r; CUR.c=c; }
+    if(solved(w)){ sfx('ding'); cs.forEach((kk,j)=>{ const e=$(`#grid .c[data-k="${kk}"]`); setTimeout(()=>{ e.classList.remove('done'); void e.offsetWidth; e.classList.add('done'); },j*50); }); } }
+  save(); render(); checkWin(); }
+function checkWin(){ if(Object.keys(X.sol).every(k=>X.val[k]===X.sol[k])){ X.done=true; save(); const t=Math.round((Date.now()-X.t0)/1000); banner('Grille terminée !',`${Math.floor(t/60)} min ${t%60} s`,'#2b5fd9'); sfx('win'); confetti(); } }
+function save(){ store('mc-save',X); }
+$('#grid').addEventListener('click',e=>{ const c=e.target.closest('.c[data-k]'); if(!c) return; const [r,cc]=c.dataset.k.split(',').map(Number); if(r===CUR.r&&cc===CUR.c) CUR.d=CUR.d==='h'?'v':'h'; else { CUR.r=r; CUR.c=cc; if(!wordAt(r,cc,CUR.d)) CUR.d=CUR.d==='h'?'v':'h'; } $('#hidden').focus({preventScroll:true}); render(); });
+$('#clues').addEventListener('click',e=>{ const c=e.target.closest('[data-w]'); if(!c) return; const w=X.words[+c.dataset.w]; const ks=cellsOf(w); const k=ks.find(k=>!X.val[k])||ks[0]; const [r,cc]=k.split(',').map(Number); CUR={r,c:cc,d:w.d}; render(); });
+document.addEventListener('keydown',e=>{ if(!X||!$('#modal').hidden) return; if(e.target.tagName==='INPUT'&&e.target.id!=='hidden') return;
+  const k=e.key; if(/^[a-zA-ZÀ-ÿ]$/.test(k)){ e.preventDefault(); type(k.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase()); return; }
+  if(k==='Backspace'){ e.preventDefault(); type('⌫'); return; }
+  const mv={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]}[k]; if(mv){ e.preventDefault(); CUR.d=mv[0]?'v':'h'; move(...mv); render(); }
+  if(k===' '||k==='Tab'){ e.preventDefault(); CUR.d=CUR.d==='h'?'v':'h'; render(); } });
+$('#hidden').addEventListener('input',e=>{ const v=e.target.value; e.target.value=''; for(const ch of v) if(/[a-zA-ZÀ-ÿ]/.test(ch)) type(ch.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase()); });
+document.addEventListener('click',e=>{ const kb=e.target.closest('[data-key]'); if(kb){ type(kb.dataset.key); return; } const a=e.target.closest('[data-a]'); if(!a||!X) return; const w=wordAt(CUR.r,CUR.c,CUR.d);
+  switch(a.dataset.a){ case 'check': { let n=0; Object.keys(X.sol).forEach(k=>{ if(X.val[k]&&X.val[k]!==X.sol[k]){ X.bad[k]=1; n++; } }); toast(n?`${n} lettre${n>1?'s':''} à corriger`:'Aucune erreur pour l\'instant !'); sfx(n?'error':'ding'); break; }
+    case 'letter': { const k=CUR.r+','+CUR.c; X.val[k]=X.sol[k]; X.rev[k]=1; break; }
+    case 'word': if(w) cellsOf(w).forEach(k=>{ if(X.val[k]!==X.sol[k]){ X.val[k]=X.sol[k]; X.rev[k]=1; } }); break;
+    case 'dir': CUR.d=CUR.d==='h'?'v':'h'; break; }
+  save(); render(); checkWin(); });
+addEventListener('resize',()=>{ if(X){ build(); render(); } });
+function menu(){ openModal(`<h2>Nouvelle grille</h2><p>Chaque grille est composée au hasard à partir de plus de 300 mots et définitions.</p><div class="prow">${[['facile','Facile · ~10 mots courts'],['normal','Moyen · ~14 mots'],['difficile','Difficile · ~18 mots plus longs']].map(([k,l])=>`<button class="btn pri" data-lv="${k}" style="flex:1;min-width:150px">${l}</button>`).join('')}</div><div class="acts">${X?'<button class="btn" data-c="close">Annuler</button>':''}</div>`,e=>{ const b=e.target.closest('[data-lv]'); if(b){ closeModal(); newGrid(b.dataset.lv); } }); }
+function help(){ openModal(`<h2>Mots croisés</h2><p>Trouve les mots à partir des définitions. Touche une case (ou une définition) puis tape les lettres au clavier ; toucher deux fois la même case change de sens (↔/↕). Les accents sont ignorés.</p><ul><li><b>Vérifier</b> marque en rouge les lettres fausses.</li><li><b>Révéler</b> une lettre ou le mot entier si tu bloques.</li><li>Les définitions trouvées sont barrées en vert.</li></ul><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+(function boot(){ const s=load('mc-save'); if(s&&!s.done){ X=s; X.t0=Date.now(); const w0=X.words.find(w=>w.n===1); CUR={r:w0.r,c:w0.c,d:w0.d}; build(); render(); } else menu(); })();
+}
+</script></body></html>

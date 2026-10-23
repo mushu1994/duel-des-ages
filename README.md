@@ -1,11 +1,10 @@
-# Duel des Âges
+# Salle de jeux
 
-Jeu de civilisation à deux joueurs dans le navigateur : trois âges, une pyramide de cartes, des merveilles, et trois victoires immédiates (militaire, scientifique, politique).
+Une ludothèque de jeux de société à jouer dans le navigateur, contre l'ordinateur ou à plusieurs sur le même écran. Chaque partie se sauvegarde toute seule.
 
-- Contre l'IA (facile, normal, difficile) ou à 2 joueurs sur le même écran
-- Module **Panthéon** : sceaux divins, invocations de dieux, offrandes, grands temples
-- Module **Agora** : Sénat à 6 chambres, décrets, sénateurs, complots
-- Chances de victoire calculées en fin d'Âge I et II
-- Sauvegarde automatique de la partie en cours
+**Jouer :** https://mushu1994.github.io/duel-des-ages/
 
-Tout le jeu tient dans `index.html` : aucune installation, il suffit d'ouvrir la page.
+Grands jeux : Duel des Âges, Duel des Joyaux, Plus Bas, Têtes de Bœuf, Rails d'Europe, Nouvelle Terre.
+Classiques : Dames, Petits Chevaux, Solitaire, Sudoku, La Bataille, Code Secret, Bataille Navale, Échecs, Reversi, Quatre en ligne, Dominos, Président, Tarot, Poker, Rami voleur, Petit Bac, Mots croisés.
+
+Les jeux sont des créations originales inspirées de mécaniques de jeux connus ; noms, cartes et illustrations sont propres à la salle.

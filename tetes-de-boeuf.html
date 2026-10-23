@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Têtes de Bœuf</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Têtes de Bœuf : pose tes cartes dans les rangées sans ramasser la sixième. 2 à 10 joueurs, contre l'IA ou entre amis.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Karla:wght@400;500;700;800&display=swap">
+<style>
+/* Grange : bois sombre, paille et rouge grange ; 4 rangées au centre, main du joueur en bas */
+:root{
+  --barn:#24120c; --barn2:#331a11; --panel:#3b2016; --panel2:#4a2a1c; --line:#6a3c28;
+  --ink:#fbf1e1; --mute:#d2b79c; --straw:#f1c75b; --straw-d:#b48a26; --red:#c8402e;
+  --card:#fbf3e2; --card-ink:#2b1a10;
+  --h1:#cfc6ef; --h2:#9fd3f0; --h3:#f6b04e; --h5:#ef5c47; --h7:#8a3fb0;
+  --display:'Alfa Slab One',Georgia,serif;
+  --body:'Karla',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:dark;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--barn);background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 2px,transparent 2px 120px),linear-gradient(180deg,#2c160e,#1c0e09);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.4;min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:#1c0e09}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:none;padding:0}
+button:focus-visible,[data-a]:focus-visible{outline:2px solid var(--straw);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:rgba(28,14,9,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;gap:10px;padding-block:10px;flex-wrap:wrap}
+.home{font-size:13px;color:var(--mute);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.home:hover{color:var(--ink);border-color:var(--straw)}
+.logo{font-family:var(--display);font-size:22px;color:var(--straw);letter-spacing:.01em}
+.spacer{flex:1}
+.hbtn{border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:14px}
+.hbtn:hover{border-color:var(--straw)}
+.short{display:none}@media (max-width:560px){.long{display:none}.short{display:inline}}
+.turnbar{background:var(--straw);color:#2b1a10}
+.turnbar .wrap{display:flex;align-items:center;gap:10px;padding-block:7px;flex-wrap:wrap;font-weight:800}
+.turnbar .who{font-family:var(--display);font-size:19px;font-weight:400}
+.turnbar .hint{font-weight:600;opacity:.85}
+.game{display:flex;flex-direction:column;gap:14px;padding-block:14px 40px}
+.players{display:flex;flex-wrap:wrap;gap:8px}
+.pchip{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.pchip b{font-weight:800}
+.pchip .hd{display:inline-flex;align-items:center;gap:3px;font-weight:800;color:var(--straw)}
+.pchip .hd svg{width:16px;height:16px}
+.pchip.me{border-color:var(--straw)}
+.pchip.ready{box-shadow:0 0 0 2px var(--straw) inset}
+.pchip small{color:var(--mute);font-size:12px}
+.pchip .played{--cw:30px}
+.rows{background:radial-gradient(ellipse at 50% 30%,rgba(241,199,91,.08),transparent 70%),var(--barn2);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:6px;--cw:clamp(42px,10.5vw,70px)}
+.row .rlab{width:46px;flex:none;display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--mute);font-weight:700;gap:1px}
+.row .rlab b{font-family:var(--display);font-weight:400;color:var(--straw);font-size:18px;display:flex;align-items:center;gap:2px}
+.row .rlab b svg{width:14px;height:14px}
+.row.pick{cursor:pointer;border-radius:12px;outline:3px solid var(--straw);outline-offset:3px;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{outline-color:rgba(241,199,91,.3)}}
+.slots{display:flex;gap:5px;flex-wrap:nowrap;min-width:0}
+.slot{width:var(--cw);height:calc(var(--cw)*1.38);border-radius:calc(var(--cw)*.12);border:2px dashed rgba(255,255,255,.12);flex:none}
+.slot.danger{border-color:rgba(200,64,46,.7);background:repeating-linear-gradient(45deg,rgba(200,64,46,.18) 0 6px,transparent 6px 12px)}
+.bcard{width:var(--cw);height:calc(var(--cw)*1.38);border-radius:calc(var(--cw)*.12);background:var(--card);color:var(--card-ink);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:calc(var(--cw)*.07) 2px;box-shadow:0 3px 8px rgba(0,0,0,.45);border:2px solid var(--hc);position:relative;flex:none;overflow:hidden}
+.bcard .num{font-family:var(--display);font-size:calc(var(--cw)*.42);line-height:1;color:var(--hc2,var(--card-ink))}
+.bcard .heads{display:flex;flex-wrap:wrap;justify-content:center;gap:1px;max-width:90%}
+.bcard .heads svg{width:calc(var(--cw)*.18);height:calc(var(--cw)*.18);color:var(--hc)}
+.bcard .band{position:absolute;inset:0 0 auto;height:18%;background:var(--hc);opacity:.35}
+.h1{--hc:var(--h1);--hc2:#4a3f80}.h2{--hc:var(--h2);--hc2:#1f6c96}.h3{--hc:var(--h3);--hc2:#a35d00}.h5{--hc:var(--h5);--hc2:#a22a19}.h7{--hc:var(--h7);--hc2:#6a1f8f}
+.bcard.sp{background:linear-gradient(160deg,#fff7d6,#f1c75b);--hc:#b48a26;--hc2:#5a3c00}
+.bcard.sp .num{font-size:calc(var(--cw)*.3)}
+.bcard.new{animation:drop .45s ease-out}
+@keyframes drop{0%{transform:translateY(-30px) scale(1.15);opacity:0}100%{transform:none;opacity:1}}
+.bcard.owner{outline:2px solid var(--straw);outline-offset:1px}
+.reveal{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:30px;--cw:clamp(40px,10vw,58px)}
+.reveal .rv{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mute);font-weight:700}
+.reveal .rv.done{opacity:.35}
+.reveal .rv.now .bcard{box-shadow:0 0 0 3px var(--straw),0 6px 16px rgba(0,0,0,.5);transform:translateY(-4px)}
+.handbox{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.handbox.active{border-color:var(--straw)}
+.handbox h3{margin:0;font-family:var(--display);font-weight:400;font-size:18px;color:var(--straw);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.handbox h3 small{font-family:var(--body);color:var(--mute);font-size:13px;font-weight:600}
+.hand{display:flex;flex-wrap:wrap;gap:6px;--cw:clamp(50px,12vw,74px)}
+.hand button{transition:transform .15s}
+.hand button.can:hover{transform:translateY(-6px)}
+.hand button.can .bcard{box-shadow:0 0 0 2px var(--straw),0 3px 8px rgba(0,0,0,.45)}
+.hand button:disabled{cursor:default}
+.hand .risk{display:block;font-size:11px;font-weight:800;text-align:center;margin-top:3px;color:var(--mute)}
+.hand .risk.bad{color:#ff9a86}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.box h3{margin:0 0 6px;font-family:var(--display);font-weight:400;font-size:17px;color:var(--straw)}
+.log{font-size:13px;color:var(--mute);display:flex;flex-direction:column;gap:3px;max-height:200px;overflow:auto}
+.log div:first-child{color:var(--ink)}
+#modal{position:fixed;inset:0;z-index:40;background:rgba(15,7,4,.78);display:grid;place-items:center;padding:16px}
+#modal[hidden]{display:none}
+.mpanel{background:var(--barn2);border:1px solid var(--straw-d);border-radius:16px;max-width:640px;width:100%;max-height:min(86vh,860px);overflow:auto;padding:16px 18px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.mpanel h3{margin:0 0 6px;font-family:var(--display);font-weight:400;font-size:24px;color:var(--straw)}
+.sub{color:var(--mute);margin:0 0 10px;font-size:14px}
+.acts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.act{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-align:left;font-weight:700;display:flex;align-items:center;gap:10px;justify-content:space-between}
+.act.main{border-color:var(--straw)}
+.act .rowmini{display:flex;gap:3px;--cw:34px}
+.ghost{border:1px solid var(--line);border-radius:9px;padding:8px 14px;margin-top:12px}
+table.res{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.res td,table.res th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
+table.res td:first-child,table.res th:first-child{text-align:left}
+table.res tr.win td{color:var(--straw);font-weight:800}
+.menu{max-width:760px;margin:0 auto;padding-block:30px 60px;display:flex;flex-direction:column;gap:22px}
+.menu h1{font-family:var(--display);font-weight:400;font-size:clamp(46px,9vw,84px);line-height:.95;margin:0;color:var(--straw)}
+.menu .lead{font-size:18px;max-width:58ch;margin:0}
+.menu h2{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--mute);margin:0 0 8px}
+.pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.pbtn{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left;display:flex;flex-direction:column;gap:3px}
+.pbtn b{font-family:var(--display);font-weight:400;font-size:18px}
+.pbtn span{color:var(--mute);font-size:14px}
+.pbtn.on{border-color:var(--straw);background:linear-gradient(180deg,#5a3a1a,var(--panel));box-shadow:0 0 0 1px var(--straw) inset}
+.stepper{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px;width:fit-content}
+.stepper b{font-family:var(--display);font-weight:400;font-size:26px;min-width:30px;text-align:center;font-variant-numeric:tabular-nums}
+.stepper button{width:36px;height:36px;border-radius:50%;background:var(--panel2);font-weight:800;font-size:20px}
+.go{background:linear-gradient(180deg,#f6d27a,#c8962b);color:#2b1a10;border-radius:12px;padding:14px 22px;font-family:var(--display);font-size:21px;align-self:flex-start}
+.preview{display:flex;gap:6px;flex-wrap:wrap;--cw:56px}
+.ex{background:var(--panel);border-left:3px solid var(--straw);border-radius:6px;padding:8px 10px;font-size:14px;margin:10px 0}
+.rules p,.rules li{font-size:14px;max-width:65ch}
+.cover{position:fixed;inset:0;z-index:38;background:var(--barn);display:grid;place-items:center;padding:16px;text-align:center}
+.cover h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,7vw,48px);color:var(--straw);margin:0 0 10px}
+.float{position:fixed;z-index:45;pointer-events:none;font-family:var(--display);font-size:22px;color:#ff9a86;text-shadow:0 2px 6px rgba(0,0,0,.8);transform:translate(-50%,0);animation:floatUp 1.8s ease-out forwards;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.float svg{width:22px;height:22px}
+@keyframes floatUp{0%{opacity:0;transform:translate(-50%,6px) scale(.7)}15%{opacity:1;transform:translate(-50%,0) scale(1.15)}100%{opacity:0;transform:translate(-50%,-60px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.float{display:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="bull" viewBox="0 0 24 24"><path d="M3 5c0 3 2 5 5 5M21 5c0 3-2 5-5 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M6 9c0-1 2-2 6-2s6 1 6 2v5c0 4-3 7-6 7s-6-3-6-7z" fill="currentColor"/><circle cx="9.5" cy="12" r="1.2" fill="#2b1a10"/><circle cx="14.5" cy="12" r="1.2" fill="#2b1a10"/><ellipse cx="12" cy="17.5" rx="3" ry="2" fill="#fbf3e2" opacity=".8"/></symbol>
+</svg>
+<div id="app"></div>
+<div id="modal" hidden></div>
+<div id="cover" class="cover" hidden></div>
+<script>
+const IS_NODE=typeof window==='undefined';
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let G=null,GEN=0,inputResolve=null,modalForced=false;
+let MENU={n:4,humans:1,level:'normal',sp:true,pass:false,elastic:false,tactical:false,target:66};
+const sleep=ms=>{const g=GEN;if(G&&G.fast)return Promise.resolve();return new Promise((r,j)=>setTimeout(()=>g===GEN?r():j('abort'),ms));};
+const AI_NAMES=['Margot','Basile','Rose','Gaston','Lili','Félix','Suzon','Hector','Jeanne'];
+const heads=v=>v===55?7:v%11===0?5:v%10===0?3:v%5===0?2:1;
+function mkCard(v){return{v,h:heads(v)};}
+function mkSp(k){return{v:k/10,sp:true,h:1,lab:'0,'+k};}
+const lbl=c=>c.sp?c.lab:String(c.v);
+const hcls=h=>'h'+h;
+const isAI=i=>G.P[i].ai;
+function log(t){G.log.unshift(t);if(G.log.length>60)G.log.pop();}
+const rowHeads=r=>r.cards.reduce((a,c)=>a+c.h,0);
+const lastVal=r=>{const L=r.cards[r.cards.length-1];if(!L)return 0;if(!L.sp)return L.v;const prev=r.cards[r.cards.length-2];return (prev?prev.v:0)+L.v;};
+const lastIsSp=r=>{const L=r.cards[r.cards.length-1];return !!(L&&L.sp);};
+const rowLimit=r=>G.elastic?(r.limit||11):5;
+
+/* ===================== MOTEUR ===================== */
+function newGame(o){
+  GEN++;inputResolve=null;closeModal(true);hideCover();
+  const n=o.n,h=Math.min(o.humans,n);
+  const P=[];for(let i=0;i<n;i++){const human=i<h&&!o.fast;P.push({name:human?(h===1?'Toi':`Joueur ${i+1}`):AI_NAMES[(i-h+9)%9],ai:!human,total:0,hist:[],pile:[],hand:[]});}
+  G={P,level:o.level,sp:o.sp,pass:o.pass,elastic:o.elastic,tactical:o.tactical,target:o.target,fast:!!o.fast,round:0,trick:0,rows:[],log:[],over:null,played:null,step:-1};
+  const run=runGame();if(!IS_NODE)run.catch(e=>{if(e!=='abort')console.error(e);});return run;
+}
+function setupRound(){
+  G.round++;G.trick=0;
+  const max=G.tactical?10*G.P.length+4:104;
+  let deck=shuffle(Array.from({length:max},(_,i)=>mkCard(i+1)));
+  G.P.forEach(p=>{p.pile=[];p.hand=deck.splice(0,10);});
+  if(G.sp){const sps=shuffle([0,1,2,3,4,5,6,7,8,9].map(mkSp));G.P.forEach((p,i)=>{if(sps[i])p.hand.push(sps[i]);});}
+  G.P.forEach(p=>p.hand.sort((a,b)=>a.v-b.v));
+  G.rows=[0,1,2,3].map(()=>({cards:[deck.pop()],limit:null}));
+  G.rows.forEach(r=>{if(G.elastic&&r.cards[0].h>=2)r.limit=1+r.cards[0].h;});
+  G.seen=new Set();G.rows.forEach(r=>r.cards.forEach(c=>G.seen.add(c.v)));
+  log(`Manche ${G.round} : ${G.P[0].hand.length} cartes chacun.`);
+}
+async function runGame(res){
+  if(!res)setupRound();
+  while(!G.over){
+    if(!G.P[0].hand.length){endRound();if(G.over)break;if(!G.fast)await roundModal();setupRound();continue;}
+    saveGame();
+    G.trick++;
+    if(G.pass&&G.P[0].hand.length>1)await passPhase();
+    await choosePhase();
+    await resolvePhase();
+  }
+  clearSave();render();showEnd();
+}
+async function passPhase(){
+  const gifts=[];
+  for(let i=0;i<G.P.length;i++){
+    const p=G.P[i];let k;
+    if(isAI(i))k=aiPass(i);
+    else{await coverFor(i,'donner une carte');k=(await input(i,{hand:true,prompt:`${p.name} : choisis la carte à donner à ${G.P[(i+1)%G.P.length].name}`})).card;}
+    gifts[i]=p.hand.splice(k,1)[0];
+  }
+  gifts.forEach((c,i)=>{const to=G.P[(i+1)%G.P.length];to.hand.push(c);to.hand.sort((a,b)=>a.v-b.v);to.gotGift=c;});
+  log('Chacun passe une carte à son voisin de gauche.');
+}
+async function choosePhase(){
+  G.played=G.P.map(()=>null);G.step=-1;render();
+  for(let i=0;i<G.P.length;i++){
+    const p=G.P[i];let k;
+    if(isAI(i)){k=aiChoose(i);}
+    else{await coverFor(i,'choisir ta carte');k=(await input(i,{hand:true,prompt:`${p.name} : choisis la carte à jouer`})).card;}
+    G.played[i]=p.hand.splice(k,1)[0];render();
+  }
+  hideCover();
+}
+async function resolvePhase(){
+  const order=G.played.map((c,i)=>({c,i})).sort((a,b)=>a.c.v-b.c.v);
+  G.order=order;G.step=-1;render();await sleep(900);
+  for(let s=0;s<order.length;s++){
+    G.step=s;const {c,i}=order[s];render();await sleep(500);
+    await place(i,c);
+    G.seen.add(c.v);render();await sleep(450);
+  }
+  G.played=null;G.order=null;G.step=-1;
+}
+async function chooseRow(i,c,cands,why){
+  if(cands.length===1)return cands[0];
+  if(isAI(i)){return cands.slice().sort((a,b)=>rowHeads(G.rows[a])-rowHeads(G.rows[b])||G.rows[a].cards.length-G.rows[b].cards.length)[0];}
+  hideCover();return (await input(i,{rows:cands,prompt:`${G.P[i].name} : ${why}`,card:c})).row;
+}
+async function take(i,r,c){
+  const row=G.rows[r];const hh=rowHeads(row);
+  G.P[i].pile.push(...row.cards);log(`${G.P[i].name} ramasse la rangée ${r+1} (${hh} tête${hh>1?'s':''}).`);
+  if(!G.fast){floatHeads(r,hh);sfx('moo');}
+  row.cards=[c];row.limit=(G.elastic&&!c.sp&&c.h>=2)?1+c.h:null;c.isNew=true;
+}
+async function place(i,c){
+  if(c.sp){
+    const ok=G.rows.map((r,k)=>k).filter(k=>G.rows[k].cards.length<Math.min(5,rowLimit(G.rows[k]))&&!lastIsSp(G.rows[k]));
+    if(ok.length){const r=isAI(i)?aiSpRow(i,ok):await chooseRow(i,c,ok,`où poser ta carte spéciale ${c.lab} ?`);G.rows[r].cards.push(c);c.isNew=true;log(`${G.P[i].name} pose la spéciale ${c.lab} sur la rangée ${r+1}.`);return;}
+    const r=await chooseRow(i,c,[0,1,2,3],'aucune rangée ne peut recevoir ta spéciale : choisis la rangée à ramasser');
+    await take(i,r,c);return;
+  }
+  let best=-1,bv=-1;
+  G.rows.forEach((r,k)=>{const lv=lastVal(r);if(lv<c.v&&lv>bv){bv=lv;best=k;}});
+  if(best<0){
+    const r=await chooseRow(i,c,[0,1,2,3],`ta carte ${c.v} est plus petite que toutes les rangées : choisis celle que tu ramasses`);
+    await take(i,r,c);return;
+  }
+  const row=G.rows[best];
+  if(row.cards.length>=rowLimit(row)){await take(i,best,c);return;}
+  row.cards.push(c);c.isNew=true;
+  if(G.elastic&&!row.limit&&c.h>=2)row.limit=Math.min(11,row.cards.length+c.h);
+}
+function endRound(){
+  const sc=G.P.map(p=>p.pile.reduce((a,c)=>a+c.h,0));
+  G.P.forEach((p,i)=>{p.total+=sc[i];p.hist.push(sc[i]);});
+  log(`Fin de la manche ${G.round}.`);
+  if(Math.max(...G.P.map(p=>p.total))>=G.target){const m=Math.min(...G.P.map(p=>p.total));G.over={winners:G.P.map((p,i)=>p.total===m?i:-1).filter(i=>i>=0)};}
+}
+
+/* ===================== IA ===================== */
+const LEVELS={facile:{noise:4,n:'Facile'},normal:{noise:.8,n:'Normal'},difficile:{noise:.15,n:'Difficile'}};
+function unseen(i){const max=G.tactical?10*G.P.length+4:104;let n=0;const mine=new Set(G.P[i].hand.map(c=>c.v));for(let v=1;v<=max;v++)if(!G.seen.has(v)&&!mine.has(v))n++;return n;}
+function risk(i,c){
+  if(c.sp){const ok=G.rows.some(r=>r.cards.length<Math.min(5,rowLimit(r))&&!lastIsSp(r));return ok?0.2:Math.min(...G.rows.map(rowHeads));}
+  let best=-1,bv=-1;G.rows.forEach((r,k)=>{const lv=lastVal(r);if(lv<c.v&&lv>bv){bv=lv;best=k;}});
+  if(best<0)return Math.min(...G.rows.map(rowHeads))*.9;
+  const row=G.rows[best];const lim=rowLimit(row);
+  if(row.cards.length>=lim)return rowHeads(row);
+  const mine=new Set(G.P[i].hand.map(x=>x.v));const max=G.tactical?10*G.P.length+4:104;
+  let between=0;for(let v=Math.floor(bv)+1;v<c.v;v++)if(!G.seen.has(v)&&!mine.has(v))between++;
+  const nOpp=G.P.length-1;const e=between*nOpp/Math.max(1,unseen(i));
+  const fill=row.cards.length+e;const p=1/(1+Math.exp(-3*(fill-(lim-.6))));
+  return p*(rowHeads(row)+1.4*e)+(row.cards.length===lim-1?.4:0);
+}
+function aiChoose(i){
+  const W=LEVELS[G.level];const p=G.P[i];
+  let best=0,bv=1e9;
+  p.hand.forEach((c,k)=>{let r=risk(i,c);if(c.sp)r=p.hand.some(x=>!x.sp&&risk(i,x)<2)?6:0.5;r+=Math.random()*W.noise*.5;if(r<bv){bv=r;best=k;}});
+  return best;
+}
+function aiPass(i){const p=G.P[i];let best=0,bv=-1;p.hand.forEach((c,k)=>{if(c.sp)return;const r=risk(i,c)+c.h*.3;if(r>bv){bv=r;best=k;}});return best;}
+function aiSpRow(i,ok){return ok.slice().sort((a,b)=>rowHeads(G.rows[b])-rowHeads(G.rows[a]))[0];}
+
+/* ===================== INTERFACE ===================== */
+function input(i,cfg){return new Promise(res=>{inputResolve=v=>{inputResolve=null;G.input=null;res(v);};G.input={pi:i,...cfg};render();});}
+function humansCount(){return G.P.filter(p=>!p.ai).length;}
+function coverFor(i,what){
+  if(IS_NODE||humansCount()<2)return Promise.resolve();
+  return new Promise(res=>{const c=$('cover');c.innerHTML=`<div><h2>${esc(G.P[i].name)}</h2><p class="sub">C’est à toi de ${what}. Les autres, détournez les yeux !</p><button class="go" data-a="uncover">Je suis ${esc(G.P[i].name)}</button></div>`;c.hidden=false;G.coverRes=()=>{c.hidden=true;res();};});
+}
+function hideCover(){if(IS_NODE)return;const c=$('cover');if(c)c.hidden=true;}
+const bullS='<svg viewBox="0 0 24 24"><use href="#bull"/></svg>';
+function cardH(c,extra=''){
+  return `<div class="bcard ${c.sp?'sp':hcls(c.h)} ${c.isNew?'new':''} ${extra}"><span class="band"></span><span class="num">${lbl(c)}</span><span class="heads">${bullS.repeat(c.h)}</span></div>`;
+}
+function viewer(){if(G.input)return G.input.pi;const h=G.P.findIndex(p=>!p.ai);return h<0?0:h;}
+function render(){
+  if(IS_NODE||(G&&G.fast))return;
+  if(!G){renderMenu();return;}
+  const inp=G.input;const me=viewer();const p=G.P[me];
+  const rowsH=G.rows.map((r,k)=>{const lim=rowLimit(r);const pick=inp&&inp.rows&&inp.rows.includes(k);
+    const slots=[];for(let s=0;s<Math.max(6,Math.min(lim+1,12));s++){if(r.cards[s])slots.push(cardH(r.cards[s]));else slots.push(`<div class="slot ${s===lim?'danger':''}"></div>`);}
+    return `<div class="row ${pick?'pick':''}" data-a="row" data-v="${k}" id="row${k}"><div class="rlab"><span>Rangée ${k+1}</span><b>${rowHeads(r)}${bullS}</b>${G.elastic?`<span>${r.limit?r.limit+' max':'ouverte'}</span>`:''}</div><div class="slots">${slots.join('')}</div></div>`;}).join('');
+  G.rows.forEach(r=>r.cards.forEach(c=>{if(c.isNew)setTimeout(()=>{c.isNew=false;},0);}));
+  const rev=G.order?`<div class="reveal">${G.order.map((o,s)=>`<div class="rv ${s<G.step?'done':''} ${s===G.step?'now':''}">${cardH(o.c)}${esc(G.P[o.i].name)}</div>`).join('')}</div>`:'';
+  const handCan=inp&&inp.hand&&inp.pi===me;
+  const hand=p.hand.map((c,k)=>{const r=handCan&&!c.sp?risk(me,c):null;return `<button class="${handCan?'can':''}" data-a="card" data-v="${k}" ${handCan?'':'disabled'}>${cardH(c,p.gotGift===c?'owner':'')}${G.showRisk&&r!=null?`<span class="risk ${r>=2?'bad':''}">${r<.3?'sûr':r<2?'risqué':'danger'}</span>`:''}</button>`;}).join('');
+  const who=inp?(inp.rows?`${G.P[inp.pi].name} choisit une rangée`:humansCount()===1?'À toi de choisir':`Au tour de ${G.P[inp.pi].name}`):G.order?'On pose les cartes, de la plus petite à la plus grande':'Les joueurs choisissent';
+  const sc=window.scrollY;
+  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">←<span class="long"> Salle de jeux</span></a><span class="logo">Têtes de Bœuf</span><span class="spacer"></span>
+    <button class="hbtn" data-a="risk">${G.showRisk?'Aide au risque ✓':'Aide au risque'}</button><button class="hbtn" data-a="sound">${MUTED?'Son coupé':'Son'}</button><button class="hbtn" data-a="help">Aide</button><button class="hbtn" data-a="menu"><span class="long">Nouvelle partie</span><span class="short">Menu</span></button></div>
+    <div class="turnbar"><div class="wrap"><span class="who">${esc(who)}</span><span class="hint">Manche ${G.round} · tour ${G.trick} · fin à ${G.target} têtes</span></div></div></header>
+  <div class="wrap"><div class="game">
+    <div class="players">${G.P.map((q,k)=>`<div class="pchip ${k===me?'me':''} ${G.played&&G.played[k]&&!G.order?'ready':''}"><b>${esc(q.name)}</b><span class="hd">${q.total+q.pile.reduce((a,c)=>a+c.h,0)}${bullS}</span><small>dont ${q.pile.reduce((a,c)=>a+c.h,0)} cette manche</small></div>`).join('')}</div>
+    <section class="rows">${rowsH}${rev}${inp&&inp.prompt?`<div style="text-align:center;font-weight:800">${esc(inp.prompt)}</div>`:''}</section>
+    <section class="handbox ${handCan?'active':''}"><h3>Main de ${esc(p.name)} <small>${p.hand.length} carte${p.hand.length>1?'s':''}${G.sp?' · la carte dorée est spéciale':''}</small></h3><div class="hand">${hand||'<span class="sub">Main vide.</span>'}</div></section>
+    <section class="box"><h3>Chronique</h3><div class="log">${G.log.slice(0,30).map(l=>`<div>${esc(l)}</div>`).join('')}</div></section>
+  </div></div>`;
+  window.scrollTo(0,sc);
+}
+function renderMenu(){
+  const sv=loadSave();
+  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">← Salle de jeux</a><span class="spacer"></span><button class="hbtn" data-a="help">Aide</button></div></header>
+  <div class="wrap"><div class="menu">
+    <div class="preview">${[mkCard(7),mkCard(15),mkCard(30),mkCard(44),mkCard(55),mkSp(3)].map(c=>cardH(c)).join('')}</div>
+    <h1>Têtes de Bœuf</h1>
+    <p class="lead">Tout le monde joue une carte en même temps, puis on les pose de la plus petite à la plus grande. Celui qui pose la sixième carte d’une rangée la ramasse, avec toutes ses têtes de bœuf. Le moins de têtes gagne.</p>
+    <div><h2>Nombre de joueurs</h2><div class="stepper"><button data-a="n" data-v="-1" aria-label="Moins">−</button><b>${MENU.n}</b><button data-a="n" data-v="1" aria-label="Plus">+</button></div></div>
+    <div><h2>Dont joueurs humains</h2><div class="stepper"><button data-a="h" data-v="-1" aria-label="Moins">−</button><b>${MENU.humans}</b><button data-a="h" data-v="1" aria-label="Plus">+</button></div><p class="sub" style="margin-top:6px">${MENU.humans>1?'Chacun choisit sa carte à son tour : un écran cache la main des autres.':''}${MENU.humans<MENU.n?` ${MENU.n-MENU.humans} joueur(s) tenu(s) par l’ordinateur.`:''}</p></div>
+    ${MENU.humans<MENU.n?`<div><h2>Niveau de l’IA</h2><div class="pick">${Object.entries(LEVELS).map(([k,l])=>`<button class="pbtn ${MENU.level===k?'on':''}" data-a="level" data-v="${k}"><b>${l.n}</b></button>`).join('')}</div></div>`:''}
+    <div><h2>Extension et variantes</h2><div class="pick">
+      <button class="pbtn ${MENU.sp?'on':''}" data-a="opt" data-v="sp"><b>Cartes spéciales</b><span>Chacun reçoit en plus une carte dorée de 0,0 à 0,9 : jouée avant toutes les autres, elle se glisse au bout de n’importe quelle rangée.</span></button>
+      <button class="pbtn ${MENU.pass?'on':''}" data-a="opt" data-v="pass"><b>Passe à gauche</b><span>Avant chaque tour, chacun donne une carte à son voisin de gauche.</span></button>
+      <button class="pbtn ${MENU.elastic?'on':''}" data-a="opt" data-v="elastic"><b>Rangées élastiques</b><span>Plus de limite fixe à 5 : la première carte à plusieurs têtes d’une rangée fixe combien de cartes elle peut encore recevoir.</span></button>
+      <button class="pbtn ${MENU.tactical?'on':''}" data-a="opt" data-v="tactical"><b>Jeu tactique</b><span>On ne garde que les cartes 1 à 10 × joueurs + 4 : on peut compter les cartes qui restent.</span></button>
+    </div></div>
+    <div><h2>Longueur</h2><div class="pick">${[[66,'Partie normale','Fin à 66 têtes'],[33,'Partie courte','Fin à 33 têtes']].map(([v,b,s])=>`<button class="pbtn ${MENU.target===v?'on':''}" data-a="target" data-v="${v}"><b>${b}</b><span>${s}</span></button>`).join('')}</div></div>
+    ${sv?`<div class="ex"><b>Une partie est en cours</b> (manche ${sv.G.round}).<br><button class="go" style="margin-top:8px" data-a="resume">Reprendre la partie</button></div>`:''}
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><button class="go" data-a="start">${sv?'Nouvelle partie':'Lancer la partie'}</button><button class="hbtn" data-a="help">Comment jouer</button></div>
+  </div></div>`;
+}
+function openModal(html,cfg={}){if(IS_NODE)return;modalForced=!!cfg.forced;const m=$('modal');m.innerHTML=`<div class="mpanel" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;const f=m.querySelector('button');if(f)f.focus({preventScroll:true});}
+function closeModal(force){if(IS_NODE)return;if(modalForced&&!force)return;modalForced=false;$('modal').hidden=true;$('modal').innerHTML='';}
+function roundModal(){return new Promise(res=>{render();inputResolve=()=>{inputResolve=null;closeModal(true);res();};
+  openModal(`<h3>Fin de la manche ${G.round}</h3><p class="sub">Chacun compte les têtes ramassées. Fin de partie à ${G.target} têtes.</p><table class="res"><thead><tr><th>Joueur</th><th>Manche</th><th>Total</th></tr></thead><tbody>${G.P.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.hist[p.hist.length-1]}</td><td>${p.total}</td></tr>`).join('')}</tbody></table><div class="acts"><button class="act main" data-a="next">Manche suivante</button></div>`,{forced:true});});}
+function showEnd(){
+  if(IS_NODE||G.fast)return;const w=G.over.winners;sfx(w.some(i=>!G.P[i].ai)?'win':'moo');
+  const order=G.P.map((p,i)=>i).sort((a,b)=>G.P[a].total-G.P[b].total);
+  openModal(`<h3>${w.length>1?'Égalité':`${esc(G.P[w[0]].name)} ${G.P[w[0]].name==='Toi'?'gagnes':'gagne'}`}</h3><p class="sub">Un joueur a atteint ${G.target} têtes de bœuf : le moins chargé l’emporte.</p>
+  <table class="res"><thead><tr><th>Joueur</th>${G.P[0].hist.map((_,k)=>`<th>M${k+1}</th>`).join('')}<th>Total</th></tr></thead><tbody>${order.map(i=>`<tr class="${w.includes(i)?'win':''}"><td>${esc(G.P[i].name)}</td>${G.P[i].hist.map(h=>`<td>${h}</td>`).join('')}<td>${G.P[i].total}</td></tr>`).join('')}</tbody></table>
+  <div class="acts"><button class="act main" data-a="again">Rejouer avec les mêmes réglages</button></div><button class="ghost" data-a="close">Voir la table</button>`);
+}
+function showHelp(){openModal(`<h3>Comment jouer</h3><div class="rules">
+  <ol><li>Chacun reçoit 10 cartes ; 4 cartes ouvrent les 4 rangées.</li>
+  <li>À chaque tour, <b>tout le monde choisit une carte en secret</b>. On les révèle et on les pose <b>de la plus petite à la plus grande</b>.</li>
+  <li>Une carte va dans la rangée dont la dernière carte est <b>la plus proche en dessous</b> d’elle.</li>
+  <li>Si elle serait la <b>6ᵉ carte</b> de la rangée, son joueur ramasse les 5 cartes, et sa carte commence la rangée.</li>
+  <li>Si elle est plus petite que toutes les fins de rangée, son joueur choisit une rangée à ramasser.</li>
+  <li>Chaque carte porte des têtes : 1 en général, 2 pour les multiples de 5, 3 pour les multiples de 10, 5 pour les doubles (11, 22…), 7 pour le 55. La partie s’arrête quand quelqu’un atteint ${MENU.target} têtes ; le moins chargé gagne.</li></ol>
+  <div class="ex"><b>Cartes spéciales (extension).</b> Chacun reçoit une carte dorée de 0,0 à 0,9. Elle est posée avant toutes les autres, au bout de la rangée de ton choix si celle-ci a 4 cartes ou moins et ne finit pas déjà par une spéciale. Sa valeur s’ajoute à la dernière carte (sur un 47, une 0,6 fait 47,6). Si aucune rangée ne l’accepte, tu ramasses la rangée de ton choix.</div>
+  <div class="ex"><b>Passe à gauche.</b> Avant chaque tour (sauf le dernier), chacun donne une carte à son voisin de gauche. La carte reçue est entourée de jaune.</div>
+  <div class="ex"><b>Rangées élastiques.</b> Une rangée n’est plus limitée à 5 cartes : dès qu’une carte à plusieurs têtes y entre, elle fixe la taille maximale (autant de cartes en plus que de têtes). La case rouge hachurée indique la carte qui fera ramasser.</div>
+  <div class="ex"><b>Jeu tactique.</b> Seules les cartes 1 à 10 × joueurs + 4 sont utilisées : avec 3 joueurs, 1 à 34.</div>
+  <p>Le bouton <b>Aide au risque</b> indique sous chaque carte de ta main si elle est sûre, risquée ou dangereuse.</p></div><button class="ghost" data-a="close">Fermer</button>`);}
+function floatHeads(r,h){if(IS_NODE)return;const el=$('row'+r);if(!el)return;const b=el.getBoundingClientRect();const d=document.createElement('div');d.className='float';d.innerHTML=`+${h} ${bullS}`;d.style.left=(b.left+b.width/2)+'px';d.style.top=b.top+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1900);}
+/* Sauvegarde (en début de tour) */
+const SAVE_KEY='tetes-de-boeuf-save';
+function saveGame(){if(IS_NODE||G.fast)return;const d={v:1,G:{...G,input:null,seen:[...G.seen]}};try{localStorage.setItem(SAVE_KEY,JSON.stringify(d));}catch(e){}}
+function clearSave(){if(IS_NODE||G.fast)return;try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+function loadSave(){try{const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');return d&&d.v===1&&!d.G.over?d:null;}catch(e){return null;}}
+function resumeGame(d){GEN++;inputResolve=null;closeModal(true);G=d.G;G.seen=new Set(G.seen);G.played=null;G.order=null;log('Partie reprise.');const r=runGame(true);r.catch(e=>{if(e!=='abort')console.error(e);});}
+let AC=null,MUTED=false;try{MUTED=localStorage.getItem('tdb-mute')==='1';}catch(e){}
+function ac(){if(IS_NODE)return null;if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}if(AC.state==='suspended')AC.resume().catch(()=>{});return AC;}
+function tn(a,t,f,d,type,v,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.05);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);}
+function sfx(n){if(IS_NODE||MUTED||(G&&G.fast))return;const a=ac();if(!a||a.state!=='running')return;const t=a.currentTime+.01;
+  if(n==='moo'){tn(a,t,170,.9,'sawtooth',.09,120);tn(a,t,172,.9,'triangle',.06,118);}
+  if(n==='card')tn(a,t,700,.1,'triangle',.06,350);
+  if(n==='win')[523,659,784,1046].forEach((f,k)=>tn(a,t+k*.12,f,.35,'triangle',.11));}
+if(!IS_NODE){
+document.addEventListener('click',e=>{
+  if(!MUTED)ac();
+  if(e.target.id==='modal'){closeModal(false);return;}
+  const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,v=t.dataset.v;const inp=G&&G.input;
+  switch(a){
+    case 'card':if(inp&&inp.hand){sfx('card');inputResolve({card:+v});}break;
+    case 'row':if(inp&&inp.rows&&inp.rows.includes(+v))inputResolve({row:+v});break;
+    case 'uncover':if(G&&G.coverRes){const r=G.coverRes;G.coverRes=null;r();}break;
+    case 'next':if(inputResolve)inputResolve();break;
+    case 'close':closeModal(false);break;
+    case 'help':showHelp();break;
+    case 'risk':G.showRisk=!G.showRisk;render();break;
+    case 'sound':MUTED=!MUTED;try{localStorage.setItem('tdb-mute',MUTED?'1':'0');}catch(e){}render();break;
+    case 'menu':GEN++;inputResolve=null;closeModal(true);hideCover();G=null;render();scrollTo(0,0);break;
+    case 'n':MENU.n=Math.max(2,Math.min(10,MENU.n+(+v)));MENU.humans=Math.min(MENU.humans,MENU.n);render();break;
+    case 'h':MENU.humans=Math.max(1,Math.min(MENU.n,MENU.humans+(+v)));render();break;
+    case 'level':MENU.level=v;render();break;
+    case 'opt':MENU[v]=!MENU[v];render();break;
+    case 'target':MENU.target=+v;render();break;
+    case 'start':try{localStorage.removeItem(SAVE_KEY);}catch(e){}newGame(MENU);scrollTo(0,0);break;
+    case 'again':{const o={n:G.P.length,humans:humansCount(),level:G.level,sp:G.sp,pass:G.pass,elastic:G.elastic,tactical:G.tactical,target:G.target};newGame(o);scrollTo(0,0);break;}
+    case 'resume':{const d=loadSave();if(d)resumeGame(d);break;}
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal(false);});
+render();
+}
+if(IS_NODE)module.exports={newGame,get G(){return G}};
+</script>
+</body>
+</html>

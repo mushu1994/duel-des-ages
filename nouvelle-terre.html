@@ -1,0 +1,1436 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Nouvelle Terre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,800;6..12,900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f2a3a;--bg2:#163a4f;--panel:#f7eedb;--panel2:#ecdfc2;--ink:#2d2416;--ink2:#6e5f45;--gold:#e0b44c;--accent:#c0532b;
+  --ui:"Nunito Sans",system-ui,sans-serif;--title:"Cinzel",Georgia,serif}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:radial-gradient(ellipse at 50% 0%,#1f5670,var(--bg) 70%) fixed,var(--bg);color:#f3ead6;font-family:var(--ui);min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0b2230;border-bottom:1px solid #24506a;flex-wrap:wrap}
+.top h1{font-family:var(--title);font-weight:800;font-size:24px;margin:0;color:#f6dc9a;letter-spacing:1px}
+.top h1 small{font-family:var(--ui);font-weight:600;font-size:13px;color:#9cc3d6;margin-left:8px;letter-spacing:0}
+.back{color:#cfe3ee;text-decoration:none;font-size:14px;border:1px solid #2e5d78;padding:5px 10px;border-radius:8px}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#1c4660;color:#eef6fa;border:1px solid #33708f;border-radius:9px;padding:7px 12px;font-size:14px;font-weight:700}
+.btn:hover{background:#245675}.btn:disabled{opacity:.4;cursor:default}
+.btn.pri{background:linear-gradient(#e0703f,#b64a22);border-color:#f08a5a;color:#fff}
+.btn.on{background:var(--gold);color:#2a1c05;border-color:#ffd98a}
+.turnbar{display:flex;align-items:center;gap:12px;padding:9px 16px;background:var(--pc,#e0b44c);color:#fff;font-weight:800;box-shadow:0 4px 14px #0007;transition:background .4s;flex-wrap:wrap;min-height:46px}
+.turnbar .who{font-family:var(--title);font-size:20px;text-shadow:0 1px 0 #0005}
+.turnbar .msg{font-weight:600}
+.turnbar .vpgoal{margin-left:auto;background:#0003;padding:3px 10px;border-radius:20px;font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:14px;padding:12px 14px 40px;max-width:1650px;margin:0 auto}
+@media(max-width:1000px){.layout{grid-template-columns:1fr;padding:8px 8px 40px}}
+.boardcol{min-width:0;display:flex;flex-direction:column;gap:10px}
+#board{position:relative;border-radius:16px;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#3f8fb5,#1b5677 60%,#0f3a55);box-shadow:0 12px 30px #0009,inset 0 0 60px #0006}
+#map{display:block;width:100%;height:auto;max-height:calc(100vh - 260px);min-height:300px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.barb{position:absolute;left:10px;top:10px;background:#0b2230d9;border:1px solid #3a6f8c;border-radius:12px;padding:6px 10px;font-size:12px;font-weight:700;color:#dcebf2;z-index:2}
+.barb .trk{display:flex;gap:3px;margin-top:4px;align-items:center}
+.barb .trk i{width:16px;height:12px;border-radius:3px;background:#23506a;display:block}
+.barb .trk i.on{background:#c0392b;box-shadow:0 0 8px #ff6040}
+.barb .trk i.end{background:#5a2a1a;width:20px}
+.barb b{color:#ffd27a}
+.prompt{pointer-events:none;position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:#0b2230ee;color:#fff;padding:8px 14px;border-radius:12px;font-weight:700;z-index:3;display:flex;gap:10px;align-items:center;box-shadow:0 8px 24px #0008;max-width:calc(100% - 20px)}
+.prompt[hidden]{display:none}
+.prompt .btn{padding:4px 10px;font-size:13px;pointer-events:auto}
+@media(max-width:700px){.prompt{bottom:auto;top:6px;left:auto;right:6px;transform:none;font-size:12px;padding:5px 9px;max-width:60%;opacity:.92}.barb{transform:scale(.8);transform-origin:top left}}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:linear-gradient(#173f57,#12344a);border:1px solid #2c6584;border-radius:14px;padding:10px}
+.act{display:flex;flex-direction:column;align-items:center;gap:3px;background:#1f4d68;border:1px solid #3c7c9e;color:#fff;border-radius:11px;padding:6px 9px;min-width:68px;font-weight:800;font-size:13px;transition:transform .12s}
+.act:hover:not(:disabled){transform:translateY(-2px);background:#286080}
+.act:disabled{opacity:.38;cursor:default}
+.act.on{background:var(--gold);color:#2a1c05;border-color:#ffe2a0}
+.act .cost{display:flex;gap:1px}
+.act.big{background:linear-gradient(#e0703f,#b64a22);border-color:#f08a5a;min-width:92px;font-size:15px}
+.act.end{background:#3b2a52;border-color:#7a5aa8}
+.dice{display:flex;gap:8px;align-items:center;margin-right:6px;perspective:400px}
+.die{width:38px;height:38px;position:relative;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.2,.9,.3,1.1)}
+.die .f{position:absolute;inset:0;border-radius:8px;background:linear-gradient(145deg,#fffdf6,#e6dcc6);border:1px solid #bba;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:5px;backface-visibility:hidden}
+.die.red .f{background:linear-gradient(145deg,#ff7a6a,#c2372b);border-color:#902}
+.die.ev .f{background:linear-gradient(145deg,#f4f0ff,#cfc6e6)}
+.die .f span{width:7px;height:7px;border-radius:50%;background:#2a2418;place-self:center}
+.die.red .f span{background:#fff}
+.die .f.s1{transform:translateZ(19px)}.die .f.s2{transform:rotateY(90deg) translateZ(19px)}.die .f.s3{transform:rotateX(90deg) translateZ(19px)}
+.die .f.s4{transform:rotateX(-90deg) translateZ(19px)}.die .f.s5{transform:rotateY(-90deg) translateZ(19px)}.die .f.s6{transform:rotateY(180deg) translateZ(19px)}
+.die.ev .f{display:grid;place-items:center;grid-template:1fr/1fr;font-size:20px}
+.hand{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:linear-gradient(#f7eedb,#eadcbc);color:var(--ink);border-radius:14px;padding:10px 12px;min-height:76px;box-shadow:0 6px 16px #0006}
+.hand .lab{font-family:var(--title);font-size:15px;font-weight:800;margin-right:4px}
+.rc{position:relative;width:46px;height:62px;border-radius:7px;background:var(--rc);border:2px solid #fff;box-shadow:0 2px 6px #0005;display:grid;place-items:center;transition:transform .2s}
+.rc svg{width:32px;height:32px}
+.rc .n{position:absolute;right:-7px;top:-7px;background:var(--ink);color:#fff;font-weight:900;font-size:12px;min-width:21px;height:21px;border-radius:11px;display:grid;place-items:center;border:2px solid #f7eedb}
+.rc.zero{opacity:.28}
+.rc.pop{animation:rcpop .5s}
+@keyframes rcpop{40%{transform:translateY(-8px) scale(1.12)}}
+.cards{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.cardx{background:#fff;border:2px solid var(--cc,#7a5aa8);border-radius:9px;padding:5px 8px;font-size:12px;font-weight:800;color:var(--ink);display:flex;flex-direction:column;gap:3px;max-width:150px;box-shadow:0 2px 6px #0003}
+.cardx small{font-weight:600;color:var(--ink2);line-height:1.2}
+.cardx button{font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid #aaa;background:#f3ead6;font-weight:800}
+.cardx.new{opacity:.6}
+.side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.pl{position:relative;background:#12344a;border:1px solid #2b6080;border-radius:13px;padding:9px 11px 9px 15px;overflow:hidden;transition:all .3s}
+.pl::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--pc)}
+.pl.cur{box-shadow:0 0 0 2px var(--pc),0 8px 20px #0008;transform:translateX(-3px);background:#174560}
+.pl .top1{display:flex;align-items:center;gap:6px}
+.pl .nm{font-weight:900;font-size:15px}
+.pl .lv{font-size:11px;color:#9cc3d6;font-weight:600}
+.pl .vp{margin-left:auto;font-family:var(--title);font-weight:800;font-size:26px;color:#ffd77e}
+.pl .st{display:flex;gap:9px;flex-wrap:wrap;font-size:12px;color:#cfe3ee;margin-top:2px}
+.pl .st b{color:#fff}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:1px 6px;border-radius:6px;background:#e0b44c;color:#2a1c05;margin-top:3px;margin-right:3px}
+.impr{display:flex;gap:5px;margin-top:4px}
+.impr span{display:flex;gap:1px;align-items:center;font-size:10px;font-weight:800}
+.impr i{width:7px;height:9px;border-radius:2px;background:#2b5a74;display:block}
+.panel{background:#12344a;border:1px solid #2b6080;border-radius:13px;padding:10px 12px}
+.panel h3{margin:0 0 6px;font-family:var(--title);font-size:15px;color:#f6dc9a}
+#log{max-height:240px;overflow:auto;font-size:12.5px;color:#cfe3ee;display:flex;flex-direction:column-reverse;gap:2px}
+#log div{border-bottom:1px dashed #2b6080;padding:2px 0}
+.costs{font-size:12px;display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:center}
+.chips{display:inline-flex;gap:1px;align-items:center}
+.chip{width:16px;height:16px;border-radius:4px;background:var(--rc);display:inline-grid;place-items:center;border:1px solid #0003}
+.chip svg{width:12px;height:12px}
+#modal{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:12px}
+#modal[hidden]{display:none}
+.mbox{background:var(--panel);color:var(--ink);border-radius:16px;max-width:880px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;animation:pop .35s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.mbox h2{font-family:var(--title);font-size:26px;margin:0 0 4px}
+.mbox h4{font-family:var(--title);font-size:16px;margin:14px 0 6px}
+.mbox p,.mbox li{line-height:1.5}
+.mbox .btn{background:#e6d8b8;color:var(--ink);border-color:#bba57a}
+.mbox .btn.pri{background:linear-gradient(#e0703f,#b64a22);color:#fff;border-color:#f08a5a}
+.mbox .btn.on{background:var(--ink);color:#fff}
+.seg{display:inline-flex;border:1px solid #bba57a;border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:#f7efdc;padding:6px 10px;font-weight:700;color:var(--ink);font-size:13px}
+.seg button.on{background:var(--ink);color:#fff}
+.prow{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
+.prow .dot{width:16px;height:16px;border-radius:50%;background:var(--pc);border:2px solid #0004}
+.prow input[type=text]{font-family:inherit;font-weight:700;font-size:16px;padding:6px 9px;border-radius:8px;border:1px solid #bba57a;background:#fff;color:#2d2416;-webkit-text-fill-color:#2d2416;caret-color:#c0532b;width:140px;color-scheme:light}
+.prow input[type=text]::placeholder{color:#a3926e;-webkit-text-fill-color:#a3926e;font-weight:600}
+.prow input[type=text]:focus{outline:2px solid #c0532b;outline-offset:1px}
+.ext{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.extc{border:2px solid #d4c29a;border-radius:12px;padding:10px;background:#fff8;cursor:pointer}
+.extc.on{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px #c0532b33}
+.extc b{font-family:var(--title);font-size:15px}
+.extc small{display:block;color:var(--ink2);margin-top:3px;line-height:1.35}
+.extc.lock{cursor:default;opacity:.8}
+.pick{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.pick .rc{cursor:pointer;touch-action:manipulation}
+@media(pointer:coarse){.pick .rc{width:58px;height:76px}.pick{gap:12px}}
+.pick .rc.sel{outline:3px solid var(--accent);outline-offset:2px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{border:1px solid #bba57a;background:#f7efdc;border-radius:20px;padding:5px 12px;font-weight:800;color:var(--ink)}
+.tabs button.on{background:var(--ink);color:#fff}
+table.res{width:100%;border-collapse:collapse;font-size:14px}
+table.res td,table.res th{padding:6px;border-bottom:1px solid #d9c9a3;text-align:right}
+table.res td:first-child,table.res th:first-child{text-align:left}
+table.res tr.win td{background:#f6df9f}
+#cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:radial-gradient(circle,#1f5670,#081820);text-align:center;padding:20px}
+#cover[hidden]{display:none}
+#cover h2{font-family:var(--title);font-size:38px;margin:0 0 8px;color:#f6dc9a}
+.toast{position:fixed;left:50%;top:104px;transform:translateX(-50%);background:#0b2230;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 10px 30px #000a;z-index:70;font-weight:700;border:1px solid #3a6f8c;animation:toast 2.8s forwards;pointer-events:none;max-width:90vw;text-align:center}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.bannerx{position:fixed;inset:0;display:grid;place-items:center;z-index:65;pointer-events:none}
+.bannerx div{font-family:var(--title);font-weight:800;font-size:clamp(30px,6vw,64px);color:#fff;background:var(--bc,#c0532b);padding:10px 36px;border-radius:12px;box-shadow:0 20px 50px #000a;animation:ban 2.3s forwards;text-align:center}
+.bannerx small{display:block;font-family:var(--ui);font-size:.35em;font-weight:700}
+@keyframes ban{0%{transform:scale(2);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:0;transform:scale(.92)}}
+.fly{position:fixed;z-index:80;pointer-events:none;width:30px;height:40px;border-radius:5px;border:2px solid #fff;display:grid;place-items:center;box-shadow:0 4px 10px #0007}
+.fly svg{width:22px;height:22px}
+/* SVG */
+#map .tile{cursor:default}
+#map .tile.sel{cursor:pointer}
+#map .tile.sel .top{filter:brightness(1.15)}
+#map .hexhl{fill:#fff;opacity:0;pointer-events:none}
+#map .tile.sel .hexhl{animation:hexp 1.2s infinite}
+@keyframes hexp{50%{opacity:.28}}
+#map .tok.hot{animation:tokhot 1.4s ease-out}
+@keyframes tokhot{0%{transform:translateY(0)}20%{transform:translateY(-14px) scale(1.25)}45%{transform:translateY(0) scale(1)}}
+#map .tok{transform-box:fill-box;transform-origin:center bottom}
+#map .mk{cursor:pointer}
+#map .mk circle.g{fill:#fff;stroke:var(--mc);stroke-width:3;animation:mkp 1s infinite}
+@keyframes mkp{50%{r:10;opacity:.7}}
+#map .mk line.g{stroke:#fff;stroke-width:7;stroke-linecap:round;opacity:.9;animation:mkl 1s infinite}
+#map .mk line.h{stroke:transparent;stroke-width:22}
+@keyframes mkl{50%{opacity:.35}}
+#map .pc{transform-box:fill-box;transform-origin:center bottom}
+#map .drop{animation:drop .55s cubic-bezier(.3,1.6,.5,1) backwards}
+@keyframes drop{from{transform:translateY(-60px);opacity:0}}
+#map .tdrop{animation:tdrop .7s cubic-bezier(.3,1.4,.5,1) backwards}
+@keyframes tdrop{from{transform:translateY(-120px);opacity:0}}
+#map .fadein{animation:fi .6s backwards}
+@keyframes fi{from{opacity:0}}
+#map .dust{fill:none;stroke:#fff;stroke-width:2;animation:dust .7s ease-out forwards}
+@keyframes dust{from{opacity:.8;transform:scale(.3)}to{opacity:0;transform:scale(1.8)}}
+#map .dust{transform-box:fill-box;transform-origin:center}
+#map .kin{opacity:.55;filter:saturate(.3)}
+#map .kon{filter:drop-shadow(0 0 4px #fff6a0)}
+#map .waves{animation:wv 6s linear infinite}
+@keyframes wv{from{transform:translateX(0)}to{transform:translateX(24px)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+ <symbol id="i-bois" viewBox="0 0 32 32"><path d="M16 3 L25 15 H20 L27 24 H5 L12 15 H7Z" fill="#1f5e2a"/><rect x="14" y="24" width="4" height="6" fill="#6b4220"/></symbol>
+ <symbol id="i-argile" viewBox="0 0 32 32"><g fill="#8e3b1c" stroke="#f3c7a6" stroke-width="1"><rect x="3" y="17" width="12" height="7" rx="1"/><rect x="16" y="17" width="12" height="7" rx="1"/><rect x="9" y="9" width="12" height="7" rx="1"/></g></symbol>
+ <symbol id="i-laine" viewBox="0 0 32 32"><g fill="#fff" stroke="#6a6a6a" stroke-width="1"><circle cx="11" cy="15" r="5"/><circle cx="17" cy="12" r="5"/><circle cx="21" cy="17" r="5"/><circle cx="14" cy="19" r="5"/></g><circle cx="25" cy="13" r="3.2" fill="#333"/><path d="M12 23v5M19 23v5" stroke="#333" stroke-width="2"/></symbol>
+ <symbol id="i-ble" viewBox="0 0 32 32"><g fill="#c99a1e" stroke="#7a5a0a" stroke-width=".7"><path d="M16 29V8" stroke="#7a5a0a" stroke-width="1.6"/><ellipse cx="13" cy="10" rx="2.4" ry="4" transform="rotate(-25 13 10)"/><ellipse cx="19" cy="10" rx="2.4" ry="4" transform="rotate(25 19 10)"/><ellipse cx="12.5" cy="16" rx="2.4" ry="4" transform="rotate(-25 12.5 16)"/><ellipse cx="19.5" cy="16" rx="2.4" ry="4" transform="rotate(25 19.5 16)"/><ellipse cx="16" cy="6" rx="2.2" ry="3.6"/></g></symbol>
+ <symbol id="i-minerai" viewBox="0 0 32 32"><path d="M4 26 L10 12 L17 16 L22 7 L29 26Z" fill="#6f7b85" stroke="#2e353b" stroke-width="1.2"/><path d="M10 12 L13 20 L17 16 M22 7 L21 18" stroke="#c7d1d8" stroke-width="1.2" fill="none"/></symbol>
+ <symbol id="i-papier" viewBox="0 0 32 32"><rect x="7" y="5" width="18" height="22" rx="2" fill="#fbf5e6" stroke="#8a7a55"/><path d="M10 11h12M10 15h12M10 19h8" stroke="#8a7a55" stroke-width="1.4"/></symbol>
+ <symbol id="i-tissu" viewBox="0 0 32 32"><rect x="5" y="9" width="22" height="14" rx="7" fill="#d8a640" stroke="#7a5a18"/><ellipse cx="8" cy="16" rx="3" ry="7" fill="#f0cc70" stroke="#7a5a18"/><path d="M12 10v12M17 10v12M22 10v12" stroke="#a87a20"/></symbol>
+ <symbol id="i-monnaie" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="#e6c24a" stroke="#8a6a10" stroke-width="1.5"/><circle cx="16" cy="16" r="7.5" fill="none" stroke="#8a6a10"/><text x="16" y="20.5" font-size="11" font-weight="900" text-anchor="middle" fill="#8a6a10" font-family="Georgia">$</text></symbol>
+</defs></svg>
+<header class="top">
+  <a class="back" href="index.html">← Salle de jeux</a>
+  <h1>Nouvelle Terre <small id="modsname"></small></h1>
+  <div class="tools"><button class="btn" data-a="costs">Coûts</button><button class="btn" data-a="sound" id="sndBtn">Son</button><button class="btn" data-a="help">Aide</button><button class="btn pri" data-a="menu">Nouvelle partie</button></div>
+</header>
+<div class="turnbar" id="turnbar"><span class="who">Nouvelle Terre</span></div>
+<main class="layout">
+  <section class="boardcol">
+    <div id="board"><svg id="map" xmlns="http://www.w3.org/2000/svg"></svg><div id="barb" class="barb" hidden></div><div id="prompt" class="prompt" hidden></div></div>
+    <div class="actions" id="actions"></div>
+    <div class="hand" id="hand"></div>
+  </section>
+  <aside class="side"><div id="players"></div><div class="panel"><h3>Chronique</h3><div id="log"></div></div></aside>
+</main>
+<div id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<div id="cover" hidden></div>
+<script>
+'use strict';
+/* =================== NOUVELLE TERRE — moteur =================== */
+const IS_NODE = typeof window === 'undefined';
+const R5 = ['bois','argile','laine','ble','minerai'];
+const C3 = ['papier','tissu','monnaie'];
+const ALLC = R5.concat(C3);
+const RNAME = {bois:'Bois',argile:'Argile',laine:'Laine',ble:'Blé',minerai:'Minerai',papier:'Papier',tissu:'Tissu',monnaie:'Monnaie'};
+const TRES = {foret:'bois',colline:'argile',pre:'laine',champ:'ble',montagne:'minerai'};
+const TCOM = {foret:'papier',pre:'tissu',montagne:'monnaie'};
+const TNAME = {foret:'Forêt',colline:'Colline',pre:'Pré',champ:'Champ',montagne:'Montagne',desert:'Désert',mer:'Mer',or:"Champ d'or"};
+const PIPS = {2:1,3:2,4:3,5:4,6:5,8:5,9:4,10:3,11:2,12:1};
+const TRACKS = {science:'papier',commerce:'tissu',politique:'monnaie'};
+const TRNAME = {science:'Science',commerce:'Commerce',politique:'Politique'};
+const COST = {
+  road:{bois:1,argile:1}, ship:{bois:1,laine:1}, settle:{bois:1,argile:1,laine:1,ble:1}, city:{ble:2,minerai:3},
+  dev:{laine:1,ble:1,minerai:1}, knight:{laine:1,minerai:1}, kup:{laine:1,minerai:1}, kact:{ble:1}, wall:{argile:2}
+};
+const LIMIT = {road:15, ship:15, settle:5, city:4};
+const AI_NAMES = ['Aurèle','Bérénice','Côme','Delphine','Eudes','Faustine'];
+const LV = { facile:{noise:6, trade:.4, devp:.5}, normal:{noise:2, trade:.85, devp:.8}, difficile:{noise:.4, trade:1, devp:1} };
+const DEVS = {chevalier:'Chevalier', pv:'Point de victoire', routes:'Construction de routes', abondance:'Abondance', monopole:'Monopole'};
+const PROG = {
+  science:[['alchimiste',2],['inventeur',2],['irrigation',2],['mine',2],['medecine',2],['ingenieur',1],['forgeron',2],['routes',2],['grue',2],['imprimerie',1]],
+  commerce:[['marchand',6],['flotte',2],['monoRes',4],['monoCom',2],['maitre',2],['portMarchand',2]],
+  politique:[['eveque',2],['diplomate',2],['intrigue',2],['espion',3],['seigneur',2],['mariage',2],['saboteur',2],['deserteur',2],['constitution',1]]
+};
+const PNAME = {alchimiste:'Alchimiste',inventeur:'Inventeur',irrigation:'Irrigation',mine:'Mine',medecine:'Médecine',ingenieur:'Ingénieur',forgeron:'Forgeron',routes:'Grands travaux',grue:'Grue',imprimerie:'Imprimerie',
+  marchand:'Marchand',flotte:'Flotte marchande',monoRes:'Monopole des ressources',monoCom:'Monopole commercial',maitre:'Maître marchand',portMarchand:'Port marchand',
+  eveque:'Évêque',diplomate:'Diplomate',intrigue:'Intrigue',espion:'Espion',seigneur:'Seigneur de guerre',mariage:'Mariage',saboteur:'Saboteur',deserteur:'Déserteur',constitution:'Constitution'};
+const PDESC = {alchimiste:'Avant le lancer : choisis la valeur des deux dés de production.',inventeur:'Échange deux jetons numérotés (sauf 2, 12, 6 et 8).',irrigation:'+2 blé par champ voisin de tes bâtiments.',mine:'+2 minerai par montagne voisine de tes bâtiments.',medecine:'Transforme une colonie en cité pour 2 minerai + 1 blé.',ingenieur:'Construis un rempart gratuitement.',forgeron:'Promeus gratuitement jusqu\'à 2 chevaliers.',routes:'Construis 2 routes ou navires gratuitement.',grue:'Ta prochaine amélioration de cité coûte 1 marchandise de moins.',imprimerie:'+1 point de victoire (joué aussitôt).',
+  marchand:'Place le marchand près de tes bâtiments : échange 2:1 de cette ressource, +1 PV tant que tu le gardes.',flotte:'Ce tour-ci : échange 2:1 avec la banque pour une ressource ou marchandise au choix.',monoRes:'Nomme une ressource : chaque adversaire t\'en donne jusqu\'à 2.',monoCom:'Nomme une marchandise : chaque adversaire t\'en donne 1.',maitre:'Prends 2 cartes à un adversaire qui a plus de PV que toi.',portMarchand:'Chaque adversaire t\'échange une marchandise contre une de tes ressources.',
+  eveque:'Déplace le brigand et vole 1 carte à chaque joueur voisin du nouvel hexagone.',diplomate:'Retire une route adverse « ouverte » (extrémité libre).',intrigue:'Chasse un chevalier adverse posé au bord de ton réseau.',espion:'Vole une carte progrès à un adversaire.',seigneur:'Active gratuitement tous tes chevaliers.',mariage:'Chaque joueur qui a plus de PV que toi te donne 2 cartes.',saboteur:'Les joueurs qui ont autant ou plus de PV que toi défaussent la moitié de leurs cartes.',deserteur:'Un adversaire perd un chevalier ; tu en places un de même force gratuitement.',constitution:'+1 point de victoire (jouée aussitôt).'};
+const PVPROG = ['imprimerie','constitution'];
+
+let G = null, GEN = 0;
+const rand = () => Math.random();
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function sleep(ms){const g=GEN;return new Promise((res,rej)=>{if(IS_NODE||(G&&G.fast))return res();setTimeout(()=>g===GEN?res():rej('abort'),ms);});}
+function log(s){ G.log.push(s); if(G.log.length>80) G.log.shift(); if(!IS_NODE&&!G.fast) uiLog(); }
+const sum = o => Object.values(o).reduce((a,b)=>a+b,0);
+function emptyRes(){const o={};ALLC.forEach(k=>o[k]=0);return o;}
+const resCount = p => R5.reduce((s,k)=>s+p.res[k],0) + (G.mods.ck?C3.reduce((s,k)=>s+p.res[k],0):0);
+
+/* ---------------- plateau ---------------- */
+const DIRS=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+const hk=(q,r)=>q+','+r;
+function hexDist(a,b){return (Math.abs(a.q-b.q)+Math.abs(a.r-b.r)+Math.abs(a.q+a.r-b.q-b.r))/2;}
+function numberBag(n){ const base=[2,3,3,4,4,5,5,6,6,8,8,9,9,10,10,11,11,12]; const ext=[2,3,4,5,6,8,9,10,11,12]; const out=[]; let k=0;
+  while(out.length<n){ out.push(...(k===0?base:ext)); k++; } return shuffle(out.slice(0,n)); }
+function assignNumbers(hexes){
+  const prod=hexes.filter(h=>h.t!=='mer'&&h.t!=='desert');
+  const idx={}; hexes.forEach((h,i)=>idx[hk(h.q,h.r)]=i);
+  for(let tries=0;tries<800;tries++){
+    const bag=numberBag(prod.length); prod.forEach((h,i)=>h.n=bag[i]);
+    let ok=true;
+    for(const h of prod){ if(h.n!==6&&h.n!==8) continue; for(const [dq,dr] of DIRS){ const o=hexes[idx[hk(h.q+dq,h.r+dr)]]; if(o&&(o.n===6||o.n===8)&&o!==h){ok=false;break;} } if(!ok)break; }
+    if(ok) return;
+  }
+}
+function ringAround(land){
+  const set=new Set(land.map(h=>hk(h.q,h.r))), sea=[], seen=new Set();
+  for(const h of land) for(const [dq,dr] of DIRS){ const k=hk(h.q+dq,h.r+dr); if(!set.has(k)&&!seen.has(k)){ seen.add(k); sea.push({q:h.q+dq,r:h.r+dr,t:'mer'}); } }
+  return sea;
+}
+function genClassic(n){
+  const land=[];
+  if(n<=4){ for(let q=-2;q<=2;q++) for(let r=-2;r<=2;r++) if(Math.abs(q+r)<=2) land.push({q,r}); }
+  else { for(let r=-3;r<=3;r++){ const L=6-Math.abs(r); for(let k=0;k<L;k++) land.push({q:k-(L-1)/2+.5-r/2,r}); } }
+  const bag = n<=4 ? [].concat(Array(4).fill('foret'),Array(4).fill('pre'),Array(4).fill('champ'),Array(3).fill('colline'),Array(3).fill('montagne'),['desert'])
+                   : [].concat(Array(6).fill('foret'),Array(6).fill('pre'),Array(6).fill('champ'),Array(5).fill('colline'),Array(5).fill('montagne'),['desert','desert']);
+  shuffle(bag); land.forEach((h,i)=>h.t=bag[i]);
+  const hexes=land.concat(ringAround(land));
+  assignNumbers(hexes);
+  return {hexes, ports: n<=4?9:11, portTypes: n<=4?['3','3','3','3','bois','argile','laine','ble','minerai']:['3','3','3','3','3','bois','argile','laine','laine','ble','minerai'], home:null};
+}
+function genNav(n){
+  const R = n<=4?5:6, all=[]; for(let q=-R;q<=R;q++) for(let r=-R;r<=R;r++) if(Math.abs(q+r)<=R) all.push({q,r,t:'mer'});
+  const idx={}; all.forEach((h,i)=>idx[hk(h.q,h.r)]=i);
+  const get=(q,r)=>all[idx[hk(q,r)]];
+  const nb=h=>DIRS.map(([dq,dr])=>get(h.q+dq,h.r+dr)).filter(Boolean);
+  const isLand=h=>h&&h.land;
+  // île principale
+  const mainSize = n<=4?18:25; const start=get(-Math.round(R*.42),Math.round(R*.2));
+  start.land=1; let main=[start];
+  while(main.length<mainSize){ const fr=[]; for(const h of main) for(const o of nb(h)) if(!o.land&&hexDist(o,{q:0,r:0})<R-0.5&&hexDist(o,start)<=(n<=4?3:4)&&!fr.includes(o)) fr.push(o);
+    fr.sort((a,b)=>nb(b).filter(isLand).length-nb(a).filter(isLand).length+ (rand()-.5)*1.6); const pick=fr[0]; pick.land=1; main.push(pick); }
+  main.forEach(h=>h.isl=0);
+  const islands=[]; const nIsl=n<=4?4:5;
+  for(let k=0,tries=0;k<nIsl&&tries<400;tries++){
+    const seed=all[Math.floor(rand()*all.length)];
+    if(seed.land||hexDist(seed,{q:0,r:0})>R-1) continue;
+    if(all.some(h=>h.land&&hexDist(h,seed)<3)) continue;
+    const size=3+Math.floor(rand()*2), isl=[seed]; seed.land=1; seed.isl=k+1;
+    let guard=0;
+    while(isl.length<size&&guard++<40){ const fr=[]; for(const h of isl) for(const o of nb(h)) if(!o.land&&hexDist(o,{q:0,r:0})<=R-1&&!all.some(x=>x.land&&x.isl!==k+1&&hexDist(x,o)<2)) fr.push(o);
+      if(!fr.length) break; const p=fr[Math.floor(rand()*fr.length)]; p.land=1; p.isl=k+1; isl.push(p); }
+    islands.push(isl); k++;
+  }
+  // terrains
+  const mainBag=shuffle([].concat(Array(Math.round(mainSize*.21)).fill('foret'),Array(Math.round(mainSize*.2)).fill('pre'),Array(Math.round(mainSize*.2)).fill('champ'),Array(Math.round(mainSize*.16)).fill('colline'),Array(Math.round(mainSize*.16)).fill('montagne')));
+  while(mainBag.length<mainSize-1) mainBag.push(['foret','pre','champ'][mainBag.length%3]);
+  mainBag.length=mainSize-1; mainBag.push('desert'); shuffle(mainBag);
+  main.forEach((h,i)=>h.t=mainBag[i]);
+  islands.forEach((isl,k)=>{ const b=shuffle(['montagne','colline','or','champ','foret','pre','montagne']); isl.forEach((h,i)=>h.t=b[i]); if(k%2===1&&!isl.some(h=>h.t==='or')) isl[0].t='or'; });
+  const hexes=all.map(h=>({q:h.q,r:h.r,t:h.land?h.t:'mer',isl:h.land?h.isl:-1}));
+  assignNumbers(hexes);
+  return {hexes, ports:n<=4?5:7, portTypes:n<=4?['3','3','bois','laine','minerai']:['3','3','3','bois','argile','laine','ble'], home:0, nav:true};
+}
+function buildGraph(B){
+  const H=B.hexes, V=[], E=[], vk={}, ek={};
+  H.forEach((h,i)=>{ h.x=Math.sqrt(3)*(h.q+h.r/2); h.y=1.5*h.r; h.v=[]; h.e=[];
+    for(let k=0;k<6;k++){ const a=(60*k-90)*Math.PI/180, x=h.x+Math.cos(a), y=h.y+Math.sin(a), key=Math.round(x*100)+','+Math.round(y*100);
+      if(vk[key]==null){ vk[key]=V.length; V.push({x,y,hex:[],adjV:[],adjE:[]}); } V[vk[key]].hex.push(i); h.v.push(vk[key]); }
+    for(let k=0;k<6;k++){ const a=h.v[k], b=h.v[(k+1)%6], key=Math.min(a,b)+'-'+Math.max(a,b);
+      if(ek[key]==null){ ek[key]=E.length; E.push({v:[a,b],hex:[]}); V[a].adjE.push(ek[key]); V[b].adjE.push(ek[key]); V[a].adjV.push(b); V[b].adjV.push(a); }
+      E[ek[key]].hex.push(i); h.e.push(ek[key]); }
+  });
+  V.forEach(v=>{ v.land=v.hex.some(i=>H[i].t!=='mer'); v.isl=[...new Set(v.hex.filter(i=>H[i].t!=='mer').map(i=>H[i].isl==null?0:H[i].isl))]; });
+  E.forEach(e=>{ e.landAdj=e.hex.some(i=>H[i].t!=='mer'); e.seaAdj=e.hex.some(i=>H[i].t==='mer')||e.hex.length<2; e.x=(V[e.v[0]].x+V[e.v[1]].x)/2; e.y=(V[e.v[0]].y+V[e.v[1]].y)/2; });
+  // ports
+  let coast=E.map((e,i)=>i).filter(i=>{const e=E[i]; return e.landAdj&&e.hex.some(h=>H[h].t==='mer')&&(B.home==null||e.hex.some(h=>H[h].t!=='mer'&&H[h].isl===B.home));});
+  const cx=coast.reduce((s,i)=>s+E[i].x,0)/coast.length, cy=coast.reduce((s,i)=>s+E[i].y,0)/coast.length;
+  coast.sort((a,b)=>Math.atan2(E[a].y-cy,E[a].x-cx)-Math.atan2(E[b].y-cy,E[b].x-cx));
+  const off=Math.floor(rand()*coast.length), ports=[], types=shuffle(B.portTypes.slice()), used=new Set();
+  for(let k=0;k<B.ports;k++){ let i=Math.floor(off+k*coast.length/B.ports)%coast.length; let guard=0;
+    while(guard++<coast.length&&E[coast[i]].v.some(v=>used.has(v))) i=(i+1)%coast.length;
+    const e=coast[i]; E[e].v.forEach(v=>{used.add(v);V[v].adjV.forEach(w=>used.add(w));}); ports.push({e,t:types[k]}); E[e].port=k; E[e].v.forEach(v=>V[v].port=types[k]); }
+  return {H,V,E,ports};
+}
+
+/* ---------------- état ---------------- */
+function newGame(cfg){
+  const n=cfg.players.length, mods={ext56:n>=5, nav:!!cfg.nav, ck:!!cfg.ck};
+  const B = mods.nav?genNav(n):genClassic(n);
+  const gr = buildGraph(B);
+  G = {v:1, cfg, fast:!!cfg.fast, mods, target: cfg.target || (10+(mods.nav?3:0)+(mods.ck?3:0)-(mods.nav&&mods.ck?1:0)),
+    H:gr.H, V:gr.V, E:gr.E, ports:gr.ports,
+    players: cfg.players.map((p,i)=>({name:p.name, ai:!!p.ai, level:p.level||'normal', col:i, res:emptyRes(), dev:[], devNew:[], knightsPlayed:0, vpDev:0,
+      isl:[], hero:0, progVP:0, impr:{science:0,commerce:0,politique:0}, prog:[], walls:0})),
+    bv:{}, be:{}, kn:{}, robber:-1, pirate:-1, longest:-1, army:-1, devDeck:[], prog:{science:[],commerce:[],politique:[]},
+    barb:0, attacked:false, metro:{science:-1,commerce:-1,politique:-1}, merchant:null,
+    cur:0, turn:0, phase:'setup', setupStep:0, dice:null, over:false, winner:-1, log:[], flags:{}};
+  G.robber = G.H.findIndex(h=>h.t==='desert'); if(G.robber<0) G.robber=-1;
+  if(mods.nav){ const seas=G.H.map((h,i)=>i).filter(i=>G.H[i].t==='mer'&&G.H[i].e.every(e=>!G.E[e].landAdj));
+    const mid=seas.sort((a,b)=>Math.hypot(G.H[a].x,G.H[a].y)-Math.hypot(G.H[b].x,G.H[b].y)); G.pirate=mid[Math.floor(mid.length*.3)]??-1; }
+  if(!mods.ck){ const d=[]; const add=(k,n)=>{for(let i=0;i<n;i++)d.push(k);}; add('chevalier',14+(mods.ext56?6:0)); add('pv',5); add('routes',2+(mods.ext56?1:0)); add('abondance',2+(mods.ext56?1:0)); add('monopole',2+(mods.ext56?1:0)); G.devDeck=shuffle(d); }
+  else for(const t in PROG){ const d=[]; PROG[t].forEach(([k,n])=>{for(let i=0;i<n;i++)d.push(k);}); G.prog[t]=shuffle(d); }
+  G.order = cfg.players.map((_,i)=>i);
+  return G;
+}
+const P = i => G.players[i];
+function others(pi){ return G.players.map((_,i)=>i).filter(i=>i!==pi); }
+function countB(pi,type){ let n=0; for(const k in G.bv) if(G.bv[k].p===pi&&G.bv[k].t===type) n++; return n; }
+function countE(pi,type){ let n=0; for(const k in G.be) if(G.be[k].p===pi&&G.be[k].t===type) n++; return n; }
+function knights(pi){ return Object.keys(G.kn).map(Number).filter(v=>G.kn[v].p===pi); }
+function vp(pi,hidden){
+  const p=P(pi); let s=0;
+  for(const k in G.bv){ const b=G.bv[k]; if(b.p!==pi) continue; s+= b.t==='s'?1:2; if(b.metro) s+=2; }
+  if(G.longest===pi) s+=2; if(G.army===pi) s+=2;
+  s+= p.isl.length*2 + p.hero + p.progVP + (G.merchant&&G.merchant.p===pi?1:0);
+  if(!hidden) s+= p.vpDev;
+  return s;
+}
+function canPay(pi,cost){ const r=P(pi).res; for(const k in cost) if((r[k]||0)<cost[k]) return false; return true; }
+function pay(pi,cost){ const r=P(pi).res; for(const k in cost) r[k]-=cost[k]; }
+function gain(pi,k,n){ P(pi).res[k]+=n; }
+
+/* --------- légalité --------- */
+function vFree(v){ return !G.bv[v] && G.kn[v]==null; }
+function distOK(v){ return !G.V[v].adjV.some(w=>G.bv[w]); }
+function ownEdgeAt(pi,v,type){ return G.V[v].adjE.some(e=>G.be[e]&&G.be[e].p===pi&&(!type||G.be[e].t===type)); }
+function blockedFor(pi,v){ const b=G.bv[v]; if(b&&b.p!==pi) return true; const k=G.kn[v]; return k!=null&&k.p!==pi; }
+function canSettleAt(pi,v,setup){
+  const V=G.V[v]; if(!V.land||G.bv[v]||G.kn[v]!=null&&G.kn[v].p!==pi||!distOK(v)) return false;
+  if(G.kn[v]!=null) return false;
+  if(setup){ if(G.mods.nav && !V.isl.includes(0)) return false; return true; }
+  return ownEdgeAt(pi,v);
+}
+function spotFree(v){ const V=G.V[v]; return V.land&&!G.bv[v]&&G.kn[v]==null&&distOK(v); }
+function pirateNear(e){ return G.pirate>=0 && G.E[e].hex.includes(G.pirate); }
+function canRoadAt(pi,e){
+  const E=G.E[e]; if(!E.landAdj||G.be[e]) return false;
+  return E.v.some(v=>{ const b=G.bv[v]; if(b&&b.p===pi) return true; if(blockedFor(pi,v)) return false; return V_roadEnd(pi,v,'road'); });
+}
+function V_roadEnd(pi,v,type){ return G.V[v].adjE.some(o=>G.be[o]&&G.be[o].p===pi&&G.be[o].t===type); }
+function canShipAt(pi,e){
+  if(!G.mods.nav) return false; const E=G.E[e]; if(!E.seaAdj||G.be[e]||pirateNear(e)) return false;
+  if(!E.v.every(v=>G.V[v].hex.length>=2||G.V[v].land)) return false;
+  return E.v.some(v=>{ const b=G.bv[v]; if(b&&b.p===pi) return true; if(blockedFor(pi,v)) return false; return V_roadEnd(pi,v,'ship'); });
+}
+function legal(pi,kind){
+  const out=[];
+  if(kind==='settle'){ for(let v=0;v<G.V.length;v++) if(canSettleAt(pi,v,false)) out.push(v); }
+  else if(kind==='city'){ for(const k in G.bv) if(G.bv[k].p===pi&&G.bv[k].t==='s') out.push(+k); }
+  else if(kind==='road'){ for(let e=0;e<G.E.length;e++) if(canRoadAt(pi,e)) out.push(e); }
+  else if(kind==='ship'){ for(let e=0;e<G.E.length;e++) if(canShipAt(pi,e)) out.push(e); }
+  else if(kind==='knight'){ for(let v=0;v<G.V.length;v++) if(vFree(v)&&G.V[v].land&&ownEdgeAt(pi,v)) out.push(v); }
+  else if(kind==='wall'){ for(const k in G.bv) if(G.bv[k].p===pi&&G.bv[k].t==='c'&&!G.bv[k].wall) out.push(+k); }
+  return out;
+}
+function shipMovable(pi){ // navires en bout de ligne
+  if(G.flags.shipMoved) return [];
+  return Object.keys(G.be).map(Number).filter(e=>{ const b=G.be[e]; if(b.p!==pi||b.t!=='ship'||b.turn===G.turn||pirateNear(e)) return false;
+    return G.E[e].v.some(v=>{ const bb=G.bv[v]; if(bb&&bb.p===pi) return false; return !G.V[v].adjE.some(o=>o!==e&&G.be[o]&&G.be[o].p===pi&&G.be[o].t==='ship'); }); });
+}
+function pieceLeft(pi,kind){ if(kind==='road') return countE(pi,'road')<LIMIT.road; if(kind==='ship') return countE(pi,'ship')<LIMIT.ship;
+  if(kind==='settle') return countB(pi,'s')<LIMIT.settle; if(kind==='city') return countB(pi,'c')<LIMIT.city; return true; }
+function knightCount(pi,lvl){ return knights(pi).filter(v=>G.kn[v].lvl===lvl).length; }
+function canKnightUp(pi,v){ const k=G.kn[v]; if(!k||k.p!==pi||k.lvl>=3||k.upTurn===G.turn) return false; if(k.lvl===2&&P(pi).impr.politique<3) return false; return knightCount(pi,k.lvl+1)<2; }
+
+/* --------- route la plus longue --------- */
+function longestFor(pi){
+  const es=Object.keys(G.be).map(Number).filter(e=>G.be[e].p===pi); if(!es.length) return 0;
+  const adj={}; es.forEach(e=>G.E[e].v.forEach(v=>(adj[v]=adj[v]||[]).push(e)));
+  let best=0; const used=new Set(); let steps=0;
+  const dfs=(v,len,lastT)=>{ if(++steps>60000) return; best=Math.max(best,len);
+    if(len>0&&blockedFor(pi,v)) return;
+    const own=G.bv[v]&&G.bv[v].p===pi;
+    for(const e of adj[v]||[]){ if(used.has(e)) continue; const t=G.be[e].t; if(lastT&&t!==lastT&&!own) continue; used.add(e); const o=G.E[e].v[0]===v?G.E[e].v[1]:G.E[e].v[0]; dfs(o,len+1,t); used.delete(e); } };
+  Object.keys(adj).forEach(v=>dfs(+v,0,null));
+  return best;
+}
+function updateLongest(){
+  const L=G.players.map((_,i)=>longestFor(i)); const mx=Math.max(...L); const prev=G.longest;
+  if(mx<5){ G.longest=-1; }
+  else if(prev>=0&&L[prev]===mx){ }
+  else { const top=L.map((l,i)=>l===mx?i:-1).filter(i=>i>=0); G.longest = top.length===1?top[0]:-1; }
+  G.longLen=L;
+  if(prev!==G.longest&&G.longest>=0) { log(`${P(G.longest).name} prend la Grande Route (${mx}).`); if(!IS_NODE&&!G.fast) uiFx('longest',G.longest); }
+}
+function updateArmy(pi){ const k=P(pi).knightsPlayed; if(k>=3&&(G.army<0||k>P(G.army).knightsPlayed)&&G.army!==pi){ G.army=pi; log(`${P(pi).name} prend la Grande Armée (${k}).`); if(!IS_NODE&&!G.fast) uiFx('army',pi); } }
+
+/* --------- choix (humain ou IA) --------- */
+function choose(pi,kind,data){ if(P(pi).ai) return Promise.resolve(aiChoose(pi,kind,data)); return uiAsk(pi,kind,data); }
+
+/* --------- construction --------- */
+async function placeSettle(pi,v,free){
+  if(!free) pay(pi,COST.settle);
+  G.bv[v]={p:pi,t:'s'};
+  const isl=G.V[v].isl.filter(i=>i>0);
+  if(G.mods.nav && G.phase!=='setup') for(const i of isl) if(!P(pi).isl.includes(i)){ P(pi).isl.push(i); log(`${P(pi).name} découvre une nouvelle île : +2 PV !`); if(!IS_NODE&&!G.fast) uiFx('island',v); }
+  log(`${P(pi).name} fonde une colonie.`); updateLongest();
+  if(!IS_NODE&&!G.fast) await uiPlace('settle',v,pi);
+}
+async function placeCity(pi,v,free,cost){
+  if(!free) pay(pi,cost||COST.city);
+  G.bv[v].t='c'; log(`${P(pi).name} bâtit une cité.`);
+  if(!IS_NODE&&!G.fast) await uiPlace('city',v,pi);
+  if(G.mods.ck) assignMetros();
+}
+async function placeEdge(pi,e,type,free){
+  if(!free) pay(pi,COST[type]);
+  G.be[e]={p:pi,t:type,turn:G.turn}; log(`${P(pi).name} ${type==='road'?'construit une route':'lance un navire'}.`);
+  updateLongest(); if(!IS_NODE&&!G.fast) await uiPlace(type,e,pi);
+}
+async function buyDev(pi){ pay(pi,COST.dev); const c=G.devDeck.pop(); if(c==='pv'){ P(pi).vpDev++; } else P(pi).devNew.push(c); log(`${P(pi).name} achète une carte développement.`); if(!IS_NODE&&!G.fast) await uiFx('dev',pi,c); }
+
+/* --------- dés & production --------- */
+async function roll(pi){
+  let d1=1+Math.floor(rand()*6), d2=1+Math.floor(rand()*6);
+  if(G.flags.alchimie){ [d1,d2]=G.flags.alchimie; G.flags.alchimie=null; }
+  let ev=null; if(G.mods.ck){ const f=Math.floor(rand()*6); ev= f<3?'barb':['science','commerce','politique'][f-3]; }
+  G.dice=[d1,d2,ev]; const s=d1+d2;
+  log(`${P(pi).name} lance les dés : ${s}${ev?(ev==='barb'?' · les barbares avancent':' · porte '+TRNAME[ev]):''}.`);
+  if(!IS_NODE&&!G.fast) await uiDice(d1,d2,ev);
+  if(G.mods.ck){
+    if(ev==='barb'){ G.barb++; if(!IS_NODE&&!G.fast) await uiFx('barb'); if(G.barb>=7) await barbarianAttack(); }
+    else { for(const i of turnOrderFrom(pi)) { const L=P(i).impr[ev]; if(L>=1 && d1<=L+1 && G.prog[ev].length) await drawProg(i,ev); } }
+  }
+  if(s===7) await seven(pi); else await produce(s);
+}
+function turnOrderFrom(pi){ const n=G.players.length; return Array.from({length:n},(_,k)=>(pi+k)%n); }
+async function produce(s){
+  const got=G.players.map(()=>emptyRes()), gold=G.players.map(()=>0);
+  G.H.forEach((h,hi)=>{ if(h.n!==s||hi===G.robber) return;
+    for(const v of h.v){ const b=G.bv[v]; if(!b) continue; const m=b.t==='c'?2:1;
+      if(h.t==='or'){ gold[b.p]+=m; continue; }
+      const r=TRES[h.t]; if(!r) continue;
+      if(G.mods.ck&&b.t==='c'&&TCOM[h.t]){ got[b.p][r]+=1; got[b.p][TCOM[h.t]]+=1; } else got[b.p][r]+=m; } });
+  for(let i=0;i<G.players.length;i++){ for(const k in got[i]) gain(i,k,got[i][k]); }
+  if(!IS_NODE&&!G.fast) await uiProduce(s,got);
+  for(let i=0;i<G.players.length;i++){
+    if(gold[i]){ const pick=await choose(i,'res',{n:gold[i],pool:R5,why:`Champ d'or : choisis ${gold[i]} ressource${gold[i]>1?'s':''}`}); pick.forEach(k=>gain(i,k,1)); got[i].gold=gold[i]; log(`${P(i).name} extrait de l'or (${gold[i]}).`); }
+    if(G.mods.ck&&P(i).impr.science>=3&&sum(got[i])===0&&!gold[i]){ const pick=await choose(i,'res',{n:1,pool:R5,why:'Aqueduc : tu ne reçois rien, choisis 1 ressource'}); pick.forEach(k=>gain(i,k,1)); log(`${P(i).name} profite de son aqueduc.`); }
+  }
+  const parts=G.players.map((p,i)=>sum(got[i])?`${p.name} +${sum(got[i])}`:'').filter(Boolean);
+  if(parts.length) log('Récolte : '+parts.join(', ')+'.');
+}
+function handLimit(pi){ return 7 + (G.mods.ck?2*Object.values(G.bv).filter(b=>b.p===pi&&b.wall).length:0); }
+async function seven(pi){
+  for(const i of turnOrderFrom(pi)){ const n=resCount(P(i)); if(n>handLimit(i)){ const k=Math.floor(n/2); const d=await choose(i,'discard',{n:k}); for(const r in d){ P(i).res[r]-=d[r]; } log(`${P(i).name} défausse ${k} cartes.`); } }
+  if(G.mods.ck&&!G.attacked){ log('Les barbares ne sont pas encore venus : le brigand reste au désert.'); return; }
+  await moveRobber(pi,true);
+}
+async function moveRobber(pi,allowPirate){
+  const land=G.H.map((h,i)=>i).filter(i=>G.H[i].t!=='mer'&&i!==G.robber);
+  const sea=G.mods.nav&&allowPirate?G.H.map((h,i)=>i).filter(i=>G.H[i].t==='mer'&&i!==G.pirate):[];
+  const h=await choose(pi,'hex',{opts:land.concat(sea),why:G.mods.nav?'Déplace le brigand (terre) ou le pirate (mer)':'Déplace le brigand'});
+  const isSea=G.H[h].t==='mer';
+  if(isSea){ G.pirate=h; log(`${P(pi).name} envoie le pirate.`); } else { G.robber=h; log(`${P(pi).name} déplace le brigand (${TNAME[G.H[h].t]}).`); }
+  if(!IS_NODE&&!G.fast) await uiFx(isSea?'pirate':'robber',h);
+  let victims;
+  if(isSea) victims=[...new Set(G.H[h].e.filter(e=>G.be[e]&&G.be[e].t==='ship').map(e=>G.be[e].p))].filter(i=>i!==pi&&resCount(P(i))>0);
+  else victims=[...new Set(G.H[h].v.filter(v=>G.bv[v]).map(v=>G.bv[v].p))].filter(i=>i!==pi&&resCount(P(i))>0);
+  if(victims.length){ const t=victims.length===1?victims[0]:await choose(pi,'player',{opts:victims,why:'Choisis à qui voler une carte'}); steal(pi,t); }
+}
+function steal(pi,t){ const pool=[]; for(const k of ALLC) for(let i=0;i<P(t).res[k];i++) pool.push(k); if(!pool.length) return null; const k=pool[Math.floor(rand()*pool.length)]; P(t).res[k]--; P(pi).res[k]++; log(`${P(pi).name} vole une carte à ${P(t).name}.`); if(!IS_NODE&&!G.fast) uiFx('steal',pi,t,k); return k; }
+
+/* --------- cartes développement (base) --------- */
+async function playDev(pi,card){
+  const p=P(pi), i=p.dev.indexOf(card); if(i<0||G.flags.devPlayed) return false;
+  p.dev.splice(i,1); G.flags.devPlayed=true; log(`${p.name} joue ${DEVS[card]}.`);
+  if(!IS_NODE&&!G.fast) await uiFx('card',pi,DEVS[card]);
+  if(card==='chevalier'){ p.knightsPlayed++; updateArmy(pi); await moveRobber(pi,true); }
+  else if(card==='routes'){ await freeRoads(pi,2); }
+  else if(card==='abondance'){ const r=await choose(pi,'res',{n:2,pool:R5,why:'Abondance : prends 2 ressources'}); r.forEach(k=>gain(pi,k,1)); }
+  else if(card==='monopole'){ const r=(await choose(pi,'res',{n:1,pool:R5,why:'Monopole : choisis une ressource'}))[0]; let tot=0; for(const o of others(pi)){ tot+=P(o).res[r]; P(pi).res[r]+=P(o).res[r]; P(o).res[r]=0; } log(`${p.name} rafle ${tot} ${RNAME[r].toLowerCase()}.`); }
+  return true;
+}
+async function freeRoads(pi,n){
+  for(let k=0;k<n;k++){ const opts=legal(pi,'road').filter(()=>pieceLeft(pi,'road')).map(e=>({e,t:'road'})).concat(G.mods.nav&&pieceLeft(pi,'ship')?legal(pi,'ship').map(e=>({e,t:'ship'})):[]);
+    if(!opts.length) break; const c=await choose(pi,'edge',{opts:opts.map(o=>o.e),types:opts,why:`Construction gratuite (${k+1}/${n})`}); if(c==null) break;
+    const o=opts.find(o=>o.e===c.e&&o.t===c.t)||opts.find(o=>o.e===(c.e??c)); await placeEdge(pi,o.e,o.t,true); }
+}
+
+/* --------- commerce --------- */
+function ratio(pi,k){
+  const p=P(pi); let r=4;
+  if(R5.includes(k)){ for(const v in G.bv) if(G.bv[v].p===pi&&G.V[v].port){ const t=G.V[v].port; if(t==='3') r=Math.min(r,3); else if(t===k) r=2; } }
+  else { for(const v in G.bv) if(G.bv[v].p===pi&&G.V[v].port==='3') r=Math.min(r,3); if(G.mods.ck&&p.impr.commerce>=3) r=2; }
+  if(G.merchant&&G.merchant.p===pi&&G.merchant.r===k) r=2;
+  if(G.flags.flotte===k) r=2;
+  return r;
+}
+function bankTrade(pi,give,get){ const r=ratio(pi,give); if(P(pi).res[give]<r) return false; P(pi).res[give]-=r; P(pi).res[get]++; log(`${P(pi).name} échange ${r} ${RNAME[give].toLowerCase()} contre 1 ${RNAME[get].toLowerCase()}.`); return true; }
+
+/* --------- Cités & Remparts --------- */
+function cityCount(){ return Object.values(G.bv).filter(b=>b.t==='c').length; }
+function strength(pi){ return knights(pi).filter(v=>G.kn[v].active).reduce((s,v)=>s+G.kn[v].lvl,0); }
+async function barbarianAttack(){
+  const att=cityCount(), def=G.players.map((_,i)=>strength(i)), tot=def.reduce((a,b)=>a+b,0);
+  log(`⚔ Les barbares débarquent : ${att} contre ${tot}.`);
+  if(!IS_NODE&&!G.fast) await uiFx('attack',att,tot);
+  if(att>tot){
+    const cand=G.players.map((_,i)=>i).filter(i=>Object.values(G.bv).some(b=>b.p===i&&b.t==='c'&&!b.metro));
+    if(cand.length){ const mn=Math.min(...cand.map(i=>def[i])); for(const i of cand.filter(i=>def[i]===mn)){
+      const cities=Object.keys(G.bv).map(Number).filter(v=>G.bv[v].p===i&&G.bv[v].t==='c'&&!G.bv[v].metro);
+      const v=cities.length===1?cities[0]:await choose(i,'vertex',{opts:cities,why:'Les barbares pillent une de tes cités'});
+      if(G.bv[v].wall){ G.bv[v].wall=false; } G.bv[v].t='s'; log(`${P(i).name} perd une cité, réduite en colonie.`); if(!IS_NODE&&!G.fast) await uiPlace('pillage',v,i); } }
+  } else {
+    const mx=Math.max(...def); const top=def.map((d,i)=>d===mx?i:-1).filter(i=>i>=0);
+    if(top.length===1){ P(top[0]).hero++; log(`${P(top[0]).name} est sacré Héros de la Nouvelle Terre (+1 PV) !`); }
+    else for(const i of top){ const deck=await choose(i,'deck',{why:'Victoire partagée : choisis une carte progrès'}); if(G.prog[deck].length) await drawProg(i,deck); }
+  }
+  for(const v in G.kn) G.kn[v].active=false;
+  G.barb=0; if(!G.attacked){ G.attacked=true; log('Le brigand et le pirate peuvent désormais agir.'); }
+}
+async function drawProg(pi,deck){
+  const c=G.prog[deck].pop(); if(!c) return;
+  if(PVPROG.includes(c)){ P(pi).progVP++; log(`${P(pi).name} révèle ${PNAME[c]} : +1 PV.`); if(!IS_NODE&&!G.fast) await uiFx('card',pi,PNAME[c]); return; }
+  P(pi).prog.push({k:c,deck}); log(`${P(pi).name} reçoit une carte progrès (${TRNAME[deck]}).`);
+  if(!IS_NODE&&!G.fast) uiFx('prog',pi,deck);
+  if(P(pi).prog.length>4){ const i=await choose(pi,'discardProg',{}); const [d]=P(pi).prog.splice(i,1); G.prog[d.deck].unshift(d.k); log(`${P(pi).name} écarte une carte progrès.`); }
+}
+function imprCost(pi,t){ const L=P(pi).impr[t]; const c={}; c[TRACKS[t]]=Math.max(0,L+1-(G.flags.grue?1:0)); return c; }
+function canImpr(pi,t){ const L=P(pi).impr[t]; if(L>=5) return false; if(!Object.values(G.bv).some(b=>b.p===pi&&b.t==='c')) return false;
+  if(L>=3){ const m=G.metro[t]; if(m!==pi&&m>=0&&L+1===4) { /* niveau 4 possible, pas de métropole */ } }
+  return canPay(pi,imprCost(pi,t)); }
+async function improve(pi,t){ pay(pi,imprCost(pi,t)); G.flags.grue=false; P(pi).impr[t]++; log(`${P(pi).name} améliore ${TRNAME[t]} au niveau ${P(pi).impr[t]}.`); if(!IS_NODE&&!G.fast) await uiFx('impr',pi,t); assignMetros(); }
+function assignMetros(){
+  for(const t in TRACKS){ const cur=G.metro[t];
+    for(let i=0;i<G.players.length;i++){ const L=P(i).impr[t]; if(L<4||cur===i) continue;
+      if(cur<0 || (L===5 && P(cur).impr[t]<5)){ // prend (ou vole) la métropole
+        const free=Object.keys(G.bv).map(Number).filter(v=>G.bv[v].p===i&&G.bv[v].t==='c'&&!G.bv[v].metro); if(!free.length) continue;
+        if(cur>=0){ for(const v in G.bv) if(G.bv[v].metro===t) G.bv[v].metro=null; }
+        G.bv[free[0]].metro=t; G.metro[t]=i; log(`${P(i).name} érige la Métropole de ${TRNAME[t]} (+2 PV) !`); if(!IS_NODE&&!G.fast) uiFx('metro',free[0],t); break; } } }
+}
+async function placeKnight(pi,v,free,lvl){ if(!free) pay(pi,COST.knight); G.kn[v]={p:pi,lvl:lvl||1,active:false,upTurn:G.turn}; log(`${P(pi).name} recrute un chevalier.`); updateLongest(); if(!IS_NODE&&!G.fast) await uiPlace('knight',v,pi); }
+async function upKnight(pi,v,free){ if(!free) pay(pi,COST.kup); G.kn[v].lvl++; G.kn[v].upTurn=G.turn; log(`${P(pi).name} promeut un chevalier (niveau ${G.kn[v].lvl}).`); if(!IS_NODE&&!G.fast) await uiPlace('kup',v,pi); }
+async function actKnight(pi,v,free){ if(!free) pay(pi,COST.kact); G.kn[v].active=true; G.kn[v].actTurn=G.turn; log(`${P(pi).name} active un chevalier.`); if(!IS_NODE&&!G.fast) await uiPlace('kact',v,pi); }
+function knightMoves(pi,v){ // sommets vides atteignables par le réseau du joueur
+  const seen=new Set([v]), q=[v], out=[];
+  while(q.length){ const u=q.shift(); for(const e of G.V[u].adjE){ const b=G.be[e]; if(!b||b.p!==pi) continue; const w=G.E[e].v[0]===u?G.E[e].v[1]:G.E[e].v[0]; if(seen.has(w)) continue; seen.add(w);
+    if(G.bv[w]&&G.bv[w].p!==pi) continue; if(G.kn[w]!=null&&G.kn[w].p!==pi) continue; if(vFree(w)&&G.V[w].land) out.push(w); q.push(w); } }
+  return out;
+}
+function canChase(pi,v){ const k=G.kn[v]; return k&&k.p===pi&&k.active&&k.actTurn!==G.turn&&G.attacked&&G.robber>=0&&G.H[G.robber].v.includes(v); }
+async function chaseRobber(pi,v){ G.kn[v].active=false; log(`${P(pi).name} lance un chevalier contre le brigand !`); await moveRobber(pi,false); }
+async function moveKnight(pi,from,to){ const k=G.kn[from]; delete G.kn[from]; k.active=false; G.kn[to]=k; log(`${P(pi).name} déplace un chevalier.`); updateLongest(); if(!IS_NODE&&!G.fast) await uiPlace('knight',to,pi); }
+
+/* --------- cartes progrès --------- */
+function progPlayable(pi,c,pre){
+  if(c==='alchimiste') return pre;
+  if(pre) return false;
+  const p=P(pi);
+  switch(c){
+    case 'medecine': return legal(pi,'city').length>0&&p.res.minerai>=2&&p.res.ble>=1&&pieceLeft(pi,'city');
+    case 'ingenieur': return legal(pi,'wall').length>0&&Object.values(G.bv).filter(b=>b.p===pi&&b.wall).length<3;
+    case 'forgeron': return knights(pi).some(v=>canKnightUp(pi,v));
+    case 'routes': return legal(pi,'road').length+legal(pi,'ship').length>0;
+    case 'grue': return !G.flags.grue;
+    case 'maitre': return others(pi).some(o=>vp(o,true)>vp(pi,true)&&resCount(P(o))>0);
+    case 'eveque': return G.attacked;
+    case 'diplomate': return openRoads(pi).length>0;
+    case 'intrigue': return intrigueTargets(pi).length>0;
+    case 'espion': return others(pi).some(o=>P(o).prog.length>0);
+    case 'seigneur': return knights(pi).some(v=>!G.kn[v].active);
+    case 'mariage': return others(pi).some(o=>vp(o,true)>vp(pi,true)&&resCount(P(o))>0);
+    case 'deserteur': return others(pi).some(o=>knights(o).length>0);
+    case 'inventeur': return swappable().length>=2;
+    case 'marchand': return merchantHexes(pi).length>0;
+  }
+  return true;
+}
+function swappable(){ return G.H.map((h,i)=>i).filter(i=>G.H[i].n&&![2,12,6,8].includes(G.H[i].n)); }
+function merchantHexes(pi){ return G.H.map((h,i)=>i).filter(i=>TRES[G.H[i].t]&&G.H[i].v.some(v=>G.bv[v]&&G.bv[v].p===pi)); }
+function openRoads(pi){ return Object.keys(G.be).map(Number).filter(e=>{ const b=G.be[e]; if(b.p===pi||b.t!=='road') return false; return G.E[e].v.some(v=>!G.bv[v]&&G.kn[v]==null&&!G.V[v].adjE.some(o=>o!==e&&G.be[o]&&G.be[o].p===b.p)); }); }
+function intrigueTargets(pi){ return Object.keys(G.kn).map(Number).filter(v=>G.kn[v].p!==pi&&ownEdgeAt(pi,v)); }
+async function playProg(pi,idx){
+  const p=P(pi), card=p.prog[idx]; if(!card) return false; const c=card.k;
+  p.prog.splice(idx,1); G.prog[card.deck].unshift(c);
+  log(`${p.name} joue ${PNAME[c]}.`); if(!IS_NODE&&!G.fast) await uiFx('card',pi,PNAME[c]);
+  const opp=others(pi);
+  switch(c){
+    case 'alchimiste': { const d=await choose(pi,'dice',{}); G.flags.alchimie=d; break; }
+    case 'inventeur': { const opts=swappable(); const a=await choose(pi,'hex',{opts,why:'Inventeur : premier jeton'}); const b=await choose(pi,'hex',{opts:opts.filter(x=>x!==a),why:'Inventeur : second jeton'}); const t=G.H[a].n; G.H[a].n=G.H[b].n; G.H[b].n=t; log('Deux jetons échangent leur place.'); break; }
+    case 'irrigation': case 'mine': { const t=c==='irrigation'?'champ':'montagne', r=TRES[t]; const n=G.H.filter(h=>h.t===t&&h.v.some(v=>G.bv[v]&&G.bv[v].p===pi)).length; gain(pi,r,2*n); log(`${p.name} reçoit ${2*n} ${RNAME[r].toLowerCase()}.`); break; }
+    case 'medecine': { const v=await choose(pi,'vertex',{opts:legal(pi,'city'),why:'Médecine : quelle colonie ?'}); await placeCity(pi,v,false,{minerai:2,ble:1}); break; }
+    case 'ingenieur': { const v=await choose(pi,'vertex',{opts:legal(pi,'wall'),why:'Ingénieur : rempart gratuit'}); G.bv[v].wall=true; if(!IS_NODE&&!G.fast) await uiPlace('wall',v,pi); break; }
+    case 'forgeron': { for(let k=0;k<2;k++){ const opts=knights(pi).filter(v=>canKnightUp(pi,v)); if(!opts.length) break; const v=await choose(pi,'vertex',{opts,why:`Forgeron : promotion ${k+1}/2`}); await upKnight(pi,v,true); } break; }
+    case 'routes': await freeRoads(pi,2); break;
+    case 'grue': G.flags.grue=true; break;
+    case 'marchand': { const h=await choose(pi,'hex',{opts:merchantHexes(pi),why:'Marchand : choisis un hexagone voisin de tes bâtiments'}); G.merchant={p:pi,h,r:TRES[G.H[h].t]}; if(!IS_NODE&&!G.fast) await uiFx('merchant',h); break; }
+    case 'flotte': { const r=(await choose(pi,'res',{n:1,pool:G.mods.ck?ALLC:R5,why:'Flotte marchande : 2:1 pour quelle carte ?'}))[0]; G.flags.flotte=r; break; }
+    case 'monoRes': { const r=(await choose(pi,'res',{n:1,pool:R5,why:'Monopole : quelle ressource ?'}))[0]; let t=0; for(const o of opp){ const n=Math.min(2,P(o).res[r]); P(o).res[r]-=n; p.res[r]+=n; t+=n; } log(`${p.name} récupère ${t} ${RNAME[r].toLowerCase()}.`); break; }
+    case 'monoCom': { const r=(await choose(pi,'res',{n:1,pool:C3,why:'Monopole commercial : quelle marchandise ?'}))[0]; let t=0; for(const o of opp){ if(P(o).res[r]>0){ P(o).res[r]--; p.res[r]++; t++; } } log(`${p.name} récupère ${t} ${RNAME[r].toLowerCase()}.`); break; }
+    case 'maitre': { const opts=opp.filter(o=>vp(o,true)>vp(pi,true)&&resCount(P(o))>0); const t=opts.length===1?opts[0]:await choose(pi,'player',{opts,why:'Maître marchand : chez qui ?'}); steal(pi,t); steal(pi,t); break; }
+    case 'portMarchand': { for(const o of opp){ const cm=C3.filter(k=>P(o).res[k]>0); if(!cm.length) continue; const k=cm[Math.floor(rand()*cm.length)]; P(o).res[k]--; p.res[k]++; const mine=R5.filter(r=>p.res[r]>0).sort((a,b)=>p.res[b]-p.res[a]); if(mine.length){ p.res[mine[0]]--; P(o).res[mine[0]]++; } } log(`${p.name} négocie au port marchand.`); break; }
+    case 'eveque': { const land=G.H.map((h,i)=>i).filter(i=>G.H[i].t!=='mer'&&i!==G.robber); const h=await choose(pi,'hex',{opts:land,why:'Évêque : où va le brigand ?'}); G.robber=h; if(!IS_NODE&&!G.fast) await uiFx('robber',h);
+      for(const o of [...new Set(G.H[h].v.filter(v=>G.bv[v]).map(v=>G.bv[v].p))]) if(o!==pi) steal(pi,o); break; }
+    case 'diplomate': { const opts=openRoads(pi); const e=await choose(pi,'edge',{opts,why:'Diplomate : quelle route retirer ?'}); const e2=e.e??e; const ow=G.be[e2].p; delete G.be[e2]; log(`Une route de ${P(ow).name} est retirée.`); updateLongest(); if(!IS_NODE&&!G.fast) uiRender(); break; }
+    case 'intrigue': { const opts=intrigueTargets(pi); const v=await choose(pi,'vertex',{opts,why:'Intrigue : quel chevalier chasser ?'}); const ow=G.kn[v].p; delete G.kn[v]; log(`Un chevalier de ${P(ow).name} est chassé.`); updateLongest(); if(!IS_NODE&&!G.fast) uiRender(); break; }
+    case 'espion': { const opts=opp.filter(o=>P(o).prog.length>0); const t=opts.length===1?opts[0]:await choose(pi,'player',{opts,why:'Espion : chez qui ?'}); const j=Math.floor(rand()*P(t).prog.length); const [cc]=P(t).prog.splice(j,1); p.prog.push(cc); log(`${p.name} subtilise une carte progrès à ${P(t).name}.`); break; }
+    case 'seigneur': { knights(pi).forEach(v=>{G.kn[v].active=true;G.kn[v].actTurn=G.turn-1;}); if(!IS_NODE&&!G.fast) uiRender(); break; }
+    case 'mariage': { for(const o of opp.filter(o=>vp(o,true)>vp(pi,true))){ for(let k=0;k<2;k++){ const pool=ALLC.filter(r=>P(o).res[r]>0); if(!pool.length) break; const r=pool.sort((a,b)=>P(o).res[b]-P(o).res[a])[0]; P(o).res[r]--; p.res[r]++; } } log(`Les cadeaux de mariage affluent chez ${p.name}.`); break; }
+    case 'saboteur': { for(const o of opp.filter(o=>vp(o,true)>=vp(pi,true))){ const n=Math.floor(resCount(P(o))/2); if(!n) continue; const d=await choose(o,'discard',{n}); for(const r in d) P(o).res[r]-=d[r]; log(`${P(o).name} perd ${n} cartes.`); } break; }
+    case 'deserteur': { const opts=opp.filter(o=>knights(o).length>0); const t=opts.length===1?opts[0]:await choose(pi,'player',{opts,why:'Déserteur : quel adversaire ?'}); const ks=knights(t).sort((a,b)=>G.kn[a].lvl-G.kn[b].lvl); const lv=G.kn[ks[0]].lvl; delete G.kn[ks[0]];
+      log(`Un chevalier de ${P(t).name} déserte.`); const spots=legal(pi,'knight'); let L=lv; while(L>1&&knightCount(pi,L)>=2) L--; if(spots.length&&knightCount(pi,L)<2){ const v=await choose(pi,'vertex',{opts:spots,why:'Déserteur : où placer ton nouveau chevalier ?'}); await placeKnight(pi,v,true,L); } updateLongest(); break; }
+  }
+  return true;
+}
+
+/* --------- tour de jeu --------- */
+async function runGame(){
+  const my=++GEN;
+  try{
+    if(!IS_NODE&&!G.fast) uiRender();
+    if(G.phase==='setup') await setupPhase();
+    while(!G.over){
+      if(my!==GEN) return;
+      await playTurn(G.cur);
+      if(my!==GEN||G.over) break;
+      if(G.mods.ext56) await specialBuild(G.cur);
+      if(G.over) break;
+      G.cur=(G.cur+1)%G.players.length;
+      if(G.turn>600){ G.over=true; break; }
+    }
+    if(!IS_NODE&&!G.fast) await uiEnd(); else finalize();
+  }catch(e){ if(e!=='abort') throw e; }
+}
+function finalize(){ if(G.winner<0){ const v=G.players.map((_,i)=>vp(i)); const mx=Math.max(...v); G.winner=v.indexOf(mx);} G.over=true; }
+async function setupPhase(){
+  const n=G.players.length, seq=[...Array(n).keys()].concat([...Array(n).keys()].reverse());
+  for(;G.setupStep<seq.length;G.setupStep++){
+    const pi=seq[G.setupStep], second=G.setupStep>=n; G.cur=pi;
+    if(!IS_NODE&&!G.fast){ uiSave(); uiRender(); }
+    if(!P(pi).ai&&humansCount()>1&&!IS_NODE&&!G.fast) await uiCover(pi);
+    const opts=[]; for(let v=0;v<G.V.length;v++) if(canSettleAt(pi,v,true)&&G.V[v].adjE.some(e=>!G.be[e]&&(G.E[e].landAdj||(G.mods.nav&&G.E[e].seaAdj&&!pirateNear(e))))) opts.push(v);
+    const v=await choose(pi,'vertex',{opts,why:second&&G.mods.ck?'Place ta cité de départ':'Place une colonie de départ',setup:true,kind:second&&G.mods.ck?'city':'settle'});
+    await placeSettle(pi,v,true);
+    if(second){ if(G.mods.ck){ G.bv[v].t='c'; if(!IS_NODE&&!G.fast) await uiPlace('city',v,pi); }
+      for(const h of G.V[v].hex){ const t=G.H[h].t; if(TRES[t]) gain(pi,TRES[t],1); else if(t==='or') { const r=await choose(pi,'res',{n:1,pool:R5,why:"Champ d'or : choisis 1 ressource"}); gain(pi,r[0],1); } } }
+    const eopts=G.V[v].adjE.filter(e=>!G.be[e]&&(G.E[e].landAdj||(G.mods.nav&&G.E[e].seaAdj)));
+    const types=[]; eopts.forEach(e=>{ if(G.E[e].landAdj) types.push({e,t:'road'}); if(G.mods.nav&&G.E[e].seaAdj&&!pirateNear(e)) types.push({e,t:'ship'}); });
+    if(!types.length) continue;
+    const c=await choose(pi,'edge',{opts:[...new Set(types.map(t=>t.e))],types,why:'Ajoute une route'+(G.mods.nav?' ou un navire':'')+' à cette colonie',setup:true});
+    const o=types.find(o=>o.e===(c.e??c)&&(!c.t||o.t===c.t))||types[0]; await placeEdge(pi,o.e,o.t,true);
+  }
+  G.phase='play'; G.cur=0; G.turn=1;
+}
+function humansCount(){ return G.players.filter(p=>!p.ai).length; }
+async function playTurn(pi){
+  G.turn++; G.flags={}; G.cur=pi; G.phase='pre';
+  const p=P(pi); p.dev.push(...p.devNew); p.devNew=[];
+  if(!IS_NODE&&!G.fast){ uiSave(); uiRender(); }
+  if(p.ai){ await sleep(G.cfg.speed??600); await aiTurn(pi); }
+  else { if(humansCount()>1&&!IS_NODE&&!G.fast) await uiCover(pi); await humanTurn(pi); }
+  checkWin(pi);
+}
+function checkWin(pi){ if(!G.over&&vp(pi)>=G.target){ G.over=true; G.winner=pi; log(`🏆 ${P(pi).name} atteint ${vp(pi)} points et remporte la partie !`); return true; } return false; }
+async function specialBuild(after){
+  for(let k=1;k<G.players.length;k++){ const pi=(after+k)%G.players.length; G.phase='special'; G.sbp=pi;
+    if(P(pi).ai) await aiBuildLoop(pi,false); else if(['road','ship','settle','city','dev','knight','wall'].some(k=>COST[k]&&canPay(pi,COST[k]))||(G.mods.ck&&Object.keys(TRACKS).some(t=>canImpr(pi,t)))) { if(humansCount()>1&&!IS_NODE&&!G.fast) await uiCover(pi,'Phase de construction spéciale'); await humanSpecial(pi); } }
+  G.sbp=null;
+}
+
+/* --------- actions humaines (validation) --------- */
+async function doAction(pi,a){
+  const p=P(pi);
+  switch(a.a){
+    case 'roll': await roll(pi); G.phase='main'; return;
+    case 'settle': if(pieceLeft(pi,'settle')&&canPay(pi,COST.settle)&&canSettleAt(pi,a.v,false)) await placeSettle(pi,a.v); return;
+    case 'city': if(pieceLeft(pi,'city')&&canPay(pi,COST.city)&&G.bv[a.v]&&G.bv[a.v].p===pi&&G.bv[a.v].t==='s') await placeCity(pi,a.v); return;
+    case 'road': if(pieceLeft(pi,'road')&&canPay(pi,COST.road)&&canRoadAt(pi,a.e)) await placeEdge(pi,a.e,'road'); return;
+    case 'ship': if(pieceLeft(pi,'ship')&&canPay(pi,COST.ship)&&canShipAt(pi,a.e)) await placeEdge(pi,a.e,'ship'); return;
+    case 'moveShip': if(shipMovable(pi).includes(a.from)){ const b=G.be[a.from]; delete G.be[a.from]; if(canShipAt(pi,a.to)&&a.to!==a.from){ G.be[a.to]={p:pi,t:'ship',turn:b.turn}; G.flags.shipMoved=true; log(`${p.name} déplace un navire.`); updateLongest(); if(!IS_NODE&&!G.fast) await uiPlace('ship',a.to,pi); } else G.be[a.from]=b; } return;
+    case 'dev': if(G.devDeck.length&&canPay(pi,COST.dev)) await buyDev(pi); return;
+    case 'playDev': await playDev(pi,a.c); return;
+    case 'bank': bankTrade(pi,a.give,a.get); return;
+    case 'ptrade': { const o=P(a.with); for(const k in a.give) if(p.res[k]<a.give[k]) return; for(const k in a.get) if(o.res[k]<a.get[k]) return;
+      for(const k in a.give){ p.res[k]-=a.give[k]; o.res[k]+=a.give[k]; } for(const k in a.get){ o.res[k]-=a.get[k]; p.res[k]+=a.get[k]; } log(`${p.name} commerce avec ${o.name}.`); return; }
+    case 'knight': if(canPay(pi,COST.knight)&&knightCount(pi,1)<2&&legal(pi,'knight').includes(a.v)) await placeKnight(pi,a.v); return;
+    case 'kup': if(canPay(pi,COST.kup)&&canKnightUp(pi,a.v)) await upKnight(pi,a.v); return;
+    case 'kact': if(canPay(pi,COST.kact)&&G.kn[a.v]&&G.kn[a.v].p===pi&&!G.kn[a.v].active) await actKnight(pi,a.v); return;
+    case 'kmove': if(G.kn[a.v]&&G.kn[a.v].p===pi&&G.kn[a.v].active&&G.kn[a.v].actTurn!==G.turn&&knightMoves(pi,a.v).includes(a.to)) await moveKnight(pi,a.v,a.to); return;
+    case 'kchase': if(canChase(pi,a.v)) await chaseRobber(pi,a.v); return;
+    case 'wall': if(canPay(pi,COST.wall)&&legal(pi,'wall').includes(a.v)&&Object.values(G.bv).filter(b=>b.p===pi&&b.wall).length<3){ pay(pi,COST.wall); G.bv[a.v].wall=true; log(`${p.name} érige un rempart.`); if(!IS_NODE&&!G.fast) await uiPlace('wall',a.v,pi); } return;
+    case 'impr': if(canImpr(pi,a.t)) await improve(pi,a.t); return;
+    case 'prog': if(p.prog[a.i]&&progPlayable(pi,p.prog[a.i].k,G.phase==='pre')) await playProg(pi,a.i); return;
+  }
+}
+async function humanTurn(pi){
+  while(true){
+    const a=await uiTurn(pi,G.phase);
+    if(a.a==='end'){ if(G.phase==='pre') continue; return; }
+    if(G.phase==='pre'&&!['roll','playDev','prog'].includes(a.a)) continue;
+    await doAction(pi,a);
+    if(checkWin(pi)) return;
+  }
+}
+async function humanSpecial(pi){
+  while(true){ const a=await uiTurn(pi,'special'); if(a.a==='end') return; if(['settle','city','road','ship','dev','knight','kup','kact','wall','impr'].includes(a.a)) await doAction(pi,a); }
+}
+
+/* =================== IA =================== */
+function prodWeights(pi){ const w={}; R5.forEach(r=>w[r]=0); for(const v in G.bv){ const b=G.bv[v]; if(b.p!==pi) continue; for(const h of G.V[v].hex){ const H=G.H[h]; if(TRES[H.t]&&H.n) w[TRES[H.t]]+=PIPS[H.n]*(b.t==='c'?2:1); } } return w; }
+function vertexValue(pi,v){
+  const V=G.V[v], w=prodWeights(pi); let s=0; const types=new Set();
+  for(const h of V.hex){ const H=G.H[h]; if(!H.n||h===G.robber) continue; const r=TRES[H.t];
+    let k=PIPS[H.n]; if(H.t==='or') k*=1.35; else { k*= {bois:1.05,argile:1.05,laine:.9,ble:1.05,minerai:1.08}[r]; if(w[r]<2) k*=1.3; if(!types.has(r)) k*=1.08; types.add(r); }
+    if(G.mods.ck&&TCOM[H.t]) k*=1.12; s+=k; }
+  if(V.port){ if(V.port==='3') s+=1.5; else s+= (w[V.port]||0)>=4?3:1; }
+  if(G.mods.nav){ const isl=V.isl.filter(i=>i>0&&!P(pi).isl.includes(i)); if(isl.length&&G.phase!=='setup') s+=6; }
+  return s;
+}
+function aiChoose(pi,kind,d){
+  const p=P(pi), lv=LV[p.level]||LV.normal, noise=()=>rand()*lv.noise;
+  switch(kind){
+    case 'vertex': {
+      if(d.setup) return d.opts.map(v=>({v,s:vertexValue(pi,v)+noise()})).sort((a,b)=>b.s-a.s)[0].v;
+      if(/pillent/.test(d.why||'')) return d.opts.map(v=>({v,s:vertexValue(pi,v)})).sort((a,b)=>a.s-b.s)[0].v;
+      return d.opts.map(v=>({v,s:vertexValue(pi,v)+(G.robber>=0&&G.H[G.robber].v.includes(v)?3:0)+noise()*.3})).sort((a,b)=>b.s-a.s)[0].v;
+    }
+    case 'edge': {
+      const types=d.types||d.opts.map(e=>({e,t:'road'}));
+      const plan=aiTarget(pi); let best=null,bv=-1e9;
+      for(const o of types){ let s=noise()*.2; if(plan&&plan.first===o.e&&plan.type===o.t) s+=10;
+        const far=G.E[o.e].v.map(v=>spotFree(v)?vertexValue(pi,v):0); s+=Math.max(...far)*.3; if(o.t==='ship') s+= G.mods.nav?.5:-.5; if(s>bv){bv=s;best=o;} }
+      return best||types[0];
+    }
+    case 'hex': {
+      if(/Inventeur/.test(d.why)) return d.opts[Math.floor(rand()*d.opts.length)];
+      if(/Marchand/.test(d.why)) return d.opts.map(h=>({h,s:prodWeights(pi)[TRES[G.H[h].t]]||0})).sort((a,b)=>b.s-a.s)[0].h;
+      const lead=G.players.map((_,i)=>vp(i,true));
+      return d.opts.map(h=>{ const H=G.H[h]; let s=noise()*.3;
+        if(H.t==='mer'){ for(const e of H.e){ const b=G.be[e]; if(b&&b.t==='ship') s+= b.p===pi?-3:1; } return {h,s:s*.8}; }
+        for(const v of H.v){ const b=G.bv[v]; if(!b) continue; const w=(H.n?PIPS[H.n]:0)*(b.t==='c'?2:1); s+= b.p===pi? -w*3 : w*(1+lead[b.p]/10)+(resCount(P(b.p))>0?1:0); }
+        return {h,s}; }).sort((a,b)=>b.s-a.s)[0].h;
+    }
+    case 'player': return d.opts.slice().sort((a,b)=>vp(b,true)-vp(a,true)+ (resCount(P(b))-resCount(P(a)))*.1)[0];
+    case 'res': { const need=aiNeeds(pi); const pool=d.pool.slice(); const out=[]; for(let k=0;k<d.n;k++){ pool.sort((a,b)=>(need[b]||0)-(need[a]||0)+rand()*.1); out.push(pool[0]); need[pool[0]]=(need[pool[0]]||0)-1; } return out; }
+    case 'discard': { const need=aiNeeds(pi); const r={...p.res}; const out={}; for(let k=0;k<d.n;k++){ const c=ALLC.filter(x=>r[x]>0).sort((a,b)=>(r[b]-(need[b]||0)*1.5)-(r[a]-(need[a]||0)*1.5))[0]; r[c]--; out[c]=(out[c]||0)+1; } return out; }
+    case 'deck': { const t=Object.keys(TRACKS).sort((a,b)=>p.impr[b]-p.impr[a])[0]; return G.prog[t].length?t:Object.keys(TRACKS).find(x=>G.prog[x].length)||t; }
+    case 'discardProg': return 0;
+    case 'dice': { let best=[1,1],bv=-1; for(let a=1;a<=6;a++) for(let b=1;b<=6;b++){ const s=a+b; if(s===7) continue; let v=0; G.H.forEach((h,hi)=>{ if(h.n!==s||hi===G.robber) return; h.v.forEach(x=>{ const bb=G.bv[x]; if(bb) v+= (bb.p===pi?1:-.4)*(bb.t==='c'?2:1); }); }); if(v>bv){bv=v;best=[a,b];} } return best; }
+  }
+}
+function aiNeeds(pi){ // besoin pondéré par ressource selon les objectifs
+  const p=P(pi), need={}; ALLC.forEach(k=>need[k]=0);
+  const add=(c,w)=>{ for(const k in c) need[k]+=Math.max(0,c[k]-p.res[k])*w+c[k]*.2*w; };
+  if(legal(pi,'city').length&&pieceLeft(pi,'city')) add(COST.city,1.3);
+  add(COST.settle,1.1); add(G.mods.nav?COST.ship:COST.road,.6);
+  if(!G.mods.ck) add(COST.dev,.5); else { add(COST.knight,.5); for(const t in TRACKS){ const c={}; c[TRACKS[t]]=p.impr[t]+1; add(c,.6); } }
+  return need;
+}
+function aiTarget(pi){ // meilleur emplacement de colonie atteignable
+  const start=[]; for(let v=0;v<G.V.length;v++){ const b=G.bv[v]; if(b&&b.p===pi) { start.push({v,mode:'any'}); continue; } if(blockedFor(pi,v)) continue;
+    if(V_roadEnd(pi,v,'road')) start.push({v,mode:'road'}); if(V_roadEnd(pi,v,'ship')) start.push({v,mode:'ship'}); }
+  const seen=new Map(), q=[]; for(const s of start){ seen.set(s.v+s.mode,1); q.push({v:s.v,mode:s.mode,d:0,first:null,type:null}); }
+  let best=null,bv=-1;
+  while(q.length){ const c=q.shift();
+    if(c.d>0&&spotFree(c.v)){ const s=vertexValue(pi,c.v)/(1+c.d*.55); if(s>bv){bv=s;best=c;} }
+    if(c.d>=(G.mods.nav?7:4)) continue;
+    for(const e of G.V[c.v].adjE){ if(G.be[e]) continue; const w=G.E[e].v[0]===c.v?G.E[e].v[1]:G.E[e].v[0]; if(blockedFor(pi,w)) continue;
+      const modes=[]; if(G.E[e].landAdj&&c.mode!=='ship') modes.push('road'); if(G.mods.nav&&G.E[e].seaAdj&&c.mode!=='road'&&!pirateNear(e)&&(G.V[w].hex.length>=2)) modes.push('ship');
+      for(const m of modes){ const key=w+m; if(seen.has(key)) continue; seen.set(key,1); q.push({v:w,mode:m,d:c.d+1,first:c.first??e,type:c.type??m}); } } }
+  return best?{v:best.v,first:best.first,type:best.type,d:best.d,val:bv}:null;
+}
+function aiOptions(pi,allowDev){
+  const p=P(pi), out=[], lv=LV[p.level]||LV.normal, noise=()=>rand()*lv.noise;
+  const cityV=legal(pi,'city'); if(cityV.length&&pieceLeft(pi,'city')) { const v=cityV.map(v=>({v,s:vertexValue(pi,v)})).sort((a,b)=>b.s-a.s)[0]; out.push({a:'city',v:v.v,cost:COST.city,s:100+v.s+noise()}); }
+  const setV=legal(pi,'settle'); if(setV.length&&pieceLeft(pi,'settle')){ const v=setV.map(v=>({v,s:vertexValue(pi,v)})).sort((a,b)=>b.s-a.s)[0]; out.push({a:'settle',v:v.v,cost:COST.settle,s:95+v.s+noise()}); }
+  else { const t=aiTarget(pi); if(t&&t.first!=null){ const type=t.type; if(pieceLeft(pi,type)) out.push({a:type,e:t.first,cost:COST[type],s:55+t.val*1.5-t.d*3+noise()}); } }
+  // route la plus longue
+  if(G.longLen&&!setV.length){ const my=G.longLen[pi]||0, best=Math.max(...G.longLen); if(my>=3&&my+2>=best&&G.longest!==pi){ const opts=legal(pi,'road'); if(opts.length&&pieceLeft(pi,'road')) out.push({a:'road',e:opts[Math.floor(rand()*opts.length)],cost:COST.road,s:45+noise()}); } }
+  if(!G.mods.ck&&allowDev&&G.devDeck.length) out.push({a:'dev',cost:COST.dev,s:42+(cityV.length?0:6)+noise()});
+  if(G.mods.ck){
+    const nc=Object.values(G.bv).filter(b=>b.p===pi&&b.t==='c').length;
+    if(nc) for(const t in TRACKS){ const L=p.impr[t]; if(L<5) out.push({a:'impr',t,cost:imprCost(pi,t),s:62+L*4+(L===3?8:0)+(t==='science'&&L<3?4:0)+noise()}); }
+    const danger=G.barb>=4, my=strength(pi), cities=cityCount(), totalDef=G.players.reduce((s,_,i)=>s+strength(i),0);
+    const kspots=legal(pi,'knight'); if(kspots.length&&knightCount(pi,1)<2&&(danger||rand()<.25)) out.push({a:'knight',v:kspots.map(v=>({v,s:(G.robber>=0&&G.H[G.robber].v.includes(v)?4:0)+G.V[v].adjV.filter(w=>G.bv[w]&&G.bv[w].p===pi).length+rand()})).sort((a,b)=>b.s-a.s)[0].v,cost:COST.knight,s:(danger&&totalDef<cities?82:40)+noise()});
+    for(const v of knights(pi)){ const k=G.kn[v]; if(!k.active) out.push({a:'kact',v,cost:COST.kact,s:(G.barb>=5?85:G.barb>=3?50:15)+k.lvl*2+noise()}); if(canKnightUp(pi,v)) out.push({a:'kup',v,cost:COST.kup,s:(danger?55:30)+noise()}); if(canChase(pi,v)&&G.H[G.robber].v.some(x=>G.bv[x]&&G.bv[x].p===pi)) out.push({a:'kchase',v,cost:{},s:70}); }
+    const walls=legal(pi,'wall'); if(walls.length&&resCount(p)>=7&&Object.values(G.bv).filter(b=>b.p===pi&&b.wall).length<3) out.push({a:'wall',v:walls[0],cost:COST.wall,s:35+noise()});
+  }
+  return out.sort((a,b)=>b.s-a.s);
+}
+async function aiTradeFor(pi,cost){
+  const p=P(pi), lv=LV[p.level]||LV.normal; if(rand()>lv.trade) return false;
+  const def={}; let need=0; for(const k in cost){ const d=cost[k]-p.res[k]; if(d>0){def[k]=d;need+=d;} } if(!need) return true;
+  if(need>(resCount(p)>=9?4:2)) return false;
+  const plan=[]; const r={...p.res}; for(const k in cost) r[k]-=Math.min(r[k],cost[k]);
+  for(const k in def){ for(let n=0;n<def[k];n++){ const src=ALLC.filter(x=>x!==k&&r[x]>=ratio(pi,x)).sort((a,b)=>(r[b]/ratio(pi,b))-(r[a]/ratio(pi,a)))[0]; if(!src) return false; r[src]-=ratio(pi,src); plan.push([src,k]); } }
+  for(const [g,k] of plan) bankTrade(pi,g,k);
+  return true;
+}
+async function aiBuildLoop(pi,full){
+  for(let it=0;it<14&&!G.over;it++){
+    const opts=aiOptions(pi,full);
+    const ok=opts.find(o=>canPay(pi,o.cost));
+    if(ok && (!opts[0]||ok.s>=opts[0].s-25||resCount(P(pi))>6)){ await execAI(pi,ok); if(checkWin(pi)&&full) return; continue; }
+    if(full&&opts.length){ let done=false; for(const o of opts.slice(0,3)){ if(await aiTradeFor(pi,o.cost)&&canPay(pi,o.cost)){ await execAI(pi,o); done=true; break; } } if(done){ if(checkWin(pi)) return; continue; } }
+    break;
+  }
+}
+async function execAI(pi,o){
+  if(G.phase!=='special'&&!G.fast&&!IS_NODE) await sleep((G.cfg.speed??600)*.6);
+  switch(o.a){
+    case 'city': await placeCity(pi,o.v); break; case 'settle': await placeSettle(pi,o.v); break;
+    case 'road': await placeEdge(pi,o.e,'road'); break; case 'ship': await placeEdge(pi,o.e,'ship'); break;
+    case 'dev': await buyDev(pi); break; case 'impr': await improve(pi,o.t); break;
+    case 'knight': await placeKnight(pi,o.v); break; case 'kup': await upKnight(pi,o.v); break; case 'kact': await actKnight(pi,o.v); break;
+    case 'kchase': await chaseRobber(pi,o.v); break;
+    case 'wall': pay(pi,COST.wall); G.bv[o.v].wall=true; log(`${P(pi).name} érige un rempart.`); if(!IS_NODE&&!G.fast) await uiPlace('wall',o.v,pi); break;
+  }
+}
+async function aiPlayCards(pi,pre){
+  const p=P(pi), lv=LV[p.level]||LV.normal;
+  if(!G.mods.ck){
+    if(G.flags.devPlayed||!p.dev.length||rand()>lv.devp) return;
+    const robOnMe=G.robber>=0&&G.H[G.robber].v.some(v=>G.bv[v]&&G.bv[v].p===pi);
+    if(p.dev.includes('chevalier')&&(robOnMe||(p.knightsPlayed>=2&&G.army!==pi)||rand()<.25)) { await playDev(pi,'chevalier'); return; }
+    if(pre) return;
+    if(p.dev.includes('routes')&&legal(pi,'road').length+legal(pi,'ship').length>=2&&!legal(pi,'settle').length) { await playDev(pi,'routes'); return; }
+    if(p.dev.includes('abondance')) { await playDev(pi,'abondance'); return; }
+    if(p.dev.includes('monopole')){ const best=R5.map(r=>({r,n:others(pi).reduce((s,o)=>s+P(o).res[r],0)})).sort((a,b)=>b.n-a.n)[0]; if(best.n>=4) { await playDev(pi,'monopole'); return; } }
+    return;
+  }
+  for(let k=0;k<p.prog.length;k++){ const c=p.prog[k].k; if(!progPlayable(pi,c,pre)) continue;
+    let ok=false;
+    switch(c){ case 'alchimiste': ok=rand()<.7; break; case 'irrigation': ok=G.H.some(h=>h.t==='champ'&&h.v.some(v=>G.bv[v]&&G.bv[v].p===pi)); break; case 'mine': ok=G.H.some(h=>h.t==='montagne'&&h.v.some(v=>G.bv[v]&&G.bv[v].p===pi)); break;
+      case 'medecine': case 'ingenieur': case 'forgeron': case 'marchand': case 'maitre': case 'espion': case 'mariage': case 'eveque': case 'monoCom': case 'portMarchand': case 'deserteur': case 'intrigue': ok=true; break;
+      case 'routes': ok=!legal(pi,'settle').length; break; case 'grue': ok=Object.keys(TRACKS).some(t=>{const c2={};c2[TRACKS[t]]=Math.max(0,p.impr[t]);return p.impr[t]<5&&canPay(pi,c2);}); break;
+      case 'monoRes': ok=others(pi).reduce((s,o)=>s+resCount(P(o)),0)>=6; break; case 'seigneur': ok=G.barb>=5&&knights(pi).some(v=>!G.kn[v].active); break;
+      case 'saboteur': ok=others(pi).some(o=>vp(o,true)>=vp(pi,true)&&resCount(P(o))>=4); break; case 'flotte': ok=false; break; case 'inventeur': ok=false; break; case 'diplomate': ok=rand()<.3; break; }
+    if(ok){ await playProg(pi,k); return aiPlayCards(pi,pre); }
+  }
+}
+async function aiTurn(pi){
+  await aiPlayCards(pi,true);
+  await roll(pi); G.phase='main';
+  if(G.over) return;
+  await aiPlayCards(pi,false);
+  await aiBuildLoop(pi,true);
+  if(G.mods.nav&&!G.over){ // déplacer un navire inutile vers la cible
+    const t=aiTarget(pi); const mv=shipMovable(pi); if(t&&t.type==='ship'&&mv.length&&rand()<.5){ const from=mv[0]; const b=G.be[from]; delete G.be[from]; if(canShipAt(pi,t.first)&&t.first!==from){ G.be[t.first]={p:pi,t:'ship',turn:b.turn}; G.flags.shipMoved=true; log(`${P(pi).name} déplace un navire.`); updateLongest(); } else G.be[from]=b; } }
+}
+function aiAcceptTrade(ai,from,give,get){ // give: ce que l'IA reçoit ; get: ce que l'IA donne
+  const p=P(ai); for(const k in get) if(p.res[k]<get[k]) return false;
+  if(vp(from,true)>=G.target-2) return false;
+  const need=aiNeeds(ai); let gv=0,lv=0; for(const k in give) gv+=give[k]*(1+need[k]); for(const k in get) lv+=get[k]*(1+need[k]);
+  return gv>lv*1.15;
+}
+
+
+/* =================== NOUVELLE TERRE — interface =================== */
+const SAVE_KEY='nouvelle-terre-save';
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const S=58, K=0.64, T=11;
+const PCOL=[{n:'Rouge',h:'#d8402f',d:'#7f1c12',l:'#f07a62'},{n:'Bleu',h:'#2f6fd0',d:'#173a7a',l:'#6fa0f0'},{n:'Blanc',h:'#f1eee6',d:'#9a958a',l:'#ffffff'},{n:'Orange',h:'#ee8a1e',d:'#8a4a06',l:'#ffb45e'},{n:'Vert',h:'#2a9a52',d:'#0f5a2a',l:'#66cc88'},{n:'Brun',h:'#8a5a32',d:'#4a2c14',l:'#b88a5e'}];
+const RCOL={bois:'#2f7a37',argile:'#c0592c',laine:'#9bd06a',ble:'#e9c34a',minerai:'#8d969e',papier:'#7fae5a',tissu:'#e0b44c',monnaie:'#5a86c8'};
+const TCOL={foret:['#4c8a3c','#2c5d24'],pre:['#9fd067','#6ea83f'],champ:['#efcb5a','#cf9f2a'],colline:['#d47a45','#a4522a'],montagne:['#9aa2a8','#6e777e'],desert:['#ecd9a2','#cdb176'],or:['#7a6440','#4e3e24']};
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let UI={mode:null,wait:null,ask:null,view:0,trade:null,sel:null};
+let MUTED=false, PREFS={n:4,slots:null,nav:false,ck:false,target:null,speed:'normale'};
+try{MUTED=localStorage.getItem('nt-mute')==='1';const p=JSON.parse(localStorage.getItem('nt-prefs')||'null');if(p)Object.assign(PREFS,p);}catch(e){}
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const ico=(k,s)=>`<svg width="${s||22}" height="${s||22}"><use href="#i-${k}"/></svg>`;
+const chips=c=>`<span class="chips">${Object.keys(c).map(k=>Array.from({length:c[k]},()=>`<span class="chip" style="--rc:${RCOL[k]}">${ico(k,12)}</span>`).join('')).join('')}</span>`;
+function shade(hex,f){ const n=parseInt(hex.slice(1),16); let r=n>>16,g=n>>8&255,b=n&255; const t=f<0?0:255, p=Math.abs(f); r=Math.round((t-r)*p+r); g=Math.round((t-g)*p+g); b=Math.round((t-b)*p+b); return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1); }
+function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const hx=h=>h.x*S, hy=h=>h.y*S*K;
+const vx=v=>G.V[v].x*S, vy=v=>G.V[v].y*S*K;
+function corners(h){ const c=[]; for(let k=0;k<6;k++){ const a=(60*k-90)*Math.PI/180; c.push([hx(h)+S*Math.cos(a)*.985, hy(h)+S*Math.sin(a)*K*.985]); } return c; }
+const ptsStr=a=>a.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+function viewer(){ if(!G||!G.players) return -1; const hs=G.players.map((p,i)=>p.ai?-1:i).filter(i=>i>=0); if(!hs.length) return -1; if(hs.length===1) return hs[0]; return UI.view; }
+
+/* ---------------- plateau ---------------- */
+let BOARD=null;
+function buildBoard(intro){
+  const svg=$('#map'); svg.innerHTML='';
+  const xs=G.H.map(hx), ys=G.H.map(hy);
+  const land=G.H.filter(h=>h.t!=='mer'); const lx=land.map(hx), ly=land.map(hy);
+  const pad=G.mods.nav?S*.4:S*1.2;
+  const minx=(G.mods.nav?Math.min(...xs):Math.min(...lx))-pad-S*.3, maxx=(G.mods.nav?Math.max(...xs):Math.max(...lx))+pad+S*.3;
+  const miny=(G.mods.nav?Math.min(...ys):Math.min(...ly))-pad*.8-S*.6, maxy=(G.mods.nav?Math.max(...ys):Math.max(...ly))+pad*.8+S*.5;
+  svg.setAttribute('viewBox',`${minx.toFixed(0)} ${miny.toFixed(0)} ${(maxx-minx).toFixed(0)} ${(maxy-miny).toFixed(0)}`);
+  BOARD={minx,miny,w:maxx-minx,h:maxy-miny};
+  const defs=el('defs',{},svg);
+  defs.innerHTML=`<pattern id="wv" width="24" height="10" patternUnits="userSpaceOnUse"><path d="M0 6 q6 -5 12 0 t12 0" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="1.2"/></pattern>
+   <radialGradient id="tokg" cx="40%" cy="35%"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#e9dcbc"/></radialGradient>
+   <linearGradient id="robg" x1="0" x2="1"><stop offset="0" stop-color="#6a6a74"/><stop offset="1" stop-color="#1e1e24"/></linearGradient>
+   <linearGradient id="sideg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".15"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></linearGradient>
+   <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter>`;
+  const sea=el('g',{id:'sea'},svg);
+  el('rect',{x:minx-50,y:miny-50,width:maxx-minx+100,height:maxy-miny+100,fill:'url(#wv)',class:'waves'},sea);
+  G.H.forEach((h,i)=>{ if(h.t!=='mer') return; const c=corners(h);
+    el('polygon',{points:ptsStr(c),fill:'#2d7aa8',opacity:G.mods.nav?.35:.18,stroke:'#9fd3ef','stroke-opacity':G.mods.nav?.25:.08,'stroke-width':1,class:'tile','data-h':i},sea); });
+  // ombre de l'île
+  const sh=el('g',{opacity:.35,filter:'url(#soft)'},svg);
+  G.H.forEach(h=>{ if(h.t==='mer') return; const c=corners(h).map(p=>[p[0]+4,p[1]+T+8]); el('polygon',{points:ptsStr(c),fill:'#06202f'},sh); });
+  const tiles=el('g',{id:'tiles'},svg);
+  const order=G.H.map((h,i)=>i).filter(i=>G.H[i].t!=='mer').sort((a,b)=>hy(G.H[a])-hy(G.H[b]));
+  const cx0=(minx+maxx)/2, cy0=(miny+maxy)/2;
+  order.forEach(i=>{ const h=G.H[i], c=corners(h), g=el('g',{class:'tile'+(intro&&!REDUCED?' tdrop':''),'data-h':i,style:intro?`animation-delay:${(Math.hypot(hx(h)-cx0,hy(h)-cy0)/S*.09).toFixed(2)}s`:''},tiles);
+    const side=[c[1],c[2],c[3],c[4],c[5],[c[5][0],c[5][1]+T],[c[4][0],c[4][1]+T],[c[3][0],c[3][1]+T],[c[2][0],c[2][1]+T],[c[1][0],c[1][1]+T]];
+    const [top,dark]=TCOL[h.t]||['#ccc','#999'];
+    el('polygon',{points:ptsStr(side),fill:shade(dark,-.35)},g); el('polygon',{points:ptsStr(side),fill:'url(#sideg)'},g);
+    el('polygon',{points:ptsStr(c),fill:top,stroke:shade(dark,-.3),'stroke-width':1.2,class:'top'},g);
+    const cid='cl'+i; const cp=el('clipPath',{id:cid},defs); el('polygon',{points:ptsStr(c)},cp);
+    const dg=el('g',{'clip-path':`url(#${cid})`},g); decorate(dg,h,i);
+    el('polygon',{points:ptsStr(c),class:'hexhl'},g);
+  });
+  // ports
+  const pg=el('g',{id:'ports'},svg);
+  G.ports.forEach(pt=>{ const e=G.E[pt.e]; const shx=e.hex.map(i=>G.H[i]).find(h=>h.t==='mer'); if(!shx) return;
+    const mx=e.x*S, my=e.y*S*K, dx=hx(shx)-mx, dy=hy(shx)-my, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L;
+    const g=el('g',{class:intro?'fadein':'',style:intro?'animation-delay:1.6s':''},pg);
+    e.v.forEach(v=>{ const ax=vx(v),ay=vy(v), bx=mx+ux*S*.42, by=my+uy*S*.42; el('line',{x1:ax,y1:ay,x2:bx,y2:by,stroke:'#6b4a2a','stroke-width':4,'stroke-linecap':'round'},g); el('line',{x1:ax,y1:ay,x2:bx,y2:by,stroke:'#b0844e','stroke-width':2,'stroke-dasharray':'3 2'},g); });
+    const bx=mx+ux*S*.55, by=my+uy*S*.55;
+    el('ellipse',{cx:bx,cy:by+3,rx:15,ry:6,fill:'#0005'},g);
+    el('circle',{cx:bx,cy:by,r:13.5,fill:'#f7eedb',stroke:'#6b4a2a','stroke-width':2},g);
+    if(pt.t==='3'){ const t=el('text',{x:bx,y:by+4.5,'text-anchor':'middle','font-size':12,'font-weight':900,fill:'#2d2416','font-family':'Nunito Sans'},g); t.textContent='3:1'; }
+    else { el('use',{href:'#i-'+pt.t,x:bx-9,y:by-12,width:18,height:18},g); const t=el('text',{x:bx,y:by+10,'text-anchor':'middle','font-size':8,'font-weight':900,fill:'#2d2416','font-family':'Nunito Sans'},g); t.textContent='2:1'; }
+  });
+  el('g',{id:'tokens'},svg); el('g',{id:'pieces'},svg); el('g',{id:'marks'},svg); el('g',{id:'fx'},svg);
+  renderTokens(intro);
+}
+function decorate(g,h,i){
+  const R=mulberry(i*977+13), cx=hx(h), cy=hy(h);
+  const spots=(n,avoid)=>{ const out=[]; let guard=0; while(out.length<n&&guard++<200){ const a=R()*Math.PI*2, r=Math.sqrt(R())*S*.82; const x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r*K; if(avoid&&Math.abs(x-cx)<21&&Math.abs(y-cy+2)<16) continue; if(out.some(p=>Math.hypot(p[0]-x,(p[1]-y)/K)<10)) continue; out.push([x,y]); } return out.sort((a,b)=>a[1]-b[1]); };
+  if(h.t==='foret'){ for(const [x,y] of spots(16,true)){ const s=.75+R()*.5; el('rect',{x:x-1.3*s,y:y-4*s,width:2.6*s,height:5*s,fill:'#5a3a1c'},g); el('path',{d:`M${x} ${y-24*s} L${x+8*s} ${y-9*s} L${x-8*s} ${y-9*s}Z`,fill:R()<.5?'#1f5a26':'#2a6e2e'},g); el('path',{d:`M${x} ${y-18*s} L${x+10*s} ${y-3*s} L${x-10*s} ${y-3*s}Z`,fill:R()<.5?'#235f28':'#307a33'},g); el('path',{d:`M${x} ${y-24*s} L${x+8*s} ${y-9*s} L${x} ${y-9*s}Z`,fill:'#000',opacity:.15},g); } }
+  else if(h.t==='pre'){ for(const [x,y] of spots(10,true)){ el('path',{d:`M${x-3} ${y} l1.5 -5 M${x} ${y} l0 -6 M${x+3} ${y} l-1.5 -5`,stroke:'#5c9a32','stroke-width':1.2},g); }
+    for(const [x,y] of spots(5,true)){ el('ellipse',{cx:x,cy:y+1.5,rx:7,ry:2.5,fill:'#0003'},g); el('ellipse',{cx:x,cy:y-4,rx:7,ry:5,fill:'#fbfbf4',stroke:'#aaa','stroke-width':.6},g); el('circle',{cx:x+6.5,cy:y-6,r:2.6,fill:'#333'},g); el('path',{d:`M${x-4} ${y-1}v3M${x+3} ${y-1}v3`,stroke:'#333','stroke-width':1.3},g); } }
+  else if(h.t==='champ'){ for(let k=-6;k<=6;k++){ const y=cy+k*7.5; el('path',{d:`M${cx-S} ${y} Q${cx} ${y-5} ${cx+S} ${y}`,stroke:'#c4921f','stroke-width':2.2,fill:'none',opacity:.75},g); }
+    for(const [x,y] of spots(6,true)){ el('path',{d:`M${x} ${y} l-4 -12 M${x} ${y} l0 -14 M${x} ${y} l4 -12`,stroke:'#9a6e12','stroke-width':2},g); el('ellipse',{cx:x,cy:y-5,rx:5,ry:2,fill:'#b8861a'},g); } }
+  else if(h.t==='colline'){ for(const [x,y] of spots(6,true)){ const s=.8+R()*.6; el('path',{d:`M${x-14*s} ${y} Q${x} ${y-16*s} ${x+14*s} ${y}Z`,fill:'#b2582c'},g); el('path',{d:`M${x} ${y-8*s} Q${x+8*s} ${y-6*s} ${x+14*s} ${y}L${x} ${y}Z`,fill:'#000',opacity:.12},g); }
+    for(const [x,y] of spots(2,true)){ for(let r=0;r<3;r++) for(let c=0;c<3-r;c++) el('rect',{x:x-9+c*6+r*3,y:y-4-r*4,width:5.5,height:3.6,fill:'#8e3b1c',stroke:'#f0b48e','stroke-width':.5},g); } }
+  else if(h.t==='montagne'){ const pk=spots(4,true); for(const [x,y] of pk){ const s=.9+R()*.6; el('path',{d:`M${x-16*s} ${y} L${x} ${y-30*s} L${x+16*s} ${y}Z`,fill:'#7c858c'},g); el('path',{d:`M${x} ${y-30*s} L${x+16*s} ${y} L${x+3*s} ${y}Z`,fill:'#000',opacity:.2},g); el('path',{d:`M${x-6*s} ${y-19*s} L${x} ${y-30*s} L${x+6*s} ${y-19*s} L${x+2*s} ${y-21*s} L${x-2*s} ${y-18*s}Z`,fill:'#fff'},g); } }
+  else if(h.t==='desert'){ for(const [x,y] of spots(7,false)){ el('path',{d:`M${x-12} ${y} Q${x} ${y-7} ${x+12} ${y}`,stroke:'#c9a868','stroke-width':1.6,fill:'none'},g); }
+    for(const [x,y] of spots(2,true)){ el('path',{d:`M${x} ${y} v-16 M${x} ${y-9} h-5 v-5 M${x} ${y-11} h4 v-4`,stroke:'#4f8a3a','stroke-width':3.2,'stroke-linecap':'round',fill:'none'},g); } }
+  else if(h.t==='or'){ for(const [x,y] of spots(7,true)){ el('path',{d:`M${x-8} ${y} L${x-4} ${y-8} L${x+5} ${y-7} L${x+8} ${y}Z`,fill:'#5a4a2c',stroke:'#3a2c14','stroke-width':.6},g); el('circle',{cx:x+1,cy:y-4,r:2.4,fill:'#ffd34a'},g); }
+    for(const [x,y] of spots(4,false)){ el('path',{d:`M${x} ${y-5} L${x+1.2} ${y-1.2} L${x+5} ${y} L${x+1.2} ${y+1.2} L${x} ${y+5} L${x-1.2} ${y+1.2} L${x-5} ${y} L${x-1.2} ${y-1.2}Z`,fill:'#fff6b0',opacity:.9,class:'fadein'},g); } }
+}
+function renderTokens(intro){
+  const g=$('#tokens'); g.innerHTML='';
+  G.H.forEach((h,i)=>{ if(!h.n) return; const x=hx(h), y=hy(h)+4;
+    const t=el('g',{class:'tok'+(intro&&!REDUCED?' fadein':''),'data-n':h.n,'data-h':i,style:intro?'animation-delay:1.3s':''},g);
+    el('ellipse',{cx:x+2,cy:y+8,rx:16,ry:6,fill:'#0005'},t);
+    el('ellipse',{cx:x,cy:y+3.5,rx:16,ry:11.5,fill:'#b49a68'},t);
+    el('ellipse',{cx:x,cy:y,rx:16,ry:11.5,fill:'url(#tokg)',stroke:'#8a7448','stroke-width':1},t);
+    const red=h.n===6||h.n===8; const n=el('text',{x,y:y+3,'text-anchor':'middle','font-size':red?16:14.5,'font-weight':900,fill:red?'#c0261c':'#2d2416','font-family':'Nunito Sans'},t); n.textContent=h.n;
+    const pc=PIPS[h.n]; for(let k=0;k<pc;k++) el('circle',{cx:x+(k-(pc-1)/2)*3.4,cy:y+7.5,r:1.15,fill:red?'#c0261c':'#2d2416'},t);
+  });
+}
+/* ---------------- pièces 3D ---------------- */
+function house(g,x,y,c){ el('ellipse',{cx:x+2,cy:y+1,rx:13,ry:4.5,fill:'#0006'},g);
+  el('path',{d:`M${x-9} ${y} L${x+4} ${y} L${x+4} ${y-11} L${x-2.5} ${y-18} L${x-9} ${y-11}Z`,fill:c.h,stroke:'#1a120a','stroke-width':.9},g);
+  el('path',{d:`M${x+4} ${y} L${x+11} ${y-4} L${x+11} ${y-15} L${x+4} ${y-11}Z`,fill:c.d,stroke:'#1a120a','stroke-width':.9},g);
+  el('path',{d:`M${x-2.5} ${y-18} L${x+4.5} ${y-22} L${x+11} ${y-15} L${x+4} ${y-11}Z`,fill:shade(c.d,-.15),stroke:'#1a120a','stroke-width':.9},g);
+  el('rect',{x:x-4.5,y:y-6.5,width:3.6,height:6.5,fill:'#3a2412',opacity:.75},g); }
+function city(g,x,y,c,metro){ el('ellipse',{cx:x+2,cy:y+1.5,rx:19,ry:6,fill:'#0006'},g);
+  el('path',{d:`M${x-15} ${y} L${x+5} ${y} L${x+5} ${y-12} L${x-15} ${y-12}Z`,fill:c.h,stroke:'#1a120a','stroke-width':.9},g);
+  el('path',{d:`M${x+5} ${y} L${x+12} ${y-4} L${x+12} ${y-16} L${x+5} ${y-12}Z`,fill:c.d,stroke:'#1a120a','stroke-width':.9},g);
+  el('path',{d:`M${x-15} ${y-12} L${x+5} ${y-12} L${x+12} ${y-16} L${x-8} ${y-16}Z`,fill:shade(c.h,.2),stroke:'#1a120a','stroke-width':.9},g);
+  const th=metro?40:30;
+  el('path',{d:`M${x-13} ${y-12} L${x-3} ${y-12} L${x-3} ${y-th} L${x-13} ${y-th}Z`,fill:c.h,stroke:'#1a120a','stroke-width':.9},g);
+  el('path',{d:`M${x-3} ${y-12} L${x+2} ${y-15} L${x+2} ${y-th-3} L${x-3} ${y-th}Z`,fill:c.d,stroke:'#1a120a','stroke-width':.9},g);
+  el('path',{d:`M${x-13} ${y-th} L${x-8} ${y-th-10} L${x-3} ${y-th}Z`,fill:shade(c.d,-.1),stroke:'#1a120a','stroke-width':.9},g);
+  el('path',{d:`M${x-3} ${y-th} L${x-8} ${y-th-10} L${x+2} ${y-th-3}Z`,fill:shade(c.d,-.3),stroke:'#1a120a','stroke-width':.9},g);
+  for(const wx of [x-11,x-7]) el('rect',{x:wx,y:y-th+6,width:2.5,height:4,fill:'#ffe9a0',opacity:.85},g);
+  for(const wx of [x-1,x+3.5]) el('rect',{x:wx-2,y:y-8,width:2.6,height:4,fill:'#ffe9a0',opacity:.8},g);
+  if(metro){ const fc={science:'#3f9a4a',commerce:'#e0b44c',politique:'#3a6fc8'}[metro]; el('path',{d:`M${x-8} ${y-th-10} v-12`,stroke:'#1a120a','stroke-width':1.2},g); el('path',{d:`M${x-8} ${y-th-22} l11 3.5 l-11 3.5Z`,fill:fc,stroke:'#1a120a','stroke-width':.6},g); el('circle',{cx:x-8,cy:y-th-1,r:2.5,fill:'#ffd34a',stroke:'#7a5a10'},g); } }
+function wall(g,x,y){ el('ellipse',{cx:x-1,cy:y-1,rx:22,ry:9,fill:'none',stroke:'#4a4840','stroke-width':6.5},g); el('ellipse',{cx:x-1,cy:y-2.5,rx:22,ry:9,fill:'none',stroke:'#a7a294','stroke-width':4.5,'stroke-dasharray':'4 2.5'},g); }
+function road(g,a,b,c){ const ax=a[0]+(b[0]-a[0])*.2, ay=a[1]+(b[1]-a[1])*.2, bx=b[0]+(a[0]-b[0])*.2, by=b[1]+(a[1]-b[1])*.2;
+  let dx=bx-ax, dy=by-ay; const L=Math.hypot(dx,dy); dx/=L; dy/=L; let nx=-dy*4.2, ny=dx*4.2*K; const h=5; if(ny<0){nx=-nx;ny=-ny;}
+  el('path',{d:`M${ax+nx+2} ${ay+ny+2} L${bx+nx+2} ${by+ny+2} L${bx-nx+2} ${by-ny+2} L${ax-nx+2} ${ay-ny+2}Z`,fill:'#0005'},g);
+  el('path',{d:`M${ax+nx} ${ay+ny-h} L${bx+nx} ${by+ny-h} L${bx+nx} ${by+ny} L${ax+nx} ${ay+ny}Z`,fill:c.d,stroke:'#1a120a','stroke-width':.7},g);
+  const low=ay>by?[ax,ay]:[bx,by];
+  el('path',{d:`M${low[0]-nx} ${low[1]-ny-h} L${low[0]+nx} ${low[1]+ny-h} L${low[0]+nx} ${low[1]+ny} L${low[0]-nx} ${low[1]-ny}Z`,fill:shade(c.d,-.2),stroke:'#1a120a','stroke-width':.7},g);
+  el('path',{d:`M${ax+nx} ${ay+ny-h} L${bx+nx} ${by+ny-h} L${bx-nx} ${by-ny-h} L${ax-nx} ${ay-ny-h}Z`,fill:c.h,stroke:'#1a120a','stroke-width':.8},g); }
+function ship(g,x,y,c,pirate){ el('ellipse',{cx:x+1,cy:y+2,rx:15,ry:4,fill:'#0005'},g);
+  el('path',{d:`M${x-14} ${y-4} Q${x} ${y+6} ${x+14} ${y-4} L${x+11} ${y-8} L${x-11} ${y-8}Z`,fill:pirate?'#1d1a18':'#7a522c',stroke:'#2a1a0a','stroke-width':1},g);
+  el('path',{d:`M${x-11} ${y-8} L${x+11} ${y-8}`,stroke:pirate?'#444':'#b08050','stroke-width':1.5},g);
+  el('path',{d:`M${x} ${y-8} V${y-31}`,stroke:'#3a2412','stroke-width':1.6},g);
+  el('path',{d:`M${x+1} ${y-30} Q${x+13} ${y-20} ${x+1} ${y-10}Z`,fill:pirate?'#111':c.h,stroke:'#1a120a','stroke-width':.8},g);
+  el('path',{d:`M${x-1} ${y-26} Q${x-9} ${y-19} ${x-1} ${y-11}Z`,fill:pirate?'#222':shade(c.h,.25),stroke:'#1a120a','stroke-width':.8},g);
+  if(pirate){ el('circle',{cx:x+5,cy:y-20,r:2.6,fill:'#eee'},g); el('path',{d:`M${x} ${y-31} l7 2 l-7 2Z`,fill:'#000'},g); } }
+function knight(g,x,y,c,lvl,active){ const k=el('g',{class:active?'kon':'kin'},g);
+  el('ellipse',{cx:x+1,cy:y+1,rx:9,ry:3.5,fill:'#0006'},k);
+  el('path',{d:`M${x-7} ${y-3} L${x-7} ${y-15} Q${x} ${y-20} ${x+7} ${y-15} L${x+7} ${y-3} Q${x} ${y+2} ${x-7} ${y-3}Z`,fill:c.h,stroke:'#1a120a','stroke-width':1},k);
+  el('path',{d:`M${x} ${y-18} L${x} ${y} M${x-7} ${y-10} L${x+7} ${y-10}`,stroke:c.d,'stroke-width':1.4},k);
+  el('circle',{cx:x,cy:y-23,r:5,fill:'#c8ccd2',stroke:'#1a120a','stroke-width':.9},k);
+  el('path',{d:`M${x-4} ${y-23} h8`,stroke:'#333','stroke-width':1.3},k);
+  for(let i=0;i<lvl;i++) el('circle',{cx:x-5+i*5,cy:y-6,r:1.8,fill:'#ffd34a',stroke:'#7a5a10','stroke-width':.5},k);
+  if(lvl>=2) el('path',{d:`M${x} ${y-28} v-5`,stroke:lvl>=3?'#c0261c':'#555','stroke-width':2.2},k); }
+function robber(g,x,y){ el('ellipse',{cx:x+1,cy:y+1,rx:9,ry:3.5,fill:'#0007'},g);
+  el('path',{d:`M${x-8} ${y} L${x-5} ${y-16} Q${x} ${y-21} ${x+5} ${y-16} L${x+8} ${y}Z`,fill:'url(#robg)',stroke:'#000','stroke-width':.8},g);
+  el('circle',{cx:x,cy:y-23,r:6,fill:'url(#robg)',stroke:'#000','stroke-width':.8},g); }
+function renderPieces(){
+  const g=$('#pieces'); g.innerHTML=''; const items=[];
+  for(const e in G.be){ const b=G.be[e], E=G.E[e]; const a=[vx(E.v[0]),vy(E.v[0])], c=[vx(E.v[1]),vy(E.v[1])]; items.push({y:(a[1]+c[1])/2-6,f:gg=>b.t==='road'?road(gg,a,c,PCOL[P(b.p).col]):ship(gg,(a[0]+c[0])/2,(a[1]+c[1])/2+4,PCOL[P(b.p).col]),k:'e'+e}); }
+  for(const v in G.bv){ const b=G.bv[v], x=vx(+v), y=vy(+v)+3; items.push({y,f:gg=>{ if(b.wall) wall(gg,x,y); b.t==='s'?house(gg,x,y,PCOL[P(b.p).col]):city(gg,x,y,PCOL[P(b.p).col],b.metro); },k:'v'+v}); }
+  for(const v in G.kn){ const k=G.kn[v], x=vx(+v), y=vy(+v)+3; items.push({y,f:gg=>knight(gg,x,y,PCOL[P(k.p).col],k.lvl,k.active),k:'k'+v}); }
+  if(G.robber>=0){ const h=G.H[G.robber]; const x=hx(h)-(h.n?24:0), y=hy(h)+10; items.push({y,f:gg=>robber(gg,x,y),k:'rob'}); }
+  if(G.pirate>=0){ const h=G.H[G.pirate]; items.push({y:hy(h)+6,f:gg=>ship(gg,hx(h),hy(h)+6,PCOL[0],true),k:'pir'}); }
+  if(G.merchant){ const h=G.H[G.merchant.h]; const x=hx(h)+24, y=hy(h)+8, c=PCOL[P(G.merchant.p).col]; items.push({y,f:gg=>{ el('ellipse',{cx:x,cy:y+1,rx:8,ry:3,fill:'#0006'},gg); el('path',{d:`M${x-6} ${y} L${x-3} ${y-13} Q${x} ${y-16} ${x+3} ${y-13} L${x+6} ${y}Z`,fill:'#e0b44c',stroke:'#5a4010'},gg); el('circle',{cx:x,cy:y-18,r:4.5,fill:c.h,stroke:'#1a120a'},gg); },k:'mer'}); }
+  items.sort((a,b)=>a.y-b.y).forEach(it=>{ const gg=el('g',{class:'pc','data-k':it.k},g); it.f(gg); });
+}
+/* ---------------- marqueurs / sélection ---------------- */
+function currentTargets(){
+  const a=UI.ask; if(a&&(a.kind==='vertex'||a.kind==='edge'||a.kind==='hex')) return {kind:a.kind,opts:a.opts,col:a.pi};
+  const w=UI.wait; if(!w||!UI.mode) return null; const pi=w.pi, m=UI.mode;
+  if(m==='road') return {kind:'edge',opts:legal(pi,'road'),col:pi};
+  if(m==='ship') return {kind:'edge',opts:legal(pi,'ship'),col:pi};
+  if(m==='settle') return {kind:'vertex',opts:legal(pi,'settle'),col:pi};
+  if(m==='city') return {kind:'vertex',opts:legal(pi,'city'),col:pi};
+  if(m==='knight') return {kind:'vertex',opts:legal(pi,'knight'),col:pi};
+  if(m==='kup') return {kind:'vertex',opts:knights(pi).filter(v=>canKnightUp(pi,v)),col:pi};
+  if(m==='kact') return {kind:'vertex',opts:knights(pi).filter(v=>!G.kn[v].active),col:pi};
+  if(m==='kmove') return UI.sel==null?{kind:'vertex',opts:knights(pi).filter(v=>G.kn[v].active&&G.kn[v].actTurn!==G.turn&&knightMoves(pi,v).length),col:pi}:{kind:'vertex',opts:knightMoves(pi,UI.sel),col:pi};
+  if(m==='kchase') return {kind:'vertex',opts:knights(pi).filter(v=>canChase(pi,v)),col:pi};
+  if(m==='wall') return {kind:'vertex',opts:legal(pi,'wall'),col:pi};
+  if(m==='moveShip') return UI.sel==null?{kind:'edge',opts:shipMovable(pi),col:pi}:{kind:'edge',opts:(()=>{const b=G.be[UI.sel];delete G.be[UI.sel];const o=legal(pi,'ship').filter(e=>e!==UI.sel);G.be[UI.sel]=b;return o;})(),col:pi};
+  return null;
+}
+function renderMarks(){
+  const g=$('#marks'); g.innerHTML=''; document.querySelectorAll('#map .tile.sel').forEach(t=>t.classList.remove('sel'));
+  const t=currentTargets(); if(!t) return; const col=PCOL[P(t.col).col].h;
+  if(t.kind==='vertex') t.opts.forEach(v=>{ const m=el('g',{class:'mk','data-v':v,style:`--mc:${col}`},g); el('circle',{cx:vx(v),cy:vy(v),r:19,fill:'transparent'},m); el('circle',{cx:vx(v),cy:vy(v),r:7,class:'g'},m); });
+  if(t.kind==='edge') t.opts.forEach(e=>{ const E=G.E[e], a=E.v[0], b=E.v[1]; const x1=vx(a)+(vx(b)-vx(a))*.22, y1=vy(a)+(vy(b)-vy(a))*.22, x2=vx(b)+(vx(a)-vx(b))*.22, y2=vy(b)+(vy(a)-vy(b))*.22;
+    const m=el('g',{class:'mk','data-e':e},g); el('line',{x1,y1,x2,y2,class:'g',style:`stroke:${col}`},m); el('line',{x1,y1,x2,y2,class:'h'},m); });
+  if(t.kind==='hex') t.opts.forEach(h=>{ const tl=document.querySelector(`#map .tile[data-h="${h}"]`); if(tl) tl.classList.add('sel'); });
+}
+$('#map').addEventListener('click',e=>{
+  if(!G) return; const t=currentTargets(); if(!t) return;
+  let mv=e.target.closest('[data-v]'), me=e.target.closest('[data-e]'), mh=e.target.closest('.tile.sel');
+  if((t.kind==='vertex'&&!mv)||(t.kind==='edge'&&!me)){ // tap approximatif : marqueur le plus proche (≤ 34 px)
+    let best=null,bd=34; document.querySelectorAll('#marks .mk').forEach(m=>{ const r=m.getBoundingClientRect(); const d=Math.hypot(r.left+r.width/2-e.clientX,r.top+r.height/2-e.clientY); if(d<bd){bd=d;best=m;} });
+    if(best){ if(t.kind==='vertex') mv=best; else me=best; } }
+  if(t.kind==='vertex'&&mv) pickTarget(+mv.dataset.v);
+  else if(t.kind==='edge'&&me) pickTarget(+me.dataset.e);
+  else if(t.kind==='hex'&&mh) pickTarget(+mh.dataset.h);
+});
+async function pickTarget(x){
+  if(UI.ask){ const a=UI.ask;
+    if(a.kind==='edge'&&a.types){ const ts=a.types.filter(o=>o.e===x); let pick=ts[0]; if(ts.length>1) pick=await chooseType(ts); if(!pick) return; UI.ask=null; hidePrompt(); renderMarks(); a.resolve(pick); return; }
+    UI.ask=null; hidePrompt(); renderMarks(); a.resolve(x); return; }
+  const w=UI.wait; if(!w) return; const m=UI.mode;
+  if(m==='kmove'&&UI.sel==null){ UI.sel=x; renderMarks(); showPrompt('Où déplacer ce chevalier ?',true); return; }
+  if(m==='moveShip'&&UI.sel==null){ UI.sel=x; renderMarks(); showPrompt('Choisis la nouvelle position du navire',true); return; }
+  let act;
+  if(m==='kmove') act={a:'kmove',v:UI.sel,to:x}; else if(m==='moveShip') act={a:'moveShip',from:UI.sel,to:x};
+  else if(['road','ship'].includes(m)) act={a:m,e:x}; else act={a:m,v:x};
+  UI.sel=null; if(['moveShip','kmove','kchase','city'].includes(m)||!stillPossible(m,w.pi)) UI.mode=null;
+  resolveTurn(act);
+}
+function stillPossible(m,pi){ const c={road:COST.road,ship:COST.ship,settle:COST.settle,knight:COST.knight,kup:COST.kup,kact:COST.kact,wall:COST.wall}[m]; if(!c) return false; const r={...P(pi).res}; for(const k in c) r[k]-=c[k]*2; return Object.values(r).every(x=>x>=0); }
+function chooseType(ts){ return new Promise(res=>{ openModal(`<h2>Route ou navire ?</h2><div class="prow">${ts.map((o,i)=>`<button class="btn pri" data-ty="${i}">${o.t==='road'?'Route':'Navire'}</button>`).join('')}</div>`);
+  $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ty]'); if(b){ closeModal(); res(ts[+b.dataset.ty]); } }; }); }
+function showPrompt(txt,cancel){ const p=$('#prompt'); p.innerHTML=`<span>${esc(txt)}</span>${cancel?'<button class="btn" data-a="cancelmode">Annuler</button>':''}`; p.hidden=false; }
+function hidePrompt(){ $('#prompt').hidden=true; }
+
+/* ---------------- rendu général ---------------- */
+function uiRender(){
+  if(!G) return; if(!$('#tiles')) buildBoard(false);
+  renderPieces(); renderMarks(); renderPlayers(); renderHand(); renderActions(); renderTurnbar(); renderBarb(); uiLog();
+}
+function uiLog(){ const l=$('#log'); if(l&&G) l.innerHTML=G.log.slice(-50).map(s=>`<div>${esc(s)}</div>`).join(''); }
+function renderPlayers(){
+  $('#players').innerHTML=G.players.map((p,i)=>{ const c=PCOL[p.col]; const cur=i===G.cur&&!G.over;
+    return `<div class="pl ${cur?'cur':''}" id="pl${i}" style="--pc:${c.h}"><div class="top1"><span class="nm">${esc(p.name)}</span><span class="lv">${p.ai?'IA '+p.level:'Humain'}</span><span class="vp" title="Points de victoire visibles">${vp(i,i!==viewer()&&!G.over)}</span></div>
+    <div class="st"><span><b>${resCount(p)}</b> cartes</span>${!G.mods.ck?`<span><b>${p.dev.length+p.devNew.length+(i===viewer()?p.vpDev:0)}</b> dév.</span><span><b>${p.knightsPlayed}</b> chev. joués</span>`:`<span><b>${p.prog.length}</b> progrès</span><span>force <b>${strength(i)}</b></span>`}<span>route <b>${(G.longLen&&G.longLen[i])||0}</b></span></div>
+    <div>${G.longest===i?'<span class="badge">Grande Route +2</span>':''}${G.army===i?'<span class="badge">Grande Armée +2</span>':''}${p.isl.length?`<span class="badge">Îles ×${p.isl.length}</span>`:''}${p.hero?`<span class="badge">Héros ×${p.hero}</span>`:''}${G.merchant&&G.merchant.p===i?'<span class="badge">Marchand</span>':''}</div>
+    ${G.mods.ck?`<div class="impr">${Object.keys(TRACKS).map(t=>`<span title="${TRNAME[t]}" style="color:${{science:'#7fd08a',commerce:'#f2cf6e',politique:'#8fb4ff'}[t]}">${TRNAME[t][0]}${Array.from({length:5},(_,k)=>`<i style="${k<p.impr[t]?'background:'+{science:'#3f9a4a',commerce:'#e0b44c',politique:'#3a6fc8'}[t]:''}"></i>`).join('')}</span>`).join('')}</div>`:''}</div>`; }).join('');
+}
+function renderHand(){
+  const v=viewer(), h=$('#hand');
+  if(v<0){ h.innerHTML='<span class="lab">Partie entre IA</span>'; return; }
+  const p=P(v), keys=G.mods.ck?ALLC:R5;
+  const cards = !G.mods.ck
+    ? p.dev.map(c=>`<div class="cardx" style="--cc:#7a5aa8">${DEVS[c]}${UI.wait&&UI.wait.pi===v&&UI.wait.phase!=='special'&&!G.flags.devPlayed&&c!=='pv'?`<button data-a="playdev" data-v="${c}">Jouer</button>`:''}</div>`).join('')+p.devNew.map(c=>`<div class="cardx new" style="--cc:#7a5aa8">${DEVS[c]}<small>achetée ce tour</small></div>`).join('')+(p.vpDev?`<div class="cardx" style="--cc:#e0b44c">Point de victoire ×${p.vpDev}<small>secret</small></div>`:'')
+    : p.prog.map((c,i)=>{ const col={science:'#3f9a4a',commerce:'#c9952a',politique:'#3a6fc8'}[c.deck]; const can=UI.wait&&UI.wait.pi===v&&UI.wait.phase!=='special'&&progPlayable(v,c.k,UI.wait.phase==='pre'); return `<div class="cardx" style="--cc:${col}" title="${esc(PDESC[c.k])}">${PNAME[c.k]}<small>${esc(PDESC[c.k])}</small>${can?`<button data-a="playprog" data-v="${i}">Jouer</button>`:''}</div>`; }).join('');
+  h.innerHTML=`<span class="lab">${esc(p.name)}</span>${keys.map(k=>`<div class="rc ${p.res[k]?'':'zero'}" style="--rc:${RCOL[k]}" data-r="${k}" title="${RNAME[k]}">${ico(k,32)}<span class="n">${p.res[k]}</span></div>`).join('')}<div class="cards">${cards}</div>`;
+}
+function renderTurnbar(){
+  const tb=$('#turnbar'); if(G.over){ tb.style.setProperty('--pc','#c0532b'); tb.innerHTML=`<span class="who">Fin de partie</span><span class="msg">${G.winner>=0?esc(P(G.winner).name)+' l\'emporte !':''}</span>`; return; }
+  const pi=G.phase==='special'&&G.sbp!=null?G.sbp:G.cur, p=P(pi); tb.style.setProperty('--pc',PCOL[p.col].h);
+  let msg = G.phase==='setup'?'Placement de départ':G.phase==='special'?'Phase de construction spéciale':p.ai?'réfléchit…':G.phase==='pre'?'Lance les dés (ou joue une carte).':'Construis, commerce, puis termine ton tour.';
+  if(UI.ask&&!P(UI.ask.pi).ai) msg=UI.ask.why||msg;
+  tb.innerHTML=`<span class="who">${esc(p.name)}</span><span class="msg">${esc(msg)}</span><span class="vpgoal">Objectif : ${G.target} PV</span>`;
+}
+function renderBarb(){ const b=$('#barb'); if(!G.mods.ck){ b.hidden=true; return; } b.hidden=false;
+  b.innerHTML=`⚔ Barbares <b>${cityCount()}</b> cités · défense <b>${G.players.reduce((s,_,i)=>s+strength(i),0)}</b><div class="trk">${Array.from({length:7},(_,k)=>`<i class="${k<G.barb?'on':''}"></i>`).join('')}<i class="end"></i></div>`; }
+function renderActions(){
+  const a=$('#actions'), w=UI.wait, v=viewer();
+  const d=G.dice?`<div class="dice">${dieHTML('w',G.dice[0])}${dieHTML('red',G.dice[1])}${G.mods.ck&&G.dice[2]?evHTML(G.dice[2]):''}</div>`:'<div class="dice"></div>';
+  if(!w){ a.innerHTML=d+`<span style="opacity:.7;font-weight:700">${G.over?'Partie terminée':esc(P(G.phase==='special'&&G.sbp!=null?G.sbp:G.cur).name)+' joue…'}</span>`; return; }
+  const pi=w.pi, ph=w.phase, B=(id,label,cost,ok,cls)=>`<button class="act ${UI.mode===id?'on':''} ${cls||''}" data-a="mode" data-v="${id}" ${ok?'':'disabled'}>${label}${cost?`<span class="cost">${chips(cost)}</span>`:''}</button>`;
+  if(ph==='pre'){ a.innerHTML=d+`<button class="act big" data-a="roll">🎲 Lancer les dés</button>`; return; }
+  const can=(k,c)=>canPay(pi,c)&&pieceLeft(pi,k);
+  let h=d;
+  h+=B('road','Route',COST.road,can('road',COST.road)&&legal(pi,'road').length);
+  if(G.mods.nav) h+=B('ship','Navire',COST.ship,can('ship',COST.ship)&&legal(pi,'ship').length);
+  h+=B('settle','Colonie',COST.settle,can('settle',COST.settle)&&legal(pi,'settle').length);
+  h+=B('city','Cité',COST.city,can('city',COST.city)&&legal(pi,'city').length);
+  if(!G.mods.ck) h+=`<button class="act" data-a="buydev" ${canPay(pi,COST.dev)&&G.devDeck.length?'':'disabled'}>Carte dév.<span class="cost">${chips(COST.dev)}</span></button>`;
+  if(G.mods.ck){
+    h+=B('knight','Chevalier',COST.knight,canPay(pi,COST.knight)&&knightCount(pi,1)<2&&legal(pi,'knight').length);
+    h+=B('kup','Promouvoir',COST.kup,canPay(pi,COST.kup)&&knights(pi).some(v=>canKnightUp(pi,v)));
+    h+=B('kact','Activer',COST.kact,canPay(pi,COST.kact)&&knights(pi).some(v=>!G.kn[v].active));
+    if(ph!=='special'){ h+=B('kmove','Déplacer chev.',null,knights(pi).some(v=>G.kn[v].active&&G.kn[v].actTurn!==G.turn&&knightMoves(pi,v).length));
+      h+=B('kchase','Chasser brigand',null,knights(pi).some(v=>canChase(pi,v))); }
+    h+=B('wall','Rempart',COST.wall,canPay(pi,COST.wall)&&legal(pi,'wall').length&&Object.values(G.bv).filter(b=>b.p===pi&&b.wall).length<3);
+    h+=`<button class="act" data-a="impr">Améliorer<span class="cost">${chips({papier:1})}${chips({tissu:1})}${chips({monnaie:1})}</span></button>`;
+  }
+  if(ph!=='special'){
+    if(G.mods.nav) h+=B('moveShip','Déplacer navire',null,shipMovable(pi).length>0);
+    h+=`<button class="act" data-a="trade">Commerce<span class="cost">⇄</span></button>`;
+  }
+  h+=`<button class="act end" data-a="endturn">${ph==='special'?'Passer':'Fin du tour'}</button>`;
+  a.innerHTML=h;
+}
+const PIPPOS={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
+function faceHTML(n,cls){ return `<div class="f ${cls}">${Array.from({length:9},(_,k)=>PIPPOS[n].includes(k+1)?'<span></span>':'<i></i>').join('')}</div>`; }
+const ROT={1:'rotateX(0) rotateY(0)',2:'rotateY(-90deg)',3:'rotateX(-90deg)',4:'rotateX(90deg)',5:'rotateY(90deg)',6:'rotateY(180deg)'};
+function dieHTML(cls,n){ return `<div class="die ${cls==='red'?'red':''}" id="die-${cls}" style="transform:${ROT[n]}">${[1,2,3,4,5,6].map(k=>faceHTML(k,'s'+k)).join('')}</div>`; }
+function evHTML(ev){ const f={barb:'⛵',science:'<span style="color:#3f9a4a">⛫</span>',commerce:'<span style="color:#c9952a">⛫</span>',politique:'<span style="color:#3a6fc8">⛫</span>'}; return `<div class="die ev" title="Dé d'événement"><div class="f s1">${f[ev]}</div></div>`; }
+
+/* ---------------- saisie ---------------- */
+function uiTurn(pi,phase){ UI.view=pi; return new Promise(res=>{ UI.wait={pi,phase,res}; uiRender(); if(UI.tradeOpen) drawTrade(); }); }
+function resolveTurn(act){ const w=UI.wait; if(!w) return; UI.wait=null; hidePrompt(); w.res(act); }
+async function uiAsk(pi,kind,d){
+  if(humansCount()>1&&UI.view!==pi){ await uiCover(pi,d.why); }
+  UI.view=pi;
+  if(kind==='vertex'||kind==='edge'||kind==='hex'){
+    return new Promise(res=>{ UI.ask={pi,kind,opts:d.opts,types:d.types,why:d.why,resolve:res}; uiRender(); showPrompt(d.why||'Choisis un emplacement'); });
+  }
+  return new Promise(res=>{
+    const p=P(pi);
+    if(kind==='player'){ openModal(`<h2>${esc(d.why)}</h2><div class="prow">${d.opts.map(o=>`<button class="btn pri" data-pp="${o}" style="background:${PCOL[P(o).col].h}">${esc(P(o).name)} · ${resCount(P(o))} cartes</button>`).join('')}</div>`);
+      $('#mbox').onclick=e=>{ const b=e.target.closest('[data-pp]'); if(b){ closeModal(); res(+b.dataset.pp); } }; return; }
+    if(kind==='deck'){ openModal(`<h2>${esc(d.why)}</h2><div class="prow">${Object.keys(TRACKS).map(t=>`<button class="btn pri" data-dk="${t}" ${G.prog[t].length?'':'disabled'}>${TRNAME[t]}</button>`).join('')}</div>`);
+      $('#mbox').onclick=e=>{ const b=e.target.closest('[data-dk]'); if(b){ closeModal(); res(b.dataset.dk); } }; return; }
+    if(kind==='discardProg'){ openModal(`<h2>Trop de cartes progrès</h2><p>Tu ne peux en garder que 4 : écarte-en une.</p><div class="prow">${p.prog.map((c,i)=>`<button class="btn" data-dp="${i}">${PNAME[c.k]}</button>`).join('')}</div>`);
+      $('#mbox').onclick=e=>{ const b=e.target.closest('[data-dp]'); if(b){ closeModal(); res(+b.dataset.dp); } }; return; }
+    if(kind==='dice'){ let a=1,b=1; const draw=()=>{ paintModal(`<h2>Alchimiste</h2><p>Choisis la valeur des deux dés de production (le dé d'événement reste aléatoire).</p>
+        <div class="prow">Dé blanc ${[1,2,3,4,5,6].map(n=>`<button class="btn ${a===n?'on':''}" data-da="${n}">${n}</button>`).join('')}</div><div class="prow">Dé rouge ${[1,2,3,4,5,6].map(n=>`<button class="btn ${b===n?'on':''}" data-db="${n}">${n}</button>`).join('')}</div>
+        <p>Total : <b>${a+b}</b></p><button class="btn pri" data-ok="1">Valider</button>`); };
+      draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-da],[data-db],[data-ok]'); if(!x) return; if(x.dataset.da) a=+x.dataset.da; if(x.dataset.db) b=+x.dataset.db; if(x.dataset.ok){ closeModal(); res([a,b]); return; } draw(); }; return; }
+    if(kind==='res'){ const pick=[]; const draw=()=>{ paintModal(`<h2>${esc(d.why)}</h2><p>Choisis ${d.n} carte${d.n>1?'s':''} : ${pick.map(k=>RNAME[k]).join(', ')||'—'}</p><div class="pick">${d.pool.map(k=>`<div class="rc" data-rk="${k}" style="--rc:${RCOL[k]}">${ico(k,32)}</div>`).join('')}</div>
+        <div class="prow"><button class="btn" data-clr="1">Effacer</button><button class="btn pri" data-ok="1" ${pick.length===d.n?'':'disabled'}>Valider</button></div>`); };
+      draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-rk],[data-ok],[data-clr]'); if(!x) return; if(x.dataset.rk&&pick.length<d.n) pick.push(x.dataset.rk); if(x.dataset.clr) pick.length=0; if(x.dataset.ok&&pick.length===d.n){ closeModal(); res(pick.slice()); return; } draw(); }; return; }
+    if(kind==='discard'){ const out={}; const tot=()=>sum(out); const keys=ALLC.filter(k=>p.res[k]>0);
+      const draw=()=>{ paintModal(`<h2>${esc(p.name)} : défausse ${d.n} cartes</h2><p>Touche une carte pour la défausser (${tot()}/${d.n}).</p><div class="pick">${keys.map(k=>`<div class="rc" data-dk2="${k}" style="--rc:${RCOL[k]}">${ico(k,32)}<span class="n">${p.res[k]-(out[k]||0)}</span>${out[k]?`<span style="position:absolute;bottom:-18px;font-weight:900;color:#c0261c">−${out[k]}</span>`:''}</div>`).join('')}</div>
+        <div class="prow" style="margin-top:22px"><button class="btn" data-clr="1">Recommencer</button><button class="btn pri" data-ok="1" ${tot()===d.n?'':'disabled'}>Défausser</button></div>`); };
+      draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-dk2],[data-ok],[data-clr]'); if(!x) return; const k=x.dataset.dk2; if(k&&tot()<d.n&&(out[k]||0)<p.res[k]) out[k]=(out[k]||0)+1; if(x.dataset.clr) for(const kk in out) delete out[kk]; if(x.dataset.ok&&tot()===d.n){ closeModal(); res({...out}); return; } draw(); }; return; }
+    res(aiChoose(pi,kind,d));
+  });
+}
+function uiCover(pi,sub){ return new Promise(res=>{ const p=P(pi), c=$('#cover'); c.innerHTML=`<div><h2 style="color:${PCOL[p.col].h}">${esc(p.name)}</h2><p>${esc(sub||'À toi de jouer !')}</p><button class="btn pri" style="font-size:18px;padding:12px 26px">C'est moi</button></div>`; c.hidden=false; c.querySelector('button').onclick=()=>{ c.hidden=true; UI.view=pi; uiRender(); res(); }; }); }
+function uiSave(){ if(G.fast||G.over) return; try{ localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,G})); }catch(e){} }
+function clearSave(){ try{localStorage.removeItem(SAVE_KEY);}catch(e){} }
+function loadSave(){ try{ const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null'); return d&&d.v===1&&d.G&&!d.G.over?d:null; }catch(e){return null;} }
+
+/* ---------------- commerce ---------------- */
+function openTrade(){ UI.tradeOpen=true; UI.trade=UI.trade||{tab:'bank',give:null,get:null,pg:{},pr:{},resp:null}; drawTrade(); }
+function drawTrade(){
+  const w=UI.wait; if(!w||!UI.tradeOpen) return; const pi=w.pi, p=P(pi), T=UI.trade, keys=G.mods.ck?ALLC:R5;
+  let body='';
+  if(T.tab==='bank'){
+    body=`<h4>Je donne</h4><div class="pick">${keys.map(k=>`<div class="rc ${T.give===k?'sel':''} ${p.res[k]>=ratio(pi,k)?'':'zero'}" data-tg="${k}" style="--rc:${RCOL[k]}">${ico(k,32)}<span class="n">${ratio(pi,k)}:1</span></div>`).join('')}</div>
+      <h4>Je reçois</h4><div class="pick">${keys.map(k=>`<div class="rc ${T.get===k?'sel':''}" data-tr="${k}" style="--rc:${RCOL[k]}">${ico(k,32)}</div>`).join('')}</div>
+      <div class="prow"><button class="btn pri" data-tx="bank" ${T.give&&T.get&&T.give!==T.get&&p.res[T.give]>=ratio(pi,T.give)?'':'disabled'}>Échanger ${T.give?ratio(pi,T.give):''} ${T.give?RNAME[T.give].toLowerCase():''} → 1 ${T.get?RNAME[T.get].toLowerCase():''}</button></div>`;
+  } else {
+    const row=(obj,lab,max)=>`<h4>${lab}</h4><div class="pick">${keys.map(k=>`<div class="rc" style="--rc:${RCOL[k]}">${ico(k,32)}<span class="n">${obj[k]||0}</span><div style="position:absolute;bottom:-20px;display:flex;gap:2px"><button class="btn" style="padding:0 6px" data-pm="${lab}|${k}|-1">−</button><button class="btn" style="padding:0 6px" data-pm="${lab}|${k}|1" ${max&&(obj[k]||0)>=max[k]?'disabled':''}>+</button></div></div>`).join('')}</div><div style="height:16px"></div>`;
+    body=row(T.pg,'Je donne',p.res)+row(T.pr,'Je demande');
+    body+=`<div class="prow"><button class="btn pri" data-tx="propose" ${sum(T.pg)&&sum(T.pr)?'':'disabled'}>Proposer aux autres joueurs</button></div>`;
+    if(T.resp) body+=`<div class="prow">${T.resp.map(r=>`<span class="btn ${r.ok?'pri':''}" ${r.ok?`data-tw="${r.i}"`:''} style="${r.ok?'':'opacity:.55'}">${esc(P(r.i).name)} : ${r.ok?'accepte — conclure':'refuse'}</span>`).join('')}</div>`;
+  }
+  openModal(`<h2>Commerce</h2><div class="tabs"><button class="${T.tab==='bank'?'on':''}" data-tt="bank">Banque et ports</button><button class="${T.tab==='players'?'on':''}" data-tt="players">Avec les joueurs</button></div>
+   <div class="pick" style="margin:0">${keys.map(k=>`<span class="chip" style="--rc:${RCOL[k]};width:auto;padding:0 5px;height:20px;color:#000;font-weight:900;font-size:12px">${ico(k,12)} ${p.res[k]}</span>`).join('')}</div>${body}
+   <div style="text-align:right;margin-top:10px"><button class="btn" data-tx="close">Fermer</button></div>`);
+  $('#mbox').onclick=e=>{ const x=e.target.closest('[data-tt],[data-tg],[data-tr],[data-tx],[data-pm],[data-tw]'); if(!x) return;
+    if(x.dataset.tt){ T.tab=x.dataset.tt; T.resp=null; }
+    if(x.dataset.tg) T.give=x.dataset.tg; if(x.dataset.tr) T.get=x.dataset.tr;
+    if(x.dataset.pm){ const [lab,k,d]=x.dataset.pm.split('|'); const o=lab==='Je donne'?T.pg:T.pr; o[k]=Math.max(0,(o[k]||0)+(+d)); T.resp=null; }
+    if(x.dataset.tx==='close'){ UI.tradeOpen=false; closeModal(); return; }
+    if(x.dataset.tx==='bank'){ sfx('card'); resolveTurn({a:'bank',give:T.give,get:T.get}); return; }
+    if(x.dataset.tx==='propose'){ const give={},get={}; for(const k in T.pg) if(T.pg[k]) give[k]=T.pg[k]; for(const k in T.pr) if(T.pr[k]) get[k]=T.pr[k];
+      T.resp=others(pi).map(i=>({i,ok:P(i).ai?aiAcceptTrade(i,pi,give,get):Object.keys(get).every(k=>P(i).res[k]>=get[k])})); }
+    if(x.dataset.tw!=null){ const give={},get={}; for(const k in T.pg) if(T.pg[k]) give[k]=T.pg[k]; for(const k in T.pr) if(T.pr[k]) get[k]=T.pr[k]; T.pg={}; T.pr={}; T.resp=null; sfx('card'); resolveTurn({a:'ptrade',with:+x.dataset.tw,give,get}); return; }
+    drawTrade(); };
+}
+function openImpr(){ const w=UI.wait; if(!w) return; const pi=w.pi, p=P(pi);
+  const ab={science:'Niveau 3 : Aqueduc — si un lancer ne te rapporte rien, prends 1 ressource.',commerce:'Niveau 3 : Comptoir — échange tes marchandises 2:1.',politique:'Niveau 3 : Forteresse — tes chevaliers peuvent devenir puissants (niveau 3).'};
+  openModal(`<h2>Améliorations de cité</h2><p>Chaque niveau coûte autant de marchandises que son numéro. Il faut au moins une cité. Au niveau 4, le premier joueur obtient la <b>Métropole</b> (+2 PV) ; au niveau 5 on peut la reprendre à quelqu'un resté au niveau 4.</p>
+   ${Object.keys(TRACKS).map(t=>{ const L=p.impr[t], c=imprCost(pi,t); return `<div class="prow" style="background:#fff8;border-radius:10px;padding:8px"><b style="width:90px">${TRNAME[t]}</b><span>${Array.from({length:5},(_,k)=>`<span style="display:inline-block;width:18px;height:12px;border-radius:3px;margin-right:2px;background:${k<L?{science:'#3f9a4a',commerce:'#e0b44c',politique:'#3a6fc8'}[t]:'#d9ccb0'}"></span>`).join('')}</span>
+     <span style="flex:1;font-size:13px">${ab[t]}${G.metro[t]>=0?` · Métropole : ${esc(P(G.metro[t]).name)}`:''}</span>${L<5?`<button class="btn pri" data-im="${t}" ${canImpr(pi,t)?'':'disabled'}>Niveau ${L+1} : ${chips(c)}</button>`:'<b>Max</b>'}</div>`; }).join('')}
+   <div style="text-align:right"><button class="btn" data-a="close">Fermer</button></div>`);
+  $('#mbox').onclick=e=>{ const x=e.target.closest('[data-im]'); if(x){ closeModal(); resolveTurn({a:'impr',t:x.dataset.im}); } };
+}
+
+/* ---------------- effets ---------------- */
+function screenOf(x,y){ const svg=$('#map'), pt=svg.createSVGPoint(); pt.x=x; pt.y=y; const p=pt.matrixTransform(svg.getScreenCTM()); return {x:p.x,y:p.y}; }
+function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2900); }
+function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="--bc:${col||'#c0532b'}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
+async function uiPlace(kind,ref,pi){
+  uiRender(); if(REDUCED) return;
+  const key=['road','ship'].includes(kind)?'e'+ref:['knight','kup','kact'].includes(kind)?'k'+ref:'v'+ref;
+  const n=document.querySelector(`#map [data-k="${key}"]`);
+  if(n){ n.classList.add('drop'); }
+  let x,y; if(key[0]==='e'){ const E=G.E[ref]; x=(vx(E.v[0])+vx(E.v[1]))/2; y=(vy(E.v[0])+vy(E.v[1]))/2; } else { x=vx(ref); y=vy(ref)+3; }
+  const d=el('ellipse',{cx:x,cy:y,rx:14,ry:5,class:'dust'},$('#fx')); setTimeout(()=>d.remove(),800);
+  sfx(kind==='pillage'?'bad':kind==='ship'?'splash':'build');
+  if(kind==='pillage') banner('Cité pillée !',P(pi).name,'#7a1c12');
+  await sleep(kind==='city'?550:420);
+}
+async function uiDice(a,b,ev){
+  renderActions(); sfx('dice');
+  if(!REDUCED){ for(const [id,v] of [['w',a],['red',b]]){ const d=$('#die-'+id); if(!d) continue; d.style.transition='none'; d.style.transform=`rotateX(${720+Math.random()*360}deg) rotateY(${720+Math.random()*360}deg)`; void d.offsetWidth; d.style.transition=''; d.style.transform=ROT[v]; } }
+  await sleep(950);
+}
+async function uiProduce(s,got){
+  const toks=[...document.querySelectorAll(`#map .tok[data-n="${s}"]`)];
+  toks.forEach(t=>{ t.classList.remove('hot'); void t.getBBox(); if(+t.dataset.h!==G.robber) t.classList.add('hot'); });
+  if(REDUCED){ uiRender(); return; }
+  let delay=0;
+  G.H.forEach((h,hi)=>{ if(h.n!==s||hi===G.robber) return; const from=screenOf(hx(h),hy(h));
+    for(const v of h.v){ const b=G.bv[v]; if(!b) continue; const r=TRES[h.t]||(h.t==='or'?'monnaie':null); if(!r) continue;
+      const to=document.getElementById('pl'+b.p)?.getBoundingClientRect(); const me=viewer()===b.p?document.querySelector(`#hand .rc[data-r="${r}"]`)?.getBoundingClientRect():null; const T2=me||to; if(!T2) continue;
+      const f=document.createElement('div'); f.className='fly'; f.style.background=RCOL[r]; f.innerHTML=ico(r,22); f.style.left=from.x-15+'px'; f.style.top=from.y-20+'px'; document.body.appendChild(f);
+      const dx=T2.left+T2.width/2-from.x, dy=T2.top+T2.height/2-from.y;
+      f.animate([{transform:'translate(0,0) scale(.6)',opacity:0},{transform:`translate(${dx*.15}px,${dy*.15-50}px) scale(1.1)`,opacity:1,offset:.3},{transform:`translate(${dx}px,${dy}px) scale(.7)`,opacity:.9}],{duration:900,delay,easing:'cubic-bezier(.5,0,.3,1)',fill:'both'}).finished.then(()=>f.remove()).catch(()=>f.remove());
+      delay+=90; } });
+  if(delay) setTimeout(()=>sfx('gain'),400);
+  await sleep(Math.min(1500,900+delay));
+  uiRender(); document.querySelectorAll('#hand .rc').forEach(r=>{ const k=r.dataset.r; const v=viewer(); if(v>=0&&got[v]&&got[v][k]) r.classList.add('pop'); });
+}
+async function uiFx(kind,a,b,c){
+  switch(kind){
+    case 'robber': case 'pirate': uiRender(); { const n=document.querySelector(`#map [data-k="${kind==='robber'?'rob':'pir'}"]`); if(n&&!REDUCED) n.classList.add('drop'); } sfx('robber'); await sleep(600); break;
+    case 'steal': { const v=viewer(); if(v===a||v===b) toast(v===a?`Tu voles 1 ${RNAME[c].toLowerCase()} à ${P(b).name}.`:`${P(a).name} te vole 1 ${RNAME[c].toLowerCase()}.`); sfx('steal'); uiRender(); break; }
+    case 'barb': renderBarb(); sfx('horn'); { const t=$('#barb'); t.animate([{transform:'scale(1)'},{transform:'scale(1.15)'},{transform:'scale(1)'}],{duration:600}); } await sleep(500); break;
+    case 'attack': banner('Les barbares attaquent !',`${a} cités contre ${b} chevaliers actifs`,'#7a1c12'); sfx('horn'); await sleep(2300); break;
+    case 'metro': banner('Métropole !',TRNAME[b],'#3a6fc8'); sfx('win'); uiRender(); break;
+    case 'longest': banner('Grande Route',P(a).name+' · +2 PV',PCOL[P(a).col].d); sfx('gain'); break;
+    case 'army': banner('Grande Armée',P(a).name+' · +2 PV',PCOL[P(a).col].d); sfx('gain'); break;
+    case 'island': banner('Nouvelle île !','+2 points de victoire','#1f6f8a'); sfx('win'); break;
+    case 'dev': if(viewer()===a&&!P(a).ai) toast(`Carte tirée : ${DEVS[b]}`); sfx('card'); uiRender(); break;
+    case 'card': toast(`${P(a).name} joue ${b}`); sfx('card'); uiRender(); await sleep(500); break;
+    case 'prog': sfx('card'); uiRender(); break;
+    case 'impr': sfx('build'); uiRender(); break;
+    case 'merchant': uiRender(); break;
+  }
+}
+async function uiEnd(){
+  clearSave(); uiRender(); if(G.winner<0) finalize();
+  const w=G.winner; banner('Victoire !',P(w).name+' · '+vp(w)+' PV',PCOL[P(w).col].d); sfx('win'); confetti(); await sleep(1800);
+  const rank=G.players.map((_,i)=>i).sort((a,b)=>vp(b)-vp(a));
+  openModal(`<h2>Fin de partie</h2><p>${esc(P(w).name)} remporte la Nouvelle Terre !</p><table class="res"><tr><th>Joueur</th><th>Colonies</th><th>Cités</th><th>Bonus</th><th>Cartes PV</th><th>Total</th></tr>
+    ${rank.map(i=>{ const p=P(i); const s=countB(i,'s'), c=countB(i,'c'); const bonus=(G.longest===i?2:0)+(G.army===i?2:0)+p.isl.length*2+p.hero+(G.merchant&&G.merchant.p===i?1:0)+Object.values(G.bv).filter(b=>b.p===i&&b.metro).length*2; return `<tr class="${i===w?'win':''}"><td><b style="color:${PCOL[p.col].d}">${esc(p.name)}</b></td><td>${s}</td><td>${c}</td><td>${bonus}</td><td>${p.vpDev+p.progVP}</td><td style="font-family:var(--title);font-size:20px">${vp(i)}</td></tr>`; }).join('')}</table>
+    <div style="text-align:right;margin-top:14px"><button class="btn" data-a="close">Voir le plateau</button> <button class="btn pri" data-a="menu">Nouvelle partie</button></div>`);
+}
+function confetti(){ if(REDUCED) return; for(let i=0;i<70;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-10px;left:${Math.random()*100}vw;width:8px;height:12px;background:${PCOL[i%6].h};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
+  c.animate([{transform:`translate(0,0) rotate(0)`},{transform:`translate(${(Math.random()-.5)*200}px,${innerHeight+40}px) rotate(${Math.random()*720}deg)`}],{duration:2200+Math.random()*1800,delay:Math.random()*600,easing:'ease-in'}).finished.then(()=>c.remove()); } }
+
+/* ---------------- modales ---------------- */
+function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
+function openModal(h){ $('#mbox').innerHTML=h; $('#mbox').onclick=null; $('#modal').hidden=false; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+let MENU=null;
+function openMenu(){ const s=loadSave(); MENU={n:PREFS.n,slots:PREFS.slots||[{h:1,name:'Toi',lv:'normal'}].concat(AI_NAMES.slice(0,5).map(n=>({h:0,name:n,lv:'normal'}))),nav:PREFS.nav,ck:PREFS.ck,target:PREFS.target,speed:PREFS.speed}; drawMenu(s); }
+const HUMAN_NAMES=['Camille','Lucas','Emma','Hugo','Léa','Jules'];
+function defName(i,s){ return s.h?(i===0?'Toi':HUMAN_NAMES[i]):AI_NAMES[i]; }
+function defTarget(){ return 10+(MENU.nav?3:0)+(MENU.ck?3:0)-(MENU.nav&&MENU.ck?1:0); }
+function drawMenu(save){
+  const tgt=MENU.target||defTarget();
+  openModal(`<h2>Nouvelle partie</h2><p style="margin:0;color:var(--ink2)">Colonise une île vierge : récolte, échange, bâtis… et sois le premier à atteindre l'objectif.</p>
+   ${save?`<div class="prow" style="background:#fff8;border-radius:10px;padding:8px"><b style="flex:1">Partie en cours (tour ${save.G.turn}).</b><button class="btn pri" data-a="resume">Reprendre</button></div>`:''}
+   <h4>Extensions</h4><div class="ext">
+    <div class="extc ${MENU.n>=5?'on':''} lock"><b>5–6 colons</b><small>Plateau agrandi de 30 tuiles et phase de construction spéciale entre les tours. S'active automatiquement à 5 ou 6 joueurs.</small></div>
+    <div class="extc ${MENU.nav?'on':''}" data-a="tnav"><b>Au-delà des mers</b><small>Archipel à explorer : navires, îles lointaines (+2 PV à la découverte), champs d'or, pirate.</small></div>
+    <div class="extc ${MENU.ck?'on':''}" data-a="tck"><b>Cités &amp; Remparts</b><small>Marchandises, améliorations de cité, métropoles, chevaliers, invasions barbares et 54 cartes progrès.</small></div>
+   </div>
+   <h4>Joueurs</h4><div class="seg">${[2,3,4,5,6].map(n=>`<button class="${n===MENU.n?'on':''}" data-a="pn" data-v="${n}">${n}</button>`).join('')}</div>
+   ${MENU.slots.slice(0,MENU.n).map((s,i)=>`<div class="prow" style="--pc:${PCOL[i].h}"><span class="dot"></span><input type="text" data-name="${i}" value="${esc(s.name)}" placeholder="${esc(defName(i,s))}" maxlength="14" autocomplete="off" enterkeyhint="done"><div class="seg">${['Humain','IA facile','IA normale','IA difficile'].map((l,k)=>{const on=(k===0&&s.h)||(!s.h&&['','facile','normal','difficile'][k]===s.lv);return `<button class="${on?'on':''}" data-a="ptype" data-v="${i}:${k}">${l}</button>`;}).join('')}</div></div>`).join('')}
+   <h4>Options</h4><div class="prow">Objectif <div class="seg">${[8,10,12,13,14,15,16,18].map(v=>`<button class="${v===tgt?'on':''}" data-a="ptgt" data-v="${v}">${v} PV</button>`).join('')}</div></div>
+   <div class="prow">Vitesse des IA <div class="seg">${['lente','normale','rapide'].map(v=>`<button class="${MENU.speed===v?'on':''}" data-a="pspeed" data-v="${v}">${v}</button>`).join('')}</div></div>
+   <div style="text-align:right;margin-top:12px">${G&&G.players&&G.players.length&&!G.over?'<button class="btn" data-a="close">Annuler</button> ':''}<button class="btn pri" data-a="start">Débarquer !</button></div>`);
+  document.querySelectorAll('[data-name]').forEach(i=>i.oninput=()=>{MENU.slots[+i.dataset.name].name=i.value;});
+}
+function startGame(){
+  const players=MENU.slots.slice(0,MENU.n).map((s,i)=>({name:(s.name||'').trim()||defName(i,s),ai:!s.h,level:s.lv||'normal'}));
+  PREFS={n:MENU.n,slots:MENU.slots,nav:MENU.nav,ck:MENU.ck,target:MENU.target,speed:MENU.speed}; try{localStorage.setItem('nt-prefs',JSON.stringify(PREFS));}catch(e){}
+  closeModal(); GEN++; UI={mode:null,wait:null,ask:null,view:players.findIndex(p=>!p.ai),trade:null,sel:null};
+  newGame({players,nav:MENU.nav,ck:MENU.ck,target:MENU.target||defTarget(),speed:{lente:1000,normale:550,rapide:180}[MENU.speed]});
+  if(UI.view<0) UI.view=0;
+  setMods(); buildBoard(true); uiRender(); sfx('horn'); log('Les colons débarquent sur la Nouvelle Terre.');
+  setTimeout(()=>runGame().catch(e=>{if(e!=='abort')console.error(e);}), REDUCED?0:2200);
+}
+function setMods(){ const m=[]; if(G.mods.ext56) m.push('5–6 colons'); if(G.mods.nav) m.push('Au-delà des mers'); if(G.mods.ck) m.push('Cités & Remparts'); $('#modsname').textContent=m.length?'· '+m.join(' · '):''; }
+function resumeGame(d){ closeModal(); GEN++; G=d.G; UI={mode:null,wait:null,ask:null,view:G.players.findIndex(p=>!p.ai),trade:null,sel:null}; if(UI.view<0)UI.view=0; setMods(); buildBoard(true); uiRender(); log('Partie reprise.');
+  setTimeout(()=>{ if(G.phase!=='setup'){ G.turn--; } runGame().catch(e=>{if(e!=='abort')console.error(e);}); }, REDUCED?0:1800); }
+function openCosts(){ openModal(`<h2>Coûts de construction</h2><div class="costs" style="font-size:15px;gap:8px 14px">
+  <b>Route</b><span>${chips(COST.road)} · 1 PV pour la Grande Route (5+ segments) : +2</span>
+  ${G&&G.mods&&G.mods.nav?`<b>Navire</b><span>${chips(COST.ship)}</span>`:''}
+  <b>Colonie</b><span>${chips(COST.settle)} · 1 PV</span><b>Cité</b><span>${chips(COST.city)} · 2 PV</span>
+  ${G&&G.mods&&G.mods.ck?`<b>Chevalier</b><span>${chips(COST.knight)} (promotion : idem, activation : ${chips(COST.kact)})</span><b>Rempart</b><span>${chips(COST.wall)} · +2 cartes avant défausse</span><b>Amélioration</b><span>niveau n = n marchandises de la couleur</span>`:`<b>Carte dév.</b><span>${chips(COST.dev)}</span>`}
+  </div><div style="text-align:right;margin-top:12px"><button class="btn pri" data-a="close">OK</button></div>`); }
+function openHelp(tab){
+  tab=tab||'base';
+  const T={
+   base:`<p>Chaque tuile produit une ressource quand son numéro sort aux dés : <b>forêt → bois</b>, <b>colline → argile</b>, <b>pré → laine</b>, <b>champ → blé</b>, <b>montagne → minerai</b>. Le désert ne produit rien.</p>
+    <p><b>Mise en place :</b> chacun pose une colonie et une route, puis une seconde dans l'ordre inverse (elle rapporte aussitôt les ressources voisines). Deux colonies ne peuvent jamais être voisines.</p>
+    <p><b>Ton tour :</b> lance les dés (tout le monde récolte), puis commerce et construis autant que tu veux, et termine.</p>
+    <ul><li><b>Route</b> (bois+argile), <b>Colonie</b> (bois+argile+laine+blé, 1 PV), <b>Cité</b> (2 blé+3 minerai, remplace une colonie, 2 PV et double récolte), <b>Carte de développement</b> (laine+blé+minerai).</li>
+    <li><b>7 :</b> qui a plus de 7 cartes en défausse la moitié ; le lanceur déplace le brigand (la tuile ne produit plus) et vole une carte à un voisin.</li>
+    <li><b>Commerce :</b> 4:1 avec la banque, 3:1 ou 2:1 grâce aux ports, ou librement avec les autres joueurs.</li>
+    <li><b>Cartes de développement :</b> Chevalier (déplace le brigand ; 3 chevaliers joués et le plus = Grande Armée +2 PV), Construction de routes (2 routes gratuites), Abondance (2 ressources au choix), Monopole (tout le monde te donne une ressource), Point de victoire. Une seule carte par tour, pas celle achetée ce tour-ci.</li>
+    <li><b>Grande Route :</b> la plus longue route continue d'au moins 5 segments : +2 PV.</li></ul>`,
+   ext:`<h4>5–6 colons</h4><p>Plateau de 30 tuiles, 11 ports. Après chaque tour, les autres joueurs, dans l'ordre, peuvent construire (sans commercer) : c'est la <b>phase de construction spéciale</b>.</p>
+    <h4>Au-delà des mers</h4><p>Le plateau devient un archipel. Tu démarres sur l'île principale. Les <b>navires</b> (bois+laine) se posent sur les bords maritimes et prolongent ton réseau ; une route et un navire ne se relient que par une colonie. Une fois par tour, tu peux <b>déplacer</b> le navire au bout d'une ligne ouverte (pas celui construit ce tour-ci).</p>
+    <p>Première colonie sur chaque nouvelle île : <b>+2 PV</b>. Les <b>champs d'or</b> donnent la ressource de ton choix. Sur un 7 (ou un chevalier), tu peux déplacer le <b>pirate</b> sur la mer : il bloque les navires voisins et vole les joueurs qui y naviguent.</p>
+    <h4>Cités &amp; Remparts</h4><ul><li>Les cités produisent une <b>marchandise</b> : forêt → papier, pré → tissu, montagne → monnaie (champ et colline donnent 2 ressources). La seconde pose de départ est une cité.</li>
+    <li><b>Améliorations</b> (Science/papier, Commerce/tissu, Politique/monnaie) : niveau n coûte n marchandises. Niveau 3 : Aqueduc, Comptoir 2:1, Forteresse. Niveau 4 : la première <b>Métropole</b> de la couleur (+2 PV, à l'abri des barbares).</li>
+    <li><b>Dé d'événement :</b> navire = les barbares avancent ; porte colorée = cartes progrès de cette couleur pour ceux dont le niveau + 1 ≥ dé rouge.</li>
+    <li><b>Barbares :</b> à l'arrivée, on compare le nombre de cités à la force des chevaliers <b>actifs</b>. Défaite : les plus faibles perdent une cité (pas la métropole). Victoire : le meilleur défenseur devient Héros (+1 PV). Ensuite tous les chevaliers se désactivent. Le brigand reste au désert jusqu'à la première attaque.</li>
+    <li><b>Chevaliers :</b> recrutés (laine+minerai) au bord de ton réseau, promus (laine+minerai), activés (blé). Un chevalier actif peut se déplacer ou chasser le brigand d'une tuile voisine. <b>Rempart</b> (2 argile) : +2 cartes avant défausse.</li>
+    <li><b>Cartes progrès :</b> 54 cartes (Science, Commerce, Politique), jusqu'à 4 en main. Il n'y a plus de cartes de développement.</li></ul>`,
+   ui:`<ul><li>Choisis une construction dans la barre d'actions : les emplacements possibles se mettent à briller sur le plateau.</li><li>Le bouton « Commerce » ouvre la banque, les ports et les échanges avec les autres joueurs (les IA acceptent ou refusent).</li><li>Plusieurs humains : un écran de passage protège ta main.</li><li>La partie est sauvegardée à chaque tour.</li></ul>`};
+  const N={base:'Règles de base',ext:'Extensions',ui:'Interface'};
+  openModal(`<h2>Aide</h2><div class="tabs">${Object.keys(T).map(k=>`<button class="${k===tab?'on':''}" data-a="helptab" data-v="${k}">${N[k]}</button>`).join('')}</div>${T[tab]}<div style="text-align:right"><button class="btn pri" data-a="close">Compris</button></div>`);
+}
+
+/* ---------------- sons ---------------- */
+let AC=null,NOISE=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;} } if(AC.state==='suspended') AC.resume().catch(()=>{}); return AC; }
+function tn(a,t,f,d,type,v,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);}
+function nz(a,t,d,v,type,f){ if(!NOISE){NOISE=a.createBuffer(1,a.sampleRate,a.sampleRate);const c=NOISE.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;} const s=a.createBufferSource();s.buffer=NOISE;const fl=a.createBiquadFilter();fl.type=type;fl.frequency.value=f;const g=a.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl).connect(g).connect(a.destination);s.start(t);s.stop(t+d+.02); }
+function sfx(n){ if(MUTED||!G||G.fast) return; const a=ac(); if(!a||a.state!=='running') return; const t=a.currentTime+.01;
+  switch(n){ case 'dice': for(let k=0;k<6;k++) nz(a,t+k*.07+Math.random()*.03,.05,.3,'bandpass',1800+Math.random()*1200); break;
+    case 'build': tn(a,t,140,.18,'triangle',.25,70); nz(a,t,.08,.25,'lowpass',600); break;
+    case 'splash': nz(a,t,.4,.2,'lowpass',900); break;
+    case 'gain': [880,1175].forEach((f,k)=>tn(a,t+k*.07,f,.3,'sine',.08)); break;
+    case 'card': nz(a,t,.12,.22,'bandpass',2600); break;
+    case 'robber': tn(a,t,110,.5,'sawtooth',.08,70); break;
+    case 'steal': tn(a,t,600,.15,'square',.05,300); break;
+    case 'bad': tn(a,t,260,.4,'sawtooth',.08,120); break;
+    case 'horn': tn(a,t,147,.9,'sawtooth',.07,140); tn(a,t,220,.9,'triangle',.05,215); break;
+    case 'win': [523,659,784,1046].forEach((f,k)=>tn(a,t+k*.12,f,.4,'triangle',.11)); break; } }
+function updSnd(){ $('#sndBtn').textContent=MUTED?'Son : non':'Son : oui'; }
+
+/* ---------------- événements ---------------- */
+document.addEventListener('click',e=>{
+  if(!MUTED) ac();
+  const t=e.target.closest('[data-a]'); if(!t) return; const a=t.dataset.a, v=t.dataset.v;
+  switch(a){
+    case 'roll': resolveTurn({a:'roll'}); break;
+    case 'mode': if(UI.ask) break; UI.mode=UI.mode===v?null:v; UI.sel=null; uiRender(); if(UI.mode) showPrompt({road:'Choisis où poser ta route',ship:'Choisis où lancer ton navire',settle:'Choisis l\'emplacement de la colonie',city:'Choisis la colonie à transformer',knight:'Où recruter ton chevalier ?',kup:'Quel chevalier promouvoir ?',kact:'Quel chevalier activer ?',kmove:'Quel chevalier déplacer ?',kchase:'Quel chevalier chasse le brigand ?',wall:'Quelle cité fortifier ?',moveShip:'Quel navire déplacer ?'}[UI.mode],true); else hidePrompt(); break;
+    case 'cancelmode': UI.mode=null; UI.sel=null; hidePrompt(); uiRender(); break;
+    case 'buydev': resolveTurn({a:'dev'}); break;
+    case 'playdev': resolveTurn({a:'playDev',c:v}); break;
+    case 'playprog': resolveTurn({a:'prog',i:+v}); break;
+    case 'trade': openTrade(); break;
+    case 'impr': openImpr(); break;
+    case 'endturn': UI.mode=null; UI.tradeOpen=false; resolveTurn({a:'end'}); break;
+    case 'costs': openCosts(); break;
+    case 'sound': MUTED=!MUTED; try{localStorage.setItem('nt-mute',MUTED?'1':'0');}catch(e){} updSnd(); break;
+    case 'help': openHelp(); break; case 'helptab': openHelp(v); break;
+    case 'menu': openMenu(); break; case 'close': closeModal(); UI.tradeOpen=false; break;
+    case 'resume': { const s=loadSave(); if(s) resumeGame(s); break; }
+    case 'tnav': MENU.nav=!MENU.nav; MENU.target=null; drawMenu(loadSave()); break;
+    case 'tck': MENU.ck=!MENU.ck; MENU.target=null; drawMenu(loadSave()); break;
+    case 'pn': MENU.n=+v; drawMenu(loadSave()); break;
+    case 'ptgt': MENU.target=+v; drawMenu(loadSave()); break;
+    case 'pspeed': MENU.speed=v; drawMenu(loadSave()); break;
+    case 'ptype': { const [i,k]=v.split(':').map(Number); const s=MENU.slots[i]; if(k===0){ s.h=1; if(AI_NAMES.includes(s.name)||/^Joueur \d$/.test(s.name)) s.name=defName(i,s);} else { if(s.h&&(/^(Toi|Joueur \d)$/.test(s.name)||HUMAN_NAMES.includes(s.name)||!s.name.trim())) s.name=AI_NAMES[i]; s.h=0; s.lv=['','facile','normal','difficile'][k]; } drawMenu(loadSave()); break; }
+    case 'start': startGame(); break;
+  }
+});
+(function boot(){
+  updSnd(); const s=loadSave();
+  if(s){ resumeGame(s); return; }
+  // plateau de démonstration en fond
+  newGame({players:[{name:'—',ai:true},{name:'—',ai:true},{name:'—',ai:true}],fast:false}); G.players=[]; G.log=[]; G.fake=true;
+  buildBoard(true); $('#actions').innerHTML=''; $('#hand').innerHTML='<span class="lab">Bienvenue sur la Nouvelle Terre !</span>';
+  setTimeout(openMenu, REDUCED?0:1600);
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Petit Bac</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800;6..12,900&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#2b2a33;--accent:#e2553a;--title:"Gochi Hand",cursive;--ui:"Nunito Sans",system-ui,sans-serif;--bar:#ffffffd9;--titlec:#2b3a8a}
+[hidden]{display:none!important}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui,"Nunito Sans",system-ui,sans-serif);min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bar,#0006);border-bottom:1px solid #fff2;flex-wrap:wrap}
+.top h1{font-family:var(--title,Georgia,serif);font-weight:800;font-size:24px;margin:0;color:var(--titlec,#fff);letter-spacing:.5px}
+.top h1 small{font-family:var(--ui);font-weight:600;font-size:13px;opacity:.75;margin-left:8px;letter-spacing:0}
+.back{color:inherit;opacity:.9;text-decoration:none;font-size:14px;border:1px solid #fff4;padding:5px 10px;border-radius:8px}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#ffffff1c;color:inherit;border:1px solid #ffffff40;border-radius:9px;padding:7px 12px;font-size:14px;font-weight:700}
+.btn:hover{background:#ffffff2e}.btn:disabled{opacity:.4;cursor:default}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.on{background:#fff;color:#222}
+.status{display:flex;align-items:center;gap:12px;padding:9px 16px;background:var(--pc,var(--accent));color:#fff;font-weight:800;min-height:44px;box-shadow:0 4px 14px #0005;transition:background .35s;flex-wrap:wrap}
+.status .who{font-family:var(--title,Georgia,serif);font-size:19px}
+.status .msg{font-weight:600}
+.status .right{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:14px}
+#modal{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:12px}
+#modal[hidden]{display:none}
+.mbox{background:#fbf6ea;color:#2a2418;border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;animation:pop .3s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.mbox h2{font-family:var(--title,Georgia,serif);font-size:26px;margin:0 0 6px}
+.mbox h4{font-family:var(--title,Georgia,serif);font-size:16px;margin:14px 0 6px}
+.mbox p,.mbox li{line-height:1.5}
+.mbox .btn{background:#ece3cf;color:#2a2418;border-color:#c9b98f}
+.mbox .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mbox .btn.on{background:#2a2418;color:#fff}
+.seg{display:inline-flex;border:1px solid #c9b98f;border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:#f6efdc;padding:7px 11px;font-weight:700;color:#2a2418;font-size:13.5px}
+.seg button.on{background:#2a2418;color:#fff}
+.prow{display:flex;gap:8px;align-items:center;margin:7px 0;flex-wrap:wrap}
+.prow .dot{width:16px;height:16px;border-radius:50%;background:var(--pc);border:2px solid #0004}
+.prow input[type=text]{font-family:inherit;font-weight:700;font-size:16px;padding:6px 9px;border-radius:8px;border:1px solid #c9b98f;background:#fff;color:#2a2418;-webkit-text-fill-color:#2a2418;caret-color:var(--accent);width:150px;color-scheme:light}
+.prow input[type=text]::placeholder{color:#a3926e;-webkit-text-fill-color:#a3926e;font-weight:600}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{border:1px solid #c9b98f;background:#f6efdc;border-radius:20px;padding:5px 12px;font-weight:800;color:#2a2418}
+.tabs button.on{background:#2a2418;color:#fff}
+.toast{position:fixed;left:50%;top:100px;transform:translateX(-50%);background:#1b1b1f;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 10px 30px #000a;z-index:70;font-weight:700;animation:toast 2.6s forwards;pointer-events:none;max-width:90vw;text-align:center}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.bannerx{position:fixed;inset:0;display:grid;place-items:center;z-index:65;pointer-events:none}
+.bannerx div{font-family:var(--title,Georgia,serif);font-weight:800;font-size:clamp(30px,6vw,64px);color:#fff;background:var(--bc,var(--accent));padding:10px 36px;border-radius:14px;box-shadow:0 20px 50px #000a;animation:ban 2.3s forwards;text-align:center}
+.bannerx small{display:block;font-family:var(--ui);font-size:.34em;font-weight:700}
+@keyframes ban{0%{transform:scale(2);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:0;transform:scale(.92)}}
+#cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);text-align:center;padding:20px}
+#cover[hidden]{display:none}
+#cover h2{font-family:var(--title,Georgia,serif);font-size:36px;margin:0 0 8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
+
+body{background:#f4f1e8 repeating-linear-gradient(#f4f1e8 0 31px,#c9d8f0 31px 32px) fixed}
+.top{border-bottom:2px solid #e2553a55}.back{border-color:#bbb}.btn{background:#fff;border-color:#ccc;color:#2b2a33}
+.top h1{font-size:34px;font-weight:400}
+.wrap{max-width:860px;margin:0 auto;padding:16px 12px 40px}
+.letterbox{display:flex;align-items:center;gap:18px;justify-content:center;margin:6px 0 14px}
+.letter{width:110px;height:110px;border-radius:22px;background:#2b3a8a;color:#fff;font-family:var(--title);font-size:84px;display:grid;place-items:center;box-shadow:0 8px 0 #1a2560,0 14px 24px #0004;transform:rotate(-4deg)}
+.letter.spin{animation:sp .08s infinite}
+@keyframes sp{50%{transform:rotate(4deg) scale(1.05)}}
+.timer{font-family:var(--title);font-size:46px;color:#e2553a;min-width:110px;text-align:center}
+.timer.low{animation:pulse .5s infinite}
+@keyframes pulse{50%{transform:scale(1.15)}}
+.sheet{background:#fffdf6;border-radius:6px;box-shadow:0 10px 30px #0002;padding:18px 18px 18px 56px;position:relative;border-left:3px solid #e2553a55}
+.sheet::before{content:"";position:absolute;left:38px;top:0;bottom:0;width:2px;background:#e2553a88}
+.row{display:grid;grid-template-columns:170px 1fr;gap:12px;align-items:center;padding:8px 0;border-bottom:1px dashed #c9d8f0}
+@media(max-width:560px){.row{grid-template-columns:1fr;gap:4px}}
+.row label{font-weight:900;color:#2b3a8a}
+.row input{font-family:var(--title);font-size:28px;border:0;background:transparent;border-bottom:2px solid #c9d8f0;padding:2px 6px;color:#1a2560;-webkit-text-fill-color:#1a2560;outline:none;width:100%;color-scheme:light}
+.row input:focus{border-bottom-color:#e2553a}
+.row input.bad{color:#c0261c;-webkit-text-fill-color:#c0261c}
+.stopbar{display:flex;gap:10px;justify-content:center;margin-top:16px}
+.stop{font-family:var(--title);font-size:34px;padding:8px 40px;border-radius:16px;border:0;background:#e2553a;color:#fff;box-shadow:0 6px 0 #a02a14}
+.stop:active{transform:translateY(4px);box-shadow:0 2px 0 #a02a14}
+table.res{width:100%;border-collapse:collapse;background:#fffdf6;border-radius:10px;overflow:hidden;box-shadow:0 10px 30px #0002;font-size:15px}
+table.res th,table.res td{padding:8px;border-bottom:1px solid #e6e0cf;text-align:left;vertical-align:top}
+table.res th{background:#2b3a8a;color:#fff}
+.ans{font-family:var(--title);font-size:22px;color:#1a2560}
+.pt{font-weight:900;float:right}
+.ok .pt{color:#2f8a4a}.dup .pt{color:#c99a0a}.ko .pt{color:#c0261c}.ko .ans{text-decoration:line-through;opacity:.6}
+.unk{font-size:11px;font-weight:800;border:1px solid #c99a0a;background:#fff6d8;border-radius:8px;padding:1px 6px;cursor:pointer;margin-left:4px}
+.totals{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:14px 0}
+.tot{background:#fff;border-radius:12px;padding:8px 14px;box-shadow:0 4px 12px #0002;font-weight:900}
+.tot b{color:#e2553a;font-size:20px;margin-left:6px}
+.center{text-align:center}
+</style></head><body>
+<header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Petit Bac</h1>
+<div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
+<div class="status" id="status"></div>
+<div class="wrap" id="wrap"></div>
+<div id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<div id="cover" hidden></div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SVGNS='http://www.w3.org/2000/svg';
+function sel(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
+function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
+function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
+function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
+function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
+  c.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${(Math.random()-.5)*220}px,${innerHeight+40}px) rotate(${Math.random()*720}deg)`}],{duration:2200+Math.random()*1800,delay:Math.random()*700,easing:'ease-in'}).finished.then(()=>c.remove()); } }
+function store(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+/* sons */
+let MUTED=!!load('salle-mute'), AC=null, NOISE=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;} } if(AC.state==='suspended') AC.resume().catch(()=>{}); return AC; }
+function tn(a,t,f,d,type,v,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);}
+function nz(a,t,d,v,type,f){ if(!NOISE){NOISE=a.createBuffer(1,a.sampleRate,a.sampleRate);const c=NOISE.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;} const s=a.createBufferSource();s.buffer=NOISE;const fl=a.createBiquadFilter();fl.type=type;fl.frequency.value=f;const g=a.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl).connect(g).connect(a.destination);s.start(t);s.stop(t+d+.02); }
+function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') return; const t=a.currentTime+.01;
+  switch(n){
+    case 'click': tn(a,t,900,.06,'triangle',.06); break;
+    case 'move': nz(a,t,.08,.25,'bandpass',900); tn(a,t,220,.08,'sine',.08); break;
+    case 'capture': nz(a,t,.12,.35,'bandpass',1400); tn(a,t,520,.12,'triangle',.1,260); break;
+    case 'card': nz(a,t,.1,.22,'bandpass',2800); break;
+    case 'flip': nz(a,t,.06,.25,'highpass',3000); tn(a,t,1200,.05,'triangle',.04); break;
+    case 'dice': for(let k=0;k<6;k++) nz(a,t+k*.07+Math.random()*.03,.05,.3,'bandpass',1800+Math.random()*1200); break;
+    case 'ding': tn(a,t,1320,.5,'sine',.1); tn(a,t+.07,1760,.4,'sine',.06); break;
+    case 'error': tn(a,t,220,.25,'square',.05,160); break;
+    case 'win': [523,659,784,1046].forEach((f,k)=>tn(a,t+k*.12,f,.4,'triangle',.11)); break;
+    case 'lose': [392,330,262].forEach((f,k)=>tn(a,t+k*.16,f,.45,'triangle',.1)); break;
+    case 'splash': nz(a,t,.5,.3,'lowpass',800); break;
+    case 'boom': nz(a,t,.7,.6,'lowpass',300); tn(a,t,90,.6,'sawtooth',.15,40); break;
+    case 'pop': tn(a,t,600,.08,'sine',.1,900); break;
+  } }
+function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
+document.addEventListener('click',e=>{
+  if(!MUTED) ac();
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  const t=e.target.closest('[data-c]'); if(!t) return;
+  switch(t.dataset.c){
+    case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
+    case 'help': GAME.help(); break;
+    case 'new': GAME.menu(); break;
+    case 'close': closeModal(); break;
+  }
+});
+addEventListener('DOMContentLoaded',updSnd);
+
+const PBDATA={
+prenom:`Adam,Adèle,Agathe,Alice,Alexandre,Amélie,Anaïs,André,Antoine,Arthur,Aurélie,Axel,Anne,Alain,Albert,Arnaud,Ariane|Baptiste,Benjamin,Bernard,Bastien,Béatrice,Blanche,Bruno,Brigitte,Benoît,Basile,Bérénice,Boris,Bertrand|Camille,Caroline,Cédric,Céline,Charles,Charlotte,Chloé,Christophe,Claire,Clément,Clara,Colette,Corentin,Cyril,Capucine,Constance|Damien,Daniel,David,Delphine,Denis,Diane,Dominique,Dorian,Dylan,Daphné,Denise,Didier,Diego|Édouard,Élise,Élodie,Emma,Emmanuel,Éric,Estelle,Étienne,Eugénie,Ève,Élie,Enzo,Esteban,Elsa,Ethan|Fabien,Fabrice,Fanny,Félix,Florence,Florian,François,Françoise,Frédéric,Flavie,Faustine,Fleur|Gabriel,Gaël,Gaspard,Geneviève,Georges,Gérard,Gilles,Grégoire,Guillaume,Gustave,Gabrielle,Garance,Gisèle|Hector,Hélène,Henri,Hervé,Hugo,Hugues,Héloïse,Honoré,Hortense,Hannah,Hamza|Inès,Isabelle,Iris,Irène,Ivan,Igor,Ilan,Ingrid,Isaac,Inaya|Jacques,Jade,Jean,Jeanne,Jérôme,Joël,Joseph,Josiane,Jules,Julia,Julie,Julien,Justine,Juliette,Jonathan,Joachim|Karim,Kevin,Kylian,Kenza,Karine,Killian,Katia,Kenzo|Laura,Laurent,Léa,Léon,Léonie,Lilou,Lina,Louis,Louise,Luc,Lucas,Lucie,Lucien,Lou,Liam,Lisa,Laetitia|Manon,Marc,Marie,Margaux,Marine,Martin,Mathieu,Mathis,Maud,Maxime,Mélanie,Michel,Mila,Mohamed,Morgane,Marius|Nathalie,Nathan,Nicolas,Noé,Noémie,Nina,Noah,Norbert,Nadia,Nadine,Nolan,Nora|Océane,Olivier,Olivia,Odile,Oscar,Octave,Ophélie,Omar,Oriane|Pascal,Patrick,Paul,Pauline,Philippe,Pierre,Perrine,Paloma,Patricia,Pénélope|Quentin,Quitterie|Raphaël,Rémi,Renaud,Robert,Robin,Romain,Rose,Rosalie,Rémy,Raymond,Roxane,Romane|Sabine,Samuel,Sandrine,Sarah,Sébastien,Simon,Sophie,Stéphane,Suzanne,Sylvie,Sacha,Salomé,Solène,Sami|Théo,Thomas,Thibault,Théodore,Timothée,Tristan,Tom,Thérèse,Tiphaine,Tania|Ulysse,Ugo,Ursule|Valentin,Valérie,Vanessa,Victor,Victoire,Vincent,Virginie,Violette,Vivien,Valentine|William,Wendy,Wassim,Walter|Xavier,Xavière|Yann,Yanis,Yasmine,Yves,Yvette,Yohan|Zoé,Zacharie,Zélie,Zinedine,Zohra`,
+ville:`Amiens,Angers,Annecy,Avignon,Ajaccio,Arras,Albi,Amsterdam,Athènes,Alger,Allemagne,Angleterre,Argentine,Australie,Autriche,Algérie,Andorre|Bordeaux,Brest,Besançon,Biarritz,Bourges,Bayonne,Berlin,Bruxelles,Barcelone,Bruges,Bucarest,Belgique,Brésil,Bolivie,Bulgarie,Bénin|Caen,Cannes,Chartres,Colmar,Clermont-Ferrand,Calais,Cherbourg,Copenhague,Cracovie,Chicago,Canada,Chine,Chili,Colombie,Cuba,Croatie,Cameroun|Dijon,Dunkerque,Deauville,Dax,Dublin,Dakar,Delhi,Dubaï,Danemark,Djibouti,Dominique|Évian,Épinal,Évry,Édimbourg,Espagne,Égypte,Équateur,Estonie,Éthiopie,Érythrée|Fréjus,Fontainebleau,Florence,Francfort,France,Finlande,Fidji|Grenoble,Grasse,Gap,Genève,Gênes,Grèce,Ghana,Guatemala,Guinée,Gabon,Géorgie|Honfleur,Hyères,Hambourg,Helsinki,Hanoï,Hongrie,Haïti,Honduras|Istanbul,Islamabad,Italie,Inde,Irlande,Islande,Indonésie,Iran,Irak,Israël|Jérusalem,Johannesburg,Japon,Jamaïque,Jordanie|Kaboul,Kyoto,Kiev,Kenya,Koweït,Kazakhstan|Lyon,Lille,Limoges,Le Havre,Lourdes,Londres,Lisbonne,Lausanne,Liège,Luxembourg,Lettonie,Liban,Libye,Lituanie|Marseille,Metz,Montpellier,Mulhouse,Menton,Madrid,Milan,Moscou,Montréal,Marrakech,Maroc,Mexique,Madagascar,Mali,Monaco|Nantes,Nice,Nancy,Nîmes,Narbonne,Naples,New York,Nairobi,Norvège,Népal,Niger,Nigeria,Nicaragua|Orléans,Oslo,Ottawa,Oran,Osaka,Oman,Ouganda,Ouzbékistan|Paris,Perpignan,Poitiers,Pau,Prague,Porto,Pékin,Pologne,Portugal,Pérou,Pakistan,Paraguay,Panama|Québec,Quimper,Quito,Qatar|Reims,Rennes,Rouen,Roubaix,Rome,Rio de Janeiro,Rabat,Roumanie,Russie,Rwanda|Strasbourg,Saint-Étienne,Saint-Malo,Sète,Séville,Stockholm,Sydney,Shanghai,Suisse,Suède,Sénégal,Syrie,Serbie,Slovénie|Toulouse,Toulon,Tours,Troyes,Tokyo,Tunis,Turin,Tanger,Turquie,Tunisie,Thaïlande,Togo,Tchad|Uzès,Ushuaïa,Ukraine,Uruguay|Valence,Versailles,Vichy,Vannes,Venise,Vienne,Varsovie,Vancouver,Vietnam,Venezuela,Vatican|Wissembourg,Washington,Wellington,Wallis|Xi'an|Yvetot,York,Yokohama,Yémen|Zurich,Zagreb,Zanzibar,Zambie,Zimbabwe`,
+metier:`Agriculteur,Architecte,Avocat,Aviateur,Acteur,Artiste,Astronaute,Apiculteur,Archéologue,Assureur,Animateur,Antiquaire,Ambulancier,Arbitre|Boulanger,Boucher,Banquier,Bijoutier,Bûcheron,Berger,Biologiste,Brocanteur,Barman,Brodeur|Charpentier,Chauffeur,Chirurgien,Coiffeur,Comptable,Cuisinier,Cordonnier,Caissier,Chanteur,Chercheur,Carreleur,Contrôleur,Couturier|Dentiste,Danseur,Docteur,Douanier,Dessinateur,Diététicien,Dépanneur,Directeur,Détective|Électricien,Éboueur,Éditeur,Enseignant,Écrivain,Ébéniste,Esthéticienne,Épicier,Éleveur,Ergothérapeute|Facteur,Fleuriste,Fromager,Forgeron,Forestier,Fermier,Footballeur,Formateur|Garagiste,Gendarme,Graphiste,Guide,Géomètre,Gardien,Graveur,Greffier|Horloger,Hôtesse,Huissier,Historien,Horticulteur,Hôtelier|Infirmier,Ingénieur,Instituteur,Imprimeur,Illustrateur,Informaticien,Interprète|Jardinier,Journaliste,Juge,Joaillier,Jockey,Juriste|Kinésithérapeute,Kiosquier|Libraire,Luthier,Livreur,Laborantin,Linguiste|Maçon,Médecin,Mécanicien,Menuisier,Musicien,Militaire,Marin,Magicien,Mannequin,Maraîcher,Météorologue|Notaire,Navigateur,Nourrice,Neurologue|Opticien,Orthophoniste,Ostéopathe,Ouvrier,Orfèvre,Officier|Pâtissier,Peintre,Pharmacien,Photographe,Pilote,Plombier,Policier,Pompier,Professeur,Poissonnier,Potier,Paysagiste|Quincaillier|Restaurateur,Réalisateur,Rédacteur,Radiologue,Ramoneur,Relieur|Serveur,Sculpteur,Secrétaire,Serrurier,Soudeur,Steward,Sage-femme,Sommelier,Styliste|Tailleur,Taxi,Technicien,Tapissier,Traducteur,Traiteur,Toiletteur|Urbaniste,Urgentiste|Vétérinaire,Vendeur,Vigneron,Vitrier,Viticulteur|Webmaster|Xylographe|Yogi|Zoologiste`,
+objet:`Aiguille,Ampoule,Armoire,Arrosoir,Assiette,Aspirateur,Agrafeuse,Allumette,Anneau,Ardoise|Ballon,Balai,Bague,Bouteille,Bougie,Brosse,Bureau,Bol,Boîte,Bracelet,Briquet,Bouilloire|Casserole,Chaise,Chaussure,Clé,Couteau,Cuillère,Crayon,Cahier,Coussin,Ciseaux,Cadre,Calculatrice,Cintre|Dé,Drap,Disque,Domino,Dentifrice,Dictionnaire,Diadème|Écharpe,Éponge,Étagère,Enveloppe,Échelle,Éventail,Écran,Épingle|Fourchette,Fauteuil,Flûte,Fer à repasser,Fenêtre,Ficelle,Feutre,Fusée|Gant,Gomme,Guitare,Gobelet,Grille-pain,Globe|Horloge,Hache,Hamac,Harpe,Hublot|Imperméable,Interrupteur,Igloo|Jouet,Journal,Jumelles,Jupe,Jarre|Kayak,Képi,Klaxon|Lampe,Livre,Lit,Lunettes,Loupe,Louche,Lacet|Marteau,Miroir,Montre,Mouchoir,Moufle,Micro,Manteau,Mixeur|Nappe,Note,Nœud,Niche|Oreiller,Ordinateur,Ombrelle,Ouvre-boîte|Parapluie,Peigne,Pinceau,Poêle,Pot,Poubelle,Pull,Panier,Passoire,Puzzle|Quille|Règle,Radio,Raquette,Râteau,Réveil,Robinet,Ruban|Sac,Savon,Seau,Stylo,Serviette,Sifflet,Sablier,Scie,Sandale|Table,Tasse,Téléphone,Tapis,Torchon,Trousse,Tournevis,Tabouret,Tambour|Ustensile,Urne|Vase,Verre,Valise,Violon,Vis,Ventilateur,Vélo|Wagon|Xylophone|Yoyo|Zip`,
+fruit:`Abricot,Ananas,Avocat,Amande,Artichaut,Asperge,Airelle,Aubergine|Banane,Betterave,Brocoli,Blette,Brugnon|Cerise,Citron,Clémentine,Coing,Carotte,Céleri,Chou,Courgette,Concombre,Châtaigne,Cassis,Cornichon,Citrouille|Datte,Échalote,Épinard,Endive|Fraise,Framboise,Figue,Fève,Fenouil|Groseille,Goyave,Grenade,Gingembre|Haricot,Haricot vert|Igname|Jujube|Kiwi,Kaki,Kumquat|Litchi,Laitue,Lentille,Lime|Mangue,Melon,Mandarine,Mûre,Myrtille,Mirabelle,Maïs,Marron|Nectarine,Noix,Noisette,Navet|Orange,Olive,Oignon,Oseille|Pomme,Poire,Pêche,Prune,Pamplemousse,Pastèque,Papaye,Poireau,Poivron,Petit pois,Potiron,Patate,Pomme de terre,Panais|Quetsche|Raisin,Radis,Rhubarbe,Roquette|Salade,Salsifis,Shiitaké|Tomate,Topinambour,Truffe|Ugli|Vanille|Wasabi|Yuzu`,
+celeb:`Aznavour,Adjani,Alain Delon,Angèle,Adele,Armstrong|Brigitte Bardot,Beyoncé,Benzema,Brel,Balzac,Bolt,Bourvil,Bowie|Coluche,Chopin,Cézanne,Cotillard,Chaplin,Curie,Clooney,Christine and the Queens|Depardieu,Dalida,Dujardin,De Gaulle,Dion,Dali,Dumas,Dior|Einstein,Edith Piaf,Eiffel,Eminem,Elvis|Federer,Funès,Fernandel,Freud,Florent Pagny|Gainsbourg,Goldman,Griezmann,Gandhi,Galilée,Gabin,Gauguin|Hugo,Hallyday,Hitchcock,Hemingway|Indochine,Isabelle Huppert|Johnny,Jackson,Jordan,Jamel,Jules Verne,Jeanne d'Arc|Kylian Mbappé,Kahlo,Kennedy|Louis de Funès,Lennon,Lady Gaga,Lagerfeld|Mbappé,Madonna,Molière,Mozart,Monet,Mandela,Marie Curie,Messi,Michael Jackson|Napoléon,Nadal,Nougaro,Newton,Nolan|Obama,Omar Sy,Orelsan|Picasso,Piaf,Pasteur,Pelé,Presley,Proust|Queen,Quentin Tarantino|Renaud,Rousseau,Ronaldo,Rodin,Rihanna,Renoir|Stromae,Sardou,Shakespeare,Sartre,Spielberg,Sophie Marceau|Thomas Pesquet,Tarantino,Trenet,Toulouse-Lautrec|Usher,Uderzo|Voltaire,Van Gogh,Vianney,Vartan,Vercingétorix|Warhol,Will Smith,Wagner|Xavier Dolan|Yannick Noah,Yves Saint Laurent,Yourcenar|Zidane,Zola,Zaz,Zinedine Zidane`
+};
+
+const CATS=[['prenom','Prénom'],['ville','Ville / Pays'],['metier','Métier'],['objet','Objet'],['fruit','Fruit / Légume'],['celeb','Célébrité']];
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const LISTS={}; for(const [k] of CATS){ LISTS[k]={}; PBDATA[k].split(/[|,]/).map(w=>w.trim()).filter(Boolean).forEach(w=>{ const l=norm(w)[0].toUpperCase(); (LISTS[k][l]=LISTS[k][l]||[]).push(w); }); }
+const NORMSET={}; for(const [k] of CATS){ NORMSET[k]=new Set(); Object.values(LISTS[k]).flat().forEach(w=>{ const n=norm(w); NORMSET[k].add(n); if(k==='celeb'){ const parts=n.split(' '); if(parts.length>1) NORMSET[k].add(parts[parts.length-1]); } if(k==='fruit'||k==='objet'||k==='metier'){ NORMSET[k].add(n+'s'); NORMSET[k].add(n.replace(/s$/,'')); } }); }
+const EASY='ABCDEFGHIJLMNOPRSTV', HARD='KQUWYZ';
+const GAME={help,menu};
+let B=null, TIMER=null, GEN=0;
+const AIN=['Rosalie','Anatole','Philomène'];
+function check(cat,word,letter){ const n=norm(word); if(!n) return 'vide'; const first=n[0].toUpperCase();
+  if(cat==='celeb'){ if(!n.split(' ').some(p=>p[0]&&p[0].toUpperCase()===letter)) return 'lettre'; } else if(first!==letter) return 'lettre';
+  return NORMSET[cat].has(n)?'ok':'inconnu'; }
+function newMatch(cfg){ GEN++; B={cfg,players:cfg.humans.map(n=>({name:n,ai:false,score:0})).concat(Array.from({length:cfg.ai},(_,i)=>({name:AIN[i],ai:true,score:0}))),round:0,used:[]}; nextRound(); }
+async function nextRound(){ const my=GEN; B.round++; const pool=(EASY+(B.cfg.hard?HARD:'')).split('').filter(l=>!B.used.includes(l)); const L=pool[Math.floor(Math.random()*pool.length)]; B.used.push(L); B.letter=L; B.answers=B.players.map(()=>({}));
+  B.overrides={};
+  $('#wrap').innerHTML=`<div class="letterbox"><div class="letter spin" id="letter">?</div></div>`; status(`Manche ${B.round} / ${B.cfg.rounds}`,'Tirage de la lettre…');
+  for(let k=0;k<16&&!REDUCED;k++){ $('#letter').textContent=(EASY+HARD)[Math.floor(Math.random()*25)]; sfx('click'); await wait(60+k*8); if(my!==GEN) return; }
+  $('#letter').textContent=L; $('#letter').classList.remove('spin'); sfx('ding'); await wait(700); if(my!==GEN) return;
+  // réponses des IA
+  B.players.forEach((p,i)=>{ if(!p.ai) return; const prob={facile:.5,normal:.72,difficile:.9}[B.cfg.level]; for(const [k] of CATS){ const list=LISTS[k][L]||[]; if(list.length&&Math.random()<prob) B.answers[i][k]=list[Math.floor(Math.random()*list.length)]; } });
+  B.hi=0; humanTurn(); }
+function status(who,msg){ const st=$('#status'); st.style.setProperty('--pc','#2b3a8a'); st.innerHTML=`<span class="who">${esc(who)}</span><span class="msg">${esc(msg||'')}</span><span class="right">${B?B.players.map(p=>`${esc(p.name)} ${p.score}`).join(' · '):''}</span>`; }
+async function humanTurn(){ const humans=B.players.map((p,i)=>p.ai?-1:i).filter(i=>i>=0); if(B.hi>=humans.length){ results(); return; } const pi=humans[B.hi], p=B.players[pi];
+  if(humans.length>1) await cover(`À ${p.name} !`,`Lettre ${B.letter} · les autres ne regardent pas`);
+  $('#wrap').innerHTML=`<div class="letterbox"><div class="letter">${B.letter}</div><div class="timer" id="timer"></div></div>
+   <div class="sheet">${CATS.map(([k,l])=>`<div class="row"><label for="i-${k}">${l}</label><input id="i-${k}" data-k="${k}" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="${B.letter}…"></div>`).join('')}</div>
+   <div class="stopbar"><button class="stop" data-a="stop">STOP !</button></div>`;
+  status(p.name,`Trouve un mot pour chaque catégorie commençant par ${B.letter}.`); $('#i-prenom').focus();
+  $$('.sheet input').forEach(inp=>inp.addEventListener('input',()=>{ const n=norm(inp.value); inp.classList.toggle('bad',!!n&&inp.dataset.k!=='celeb'&&n[0].toUpperCase()!==B.letter); }));
+  $$('.sheet input').forEach((inp,k,all)=>inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); if(all[k+1]) all[k+1].focus(); else finish(); } }));
+  let t=B.cfg.time; const tm=$('#timer'); const my=++GEN; const tick=()=>{ if(my!==GEN) return; if(!t){ tm.textContent='∞'; return; } tm.textContent=t; tm.classList.toggle('low',t<=10); if(t<=5&&t>0) sfx('click'); if(t<=0){ sfx('error'); finish(); return; } t--; TIMER=setTimeout(tick,1000); }; tick();
+  B.finishCur=()=>{ clearTimeout(TIMER); $$('.sheet input').forEach(inp=>{ B.answers[pi][inp.dataset.k]=inp.value.trim(); }); B.hi++; humanTurn(); }; }
+function finish(){ if(B&&B.finishCur){ const f=B.finishCur; B.finishCur=null; sfx('pop'); f(); } }
+function cover(t,sub){ return new Promise(res=>{ const c=$('#cover'); c.innerHTML=`<div><h2 style="font-family:var(--title);color:#2b3a8a">${esc(t)}</h2><p>${esc(sub)}</p><button class="btn pri" style="font-size:20px;padding:12px 28px">Prêt !</button></div>`; c.hidden=false; c.querySelector('button').onclick=()=>{ c.hidden=true; res(); }; }); }
+function scoreRound(){ const res=B.players.map(()=>({tot:0,cells:{}}));
+  for(const [k] of CATS){ const st=B.players.map((p,i)=>{ const w=B.answers[i][k]||''; let s=check(k,w,B.letter); const ov=B.overrides[i+'|'+k]; if(s==='inconnu'&&ov) s='ok'; if(s==='inconnu'&&ov===false) s='refus'; return {w,s,n:norm(w)}; });
+    st.forEach((x,i)=>{ let pts=0, cls='ko'; const valid=x.s==='ok'||(x.s==='inconnu'&&B.cfg.trust);
+      if(valid){ const dup=st.filter((y,j)=>j!==i&&y.n===x.n&&(y.s==='ok'||(y.s==='inconnu'&&B.cfg.trust))).length; pts=dup?5:10; cls=dup?'dup':'ok'; }
+      res[i].cells[k]={...x,pts,cls}; res[i].tot+=pts; }); }
+  return res; }
+function results(){ const r=scoreRound();
+  $('#wrap').innerHTML=`<div class="letterbox"><div class="letter">${B.letter}</div></div>
+   <div style="overflow:auto"><table class="res"><tr><th>Catégorie</th>${B.players.map(p=>`<th>${esc(p.name)}</th>`).join('')}</tr>
+   ${CATS.map(([k,l])=>`<tr><td><b>${l}</b></td>${B.players.map((p,i)=>{ const c=r[i].cells[k]; const lab={vide:'',lettre:'mauvaise lettre',refus:'refusé'}[c.s]; return `<td class="${c.cls}"><span class="ans">${esc(c.w||'—')}</span><span class="pt">${c.pts}</span>${c.s==='inconnu'&&!B.cfg.trust?`<br><button class="unk" data-ov="${i}|${k}">mot inconnu : l'accepter ?</button>`:''}${c.s==='inconnu'&&B.cfg.trust?'<br><small>accepté de confiance</small>':''}${lab?`<br><small>${lab}</small>`:''}</td>`; }).join('')}</tr>`).join('')}
+   <tr><td><b>Total manche</b></td>${r.map(x=>`<td><b>${x.tot}</b></td>`).join('')}</tr></table></div>
+   <p class="center" style="font-size:13px;opacity:.75">10 points pour une réponse unique, 5 si un autre joueur a la même. Les mots absents du dictionnaire du jeu peuvent être acceptés d'un clic.</p>
+   <div class="stopbar"><button class="btn pri" data-a="validate" style="font-size:18px;padding:10px 24px">${B.round>=B.cfg.rounds?'Résultats finaux':'Manche suivante'}</button></div>`;
+  status(`Manche ${B.round} : lettre ${B.letter}`,'Vérifie les réponses');
+  B.lastRes=r; }
+function validate(){ B.lastRes.forEach((x,i)=>B.players[i].score+=x.tot); sfx('ding');
+  if(B.round>=B.cfg.rounds){ const rank=B.players.slice().sort((a,b)=>b.score-a.score); $('#wrap').innerHTML=`<h2 class="center" style="font-family:var(--title);font-size:46px;color:#2b3a8a;margin:10px">Classement final</h2><div class="totals">${rank.map((p,k)=>`<div class="tot">${['🥇','🥈','🥉'][k]||''} ${esc(p.name)}<b>${p.score}</b></div>`).join('')}</div><div class="stopbar"><button class="btn pri" data-c="new">Rejouer</button></div>`;
+    const w=rank[0]; banner(w.ai?'Bien essayé !':'Bravo !',`${w.name} gagne avec ${w.score} points`,w.ai?'#7a4a2a':'#2f8a4a'); sfx(w.ai?'lose':'win'); if(!w.ai) confetti(); status('Partie terminée',''); return; }
+  nextRound(); }
+document.addEventListener('click',e=>{ const a=e.target.closest('[data-a]'); if(a){ if(a.dataset.a==='stop') finish(); if(a.dataset.a==='validate') validate(); return; }
+  const o=e.target.closest('[data-ov]'); if(o){ B.overrides[o.dataset.ov]=true; sfx('click'); results(); } });
+let M={humans:['Toi'],ai:2,level:'normal',rounds:5,time:90,hard:false,trust:false};
+function menu(){ const draw=()=>paintModal(`<h2>Nouvelle partie</h2>
+  <h4>Joueurs humains</h4>${M.humans.map((n,i)=>`<div class="prow"><input type="text" data-h="${i}" value="${esc(n)}" placeholder="${['Toi','Camille','Lucas','Emma'][i]}" maxlength="14">${i?`<button class="btn" data-m="rmh:${i}">✕</button>`:''}</div>`).join('')}${M.humans.length<4?'<button class="btn" data-m="addh">+ Ajouter un joueur</button>':''}
+  <h4>Adversaires ordinateur</h4><div class="seg">${[0,1,2,3].map(n=>`<button class="${M.ai===n?'on':''}" data-m="ai:${n}">${n}</button>`).join('')}</div> <div class="seg">${['facile','normal','difficile'].map(l=>`<button class="${M.level===l?'on':''}" data-m="level:${l}">${l}</button>`).join('')}</div>
+  <h4>Manches</h4><div class="seg">${[3,5,10].map(n=>`<button class="${M.rounds===n?'on':''}" data-m="rounds:${n}">${n}</button>`).join('')}</div>
+  <h4>Temps par manche</h4><div class="seg">${[[60,'1 min'],[90,'1 min 30'],[120,'2 min'],[0,'Sans limite']].map(([v,l])=>`<button class="${M.time===v?'on':''}" data-m="time:${v}">${l}</button>`).join('')}</div>
+  <h4>Options</h4><div class="seg"><button class="${!M.hard?'on':''}" data-m="hard:0">Lettres faciles</button><button class="${M.hard?'on':''}" data-m="hard:1">+ K Q U W Y Z</button></div> <div class="seg"><button class="${!M.trust?'on':''}" data-m="trust:0">Mots inconnus à valider</button><button class="${M.trust?'on':''}" data-m="trust:1">Tout accepter</button></div>
+  <div class="acts">${B?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="start">C'est parti</button></div>`);
+  const keep=()=>$$('[data-h]').forEach(i=>M.humans[+i.dataset.h]=i.value);
+  draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; keep(); const [k,v]=x.dataset.m.split(':');
+    if(k==='start'){ if(!M.ai&&M.humans.length<2&&false) return; closeModal(); const humans=M.humans.map((n,i)=>n.trim()||['Toi','Camille','Lucas','Emma'][i]); store('pb-prefs',M); newMatch({...M,humans}); return; }
+    if(k==='addh') M.humans.push(''); else if(k==='rmh') M.humans.splice(+v,1); else M[k]=(k==='level')?v:(k==='hard'||k==='trust')?v==='1':+v; draw(); }; }
+function help(){ openModal(`<h2>Petit Bac</h2><p>Une lettre est tirée au sort. Trouve le plus vite possible un mot commençant par cette lettre dans chaque catégorie : <b>prénom, ville ou pays, métier, objet, fruit ou légume, célébrité</b>.</p><ul><li>Appuie sur <b>STOP</b> quand tu as fini (ou quand le temps est écoulé).</li><li>10 points par réponse valable et unique, 5 si quelqu'un a trouvé la même, 0 sinon.</li><li>Le jeu connaît plus de mille mots. Si un mot n'est pas dans sa liste, il apparaît comme « inconnu » et vous décidez de l'accepter.</li><li>À plusieurs sur le même appareil, chacun remplit sa grille à son tour avec la même lettre.</li></ul><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+(function boot(){ const p=load('pb-prefs'); if(p) Object.assign(M,p); $('#wrap').innerHTML='<div class="letterbox"><div class="letter">B</div></div>'; menu(); })();
+</script></body></html>
