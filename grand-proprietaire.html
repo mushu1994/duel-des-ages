@@ -128,6 +128,24 @@ body{background:radial-gradient(ellipse at 40% 0%,#1f625a,#0b2826 72%) fixed,#0b
 #act .btn.pri{background:#c23a2b;border-color:#7d1c12;box-shadow:0 3px 0 #7d1c12;font-size:max(14px,calc(var(--u)*.28));animation:pulse 1.6s infinite}
 @keyframes pulse{50%{transform:scale(1.04)}}
 #act .btn:disabled{opacity:.35}
+#fx{position:absolute;inset:0;pointer-events:none;z-index:12;overflow:hidden;border-radius:2px}
+.siren{position:absolute;inset:0;animation:siren .36s steps(1) infinite}
+@keyframes siren{0%{background:radial-gradient(circle at 0 0,#ff2a2a88,transparent 60%)}50%{background:radial-gradient(circle at 100% 0,#2a6bff88,transparent 60%)}}
+.bars{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 6.5%,#3a414a 6.5% 7.6%,#8b95a0 7.6% 8.4%,#2a2f36 8.4% 9.5%);filter:drop-shadow(0 8px 10px #000a)}
+.bars::before,.bars::after{content:"";position:absolute;left:0;right:0;height:3.2%;background:linear-gradient(#9aa4ae,#3a414a);top:18%;box-shadow:0 2px 4px #0008}
+.bars::after{top:78%}
+.stampx{position:absolute;left:50%;top:50%;font-family:var(--title);color:#fff;text-align:center;padding:.2em .6em;border:4px solid #1d2925;border-radius:10px;box-shadow:6px 6px 0 #1d2925;white-space:nowrap;line-height:1.05}
+.stampx small{display:block;font-family:var(--ui);font-weight:900;font-size:.32em;letter-spacing:.5px}
+.coin{position:absolute;left:0;top:0;width:calc(var(--u)*.32);height:calc(var(--u)*.32);border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7b8,#f2c21e 45%,#a87808);border:1px solid #6e4f05;box-shadow:0 2px 3px #0006}
+.coin::after{content:"€";position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:calc(var(--u)*.2);color:#8a6206}
+.bill{position:absolute;left:0;top:0;width:calc(var(--u)*.55);height:calc(var(--u)*.3);background:linear-gradient(135deg,#a8d8a0,#5fa05a);border:1px solid #2d5a2a;border-radius:2px}
+.gray{position:absolute;inset:0;background:#1d292540;backdrop-filter:grayscale(1) brightness(.75);-webkit-backdrop-filter:grayscale(1) brightness(.75)}
+.crack{position:absolute;inset:0}
+#board.shake{animation:shk .5s}
+@keyframes shk{20%{transform:translate(-6px,3px) rotate(-.4deg)}40%{transform:translate(5px,-4px) rotate(.4deg)}60%{transform:translate(-4px,2px)}80%{transform:translate(3px,-1px)}}
+.die.hot .f{background:radial-gradient(circle at 35% 30%,#ffd0c8,#ff5a3c)!important;box-shadow:0 0 14px #ff3b1f}
+.glowg{animation:glowg 1.6s ease-in-out 2}
+@keyframes glowg{50%{box-shadow:inset 0 0 0 4px var(--gc),0 0 18px var(--gc);background:#fffbe6}}
 #pawns{position:absolute;inset:0;pointer-events:none;z-index:5}
 .pawn{position:absolute;left:0;top:0;width:calc(var(--u)*.44);height:calc(var(--u)*.58);will-change:transform;filter:drop-shadow(0 3px 2px #0007)}
 .pawn svg{width:100%;height:100%;display:block}
@@ -407,7 +425,7 @@ async function moveSteps(G,io,pid,n){ const p=G.players[pid],from=p.pos; const p
   p.pos=path[path.length-1]; await io.anim('move',{pid,path,back:n<0});
   if(n>0&&from+n>=40) await passGo(G,io,pid); }
 async function moveTo(G,io,pid,to){ const p=G.players[pid]; let n=(to-p.pos+40)%40; if(n===0) return; await moveSteps(G,io,pid,n); }
-async function passGo(G,io,pid){ const p=G.players[pid]; p.lap=true; log(G,`${p.name} passe par Départ : +200 €.`); await gain(G,io,pid,200,'Départ'); }
+async function passGo(G,io,pid){ const p=G.players[pid]; p.lap=true; log(G,`${p.name} passe par Départ : +200 €.`); await io.anim('go',{pid}); await gain(G,io,pid,200,'Départ'); }
 async function sendJail(G,io,pid,why){ const p=G.players[pid]; p.pos=10; p.jail=1; p.jt=0; G.dbl=0; log(G,`🚔 ${p.name} va en prison${why?' ('+why+')':''}.`); await io.anim('jail',{pid,why}); }
 const roll=()=>1+R(6);
 const SPEED=[1,2,3,'M','M','B'];
@@ -614,6 +632,13 @@ function snd(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
     case 'build': nz(a,t,.05,.4,'bandpass',700); nz(a,t+.11,.05,.4,'bandpass',800); break;
     case 'hop': tn(a,t,520+Math.random()*80,.05,'sine',.05,700); break;
     case 'gavel': nz(a,t,.08,.5,'bandpass',400); tn(a,t,180,.15,'square',.06,90); break;
+    case 'siren': for(let k=0;k<4;k++){ tn(a,t+k*.36,620,.18,'sawtooth',.035,920); tn(a,t+k*.36+.18,920,.18,'sawtooth',.035,620); } break;
+    case 'clang': nz(a,t,.5,.6,'bandpass',300); tn(a,t,90,.5,'square',.08,55); tn(a,t,1800,.6,'triangle',.03,1700); break;
+    case 'coins': for(let k=0;k<10;k++) tn(a,t+k*.055+Math.random()*.03,1800+Math.random()*1400,.12,'square',.025); tn(a,t+.55,2093,.4,'triangle',.06); break;
+    case 'crash': nz(a,t,.9,.7,'lowpass',260); tn(a,t,110,.9,'sawtooth',.12,35); [392,349,311,262].forEach((f,k)=>tn(a,t+.3+k*.2,f,.4,'triangle',.08)); break;
+    case 'free': [523,659,784].forEach((f,k)=>tn(a,t+k*.08,f,.25,'triangle',.08)); break;
+    case 'aie': tn(a,t,700,.25,'sawtooth',.05,300); break;
+    case 'fanfare': [523,523,523,698,880,784,1046].forEach((f,k)=>tn(a,t+[0,.12,.24,.36,.6,.8,1][k],f,.35,'triangle',.09)); break;
     case 'magnat': [523,784,1046,1568].forEach((f,k)=>tn(a,t+k*.06,f,.25,'triangle',.07)); break;
     default: sfx(n); } }
 /* ---------- icônes ---------- */
@@ -683,7 +708,7 @@ function buildBoard(){ const B=$('#board'); B.innerHTML=''; CELLS=[];
    <div class="hub"><div class="crest">${COMPASS}<div class="ttl"><small>GRAND</small>PROPRIÉTAIRE</div><div class="rib">Édition Multivers Géolocalisée</div></div>
    <div class="tray"><div class="deck destin">${ICON.destin}</div><div id="dice">${dieHTML(false)}${dieHTML(false)}${dieHTML(true)}</div><div class="deck caisse">${ICON.caisse}</div></div>
    <div id="msg"></div><div id="act"></div></div><div id="cardshow" hidden></div>`;
-  B.appendChild(c); const pw=document.createElement('div'); pw.id='pawns'; B.appendChild(pw);
+  B.appendChild(c); const pw=document.createElement('div'); pw.id='pawns'; B.appendChild(pw); const fx=document.createElement('div'); fx.id='fx'; B.appendChild(fx);
   $$('#dice .die').forEach((d,k)=>d.id='d'+k); size(); }
 const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
 function face(n){ return [...Array(9)].map((_,k)=>PIPS[n].includes(k)?'<i></i>':'<span></span>').join(''); }
@@ -719,6 +744,46 @@ async function animMove(pid,path){ ensurePawns(); const el=PAWNS[pid]; const d=s
 async function slideTo(pid){ const el=PAWNS[pid]; const from=el.style.transform; placePawns(); const to=el.style.transform;
   await el.animate([{transform:from},{transform:to}],{duration:spd(700),easing:'cubic-bezier(.5,0,.3,1)'}).finished.catch(()=>{}); }
 function floatAt(pid,txt,col){ if(pid<0||!PAWNS[pid]) return; const p=G.players[pid]; const {x,y}=center(p.pos,0,1,!!p.jail); const f=document.createElement('div'); f.className='float'; f.style.left=x+'px'; f.style.top=(y-CELLS[0].offsetWidth*.6)+'px'; f.style.color=col; f.textContent=txt; $('#pawns').appendChild(f); setTimeout(()=>f.remove(),1500); }
+/* ---------- effets spéciaux ---------- */
+const FX=()=>$('#fx'); const U=()=>CELLS[1].offsetWidth||40;
+function fxEl(cls,html,style){ const d=document.createElement('div'); d.className=cls; if(html) d.innerHTML=html; if(style) d.style.cssText=style; FX().appendChild(d); return d; }
+function stamp(txt,sub,bg,rot,fs){ const d=fxEl('stampx',esc(txt)+(sub?`<small>${esc(sub)}</small>`:''),`background:${bg};font-size:${fs||U()*.85}px`);
+  d.animate([{transform:`translate(-50%,-50%) rotate(${rot}deg) scale(3)`,opacity:0},{transform:`translate(-50%,-50%) rotate(${rot}deg) scale(.92)`,opacity:1,offset:.55},{transform:`translate(-50%,-50%) rotate(${rot}deg) scale(1)`,opacity:1}],{duration:REDUCED?1:420,easing:'cubic-bezier(.3,1.5,.5,1)',fill:'forwards'}); return d; }
+function fadeOut(el,ms){ return el.animate([{opacity:1},{opacity:0}],{duration:ms||300,fill:'forwards'}).finished.then(()=>el.remove()).catch(()=>el.remove()); }
+function burstCoins(x,y,n,cls){ for(let k=0;k<n;k++){ const c=fxEl(cls||'coin'); const a=Math.random()*Math.PI*2,v=U()*(1+Math.random()*1.8); const dx=Math.cos(a)*v,dy=Math.sin(a)*v-U()*1.2;
+    c.animate([{transform:`translate(${x}px,${y}px) scale(.4)`,opacity:1},{transform:`translate(${x+dx*.6}px,${y+dy}px) scale(1) rotateY(360deg)`,opacity:1,offset:.45},{transform:`translate(${x+dx}px,${y+dy+U()*2.2}px) scale(.8) rotateY(720deg)`,opacity:0}],{duration:900+Math.random()*500,easing:'cubic-bezier(.2,.6,.4,1)',fill:'forwards'}).finished.then(()=>c.remove()).catch(()=>c.remove()); } }
+function cellXY(i){ return center(i,0,1,false); }
+async function fxGo(pid){ if(REDUCED) return; snd('coins'); const {x,y}=cellXY(0);
+  CELLS[0].animate([{boxShadow:'inset 0 0 0 0 #ffd84a'},{boxShadow:'inset 0 0 0 6px #ffd84a, 0 0 30px #ffd84a',background:'#fff6c8'},{boxShadow:'inset 0 0 0 0 #ffd84a'}],{duration:1100});
+  burstCoins(x,y,30);
+  const st=stamp('+200 €','Salaire de Départ','linear-gradient(#ffd84a,#e0a10a)',-6,U()*.62); st.style.left=(x-U()*1.6)+'px'; st.style.top=(y-U()*1.4)+'px'; st.style.color='#5a3a00';
+  await wait(spd(900)); fadeOut(st,300); }
+async function fxJail(pid,why){ const triple=why==='trois doubles';
+  if(triple){ $$('#dice .die').forEach(d=>d.classList.add('hot')); snd('error'); const s1=stamp('3 DOUBLES !','Trop de chance tue la chance…','#e0601a',-6,U()*.62); $('#board').classList.add('shake'); await wait(spd(1100)); $('#board').classList.remove('shake'); fadeOut(s1); $$('#dice .die').forEach(d=>d.classList.remove('hot')); }
+  snd('siren'); const sir=fxEl('siren');
+  const bars=fxEl('bars'); snd('clang');
+  await bars.animate([{transform:'translateY(-105%)'},{transform:'translateY(0)',offset:.7},{transform:'translateY(-4%)',offset:.85},{transform:'translateY(0)'}],{duration:spd(650),easing:'cubic-bezier(.6,0,.4,1)',fill:'forwards'}).finished.catch(()=>{});
+  $('#board').classList.add('shake');
+  const st=stamp('EN GAV !',why==='carte'?'Une carte vous y envoie':why==='trois doubles'?'Trois doubles d’affilée':'Attrapé par les autorités !','#c23a2b',-7);
+  await wait(spd(1300)); $('#board').classList.remove('shake');
+  fadeOut(st,250); await bars.animate([{transform:'translateY(0)'},{transform:'translateY(-105%)'}],{duration:spd(450),easing:'ease-in',fill:'forwards'}).finished.catch(()=>{}); bars.remove(); fadeOut(sir,200); }
+async function fxFree(pid){ snd('free'); const p=G.players[pid]; const {x,y}=center(10,0,1,true); const t=fxEl('float','Libéré !',`left:${x}px;top:${y-U()*.5}px;color:#8ff0a8;font-size:${U()*.38}px`); setTimeout(()=>t.remove(),1500);
+  const el=PAWNS[pid]; if(el) el.animate([{filter:'drop-shadow(0 0 0 #fff)'},{filter:'drop-shadow(0 0 10px #8ff0a8)'},{filter:'drop-shadow(0 3px 2px #0007)'}],{duration:900}); }
+async function fxBankrupt(pid){ const gray=fxEl('gray'); gray.animate([{opacity:0},{opacity:1}],{duration:500,fill:'forwards'}); snd('crash');
+  const el=PAWNS[pid]; const p=G.players[pid]; const {x,y}=center(p.pos,0,1,!!p.jail);
+  for(let k=0;k<16;k++){ const b=fxEl('bill'); const sx=x+(Math.random()-.5)*U()*2; b.animate([{transform:`translate(${sx}px,${y-U()}px) rotate(0)`,opacity:1},{transform:`translate(${sx+(Math.random()-.5)*U()*3}px,${y+U()*4}px) rotate(${(Math.random()-.5)*720}deg)`,opacity:0}],{duration:1400+Math.random()*900,delay:Math.random()*400,easing:'ease-in',fill:'forwards'}).finished.then(()=>b.remove()).catch(()=>b.remove()); }
+  if(el){ const tf=el.style.transform; await el.animate([{transform:tf},{transform:tf+' rotate(-12deg)',offset:.15},{transform:tf+' rotate(12deg)',offset:.3},{transform:tf+' rotate(-8deg)',offset:.45},{transform:tf+' translateY(30%) rotate(90deg)',opacity:.5}],{duration:spd(1100),easing:'ease-in',fill:'forwards'}).finished.catch(()=>{}); }
+  $('#board').classList.add('shake'); const st=stamp('FAILLITE',p.name+' est ruiné·e','#3b3b3b',-5); await wait(spd(1900)); $('#board').classList.remove('shake');
+  fadeOut(st); fadeOut(gray,500); if(el){ el.getAnimations().forEach(a=>a.cancel()); } }
+async function fxRent(from,to,amt){ const a=center(G.players[from].pos,0,1,false),b=PAWNS[to]?center(G.players[to].pos,0,1,!!G.players[to].jail):a; const n=Math.min(14,4+Math.floor(amt/100));
+  if(amt>=500){ $('#board').classList.add('shake'); snd('aie'); const t=fxEl('float','Aïe !',`left:${a.x}px;top:${a.y-U()*.9}px;color:#ff8a7a;font-size:${U()*.5}px`); setTimeout(()=>{t.remove();$('#board').classList.remove('shake');},900); }
+  for(let k=0;k<n;k++){ const c=fxEl('coin'); const mx=(a.x+b.x)/2+(Math.random()-.5)*U(),my=Math.min(a.y,b.y)-U()*(1.2+Math.random());
+    c.animate([{transform:`translate(${a.x}px,${a.y}px) scale(.5)`},{transform:`translate(${mx}px,${my}px) scale(1.1)`,offset:.5},{transform:`translate(${b.x}px,${b.y}px) scale(.6)`}],{duration:spd(700),delay:k*spd(55),easing:'ease-in-out',fill:'forwards'}).finished.then(()=>c.remove()).catch(()=>c.remove()); }
+  snd('coins'); await wait(spd(700+n*55)); }
+async function checkMono(pid){ if(!G.ms) G.ms={}; for(let g=0;g<8;g++){ const k=pid+':'+g; if(hasMono(G,pid,g)&&!G.ms[k]){ G.ms[k]=1;
+  GIDX[g].forEach(i=>{ CELLS[i].style.setProperty('--gc',GR[g].c); CELLS[i].classList.remove('glowg'); void CELLS[i].offsetWidth; CELLS[i].classList.add('glowg'); });
+  snd('fanfare'); log(G,`🎉 ${nm(G,pid)} possède tout le groupe ${GR[g].n} : loyers doublés !`); renderLog();
+  const st=stamp('Groupe complet !',`${nm(G,pid)} · ${GR[g].n} : loyers doublés`,GR[g].c,-4,U()*.55); await wait(spd(1700)); fadeOut(st); } } }
 /* ---------- rendu ---------- */
 function rentLabel(i){ const s=SQ[i],o=G.own[i]; if(o.m) return 'Hyp.'; if(s.t==='util') return UTILS.every(j=>G.own[j].o===o.o)?'×10':'×4'; return rentOf(G,i,0)+' €'; }
 function renderCells(){ for(const i of OWNABLE){ const c=CELLS[i],o=G.own[i],pr=c.querySelector('.pr');
@@ -834,7 +899,7 @@ function tradeModal(pid){ const others=alive(G).filter(k=>k!==pid); if(!others.l
     if(x.dataset.x==='close'){ closeModal(); return; }
     if(x.dataset.x==='go'){ let ok;
       if(G.players[T.to].ai){ ok=evalOffer(G,T); } else { closeModal(); ok=await offerModal(T); }
-      if(ok){ applyTrade(G,T); snd('buy'); log(G,`🤝 Échange conclu entre ${nm(G,T.from)} et ${nm(G,T.to)}.`); toast(`${nm(G,T.to)} accepte l’échange !`); closeModal(); renderAll(); store(SAVE,G); }
+      if(ok){ applyTrade(G,T); snd('buy'); setTimeout(async()=>{ await checkMono(T.from); await checkMono(T.to); },400); log(G,`🤝 Échange conclu entre ${nm(G,T.from)} et ${nm(G,T.to)}.`); toast(`${nm(G,T.to)} accepte l’échange !`); closeModal(); renderAll(); store(SAVE,G); }
       else { snd('error'); toast(`${nm(G,T.to)} refuse l’échange.`); if(G.players[T.to].ai) return; } } };
 }
 function busModal(pid,a,b){ return new Promise(res=>{ const p=G.players[pid]; const opt=[['a',a],['b',b],['sum',a+b]];
@@ -856,7 +921,7 @@ function makeIO(my){ const ck=()=>{ if(my!==GEN) throw ABORT; };
   async post(G,pid){ ck(); renderAll(); const p=G.players[pid];
     if(p.ai){ $('#act').innerHTML=''; await nap(spd(400)); const acts=aiIO.manage(G,pid); await aiActs(pid,acts);
       const T=aiIO.trade(G,pid); if(T){ let ok; if(G.players[T.to].ai) ok=evalOffer(G,T); else { ok=await offerModal(T); ck(); }
-        if(ok){ applyTrade(G,T); snd('buy'); log(G,`🤝 ${nm(G,T.from)} et ${nm(G,T.to)} concluent un échange.`); toast(`🤝 Échange : ${nm(G,T.from)} ⇄ ${nm(G,T.to)}`); renderAll(); await nap(spd(900)); } else if(!G.players[T.to].ai) log(G,`${nm(G,T.to)} refuse l'offre de ${nm(G,T.from)}.`); }
+        if(ok){ applyTrade(G,T); snd('buy'); renderAll(); await checkMono(T.from); await checkMono(T.to); ck(); log(G,`🤝 ${nm(G,T.from)} et ${nm(G,T.to)} concluent un échange.`); toast(`🤝 Échange : ${nm(G,T.from)} ⇄ ${nm(G,T.to)}`); renderAll(); await nap(spd(900)); } else if(!G.players[T.to].ai) log(G,`${nm(G,T.to)} refuse l'offre de ${nm(G,T.from)}.`); }
       await nap(spd(300)); return; }
     await waitAction('post',pid); ck(); },
   async raise(G,pid,amt,to,why){ ck(); if(G.players[pid].ai){ aiIO.raise(G,pid,amt); renderAll(); await nap(spd(400)); return; }
@@ -876,16 +941,17 @@ function makeIO(my){ const ck=()=>{ if(my!==GEN) throw ABORT; };
     switch(k){
       case 'dice': await rollAnim(d.d); break;
       case 'move': await animMove(d.pid,d.path); ck(); break;
-      case 'cash': { if(d.pid>=0) floatAt(d.pid,'−'+fmt(d.amt),'#ff8a7a'); if(d.to>=0) floatAt(d.to,'+'+fmt(d.amt),'#8ff0a8'); snd(d.pid<0?'coin':'pay'); renderPlayers(); renderLog(); await nap(spd(500)); break; }
-      case 'buy': renderCells(); renderPlayers(); renderLog(); CELLS[d.i].classList.remove('bought'); void CELLS[d.i].offsetWidth; CELLS[d.i].classList.add('bought'); snd('buy'); await nap(spd(500)); break;
-      case 'jail': snd('jail'); renderLog(); await slideTo(d.pid); toast(`🚔 ${nm(G,d.pid)} part en prison !`); await nap(spd(500)); break;
-      case 'free': placePawns(); renderPlayers(); break;
+      case 'go': await fxGo(d.pid); break;
+      case 'cash': { if(d.pid>=0&&d.to>=0&&d.amt>=50&&!REDUCED) await fxRent(d.pid,d.to,d.amt); if(d.pid>=0) floatAt(d.pid,'−'+fmt(d.amt),'#ff8a7a'); if(d.to>=0) floatAt(d.to,'+'+fmt(d.amt),'#8ff0a8'); snd(d.pid<0?'coin':'pay'); renderPlayers(); renderLog(); await nap(spd(500)); break; }
+      case 'buy': renderCells(); renderPlayers(); renderLog(); CELLS[d.i].classList.remove('bought'); void CELLS[d.i].offsetWidth; CELLS[d.i].classList.add('bought'); snd('buy'); await nap(spd(500)); await checkMono(d.pid); ck(); break;
+      case 'jail': renderLog(); await fxJail(d.pid,d.why); ck(); snd('jail'); await slideTo(d.pid); await nap(spd(300)); break;
+      case 'free': placePawns(); renderPlayers(); fxFree(d.pid); await nap(spd(400)); break;
       case 'land': CELLS[d.i].classList.remove('hl'); void CELLS[d.i].offsetWidth; CELLS[d.i].classList.add('hl'); renderLog(); renderPlayers(); setMsg(`${who(d.pid)} arrive sur <b>${esc(SQ[d.i].n)}</b>`); break;
       case 'auction': if(d.start){ AUC={i:d.i,bid:0,hi:-1,out:new Set()}; snd('gavel'); }
         else if(d.end){ AUC.end=true; AUC.bid=d.bid; AUC.hi=d.hi; drawAuction(null); snd('gavel'); await nap(spd(1300)); closeModal(); AUC=null; }
         else { AUC.bid=d.bid; AUC.hi=d.hi; snd('click'); } break;
       case 'magnat': snd('magnat'); banner('Magnat !',d.none?'Aucune case à viser':'Direction '+SQ[d.t].n,'#c0281b'); await nap(spd(1200)); break;
-      case 'bankrupt': snd('lose'); renderAll(); banner('Faillite !',nm(G,d.pid),'#555'); await nap(spd(1800)); break; } } }; }
+      case 'bankrupt': await fxBankrupt(d.pid); ck(); renderAll(); if(d.to>=0) await checkMono(d.to); break; } } }; }
 async function aiActs(pid,acts){ if(!acts.length) return; const b=acts.filter(a=>a[0]==='build').length,u=acts.filter(a=>a[0]==='unmort').length,m=acts.filter(a=>a[0]==='mort').length;
   if(b){ log(G,`🏗 ${nm(G,pid)} construit ${b} bâtiment${b>1?'s':''} (${[...new Set(acts.filter(a=>a[0]==='build').map(a=>GR[SQ[a[1]].g].n))].join(', ')}).`); snd('build'); }
   if(u) log(G,`${nm(G,pid)} lève ${u} hypothèque${u>1?'s':''}.`); if(m) log(G,`${nm(G,pid)} hypothèque ${m} terrain${m>1?'s':''} pour construire.`);
@@ -896,7 +962,9 @@ async function loop(){ const my=++GEN; const io=makeIO(my); RES=null; PICK=null;
   catch(e){ if(e!==ABORT){ console.error(e); toast('Oups : '+e.message); } } }
 function finish(){ const w=G.over.win; $('#act').innerHTML='<button class="btn pri" data-c="new">Nouvelle partie</button>'; setMsg(`🏆 ${who(w)} remporte la partie !`);
   const rank=G.players.map((p,k)=>k).sort((a,b)=>(G.players[a].out-G.players[b].out)||worth(G,b)-worth(G,a));
-  if(!G.players[w].ai){ confetti(); snd('win'); } else snd('lose');
+  const pw=PAWNS[w]; if(pw){ const B=$('#board'); const x=B.clientWidth/2,y=B.clientHeight/2; pw.animate([{transform:pw.style.transform},{transform:tr(pw,x,y)+' scale(2.6)'}],{duration:1200,easing:'cubic-bezier(.3,1.4,.5,1)',fill:'forwards'}); }
+  burstCoins($('#board').clientWidth/2,$('#board').clientHeight/2,30); snd('fanfare');
+  if(!G.players[w].ai){ confetti(); setTimeout(()=>snd('win'),1200); }
   gm(`<h2>🏆 ${esc(nm(G,w))} gagne !</h2><p>${G.over.why==='limit'?'La limite de tours est atteinte : la plus grosse fortune l’emporte.':'Tous les autres joueurs ont fait faillite.'}</p><ol class="rank">${rank.map(k=>`<li style="color:${pcol(k)}">${esc(nm(G,k))} — ${G.players[k].out?'faillite':fmt(worth(G,k))}</li>`).join('')}</ol>
     <div class="acts"><button class="btn" data-c="close">Voir le plateau</button><button class="btn pri" data-c="new">Rejouer</button></div>`); window.MODAL_CLOSABLE=true; }
 /* ---------- menu ---------- */
