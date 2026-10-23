@@ -61,11 +61,11 @@ body{background:radial-gradient(ellipse at 40% 0%,#1f625a,#0b2826 72%) fixed,#0b
 .cell .in{position:absolute;left:50%;top:50%;width:var(--u);height:calc(var(--u)*1.6);transform:translate(-50%,-50%) rotate(var(--rot,0deg));display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:flex-start}
 .cell.l .in{--rot:90deg}.cell.t .in{flex-direction:column-reverse}.cell.t .pr{margin-top:0;margin-bottom:auto}.cell.t .band{border-bottom:0;border-top:1px solid var(--ink)}.cell.t .nm.lg{font-size:calc(var(--u)*.112);letter-spacing:-.4px}
 .nm{overflow-wrap:anywhere}
-.nm.top{padding-top:0;padding-bottom:calc(var(--u)*.08)}.cell.t .ico{margin:0 0 auto}.cell.r .in{--rot:-90deg}.cell.t.k .in{flex-direction:column}
+.nm.tp{padding-top:0;padding-bottom:calc(var(--u)*.08)}.cell.t .ico{margin:0 0 auto}.cell.r .in{--rot:-90deg}.cell.t.k .in{flex-direction:column}
 .cell.k .in{width:calc(var(--u)*1.6);justify-content:center;--rot:0deg;gap:2px}
 .band{width:100%;height:calc(var(--u)*.36);flex:0 0 auto;border-bottom:1px solid var(--ink);display:flex;align-items:center;justify-content:center;gap:1px}
 .nm{font-weight:800;font-size:calc(var(--u)*.145);line-height:1.08;padding:calc(var(--u)*.05) calc(var(--u)*.04) 0;text-transform:uppercase;letter-spacing:-.2px;flex:1 1 auto;overflow:hidden}
-.nm.top{flex:0 0 auto;padding-top:calc(var(--u)*.08)}
+.nm.tp{flex:0 0 auto;padding-top:calc(var(--u)*.08)}
 .pr{font-weight:900;font-size:calc(var(--u)*.15);padding:calc(var(--u)*.03) 0;width:100%;flex:0 0 auto;margin-top:auto;transition:background .4s}
 .pr.own{color:#fff;text-shadow:0 1px 1px #0007;font-size:calc(var(--u)*.14)}
 .ico{width:calc(var(--u)*.62);height:calc(var(--u)*.62);margin:auto 0 0}
@@ -660,11 +660,11 @@ const nmFs=n=>{ const L=Math.max(...n.split(/[\s-]/).map(w=>w.length)); const f=
 function cellInner(i){ const s=SQ[i];
   switch(s.t){
     case 'prop': return `<div class="band" style="background:${GR[s.g].c}"><div class="hs" style="display:flex;gap:1px;align-items:flex-end"></div></div><div class="nm" style="${nmFs(s.n)}">${esc(s.n)}</div><div class="pr">${s.p} €</div>`;
-    case 'rail': return `<div class="nm top">${esc(s.n)}</div>${ICON['r'+i]}<div class="pr">${s.p} €</div>`;
-    case 'util': return `<div class="nm top">${esc(s.n)}</div>${i===12?ICON.bolt:ICON.drop}<div class="pr">${s.p} €</div>`;
-    case 'destin': return `<div class="nm top">Imprévus du Destin</div>${ICON.destin}<div class="pr"></div>`;
-    case 'caisse': return `<div class="nm top">Primes &amp; Trésors</div>${ICON.caisse}<div class="pr"></div>`;
-    case 'tax': return `<div class="nm top">${esc(s.n)}</div>${ICON.tax}<div class="pr">Payez ${s.a} €</div>`;
+    case 'rail': return `<div class="nm tp">${esc(s.n)}</div>${ICON['r'+i]}<div class="pr">${s.p} €</div>`;
+    case 'util': return `<div class="nm tp">${esc(s.n)}</div>${i===12?ICON.bolt:ICON.drop}<div class="pr">${s.p} €</div>`;
+    case 'destin': return `<div class="nm tp">Imprévus du Destin</div>${ICON.destin}<div class="pr"></div>`;
+    case 'caisse': return `<div class="nm tp">Primes &amp; Trésors</div>${ICON.caisse}<div class="pr"></div>`;
+    case 'tax': return `<div class="nm tp">${esc(s.n)}</div>${ICON.tax}<div class="pr">Payez ${s.a} €</div>`;
     case 'go': return `<div class="ksub" style="font-size:calc(var(--u)*.11)">Prêt pour l’aventure !</div><div class="kgo">DÉPART</div><div class="ksub">+200 € en passant</div><div style="width:55%">${ICON.go}</div>`;
     case 'jail': return '';
     case 'park': return `<div class="ksub">La Pause Café</div>${ICON.park}<div class="ksub">Refuge du repos</div>`;
