@@ -59,7 +59,9 @@ body{background:radial-gradient(ellipse at 40% 0%,#1f625a,#0b2826 72%) fixed,#0b
 #board{position:relative;width:var(--B);height:var(--B);display:grid;grid-template-columns:1.6fr repeat(9,1fr) 1.6fr;grid-template-rows:1.6fr repeat(9,1fr) 1.6fr;background:var(--ink);gap:1px;border:3px solid var(--ink);border-radius:4px;box-shadow:0 0 0 5px #d9cba3,0 0 0 8px #13201c,0 30px 60px #000c;flex:0 0 auto;touch-action:manipulation}
 .cell{background:var(--paper);position:relative;overflow:hidden;cursor:pointer;color:var(--ink)}
 .cell .in{position:absolute;left:50%;top:50%;width:var(--u);height:calc(var(--u)*1.6);transform:translate(-50%,-50%) rotate(var(--rot,0deg));display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:flex-start}
-.cell.l .in{--rot:90deg}.cell.t .in{flex-direction:column-reverse}.cell.t .pr{margin-top:0;margin-bottom:auto}.cell.t .band{border-bottom:0;border-top:1px solid var(--ink)}.cell.t .nm.top{padding-top:0;padding-bottom:calc(var(--u)*.08)}.cell.t .ico{margin:0 0 auto}.cell.r .in{--rot:-90deg}.cell.t.k .in{flex-direction:column}
+.cell.l .in{--rot:90deg}.cell.t .in{flex-direction:column-reverse}.cell.t .pr{margin-top:0;margin-bottom:auto}.cell.t .band{border-bottom:0;border-top:1px solid var(--ink)}.cell.t .nm.lg{font-size:calc(var(--u)*.112);letter-spacing:-.4px}
+.nm{overflow-wrap:anywhere}
+.nm.top{padding-top:0;padding-bottom:calc(var(--u)*.08)}.cell.t .ico{margin:0 0 auto}.cell.r .in{--rot:-90deg}.cell.t.k .in{flex-direction:column}
 .cell.k .in{width:calc(var(--u)*1.6);justify-content:center;--rot:0deg;gap:2px}
 .band{width:100%;height:calc(var(--u)*.36);flex:0 0 auto;border-bottom:1px solid var(--ink);display:flex;align-items:center;justify-content:center;gap:1px}
 .nm{font-weight:800;font-size:calc(var(--u)*.145);line-height:1.08;padding:calc(var(--u)*.05) calc(var(--u)*.04) 0;text-transform:uppercase;letter-spacing:-.2px;flex:1 1 auto;overflow:hidden}
@@ -266,53 +268,53 @@ const IS_NODE=typeof window==='undefined';
 const GR=[{n:'Marron',c:'#8a5530',h:50},{n:'Bleu ciel',c:'#8fcff0',h:50},{n:'Rose',c:'#d4418f',h:100},{n:'Orange',c:'#f2892a',h:100},{n:'Rouge',c:'#d92e2e',h:150},{n:'Jaune',c:'#f1cd2a',h:150},{n:'Vert',c:'#1e9850',h:200},{n:'Bleu nuit',c:'#2149a6',h:200}];
 const SQ=[
 {t:'go',n:'Départ'},
-{t:'prop',g:0,n:'Impasse des Glycines',p:60,r:[2,10,30,90,160,250]},
+{t:'prop',g:0,n:"Rue de Roanne",p:60,r:[2,10,30,90,160,250]},
 {t:'caisse',n:'Primes & Trésors'},
-{t:'prop',g:0,n:'Ruelle du Vieux-Puits',p:60,r:[4,20,60,180,320,450]},
-{t:'tax',n:'Impôt sur le revenu',a:200},
+{t:'prop',g:0,n:"Avenue de Montpellier",p:60,r:[4,20,60,180,320,450]},
+{t:'tax',n:'Taxe de Guilde',a:200},
 {t:'rail',n:'Gare du Galion',p:200},
-{t:'prop',g:1,n:'Rue des Tanneurs',p:100,r:[6,30,90,270,400,550]},
+{t:'prop',g:1,n:"Le Petit Bourg",p:100,r:[6,30,90,270,400,550]},
 {t:'destin',n:'Imprévus du Destin'},
-{t:'prop',g:1,n:'Rue du Moulin-Vert',p:100,r:[6,30,90,270,400,550]},
-{t:'prop',g:1,n:'Avenue des Tilleuls',p:120,r:[8,40,100,300,450,600]},
+{t:'prop',g:1,n:"Village des Pourfendeurs",p:100,r:[6,30,90,270,400,550]},
+{t:'prop',g:1,n:"La Route n° 1",p:120,r:[8,40,100,300,450,600]},
 {t:'jail',n:'Les Geôles'},
-{t:'prop',g:2,n:'Boulevard des Arts',p:140,r:[10,50,150,450,625,750]},
+{t:'prop',g:2,n:"Quartier Résidentiel du Lac",p:140,r:[10,50,150,450,625,750]},
 {t:'util',n:'Centrale Énergie',p:150},
-{t:'prop',g:2,n:"Rue de l'Horloge",p:140,r:[10,50,150,450,625,750]},
-{t:'prop',g:2,n:'Avenue du Conservatoire',p:160,r:[12,60,180,500,700,900]},
+{t:'prop',g:2,n:"Domaine des Émeraudes",p:140,r:[10,50,150,450,625,750]},
+{t:'prop',g:2,n:"Archipel des Orangers",p:160,r:[12,60,180,500,700,900]},
 {t:'rail',n:'Express Vapeur',p:200},
-{t:'prop',g:3,n:'Quai des Mariniers',p:180,r:[14,70,200,550,750,950]},
+{t:'prop',g:3,n:"District de Shibuya",p:180,r:[14,70,200,550,750,950]},
 {t:'caisse',n:'Primes & Trésors'},
-{t:'prop',g:3,n:'Rue des Halles',p:180,r:[14,70,200,550,750,950]},
-{t:'prop',g:3,n:'Place du Marché-Neuf',p:200,r:[16,80,220,600,800,1000]},
+{t:'prop',g:3,n:"Mont des Brumes",p:180,r:[14,70,200,550,750,950]},
+{t:'prop',g:3,n:"Arène de Combat",p:200,r:[16,80,220,600,800,1000]},
 {t:'park',n:'La Pause Café'},
-{t:'prop',g:4,n:'Boulevard du Théâtre',p:220,r:[18,90,250,700,875,1050]},
+{t:'prop',g:4,n:"La Cité des Canaux",p:220,r:[18,90,250,700,875,1050]},
 {t:'destin',n:'Imprévus du Destin'},
-{t:'prop',g:4,n:'Rue des Orfèvres',p:220,r:[18,90,250,700,875,1050]},
-{t:'prop',g:4,n:'Place de la Fontaine',p:240,r:[20,100,300,750,925,1100]},
+{t:'prop',g:4,n:"Archipel des Corsaires",p:220,r:[18,90,250,700,875,1050]},
+{t:'prop',g:4,n:"La Forteresse Navale",p:240,r:[20,100,300,750,925,1100]},
 {t:'rail',n:'Bus Enchanté',p:200},
-{t:'prop',g:5,n:'Avenue des Ambassades',p:260,r:[22,110,330,800,975,1150]},
-{t:'prop',g:5,n:'Rue du Belvédère',p:260,r:[22,110,330,800,975,1150]},
+{t:'prop',g:5,n:"La Route des Tempêtes",p:260,r:[22,110,330,800,975,1150]},
+{t:'prop',g:5,n:"Le Nouveau Monde",p:260,r:[22,110,330,800,975,1150]},
 {t:'util',n:'Compagnie des Eaux',p:150},
-{t:'prop',g:5,n:'Cours des Lumières',p:280,r:[24,120,360,850,1025,1200]},
-{t:'gojail',n:'En GAV !'},
-{t:'prop',g:6,n:'Allée des Magnolias',p:300,r:[26,130,390,900,1100,1275]},
-{t:'prop',g:6,n:'Boulevard du Parc-Royal',p:300,r:[26,130,390,900,1100,1275]},
+{t:'prop',g:5,n:"L'Île Céleste",p:280,r:[24,120,360,850,1025,1200]},
+{t:'gojail',n:'Attrapé par les autorités !'},
+{t:'prop',g:6,n:"QG de la Marine",p:300,r:[26,130,390,900,1100,1275]},
+{t:'prop',g:6,n:"Le Conseil des Anciens",p:300,r:[26,130,390,900,1100,1275]},
 {t:'caisse',n:'Primes & Trésors'},
-{t:'prop',g:6,n:'Avenue des Cèdres',p:320,r:[28,150,450,1000,1200,1400]},
+{t:'prop',g:6,n:"Plateau des Champions",p:320,r:[28,150,450,1000,1200,1400]},
 {t:'rail',n:'Le Grand Cachalot',p:200},
 {t:'destin',n:'Imprévus du Destin'},
-{t:'prop',g:7,n:'Promenade des Sommets',p:350,r:[35,175,500,1100,1300,1500]},
-{t:'tax',n:'Taxe de luxe',a:100},
-{t:'prop',g:7,n:'Esplanade du Palais',p:400,r:[50,200,600,1400,1700,2000]}];
+{t:'prop',g:7,n:"Le Château des Mages",p:350,r:[35,175,500,1100,1300,1500]},
+{t:'tax',n:'Taxe du Trésor Céleste',a:100},
+{t:'prop',g:7,n:"Palais du Seigneur des Pirates",p:400,r:[50,200,600,1400,1700,2000]}];
 const OWNABLE=[],RAILS=[],UTILS=[],GIDX=GR.map(()=>[]);
 SQ.forEach((s,i)=>{ if(s.t==='prop'){OWNABLE.push(i);GIDX[s.g].push(i);} if(s.t==='rail'){OWNABLE.push(i);RAILS.push(i);} if(s.t==='util'){OWNABLE.push(i);UTILS.push(i);} });
 const CARDS={
  destin:[
-  {k:'goto',to:39,x:"Soirée de gala sur l'Esplanade du Palais : avancez jusqu'à cette case."},
+  {k:'goto',to:39,x:"Soirée de gala au Palais du Seigneur des Pirates : avancez jusqu'à cette case."},
   {k:'goto',to:0,x:"Avancez jusqu'à la case Départ et recevez 200 €."},
-  {k:'goto',to:24,x:"Rendez-vous Place de la Fontaine. Si vous passez par Départ, recevez 200 €."},
-  {k:'goto',to:11,x:"Flânerie Boulevard des Arts. Si vous passez par Départ, recevez 200 €."},
+  {k:'goto',to:24,x:"Rendez-vous à la Forteresse Navale. Si vous passez par Départ, recevez 200 €."},
+  {k:'goto',to:11,x:"Flânerie au Quartier Résidentiel du Lac. Si vous passez par Départ, recevez 200 €."},
   {k:'rail',x:"Filez au transport le plus proche. Si elle a un propriétaire, payez-lui le double du loyer ; sinon vous pouvez l'acheter."},
   {k:'rail',x:"Correspondance ! Avancez jusqu'au transport le plus proche. Propriétaire : loyer doublé. Libre : à vendre."},
   {k:'util',x:"Avancez jusqu'à la compagnie la plus proche. Si elle a un propriétaire, lancez les dés et payez-lui 10 fois le résultat."},
@@ -412,7 +414,7 @@ const SPEED=[1,2,3,'M','M','B'];
 
 async function land(G,io,pid,ctx){ const p=G.players[pid],i=p.pos,s=SQ[i]; ctx=ctx||{};
   await io.anim('land',{pid,i});
-  if(s.t==='gojail') return sendJail(G,io,pid,'case « En GAV ! »');
+  if(s.t==='gojail') return sendJail(G,io,pid,'attrapé par les autorités');
   if(s.t==='tax'){ log(G,`${p.name} paie ${s.n.toLowerCase()} : ${fmt(s.a)}.`); return pay(G,io,pid,-1,s.a,s.n); }
   if(s.t==='destin'||s.t==='caisse') return drawCard(G,io,pid,s.t);
   if(!G.own[i]) return;
@@ -654,18 +656,19 @@ const COMPASS=`<svg class="compass" viewBox="0 0 100 100" aria-hidden="true"><ci
  <path d="M50 22L53 47 78 50 53 53 50 78 47 53 22 50 47 47Z" fill="#2f6f74" transform="rotate(45 50 50)"/></g></svg>`;
 
 function cellRC(i){ if(i<=10) return {r:11,c:11-i,s:'b'}; if(i<=20) return {r:11-(i-10),c:1,s:'l'}; if(i<=30) return {r:1,c:1+(i-20),s:'t'}; return {r:1+(i-30),c:11,s:'r'}; }
+const nmFs=n=>{ const L=Math.max(...n.split(/[\s-]/).map(w=>w.length)); const f=Math.min(n.length>19?.125:.145,1.2/L); return 'font-size:calc(var(--u)*'+f.toFixed(3)+')'; };
 function cellInner(i){ const s=SQ[i];
   switch(s.t){
-    case 'prop': return `<div class="band" style="background:${GR[s.g].c}"><div class="hs" style="display:flex;gap:1px;align-items:flex-end"></div></div><div class="nm">${esc(s.n)}</div><div class="pr">${s.p} €</div>`;
+    case 'prop': return `<div class="band" style="background:${GR[s.g].c}"><div class="hs" style="display:flex;gap:1px;align-items:flex-end"></div></div><div class="nm" style="${nmFs(s.n)}">${esc(s.n)}</div><div class="pr">${s.p} €</div>`;
     case 'rail': return `<div class="nm top">${esc(s.n)}</div>${ICON['r'+i]}<div class="pr">${s.p} €</div>`;
     case 'util': return `<div class="nm top">${esc(s.n)}</div>${i===12?ICON.bolt:ICON.drop}<div class="pr">${s.p} €</div>`;
     case 'destin': return `<div class="nm top">Imprévus du Destin</div>${ICON.destin}<div class="pr"></div>`;
     case 'caisse': return `<div class="nm top">Primes &amp; Trésors</div>${ICON.caisse}<div class="pr"></div>`;
     case 'tax': return `<div class="nm top">${esc(s.n)}</div>${ICON.tax}<div class="pr">Payez ${s.a} €</div>`;
-    case 'go': return `<div class="ksub">Recevez 200 € en passant</div><div class="kgo">DÉPART</div><div style="width:80%">${ICON.go}</div>`;
+    case 'go': return `<div class="ksub" style="font-size:calc(var(--u)*.11)">Prêt pour l’aventure !</div><div class="kgo">DÉPART</div><div class="ksub">+200 € en passant</div><div style="width:55%">${ICON.go}</div>`;
     case 'jail': return '';
     case 'park': return `<div class="ksub">La Pause Café</div>${ICON.park}<div class="ksub">Refuge du repos</div>`;
-    case 'gojail': return `<div class="ksub">En GAV !</div>${ICON.police}<div class="ksub">Vous êtes fait</div>`; } }
+    case 'gojail': return `<div class="ksub">Attrapé par les autorités !</div>${ICON.police}<div class="ksub">Direction la GAV</div>`; } }
 function buildBoard(){ const B=$('#board'); B.innerHTML=''; CELLS=[];
   for(let i=0;i<40;i++){ const {r,c,s}=cellRC(i); const d=document.createElement('div'); d.className='cell '+s+(i%10===0?' k':''); d.style.gridArea=`${r}/${c}`; d.dataset.i=i;
     if(i===10) d.innerHTML=`<div class="jailbox"><b>GEÔLES</b></div><div class="visit">Simple visite</div><div class="visit v2">Simple visite</div>`;
@@ -749,7 +752,7 @@ function deedHTML(i){ const s=SQ[i],o=G?G.own[i]:null; let b='';
   const dk=s.t==='prop'&&[0,2,4,6,7].includes(s.g)||s.t!=='prop';
   return `<div class="deed"><div class="dh${dk?' dk':''}" style="background:${sqCol(i)}"><small>Titre de propriété</small>${esc(s.n)}</div>${b}<div class="dl">Prix : ${s.p} € · Hypothèque : ${s.p/2} € · Levée : ${Math.round(s.p/2*1.1)} €</div>${o?`<div class="dl"><b>${o.o>=0?'Propriétaire : '+esc(nm(G,o.o))+(o.m?' (hypothéqué)':''):'À vendre (banque)'}</b></div>`:''}</div>`; }
 function sqInfo(i){ const s=SQ[i]; if(G&&G.own[i]) return info(`<h2>${esc(s.n)}</h2>${deedHTML(i)}`);
-  const T={go:'Chaque passage par Départ rapporte 200 €.',jail:'Simple visite si tu t’arrêtes ici. En prison : fais un double, paie 50 € ou utilise un laissez-passer (3 essais maximum).',park:'Refuge du repos : une pause café bien méritée, il ne se passe rien.',gojail:'En GAV, vous êtes fait ! Direction les Geôles, sans passer par Départ.',destin:'Tire une carte Imprévus du Destin.',caisse:'Tire une carte Primes & Trésors.',tax:`Payez ${s.a} € à la banque.`};
+  const T={go:'Point de départ : prêt pour l’aventure ! Chaque passage rapporte 200 €.',jail:'Simple visite si tu t’arrêtes ici. En prison : fais un double, paie 50 € ou utilise un laissez-passer (3 essais maximum).',park:'Refuge du repos : une pause café bien méritée, il ne se passe rien.',gojail:'Attrapé par les autorités ! Direction la GAV dans les Geôles, sans passer par Départ.',destin:'Tire une carte Imprévus du Destin.',caisse:'Tire une carte Primes & Trésors.',tax:`Payez ${s.a} € à la banque.`};
   info(`<h2>${esc(s.n)}</h2><p>${T[s.t]}</p>`); }
 $('#board').addEventListener('click',e=>{ const c=e.target.closest('.cell'); if(!c) return; const i=+c.dataset.i;
   if(PICK){ const f=PICK; PICK=null; $('#board').classList.remove('pick'); f(i); return; } if(G) sqInfo(i); });
