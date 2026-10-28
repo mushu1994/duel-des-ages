@@ -69,7 +69,7 @@ body{background:radial-gradient(ellipse at 50% 20%,#2f7f4c,#11391f 75%) fixed,#1
 #peg .marble{transition:transform .25s cubic-bezier(.3,1.4,.5,1);cursor:pointer}
 #peg .marble.sel .glass{stroke:#fff;stroke-width:3}
 /* cartes */
-#kl{position:relative;margin:0 auto;max-width:900px;touch-action:none;user-select:none;-webkit-user-select:none}
+#kl{position:relative;isolation:isolate;z-index:0;margin:0 auto;max-width:900px;touch-action:none;user-select:none;-webkit-user-select:none}
 .slot{position:absolute;border-radius:8%/6%;border:2px dashed #ffffff40;background:#0002}
 .slot.f::after{content:attr(data-s);position:absolute;inset:0;display:grid;place-items:center;font-size:calc(var(--cw)*.4);color:#ffffff35}
 .slot.st{cursor:pointer}
@@ -87,6 +87,11 @@ body{background:radial-gradient(ellipse at 50% 20%,#2f7f4c,#11391f 75%) fixed,#1
 .cd.red{color:#c8203a}.cd.blk{color:#1c1c24}
 .cd.drag{box-shadow:0 14px 26px #000a;transition:none;z-index:500!important}
 .cd.hint{box-shadow:0 0 0 3px #ffd34a,0 0 18px #ffd34a}
+
+.solm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0}.solm button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:2px solid #c9b98f;background:#f6efdc;color:#2a2418;border-radius:12px;padding:10px 12px;font-size:15px}.solm button:hover{border-color:#2a2418}.solm span{font-size:13px;opacity:.8}
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style></head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Solitaire</h1>
 <div class="tools"><button class="btn" data-a="undo">Annuler</button><button class="btn" data-a="hint">Indice</button><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
@@ -104,7 +109,8 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
 function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
@@ -135,18 +141,18 @@ function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
   if(!MUTED) ac();
-  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
     case 'help': GAME.help(); break;
-    case 'new': GAME.menu(); break;
-    case 'close': closeModal(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
   }
 });
 addEventListener('DOMContentLoaded',updSnd);
 
-const GAME={help,menu};
+const GAME=window.GAME={help,menu};
 let MODE=load('sol-mode')||'peg';
 /* =================== BILLES =================== */
 const PEG={type:'en',b:null,hist:[],sel:null,moves:0};
@@ -293,13 +299,13 @@ function klHint(){ const tries=[]; const tops=[]; K.tab.forEach((col,t)=>col.for
   for(const o of tops){ const cards=grab(o.w); if(!cards) continue; const d=bestDest(cards,o.w); if(!d) continue; if(d.z==='t'&&o.w.z==='t'&&o.w.i>0&&K.tab[o.w.t][o.w.i-1].up&&!K.tab[d.t].length) continue; if(d.z==='t'&&o.w.z==='t'&&o.w.i===0&&!K.tab[d.t].length) continue; tries.push(o); }
   if(!tries.length){ toast(K.stock.length||K.waste.length?'Pioche une carte.':'Aucun coup utile trouvé.'); return; }
   const o=tries.sort((a,b)=>(bestDest(grab(b.w),b.w).z==='f')-(bestDest(grab(a.w),a.w).z==='f'))[0]; const el=$(`#kl .cd[data-id="${o.c.id}"]`); el.classList.add('hint'); setTimeout(()=>el.classList.remove('hint'),1500); }
-function menu(){ const draw=()=>paintModal(`<h2>Nouvelle partie</h2><h4>Jeu</h4><div class="seg"><button data-n="peg:en">Billes · plateau anglais</button><button data-n="peg:eu">Billes · plateau européen</button><button data-n="kl:1">Cartes · pioche 1</button><button data-n="kl:3">Cartes · pioche 3</button></div><div class="acts"><button class="btn" data-c="close">Annuler</button></div>`);
+function menu(){ const draw=()=>paintModal(`<h2>Nouvelle partie</h2><p style="margin:0 0 6px">Choisis ton jeu : la partie en cours sera remplacée.</p><div class="solm"><button data-n="peg:en"><b>Billes</b><span>Plateau anglais · 33 trous</span></button><button data-n="peg:eu"><b>Billes</b><span>Plateau européen · 37 trous</span></button><button data-n="kl:1"><b>Cartes</b><span>Pioche 1 carte · plus facile</span></button><button data-n="kl:3"><b>Cartes</b><span>Pioche 3 cartes · classique</span></button></div><div class="acts"><button class="btn" data-c="close">Annuler</button></div>`);
   draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-n]'); if(!x) return; const [m,v]=x.dataset.n.split(':'); closeModal(); MODE=m; store('sol-mode',m);
     $$('.modes button').forEach(b=>b.classList.toggle('on',b.dataset.mode===m)); $('#pegwrap').hidden=m!=='peg'; $('#kl').hidden=m!=='kl';
     if(m==='peg') pegNew(v); else { store('sol-draw',+v); klNew(+v); } }; }
-function help(){ openModal(`<h2>Solitaire</h2><div class="tabs"></div>
-  <h4>Solitaire à billes</h4><p>Une bille saute par-dessus une voisine (horizontalement ou verticalement) pour atterrir dans un trou vide ; la bille sautée est retirée. Objectif : <b>une seule bille</b>, idéalement au centre. Touche une bille puis la case qui clignote. « Indice » cherche une suite gagnante depuis la position actuelle (plateau anglais surtout).</p>
-  <h4>Solitaire aux cartes (Klondike)</h4><p>Range toutes les cartes dans les 4 piles du haut, de l'As au Roi par couleur. Dans les colonnes, on empile en <b>alternant rouge et noir</b> et en <b>descendant</b> (Dame rouge sur Roi noir…). Seul un Roi peut occuper une colonne vide. Touche la pioche pour retourner 1 ou 3 cartes.</p>
-  <p><b>Touche une carte</b> pour la jouer automatiquement au meilleur endroit, ou <b>fais-la glisser</b>. « Annuler » revient en arrière, « Indice » montre un coup.</p><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+function help(){ helpTabs("Solitaire",[["Billes","<p><b>But</b> : ne garder qu’une seule bille, idéalement au centre.</p><ul><li>Une bille saute par-dessus une voisine, à l’horizontale ou à la verticale, pour atterrir dans un trou vide juste derrière.</li><li>La bille sautée est retirée du plateau.</li><li>Plateau anglais (33 trous) ou européen (37 trous).</li></ul><p>Jouer ici : touche une bille, puis la case qui clignote. « Indice » cherche une suite gagnante depuis la position actuelle.</p>"],["Cartes","<p><b>But</b> : ranger les 52 cartes dans les 4 piles du haut, de l’As au Roi, une pile par couleur.</p><ul><li>Dans les 7 colonnes, on empile en <b>descendant</b> et en <b>alternant</b> rouge et noir (Dame rouge sur Roi noir…).</li><li>On peut déplacer une suite entière déjà bien rangée.</li><li>Seul un <b>Roi</b> (ou une suite qui commence par un Roi) peut occuper une colonne vide.</li><li>La pioche retourne 1 carte (plus facile) ou 3 cartes (classique) à la fois.</li></ul><p>Jouer ici : touche une carte pour la jouer au meilleur endroit, ou fais-la glisser. « Annuler » revient en arrière, « Indice » montre un coup.</p>"]]); }
 setMode(MODE);
-</script></body></html>
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>

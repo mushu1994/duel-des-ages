@@ -63,6 +63,10 @@ body{background:radial-gradient(ellipse at 50% 0%,#2b4fb8,#0d1a4a 75%) fixed,#0d
 #b .col:hover .hov{opacity:.18}
 #b .win{animation:wn 0.8s infinite}
 @keyframes wn{50%{opacity:.45}}
+
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style></head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Quatre en ligne</h1>
 <div class="tools"><button class="btn" data-a="undo">Annuler</button><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
@@ -78,7 +82,8 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
 function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
@@ -109,13 +114,13 @@ function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
   if(!MUTED) ac();
-  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
     case 'help': GAME.help(); break;
-    case 'new': GAME.menu(); break;
-    case 'close': closeModal(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
   }
 });
 addEventListener('DOMContentLoaded',updSnd);
@@ -146,7 +151,7 @@ if(IS_NODE) module.exports={drop,winner,aiMove};
 else {
 /* ===== interface ===== */
 const COL={1:['#e8433a','#a21d16','#ff8a7a'],2:['#ffd84a','#c79a10','#fff2a6']};
-let S=null, BUSY=false, GEN=0; const GAME={help,menu};
+let S=null, BUSY=false, GEN=0; const GAME=window.GAME={help,menu};
 const CX=c=>70+c*100, CY=r=>110+r*95;
 function build(){ const s=$('#b'); s.innerHTML=`<defs><mask id="holes"><rect x="20" y="62" width="700" height="590" rx="28" fill="#fff"/>${Array.from({length:W*H},(_,i)=>`<circle cx="${CX(i%W)}" cy="${CY(Math.floor(i/W))}" r="38" fill="#000"/>`).join('')}</mask>
   <radialGradient id="d1" cx="38%" cy="32%"><stop offset="0" stop-color="${COL[1][2]}"/><stop offset=".6" stop-color="${COL[1][0]}"/><stop offset="1" stop-color="${COL[1][1]}"/></radialGradient>
@@ -178,7 +183,10 @@ function menu(){ const draw=()=>paintModal(`<h2>Nouvelle partie</h2><h4>Adversai
   ${M.mode==='ia'?`<h4>Niveau</h4><div class="seg">${['facile','normal','difficile'].map(l=>`<button class="${M.level===l?'on':''}" data-m="level:${l}">${l}</button>`).join('')}</div><h4>Qui commence ?</h4><div class="seg"><button class="${M.first===1?'on':''}" data-m="first:1">Moi (rouge)</button><button class="${M.first===2?'on':''}" data-m="first:2">L'ordinateur</button></div>`:`<div class="prow"><input type="text" id="n0" value="${esc(M.names[0])}" placeholder="Camille" maxlength="14"> contre <input type="text" id="n1" value="${esc(M.names[1])}" placeholder="Lucas" maxlength="14"></div>`}
   <div class="acts">${S?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="start">Jouer</button></div>`);
   draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; if($('#n0')) M.names=[$('#n0').value,$('#n1').value]; const [k,v]=x.dataset.m.split(':'); if(k==='start'){ closeModal(); store('q4p',M); newGame(); return; } M[k]=k==='first'?+v:v; draw(); }; }
-function help(){ openModal(`<h2>Quatre en ligne</h2><p>À tour de rôle, on lâche un pion dans une colonne : il tombe tout en bas. Le premier qui aligne <b>quatre pions</b> de sa couleur (horizontalement, verticalement ou en diagonale) gagne. Grille pleine : match nul.</p><p>Touche une colonne (ou les touches 1 à 7). « Annuler » reprend le dernier coup.</p><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+function help(){ helpTabs("Quatre en ligne",[["But du jeu","<p>Aligner <b>quatre pions</b> de sa couleur, à l’horizontale, à la verticale ou en diagonale.</p>"],["Déroulement","<ul><li>À tour de rôle, on lâche un pion dans une colonne : il tombe tout en bas.</li><li>Grille pleine sans alignement : match nul.</li></ul><p class=\"ex\">Astuce : la colonne du milieu fait partie de nombreux alignements possibles, c’est souvent le meilleur premier coup.</p><p>Jouer ici : touche une colonne (ou les touches 1 à 7). « Annuler » reprend le dernier coup. Le menu permet de choisir qui commence.</p>"]]); }
 (function boot(){ const p=load('q4p'); if(p) Object.assign(M,p); build(); const s=load('q4'); if(s&&!s.over){ S=s; render(); next(); } else { S=null; menu(); } })();
 }
-</script></body></html>
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>

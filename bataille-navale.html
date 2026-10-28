@@ -88,6 +88,10 @@ body{background:radial-gradient(ellipse at 50% 0%,#14506e,#06192a 75%) fixed,#06
 .fl.sunk{opacity:.45;text-decoration:line-through}.fl.sunk .bars i{background:#e2553a}
 .fl.sel{background:#ffd27a33;box-shadow:inset 0 0 0 2px #ffd27a;cursor:pointer}
 .fl.todo{cursor:pointer}.fl.placed{opacity:.7}
+
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style></head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Bataille Navale</h1>
 <div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
@@ -104,7 +108,8 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
 function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
@@ -135,13 +140,13 @@ function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
   if(!MUTED) ac();
-  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
     case 'help': GAME.help(); break;
-    case 'new': GAME.menu(); break;
-    case 'close': closeModal(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
   }
 });
 addEventListener('DOMContentLoaded',updSnd);
@@ -169,7 +174,7 @@ else {
 /* ===== interface ===== */
 const L='ABCDEFGHIJ';
 let S=null, GEN=0, PL=null; // PL: placement {pi, ships, sel, h, hover}
-const GAME={help,menu};
+const GAME=window.GAME={help,menu};
 function shipBody(len,col){ const W=len*100; return `<path d="M8 50 Q20 14 60 16 L${W-40} 16 Q${W-6} 22 ${W-4} 50 Q${W-6} 78 ${W-40} 84 L60 84 Q20 86 8 50Z" fill="${col||'#8a9aa6'}" stroke="#2a3640" stroke-width="5"/>
   <path d="M30 50 L${W-30} 50" stroke="#ffffff40" stroke-width="5"/>${Array.from({length:len-1},(_,k)=>`<rect x="${70+k*100}" y="34" width="${k===Math.floor((len-1)/2)?60:34}" height="32" rx="6" fill="#5e6e7a" stroke="#2a3640" stroke-width="4"/>`).join('')}${len>=4?`<rect x="${W/2-10}" y="22" width="20" height="10" rx="3" fill="#2a3640"/>`:''}`; }
 function shipSVG(len,h,col){ const W=len*100; return h?`<svg viewBox="0 0 ${W} 100" preserveAspectRatio="none">${shipBody(len,col)}</svg>`:`<svg viewBox="0 0 100 ${W}" preserveAspectRatio="none"><g transform="translate(100 0) rotate(90)">${shipBody(len,col)}</g></svg>`; }
@@ -259,9 +264,10 @@ function menu(){ const s=load('bn-save');
     if(k==='resume'){ closeModal(); GEN++; S=s; PL=null; renderPlay(); if(S.players[S.cur].ai) fire(1,aiShot(S.players[0].shots,S.players[0].ships,S.cfg.level)); return; }
     if(k==='start'){ closeModal(); store('bn-prefs',M); const names=M.mode==='ia'?['Toi','Amiral '+{facile:'Moussaillon',normal:'Capitaine',difficile:'Nelsonne'}[M.level]]:[M.names[0].trim()||'Camille',M.names[1].trim()||'Lucas']; newGame({...M,names}); return; }
     M[k]=k==='mode'||k==='level'?v:v==='1'; draw(); }; }
-function help(){ openModal(`<h2>Bataille navale</h2><p>Chaque amiral cache sa flotte sur une grille de 10×10 : porte-avions (5), croiseur (4), contre-torpilleur (3), sous-marin (3) et torpilleur (2).</p>
-  <ul><li>À tour de rôle, on tire sur une case de la mer ennemie : <b>à l'eau</b>, <b>touché</b> ou <b>coulé</b> (quand toutes les cases d'un navire sont touchées).</li><li>Le premier qui coule toute la flotte adverse gagne.</li><li>Placement : choisis un navire, touche la grille ; « Tourner » (ou R) change l'orientation, « Au hasard » place tout d'un coup.</li></ul>
-  <p>L'Amiral (niveau difficile) calcule où tes navires ont le plus de chances de se trouver…</p><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+function help(){ helpTabs("Bataille navale",[["But du jeu","<p>Chaque amiral cache sa flotte sur une mer de 10 × 10 cases. Le premier qui coule <b>tous</b> les navires adverses gagne.</p><p>La flotte compte 5 navires : porte-avions (5 cases), croiseur (4), contre-torpilleur (3), sous-marin (3) et torpilleur (2).</p>"],["Déroulement","<ol><li><b>Placement</b> : chacun place ses navires en ligne droite, à l’horizontale ou à la verticale.</li><li><b>Tirs</b> : à tour de rôle, on vise une case de la mer ennemie. Réponse : <i>à l’eau</i>, <i>touché</i> ou <i>coulé</i> (toutes les cases du navire sont touchées).</li><li>La partie s’arrête dès qu’une flotte entière est coulée.</li></ol><h4>Options du menu</h4><ul><li><b>Navires séparés</b> : deux navires ne peuvent pas se toucher, même en diagonale. <b>Navires collés permis</b> : ils peuvent.</li><li><b>Tour par tour</b> : un seul tir par tour. <b>On rejoue si touché</b> : tant que tu touches, tu tires encore.</li></ul>"],["Jouer ici","<ul><li>Placement : choisis un navire dans la liste, puis touche la grille. « Tourner » (ou la touche R) change l’orientation, « Au hasard » place toute la flotte.</li><li>Tir : touche une case de la grille adverse.</li><li>À deux sur un appareil : un écran de passage cache ta flotte quand c’est au tour de l’autre.</li><li>Trois niveaux, de <b>Moussaillon</b> à <b>Amiral</b>, qui calcule les cases où tes navires ont le plus de chances de se trouver.</li></ul><p class=\"ex\">Astuce : après un « touché », vise les 4 cases voisines pour trouver le sens du navire.</p>"]]); }
 (function boot(){ const p=load('bn-prefs'); if(p) Object.assign(M,p); S={cfg:M}; $('#wrap').innerHTML=`<div class="gbox">${gridHTML('tg','big')}</div>`; S=null; menu(); })();
 }
-</script></body></html>
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>

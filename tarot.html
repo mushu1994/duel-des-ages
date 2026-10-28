@@ -92,6 +92,11 @@ body{background:radial-gradient(ellipse at 50% 40%,#2a4a7a,#0e1a30 80%) fixed,#0
 .scoreline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-weight:800;font-size:14px}
 .scoreline span{background:#0004;padding:3px 10px;border-radius:12px}
 .scoreline b{color:#f2d48a}
+
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+.table>*,.felt,.scoreline,#panel,#hand{min-width:0;max-width:100%}@media (max-width:520px){.chien{gap:3px;padding:6px}.chien .tcard{--cw:34px}}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style></head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Tarot</h1>
 <div class="tools"><button class="btn" data-a="last">Dernier pli</button><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
@@ -107,7 +112,8 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
 function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
@@ -138,13 +144,13 @@ function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
   if(!MUTED) ac();
-  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
     case 'help': GAME.help(); break;
-    case 'new': GAME.menu(); break;
-    case 'close': closeModal(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
   }
 });
 addEventListener('DOMContentLoaded',updSnd);
@@ -208,7 +214,7 @@ function aiPlay(G,p){ const hand=G.hands[p], trick=G.trick, L=legalCards(hand,tr
 if(IS_NODE) module.exports={deck78,legalCards,trickWinner,aiBid,aiEcart,aiPlay,halves,isBout,sortHand};
 else {
 /* ===== interface ===== */
-let G=null, M2=null, GEN=0, WAIT=null, SEL=new Set(); const GAME={help,menu};
+let G=null, M2=null, GEN=0, WAIT=null, SEL=new Set(); const GAME=window.GAME={help,menu};
 const SEATS=['s','w','n','e'];
 function cardEl(c,cls){ if(!c) return `<div class="tcard back ${cls||''}"></div>`;
   if(c.k==='e') return `<div class="tcard exc bout ${cls||''}" data-id="${c.id}"><div class="ix">★</div><div class="md" style="font-size:calc(var(--cw)*.2);font-weight:900;writing-mode:vertical-rl">EXCUSE</div></div>`;
@@ -288,12 +294,11 @@ function menu(){ const draw=()=>paintModal(`<h2>Nouvelle partie de tarot</h2><p>
   <h4>Vitesse</h4><div class="seg">${[[1100,'lente'],[700,'normale'],[350,'rapide']].map(([v,l])=>`<button class="${M.speed===v?'on':''}" data-m="speed:${v}">${l}</button>`).join('')}</div>
   <div class="acts">${G?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="start">Distribuer</button></div>`);
   draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; M.me=$('#me').value; const [k,v]=x.dataset.m.split(':'); if(k==='start'){ closeModal(); M.me=M.me.trim()||'Toi'; store('tarot-prefs',M); newMatch({...M}); return; } M[k]=k==='speed'?+v:v; draw(); }; }
-function help(){ openModal(`<h2>Tarot</h2><ul><li><b>78 cartes</b> : 4 couleurs (Roi, Dame, Cavalier, Valet, 10…1), 21 atouts et l'Excuse. Les 3 <b>bouts</b> sont le 21, le Petit (1) et l'Excuse.</li>
-  <li><b>Enchères</b> : Petite (×1), Garde (×2), Garde sans le chien (×4), Garde contre le chien (×6). En Petite ou Garde, le preneur prend le chien puis écarte 6 cartes (ni roi ni bout).</li>
-  <li><b>Jeu</b> : il faut fournir la couleur demandée ; sinon couper (atout), et toujours <b>monter</b> sur l'atout le plus fort si possible. L'Excuse se joue quand on veut et revient à son camp.</li>
-  <li><b>Points</b> : bouts et rois 4,5 ; dames 3,5 ; cavaliers 2,5 ; valets 1,5 ; autres 0,5. Le preneur doit faire 56 points sans bout, 51 avec 1, 41 avec 2, 36 avec 3.</li>
-  <li><b>Score</b> : (25 + écart) × contrat, plus 10 × contrat pour le Petit au bout (mené au dernier pli). Le preneur gagne ou perd trois fois cette valeur.</li></ul><p>Les poignées et les chelems ne sont pas comptés.</p><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+function help(){ helpTabs("Tarot",[["Les cartes","<p>Tarot à 4 joueurs : toi et trois adversaires. 78 cartes : 4 couleurs (Roi, Dame, Cavalier, Valet, 10 … 1), 21 atouts et l’Excuse.</p><p>Les 3 <b>bouts</b> sont le 21, le Petit (atout 1) et l’Excuse. Chacun reçoit 18 cartes ; 6 cartes forment le <b>chien</b>.</p>"],["Enchères","<ul><li><b>Petite</b> (×1) et <b>Garde</b> (×2) : le preneur prend le chien puis écarte 6 cartes (ni roi ni bout).</li><li><b>Garde sans le chien</b> (×4) : le chien reste caché mais compte pour le preneur.</li><li><b>Garde contre le chien</b> (×6) : le chien va à la défense.</li></ul><p>Le preneur joue seul contre les trois autres.</p>"],["Le jeu","<ul><li>Il faut fournir la couleur demandée. Sinon, il faut couper avec un atout, et <b>toujours monter</b> sur l’atout le plus fort déjà joué si possible.</li><li>Sans atout ni la couleur, on se défausse.</li><li>L’Excuse se joue quand on veut, ne gagne pas le pli et revient à son camp.</li></ul>"],["Points","<ul><li>Bouts et rois : 4,5 ; dames : 3,5 ; cavaliers : 2,5 ; valets : 1,5 ; autres cartes : 0,5.</li><li>Le preneur doit faire 56 points sans bout, 51 avec 1, 41 avec 2, 36 avec 3.</li><li>Score : (25 + écart) × contrat, plus 10 × contrat pour le Petit au bout (gagné au dernier pli). Le preneur gagne ou perd trois fois cette valeur.</li><li>Les poignées et les chelems ne sont pas comptés.</li></ul><p class=\"ex\">Exemple : Garde avec 2 bouts et 47 points → contrat réussi de 6 points, (25 + 6) × 2 = 62 ; le preneur marque 186, chaque défenseur −62.</p>"]]); }
 window.__T={get G(){return G},get WAIT(){return WAIT},aiPlay,aiBid,aiEcart,legalCards,get M2(){return M2}};
 (function boot(){ const p=load('tarot-prefs'); if(p) Object.assign(M,p); menu(); })();
 }
-</script></body></html>
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>

@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Approche finale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800&display=swap" rel="stylesheet">
+<style>
+/* Cockpit de nuit : tableau de bord en trois colonnes (pilote | instruments | copilote), pistes d'approche et d'altitude au-dessus, plateau de dés en bas */
+:root{--bg:#0b111c;--fg:#e6edf7;--mute:#8d9bb3;--panel:#1a2230;--panel2:#121925;--line:#2c374a;--pil:#3d86f2;--pilD:#1d4f9e;--cop:#f28c2c;--copD:#a65612;--ok:#3fe08c;--warn:#ffcf4a;--red:#ff5b5f;--sky:#2a5d8f;--accent:#2fb3a4;--title:"Chakra Petch","Segoe UI",system-ui,sans-serif;--ui:"Nunito Sans",system-ui,sans-serif;--titlec:#f2f6fc;color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui,"Nunito Sans",system-ui,sans-serif);min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bar,#0006);border-bottom:1px solid #fff2;flex-wrap:wrap}
+.top h1{font-family:var(--title,Georgia,serif);font-weight:800;font-size:24px;margin:0;color:var(--titlec,#fff);letter-spacing:.5px}
+.top h1 small{font-family:var(--ui);font-weight:600;font-size:13px;opacity:.75;margin-left:8px;letter-spacing:0}
+.back{color:inherit;opacity:.9;text-decoration:none;font-size:14px;border:1px solid #fff4;padding:5px 10px;border-radius:8px}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#ffffff1c;color:inherit;border:1px solid #ffffff40;border-radius:9px;padding:7px 12px;font-size:14px;font-weight:700}
+.btn:hover{background:#ffffff2e}.btn:disabled{opacity:.4;cursor:default}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.on{background:#fff;color:#222}
+.status{display:flex;align-items:center;gap:12px;padding:9px 16px;background:var(--pc,var(--accent));color:#fff;font-weight:800;min-height:44px;box-shadow:0 4px 14px #0005;transition:background .35s;flex-wrap:wrap}
+.status .who{font-family:var(--title,Georgia,serif);font-size:19px}
+.status .msg{font-weight:600}
+.status .right{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:14px}
+#modal{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:12px}
+#modal[hidden]{display:none}
+.mbox{background:#fbf6ea;color:#2a2418;border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;animation:pop .3s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.mbox h2{font-family:var(--title,Georgia,serif);font-size:26px;margin:0 0 6px}
+.mbox h4{font-family:var(--title,Georgia,serif);font-size:16px;margin:14px 0 6px}
+.mbox p,.mbox li{line-height:1.5}
+.mbox .btn{background:#ece3cf;color:#2a2418;border-color:#c9b98f}
+.mbox .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mbox .btn.on{background:#2a2418;color:#fff}
+.seg{display:inline-flex;border:1px solid #c9b98f;border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:#f6efdc;padding:7px 11px;font-weight:700;color:#2a2418;font-size:13.5px}
+.seg button.on{background:#2a2418;color:#fff}
+.prow{display:flex;gap:8px;align-items:center;margin:7px 0;flex-wrap:wrap}
+.prow .dot{width:16px;height:16px;border-radius:50%;background:var(--pc);border:2px solid #0004}
+.prow input[type=text]{font-family:inherit;font-weight:700;font-size:16px;padding:6px 9px;border-radius:8px;border:1px solid #c9b98f;background:#fff;color:#2a2418;-webkit-text-fill-color:#2a2418;caret-color:var(--accent);width:150px;color-scheme:light}
+.prow input[type=text]::placeholder{color:#a3926e;-webkit-text-fill-color:#a3926e;font-weight:600}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{border:1px solid #c9b98f;background:#f6efdc;border-radius:20px;padding:5px 12px;font-weight:800;color:#2a2418}
+.tabs button.on{background:#2a2418;color:#fff}
+.toast{position:fixed;left:50%;top:100px;transform:translateX(-50%);background:#1b1b1f;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 10px 30px #000a;z-index:70;font-weight:700;animation:toast 2.6s forwards;pointer-events:none;max-width:90vw;text-align:center}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.bannerx{position:fixed;inset:0;display:grid;place-items:center;z-index:65;pointer-events:none}
+.bannerx div{font-family:var(--title,Georgia,serif);font-weight:800;font-size:clamp(30px,6vw,64px);color:#fff;background:var(--bc,var(--accent));padding:10px 36px;border-radius:14px;box-shadow:0 20px 50px #000a;animation:ban 2.3s forwards;text-align:center}
+.bannerx small{display:block;font-family:var(--ui);font-size:.34em;font-weight:700}
+@keyframes ban{0%{transform:scale(2);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:0;transform:scale(.92)}}
+#cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);text-align:center;padding:20px}
+#cover[hidden]{display:none}
+#cover h2{font-family:var(--title,Georgia,serif);font-size:36px;margin:0 0 8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
+
+body{background:radial-gradient(ellipse at 50% -10%,#1d2c45 0%,#0b111c 60%) fixed,#0b111c;color:var(--fg)}
+.top h1 small{font-family:var(--ui)}
+.status{gap:10px}
+.phase{display:inline-flex;align-items:center;gap:7px;font-family:var(--title);font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:20px;background:#0005;border:1px solid #fff4}
+.phase i{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.phase.sil i{background:var(--red);box-shadow:0 0 8px var(--red);animation:blink 1.1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.ck{display:flex;flex-direction:column;gap:10px;padding:10px max(12px,env(safe-area-inset-right,0px)) 120px max(12px,env(safe-area-inset-left,0px));max-width:1180px;margin:0 auto}
+/* pistes */
+.strips{display:grid;grid-template-columns:3fr 2fr;gap:10px}
+.strip{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px 10px 10px;min-width:0}
+.slab{font-family:var(--title);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:6px;display:flex;gap:8px;align-items:baseline}
+.slab b{color:var(--fg);letter-spacing:.04em;text-transform:none;font-size:13px}
+.appr{position:relative;display:flex;gap:3px}
+.ac{flex:1;min-width:0;height:78px;border-radius:8px;background:linear-gradient(#2a5d8f55,#1c3b5c33);border:1px solid #ffffff14;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:2px}
+.ac .ix{font-family:var(--title);font-size:11px;color:var(--mute);font-variant-numeric:tabular-nums}
+.ac.cur{background:linear-gradient(#3d86f244,#1c3b5c55);border-color:#9cc2ff88}
+.ac.past{opacity:.38}
+.ac.apt{background:repeating-linear-gradient(90deg,#3a3f48 0 6px,#2f343c 6px 12px);border-color:#ffffff30}
+.ac.apt::after{content:"";position:absolute;left:50%;top:20px;bottom:6px;width:3px;margin-left:-1.5px;background:repeating-linear-gradient(#f2f2f2 0 6px,transparent 6px 12px)}
+.ac .pls{display:flex;flex-wrap:wrap;gap:1px;justify-content:center;max-width:100%;position:relative;z-index:1}
+.tok{width:18px;height:18px;transition:transform .5s,opacity .5s}
+.tok.gone{transform:translateY(-30px) scale(.4) rotate(40deg);opacity:0}
+.ac .tdie{position:absolute;right:3px;bottom:3px;width:14px;height:14px;border-radius:3px;background:#111;border:1px solid #888;display:grid;place-items:center;font-size:9px;color:#fff;font-weight:800}
+.ac .trn{position:absolute;left:2px;right:2px;bottom:3px;font-size:10px;font-weight:800;text-align:center;color:var(--warn);background:#0007;border-radius:4px;line-height:1.3;white-space:nowrap;overflow:hidden}
+.ac.hl{outline:2px dashed var(--ok);outline-offset:-3px;cursor:pointer}
+#plane{position:absolute;bottom:20px;width:34px;height:34px;margin-left:-17px;transition:left .8s cubic-bezier(.5,0,.3,1.2);z-index:3;filter:drop-shadow(0 3px 4px #000a);pointer-events:none}
+.alti{display:flex;gap:3px}
+.al{flex:1;min-width:0;height:78px;border-radius:8px;background:#ffffff08;border:1px solid #ffffff14;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:5px 2px;font-family:var(--title);font-variant-numeric:tabular-nums}
+.al .ft{font-size:13px;font-weight:700}
+.al small{font-size:9px;color:var(--mute)}
+.al.cur{background:linear-gradient(#2fb3a455,#2fb3a422);border-color:var(--accent);box-shadow:0 0 12px #2fb3a455}
+.al.past{opacity:.3}
+.al .fp{width:14px;height:14px;border-radius:50%}
+.rr{width:16px;height:16px}
+/* tableau de bord */
+.panel{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:10px;background:linear-gradient(#232c3b,#161d29);border:1px solid #3a4558;border-radius:16px;padding:12px;box-shadow:inset 0 1px 0 #ffffff1a,0 14px 40px #0009}
+.panel.shake{animation:shake .6s}
+@keyframes shake{20%{transform:translate(-8px,3px) rotate(-.6deg)}40%{transform:translate(7px,-2px) rotate(.5deg)}60%{transform:translate(-5px,2px)}80%{transform:translate(3px,0)}}
+.pcol,.pcen{display:flex;flex-direction:column;gap:10px;min-width:0}
+.grp{background:#0e141e;border:1px solid #2a3446;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.gt{font-family:var(--title);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);display:flex;justify-content:space-between;align-items:center;gap:6px}
+.gt em{font-style:normal;font-family:var(--ui);letter-spacing:0;text-transform:none;font-size:12px;color:var(--fg)}
+.who-h{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:12px;font-family:var(--title);font-weight:700;font-size:15px;min-width:0}
+.who-h .nm2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who-h.P{background:linear-gradient(90deg,var(--pilD),transparent)}
+.who-h.C{background:linear-gradient(90deg,var(--copD),transparent)}
+.who-h .hid{margin-left:auto;display:flex;gap:2px}
+.who-h .hid i{width:12px;height:12px;border-radius:3px;background:#ffffff30;border:1px solid #ffffff50}
+.who-h.act{box-shadow:0 0 0 2px #fff6}
+.row{display:flex;align-items:center;gap:8px}
+.lt{width:14px;height:14px;border-radius:50%;background:#2a3140;border:2px solid #0a0e15;box-shadow:inset 0 2px 3px #0008;flex:none;transition:background .3s,box-shadow .3s}
+.lt.on{background:var(--ok);box-shadow:0 0 10px var(--ok),inset 0 -2px 3px #0004}
+.lt.pulse{animation:lpulse .9s}
+@keyframes lpulse{0%{transform:scale(1)}40%{transform:scale(1.7)}100%{transform:scale(1)}}
+.slot{width:46px;height:46px;flex:none;border-radius:10px;border:2px dashed #ffffff40;background:#ffffff06;color:var(--mute);font-family:var(--title);font-weight:700;font-size:12px;display:grid;place-items:center;padding:0;position:relative;transition:transform .15s,box-shadow .2s,border-color .2s}
+.slot.sP{border-color:#3d86f288}.slot.sC{border-color:#f28c2c88}.slot.sB{border-color:#cfd8e688}
+.slot.full{border-style:solid;background:transparent}
+.slot.valid{border-style:solid;border-color:var(--ok);box-shadow:0 0 0 3px #3fe08c33,0 0 14px #3fe08c55;color:var(--ok);cursor:pointer;animation:glow 1.4s infinite}
+@keyframes glow{50%{box-shadow:0 0 0 5px #3fe08c22,0 0 20px #3fe08c66}}
+.slot.mand::before{content:"!";position:absolute;top:-7px;right:-7px;width:16px;height:16px;border-radius:50%;background:var(--warn);color:#000;font-size:11px;display:grid;place-items:center;font-family:var(--ui);font-weight:900}
+.slot .pv{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-family:var(--ui);font-weight:800;color:var(--ok);background:#000b;padding:0 5px;border-radius:5px;z-index:2}
+.slot .pv.bad{color:var(--red)}
+.slot.used{opacity:.45}
+.sl-l{font-size:12px;color:var(--mute);flex:1;min-width:0}
+/* dés */
+.die{width:40px;height:40px;border-radius:9px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:6px;gap:1px;box-shadow:inset 0 -3px 0 #0003,0 3px 6px #0007;flex:none}
+.die.dP{background:linear-gradient(145deg,#5a9cff,#2c6fd6)}
+.die.dC{background:linear-gradient(145deg,#ffa652,#e2751a)}
+.die span{border-radius:50%;background:#fff;align-self:center;justify-self:center;width:7px;height:7px;opacity:0}
+.die span.on{opacity:1}
+.die.adj{box-shadow:0 0 0 3px #fff,0 3px 6px #0007}
+.die.rolling{animation:roll .5s cubic-bezier(.3,1.5,.5,1)}
+@keyframes roll{0%{transform:rotate(-200deg) scale(.4) translateY(-30px)}100%{transform:none}}
+.slot .die{width:38px;height:38px;padding:5px}
+.fly{position:fixed;z-index:80;pointer-events:none;transition:transform .45s cubic-bezier(.4,0,.2,1.15)}
+/* axe */
+.axw{display:flex;align-items:center;justify-content:center;gap:8px}
+.axsvg{width:min(170px,40vw);height:auto;max-width:100%}
+#axPlane{transition:transform .9s cubic-bezier(.4,1.6,.5,1);transform-origin:0 0}
+#windN{transition:transform .7s cubic-bezier(.4,1.6,.5,1);transform-origin:0 0}
+/* vitesse */
+.spd{position:relative;display:grid;grid-template-columns:repeat(11,1fr);gap:2px;padding-top:14px}
+.spd div{height:26px;border-radius:4px;display:grid;place-items:center;font-family:var(--title);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;background:#ffffff0c;color:var(--mute);transition:background .4s}
+.spd div.z1{background:#3d86f233;color:#cfe0ff}
+.spd div.z2{background:#f28c2c33;color:#ffe2c6}
+.spd div.ok{background:#3fe08c33;color:#c9ffe0}
+.spd div.ko{background:#ff5b5f22;color:#ffb3b5}
+.spd div.hit{box-shadow:0 0 0 2px #fff;color:#fff}
+.mk{position:absolute;top:0;width:12px;margin-left:-6px;height:44px;transition:left .7s cubic-bezier(.4,1.5,.5,1);pointer-events:none}
+.mk::before{content:"";position:absolute;left:3px;top:0;border:6px solid transparent;border-top:10px solid currentColor;transform:translateX(-3px)}
+.mk::after{content:"";position:absolute;left:5px;top:10px;bottom:0;width:2px;background:currentColor}
+.mk.b{color:var(--pil)}.mk.o{color:var(--cop)}.mk.r{color:var(--red)}
+.legend{font-size:12px;color:var(--mute);display:flex;gap:10px;flex-wrap:wrap}
+.legend b{color:var(--fg)}
+.pair{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.toks{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.cup{width:22px;height:22px;transition:transform .3s,opacity .3s}
+.cup.off{opacity:.18}
+.cup.new{animation:pop2 .5s}
+@keyframes pop2{0%{transform:scale(0)}60%{transform:scale(1.4)}}
+.fuel{height:12px;border-radius:6px;background:#ffffff12;overflow:hidden;flex:1}
+.fuel i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--warn) 30%,var(--ok));transition:width .8s}
+.chrono{font-family:var(--title);font-size:26px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.chrono.low{color:var(--red);animation:blink .6s infinite}
+/* plateau de dés */
+.tray{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(#0e1521f0,#090d15);border-top:1px solid #3a4558;padding:10px max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));box-shadow:0 -10px 30px #000a}
+.trin{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.tdice{display:flex;gap:10px}
+.tdice button{background:none;border:0;padding:4px;border-radius:12px;transition:transform .15s}
+.tdice button.sel{background:#ffffff22;transform:translateY(-5px)}
+.tdice button.rs{background:#ffcf4a33;outline:2px solid var(--warn)}
+.tdice button.dead{opacity:.45}
+.tdice .die{width:46px;height:46px;padding:7px}
+.tdice .die span{width:8px;height:8px}
+.tctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.thint{font-size:13px;color:var(--mute);flex:1;min-width:160px}
+.thint b{color:var(--fg)}
+.cof{display:inline-flex;align-items:center;gap:4px;border:1px solid #ffffff30;border-radius:10px;padding:2px}
+.cof button{width:34px;height:34px;border-radius:8px;border:0;background:#ffffff18;color:#fff;font-size:20px;font-weight:800}
+.cof button:disabled{opacity:.3}
+.cof span{min-width:62px;text-align:center;font-size:12px;font-weight:700}
+/* modales et écrans */
+.mbox h2{font-family:var(--title)}
+.scl{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin:8px 0}
+.scc{text-align:left;border:2px solid #d9cba6;background:#fff9ec;border-radius:12px;padding:9px 11px;color:#2a2418;display:flex;flex-direction:column;gap:3px}
+.scc.on{border-color:#1b5f9e;background:#e6f0fb;box-shadow:0 0 0 2px #1b5f9e33}
+.scc b{font-family:var(--title);font-size:16px}
+.scc .st{color:#c08a12;letter-spacing:2px}
+.scc .tg{display:flex;gap:4px;flex-wrap:wrap}
+.scc .tg span,.mtag{font-size:11px;font-weight:800;background:#2a241812;border-radius:10px;padding:1px 7px}
+.scc .won{color:#1d8a4e;font-weight:800;font-size:12px}
+.kit{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0}
+.kit div{background:#fff;border:1px solid #e2d6b8;border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;font-size:13px;animation:kitin .45s backwards}
+.kit div b{font-size:13px}
+.kit div small{color:#6d6250;font-size:11.5px;line-height:1.3}
+.kit svg{width:96px;height:58px}
+@keyframes kitin{from{transform:translateY(12px) scale(.9);opacity:0}}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.cardx{border:2px solid #d9cba6;background:#fff;border-radius:10px;padding:8px;text-align:left;color:#2a2418}
+.cardx.on{border-color:#1d8a4e;background:#e8f7ee}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid #c9b98f;background:#f6efdc;border-radius:18px;padding:7px 12px;font-weight:700;color:#2a2418;font-size:14px}
+.chips button.on{background:#1b5f9e;color:#fff;border-color:#1b5f9e}
+.radio{background:#14202f;color:#e6edf7;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:14.5px}
+.radio p{margin:3px 0}
+.radio .h{font-family:var(--title);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#7fd8cc}
+.sit{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin:6px 0}
+.sit div{background:#efe6d0;border-radius:8px;padding:6px 8px;font-size:13px}
+.sit b{display:block;font-family:var(--title);font-size:16px}
+#cover{background:radial-gradient(circle at 50% 30%,#1d2c45,#070b12);color:var(--fg)}
+#cover .cv{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:420px}
+#cover .ph{font-family:var(--title);letter-spacing:.2em;color:var(--red);font-size:14px}
+.prow input[type=text]{font-size:16px}
+@media (max-width:820px){
+  .strips{grid-template-columns:1fr}
+  .panel{grid-template-columns:1fr 1fr;grid-template-areas:"m m" "p c";padding:8px;gap:8px}
+  .pcen{grid-area:m}.pcol.pil{grid-area:p}.pcol.cop{grid-area:c}
+  .ac,.al{height:64px}
+  .tok{width:14px;height:14px}
+  #plane{width:28px;height:28px;margin-left:-14px;bottom:16px}
+  .grp{padding:7px}
+  .slot{width:42px;height:42px}
+  .slot .die{width:34px;height:34px;padding:4px}
+  .die span{width:6px;height:6px}
+  .tdice{gap:4px}
+  .tdice .die{width:42px;height:42px;padding:6px}
+  .thint{order:3;flex-basis:100%}
+  .ck{padding-bottom:170px}
+}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
+</style></head><body>
+<header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Approche finale<small>dans l’esprit de Sky Team</small></h1>
+<div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouveau vol</button></div></header>
+<div class="status" id="status"></div>
+<main class="ck">
+  <section class="strips">
+    <div class="strip"><div class="slab">Approche <b id="apName"></b></div><div class="appr" id="appr"></div></div>
+    <div class="strip"><div class="slab">Altitude <b id="altTxt"></b></div><div class="alti" id="alti"></div></div>
+  </section>
+  <section class="panel" id="panel"><div class="pcol pil" id="colP"></div><div class="pcen" id="colM"></div><div class="pcol cop" id="colC"></div></section>
+</main>
+<section class="tray" id="tray"><div class="trin" id="trin"></div></section>
+<div id="cover" hidden></div>
+<div id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SVGNS='http://www.w3.org/2000/svg';
+function sel(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
+function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
+function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
+function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
+function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
+function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
+  c.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${(Math.random()-.5)*220}px,${innerHeight+40}px) rotate(${Math.random()*720}deg)`}],{duration:2200+Math.random()*1800,delay:Math.random()*700,easing:'ease-in'}).finished.then(()=>c.remove()); } }
+function store(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+/* sons */
+let MUTED=!!load('salle-mute'), AC=null, NOISE=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;} } if(AC.state==='suspended') AC.resume().catch(()=>{}); return AC; }
+function tn(a,t,f,d,type,v,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);}
+function nz(a,t,d,v,type,f){ if(!NOISE){NOISE=a.createBuffer(1,a.sampleRate,a.sampleRate);const c=NOISE.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;} const s=a.createBufferSource();s.buffer=NOISE;const fl=a.createBiquadFilter();fl.type=type;fl.frequency.value=f;const g=a.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl).connect(g).connect(a.destination);s.start(t);s.stop(t+d+.02); }
+function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') return; const t=a.currentTime+.01;
+  switch(n){
+    case 'click': tn(a,t,900,.06,'triangle',.06); break;
+    case 'move': nz(a,t,.08,.25,'bandpass',900); tn(a,t,220,.08,'sine',.08); break;
+    case 'capture': nz(a,t,.12,.35,'bandpass',1400); tn(a,t,520,.12,'triangle',.1,260); break;
+    case 'card': nz(a,t,.1,.22,'bandpass',2800); break;
+    case 'flip': nz(a,t,.06,.25,'highpass',3000); tn(a,t,1200,.05,'triangle',.04); break;
+    case 'dice': for(let k=0;k<6;k++) nz(a,t+k*.07+Math.random()*.03,.05,.3,'bandpass',1800+Math.random()*1200); break;
+    case 'ding': tn(a,t,1320,.5,'sine',.1); tn(a,t+.07,1760,.4,'sine',.06); break;
+    case 'error': tn(a,t,220,.25,'square',.05,160); break;
+    case 'win': [523,659,784,1046].forEach((f,k)=>tn(a,t+k*.12,f,.4,'triangle',.11)); break;
+    case 'lose': [392,330,262].forEach((f,k)=>tn(a,t+k*.16,f,.45,'triangle',.1)); break;
+    case 'splash': nz(a,t,.5,.3,'lowpass',800); break;
+    case 'boom': nz(a,t,.7,.6,'lowpass',300); tn(a,t,90,.6,'sawtooth',.15,40); break;
+    case 'pop': tn(a,t,600,.08,'sine',.1,900); break;
+  } }
+function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
+document.addEventListener('click',e=>{
+  if(!MUTED) ac();
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
+  const t=e.target.closest('[data-c]'); if(!t) return;
+  switch(t.dataset.c){
+    case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
+    case 'help': GAME.help(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
+  }
+});
+addEventListener('DOMContentLoaded',updSnd);
+
+
+/* ===== moteur ===== */
+const IS_NODE=typeof window==='undefined';
+/* --- Approche finale : moteur pur (dans l'esprit de Sky Team) --- */
+const ALTS=[6000,5000,4000,3000,2000,1000,0];
+const FINAL=6;
+const GEAR_V=[[1,2],[3,4],[5,6]];
+const FLAP_V=[[1,2],[2,3],[4,5],[5,6]];
+const BRAKE_V=[2,4,6];
+const BRAKE_THR=[2,3,5,7];          // la somme des moteurs doit être STRICTEMENT inférieure
+const ICE_THR=[2,3,4,5,6];
+const WIND=[0,1,2,3,2,1,0,-1,-2,-3,-2,-1];
+const MODS={
+  wind:{nom:'Vent',desc:"Après chaque résolution de l'axe, la rose des vents tourne d'autant de crans que l'inclinaison. La valeur du vent s'ajoute à la vitesse des moteurs (y compris à l'atterrissage)."},
+  turns:{nom:'Virages',desc:"Certaines cases d'approche imposent une inclinaison précise : quand l'avion entre dans la case, l'axe doit être dans la plage indiquée, sinon c'est la perte de contrôle."},
+  traffic:{nom:'Trafic',desc:"Au début d'un tour passé sur une case marquée d'un dé noir, on lance ce dé : un nouvel avion apparaît autant de cases devant vous."},
+  ice:{nom:'Freins givrés',desc:"Les freins classiques sont remplacés : chaque niveau (2, 3, 4 puis 5) demande DEUX dés de cette valeur, un du pilote et un du copilote, posés dans le même tour. Les quatre niveaux sont obligatoires."},
+  kero:{nom:'Kérosène',desc:"Jauge à 20. Un dé posé sur la case kérosène coûte sa valeur. Si personne ne l'utilise pendant le tour, la jauge perd 6. Sous zéro : panne sèche."},
+  chrono:{nom:'Temps réel',desc:"Une fois les dés lancés, l'équipage n'a que le temps du sablier pour poser ses dés. Au bout du temps, les cases Axe et Moteurs manquantes sont remplies avec les dés restants, les autres dés sont perdus."}
+};
+const CARDS={
+  meca:{nom:'Mécanicien de bord',desc:'Une relance supplémentaire au décollage.'},
+  thermos:{nom:'Thermos',desc:'Vous décollez avec 2 cafés.'},
+  tour:{nom:'Contrôleur aérien',desc:"Une fois : retirez un avion de n'importe quelle case."},
+  trim:{nom:"Correction d'assiette",desc:"Une fois : ramenez l'axe d'un cran vers l'horizontale."}
+};
+/* Cases : p = avions, t = dé de trafic, turn = [min,max] d'axe autorisé (+ = côté copilote) */
+const SCEN=[
+ {id:'lyon',nom:'Lyon–Saint-Exupéry',sous:"Vol d'initiation",st:0,mods:[],cards:0,
+  desc:"Ciel dégagé sur le Rhône, un trafic modéré : idéal pour apprendre la communication et le silence.",
+  track:[{p:0},{p:1},{p:1},{p:2},{p:1},{p:1},{p:0}],rr:[0,3]},
+ {id:'nice',nom:'Nice–Côte d’Azur',sous:'Vent marin',st:1,mods:['wind'],cards:0,
+  desc:"Approche par la mer, rafales changeantes : chaque inclinaison fait tourner le vent.",
+  track:[{p:0},{p:1},{p:1},{p:2},{p:1},{p:1},{p:0}],rr:[0,3]},
+ {id:'geneve',nom:'Genève',sous:'Virages alpins',st:2,mods:['turns'],cards:1,
+  desc:"La vallée impose un virage à droite puis à gauche avant l'alignement sur la piste.",
+  track:[{p:0},{p:1},{p:1,turn:[1,2]},{p:1},{p:1,turn:[-2,-1]},{p:1},{p:0,turn:[-1,1]},{p:0}],rr:[0,2,4]},
+ {id:'cdg',nom:'Paris–Charles-de-Gaulle',sous:'Trafic dense',st:2,mods:['traffic'],cards:1,
+  desc:"Le ciel parisien ne désemplit pas : de nouveaux avions surgissent sur votre trajectoire.",
+  track:[{p:0},{p:0,t:1},{p:1},{p:1,t:1},{p:1},{p:1,t:1},{p:1},{p:0}],rr:[0,2,4]},
+ {id:'reyk',nom:'Reykjavik',sous:'Piste gelée',st:2,mods:['ice'],cards:1,
+  desc:"Verglas sur la piste : les freins exigent une coordination parfaite des deux pilotes.",
+  track:[{p:0},{p:0},{p:1},{p:1},{p:2},{p:1},{p:1},{p:0}],rr:[0,2,4]},
+ {id:'lisbonne',nom:'Lisbonne',sous:'Réservoir à sec',st:2,mods:['kero'],cards:1,
+  desc:"Long courrier depuis l'Atlantique, la jauge est déjà basse : chaque litre compte.",
+  track:[{p:0},{p:1},{p:1},{p:1},{p:2},{p:1},{p:1},{p:0}],rr:[0,3],fuel:20},
+ {id:'tokyo',nom:'Tokyo–Haneda',sous:'Créneau minuté',st:3,mods:['traffic','chrono'],cards:2,
+  desc:"Créneau d'atterrissage serré : 60 secondes par tour et un trafic imprévisible.",
+  track:[{p:0},{p:0},{p:1,t:1},{p:1},{p:1,t:1},{p:1},{p:1},{p:0}],rr:[0,2,4],chrono:60},
+ {id:'ushuaia',nom:'Ushuaïa',sous:'Bout du monde',st:4,mods:['wind','turns','kero'],cards:2,
+  desc:"Vents du cap Horn, virage serré entre les montagnes et carburant compté : l'atterrissage héroïque.",
+  track:[{p:0},{p:0},{p:1,turn:[0,2]},{p:1},{p:1},{p:2,turn:[-2,0]},{p:1},{p:0}],rr:[0,2,4],fuel:22}
+];
+const scen=id=>SCEN.find(s=>s.id===id)||SCEN[0];
+const OWN={P:['axP','enP','raP','gr0','gr1','gr2','br0','br1','br2','iP0','iP1','iP2','iP3'],C:['axC','enC','raC0','raC1','fl0','fl1','fl2','fl3','iC0','iC1','iC2','iC3'],B:['co0','co1','co2','ke']};
+const other=w=>w==='P'?'C':'P';
+const has=(S,m)=>S.mods.includes(m);
+function slotsOf(S,w){ return OWN[w].concat(OWN.B).filter(s=>{ if(s==='ke') return has(S,'kero'); if(/^br/.test(s)) return !has(S,'ice'); if(/^i[PC]/.test(s)) return has(S,'ice'); return true; }); }
+function owner(s){ return OWN.P.includes(s)?'P':OWN.C.includes(s)?'C':'B'; }
+function newGame(o){
+  const sc=scen(o.sc); const S={sc:sc.id,mods:sc.mods.slice(),mode:o.mode||'ia',human:o.human||'P',level:o.level||'confirme',names:o.names||{P:'Pilote',C:'Copilote'},
+    track:sc.track.map(x=>({p:x.p||0,t:x.t||0,turn:x.turn||null})),L:sc.track.length-1,rr:sc.rr.slice(),
+    round:0,pos:0,axis:0,gear:[false,false,false],flaps:0,brakes:0,ice:0,coffee:0,rerolls:0,fuel:sc.fuel||20,wind:0,
+    cards:(o.cards||[]).slice(),used:{},dice:{P:[],C:[]},sl:{},turn:'P',phase:'brief',over:null,log:[],intents:[],offer:{P:false,C:false},chrono:sc.chrono||60,engDone:false,axDone:false,keroUsed:false,lastMove:0,lastSum:null};
+  if(S.cards.includes('meca')) S.rerolls++;
+  if(S.cards.includes('thermos')) S.coffee=2;
+  return S;
+}
+const blueThr=S=>5+S.gear.filter(Boolean).length;
+const orangeThr=S=>9+S.flaps;
+const brakeThr=S=>has(S,'ice')?ICE_THR[S.ice]:BRAKE_THR[S.brakes];
+const windVal=S=>has(S,'wind')?WIND[((S.wind%12)+12)%12]:0;
+const firstOf=S=>S.round%2===0?'P':'C';
+function startRound(S,rng){ rng=rng||Math.random; const ev=[];
+  S.sl={}; S.engDone=false; S.axDone=false; S.keroUsed=false; S.offer={P:false,C:false}; S.dice={P:[],C:[]}; S.phase='brief'; S.turn=firstOf(S); S.intents=[]; S.lastMove=0;
+  if(S.rr.includes(S.round)){ S.rerolls++; S.rr=S.rr.filter(r=>r!==S.round); ev.push({t:'rerollGain'}); }
+  const sp=S.track[S.pos];
+  if(has(S,'traffic')&&sp.t&&S.round<FINAL){ for(let k=0;k<sp.t;k++){ const r=1+Math.floor(rng()*6), j=S.pos+r; if(j<=S.L){ S.track[j].p++; ev.push({t:'traffic',r,j}); } else ev.push({t:'traffic',r,j:-1}); } }
+  return ev; }
+function rollDice(S,rng){ rng=rng||Math.random; for(const w of ['P','C']) S.dice[w]=Array.from({length:4},()=>({v:1+Math.floor(rng()*6),used:false})); S.phase='play'; }
+const left=(S,w)=>S.dice[w].filter(d=>!d.used).length;
+function mandOpen(S,w){ return [w==='P'?'axP':'axC',w==='P'?'enP':'enC'].filter(s=>!S.sl[s]); }
+function valueOK(S,s,v){
+  if(/^gr/.test(s)) return GEAR_V[+s[2]].includes(v);
+  if(/^fl/.test(s)){ const k=+s[2]; return k<=S.flaps&&FLAP_V[k].includes(v); }
+  if(/^br/.test(s)){ const k=+s[2]; return k<=S.brakes&&v===BRAKE_V[k]; }
+  if(/^i[PC]/.test(s)){ const k=+s[2]; return k===S.ice&&v===k+2; }
+  return true; }
+function canPlace(S,w,v,s){
+  if(S.over||S.phase!=='play'||S.turn!==w) return false;
+  if(S.sl[s]) return false; if(!slotsOf(S,w).includes(s)) return false;
+  if(v<1||v>6||!valueOK(S,s,v)) return false;
+  const m=mandOpen(S,w); if(left(S,w)<=m.length&&!m.includes(s)) return false;
+  return true; }
+function validSlots(S,w,v){ return slotsOf(S,w).filter(s=>canPlace(S,w,v,s)); }
+/* simulation des moteurs : renvoie {crash, move} sans modifier l'état */
+function engineOutcome(S,sum,axisOverride){ const A=axisOverride==null?S.axis:axisOverride;
+  if(S.round>=FINAL) return sum<brakeThr(S)?{crash:null,move:0}:{crash:'freins',move:0};
+  const m=sum<blueThr(S)?0:sum<orangeThr(S)?1:2;
+  for(let k=0;k<m;k++){ const a=S.pos+k, b=a+1;
+    if(a>=S.L||b>S.L) return {crash:'depasse',move:m};
+    if(S.track[a].p>0) return {crash:'collision',move:m};
+    const tr=has(S,'turns')&&S.track[b].turn; if(tr&&(A<tr[0]||A>tr[1])) return {crash:'virage',move:m}; }
+  return {crash:null,move:m}; }
+const REASONS={vrille:"L'avion part en vrille : l'inclinaison a atteint la zone rouge.",collision:"Collision ! Un avion occupait encore votre case quand vous avez avancé.",depasse:"Vous avez survolé l'aéroport : trop de vitesse en bout d'approche.",virage:"Virage manqué : l'inclinaison n'était pas dans la plage imposée.",freins:"Freinage insuffisant : la vitesse finale dépassait la puissance des freins.",tard:"Trop tard : l'altitude est à zéro mais la piste n'est pas atteinte.",carburant:"Panne sèche : la jauge de kérosène est vide.",final:"Atterrissage raté."};
+function crash(S,r,ev){ S.over={win:false,reason:r,text:REASONS[r]}; S.phase='over'; ev.push({t:'crash',r}); }
+/* pose d'un dé : i = index du dé, adj = café dépensé (signé) */
+function place(S,w,i,s,adj){ adj=adj||0; const ev=[]; const d=S.dice[w][i];
+  if(!d||d.used) return null; const v=d.v+adj;
+  if(Math.abs(adj)>S.coffee||!canPlace(S,w,v,s)) return null;
+  S.coffee-=Math.abs(adj); d.used=true; S.sl[s]={w,v,i}; S.offer[w]=false; ev.push({t:'place',w,s,v,adj});
+  resolve(S,w,s,v,ev);
+  if(!S.over){ const o=other(w); S.turn=left(S,o)?o:w; if(!left(S,'P')&&!left(S,'C')) endRound(S,ev); }
+  return ev; }
+function resolve(S,w,s,v,ev){
+  if(s==='axP'||s==='axC'){ if(S.sl.axP&&S.sl.axC){ const from=S.axis; S.axis+=S.sl.axC.v-S.sl.axP.v; S.axDone=true; ev.push({t:'axis',from,to:S.axis});
+      if(Math.abs(S.axis)>=3){ crash(S,'vrille',ev); return; }
+      if(has(S,'wind')&&S.axis){ const f=windVal(S); S.wind+=S.axis; ev.push({t:'wind',from:f,to:windVal(S)}); } } return; }
+  if(s==='enP'||s==='enC'){ if(S.sl.enP&&S.sl.enC){ const sum=S.sl.enP.v+S.sl.enC.v+windVal(S); S.lastSum=sum; S.engDone=true; const o=engineOutcome(S,sum); ev.push({t:'engines',sum,move:o.move,final:S.round>=FINAL});
+      if(o.crash){ if(o.crash!=='freins'){ S.pos=Math.min(S.L,S.pos+o.move); } crash(S,o.crash,ev); return; }
+      if(o.move){ const from=S.pos; S.pos+=o.move; S.lastMove=o.move; ev.push({t:'move',from,to:S.pos}); } } return; }
+  if(/^ra/.test(s)){ const j=S.pos+v-1; if(j<=S.L&&S.track[j].p>0){ S.track[j].p--; ev.push({t:'radio',j,hit:true}); } else ev.push({t:'radio',j,hit:false}); return; }
+  if(/^gr/.test(s)){ const k=+s[2]; if(!S.gear[k]){ S.gear[k]=true; ev.push({t:'gear',k}); } return; }
+  if(/^fl/.test(s)){ const k=+s[2]; if(k===S.flaps){ S.flaps++; ev.push({t:'flap',k}); } return; }
+  if(/^br/.test(s)){ const k=+s[2]; if(k===S.brakes){ S.brakes++; ev.push({t:'brake',k}); } return; }
+  if(/^co/.test(s)){ if(S.coffee<3){ S.coffee++; ev.push({t:'coffee'}); } return; }
+  if(s==='ke'){ S.fuel-=v; S.keroUsed=true; ev.push({t:'fuel',cost:v,fuel:S.fuel}); if(S.fuel<0) crash(S,'carburant',ev); return; }
+  if(/^i[PC]/.test(s)){ const k=+s[2]; if(S.sl['iP'+k]&&S.sl['iC'+k]&&S.sl['iP'+k].v===k+2&&S.sl['iC'+k].v===k+2){ S.ice++; ev.push({t:'ice',k}); } return; }
+}
+function endRound(S,ev){ ev.push({t:'endRound'});
+  if(has(S,'kero')&&!S.keroUsed){ S.fuel-=6; ev.push({t:'fuel',cost:6,fuel:S.fuel,auto:true}); if(S.fuel<0){ crash(S,'carburant',ev); return; } }
+  if(S.round>=FINAL){ const f=landingChecks(S); if(f.length){ S.over={win:false,reason:'final',text:'Atterrissage raté : '+f.join(', ')+'.',fails:f}; S.phase='over'; ev.push({t:'crash',r:'final'}); } else { S.over={win:true,text:'Atterrissage parfait à '+scen(S.sc).nom+' !'}; S.phase='over'; ev.push({t:'win'}); } return; }
+  S.round++; S.phase='brief';
+  if(S.round===FINAL&&S.pos!==S.L){ crash(S,'tard',ev); return; }
+  ev.push({t:'newRound',round:S.round}); }
+function landingChecks(S){ const f=[];
+  const pl=S.track.reduce((a,x)=>a+x.p,0); if(pl) f.push(pl+' avion'+(pl>1?'s':'')+' encore sur la trajectoire');
+  const g=S.gear.filter(Boolean).length; if(g<3) f.push('train incomplet ('+g+'/3)');
+  if(S.flaps<4) f.push('volets incomplets ('+S.flaps+'/4)');
+  if(has(S,'ice')&&S.ice<4) f.push('freins givrés incomplets ('+S.ice+'/4)');
+  if(S.axis!==0) f.push('avion pas à l’horizontale');
+  return f; }
+function timeUp(S){ const ev=[{t:'timeup'}]; if(S.phase!=='play'||S.over) return ev;
+  for(const w of ['P','C']){ for(const ms of mandOpen(S,w)){ const i=S.dice[w].findIndex(d=>!d.used); if(i<0) break; const d=S.dice[w][i]; d.used=true; S.sl[ms]={w,v:d.v,i}; ev.push({t:'place',w,s:ms,v:d.v,adj:0,auto:true}); resolve(S,w,ms,d.v,ev); if(S.over) return ev; } }
+  S.dice.P.concat(S.dice.C).forEach(d=>d.used=true); endRound(S,ev); return ev; }
+function reroll(S,w,idxs,rng,free){ rng=rng||Math.random; if(!free){ if(S.rerolls<1) return false; S.rerolls--; S.offer[other(w)]=true; } else S.offer[w]=false;
+  idxs.forEach(i=>{ const d=S.dice[w][i]; if(d&&!d.used) d.v=1+Math.floor(rng()*6); }); return true; }
+function useCard(S,c,arg){ if(!S.cards.includes(c)||S.used[c]) return false;
+  if(c==='tour'){ if(!(S.track[arg]&&S.track[arg].p>0)) return false; S.track[arg].p--; }
+  else if(c==='trim'){ if(!S.axis) return false; S.axis-=Math.sign(S.axis); }
+  else return false; S.used[c]=true; return true; }
+/* ===== IA ===== */
+function desired(S){ if(S.round>=FINAL) return 0; const rem=S.L-S.pos, rl=FINAL-S.round; if(rem<=0) return 0;
+  let d=rem/rl; if(rem>=2*rl) d=2; if(S.track[S.pos].p>0) d=Math.min(d,0.2);
+  if(S.intents.includes('fast')) d+=.6; if(S.intents.includes('slow')) d-=.6; return Math.max(0,Math.min(2,d)); }
+function mvScore(S,o,d){ if(o.crash) return -1000; let sc=50-22*Math.abs(o.move-d);
+  if(S.round<FINAL){ const dst=S.pos+o.move; sc-=6*(S.track[dst]?S.track[dst].p:0); } return sc; }
+function slotScore(S,w,v,s){ const pw=other(w), I=S.intents, rl=Math.max(1,FINAL-S.round);
+  if(s==='axP'||s==='axC'){ const ps=S.sl[w==='P'?'axC':'axP'];
+    if(ps){ const n=S.axis+(w==='C'?v-ps.v:ps.v-v); return Math.abs(n)>=3?-1000:(n===0?95:60-24*Math.abs(n))-(Math.abs(n)>=2?30:0); }
+    let good=0; for(let q=1;q<=6;q++){ const n=S.axis+(w==='C'?v-q:q-v); if(Math.abs(n)<=1&&!(Math.abs(n)===1&&Math.abs(S.axis)===1&&Math.sign(n)===Math.sign(S.axis))) good++; }
+    let sc=10+45*good/6-3*Math.abs(v-3.5)+(left(S,w)===4?40:left(S,w)===3&&left(S,pw)>=3?15:0); if(I.includes('axisYou')) sc+=25; if(I.includes('axis1')) sc-=40; return sc; }
+  if(s==='enP'||s==='enC'){ const ps=S.sl[w==='P'?'enC':'enP'], d=desired(S), wv=windVal(S);
+    const axisNow=S.axDone?S.axis:S.axis;
+    if(ps) return mvScore(S,engineOutcome(S,ps.v+v+wv,axisNow),d)+(S.round>=FINAL?10:0);
+    let qs=[1,2,3,4,5,6]; if(I.includes('engHigh')) qs=[4,5,6]; if(I.includes('engLow')) qs=[1,2,3];
+    let tot=0; qs.forEach(q=>{ const o=engineOutcome(S,q+v+wv,axisNow); tot+=o.crash?0:Math.max(0,1-Math.abs(o.move-d)); });
+    return 4+30*tot/qs.length; }
+  if(/^ra/.test(s)){ const j=S.pos+v-1; let sc;
+    const dist=j-S.pos; if(j<=S.L&&S.track[j].p>0) sc=[82,60,42,28,18,14,12][dist]||10; else sc=0;
+    if(I.includes('radioYou')) sc+=sc>0?20:0; if(I.includes('radioMe')) sc*=.4; return sc; }
+  if(/^gr/.test(s)){ const k=+s[2]; if(S.gear[k]) return 1; const lft=S.gear.filter(x=>!x).length; return 22+12*lft/rl+(I.includes('gear')?15:0); }
+  if(/^fl/.test(s)){ const k=+s[2]; if(k<S.flaps) return 1; return 22+12*(4-S.flaps)/rl+(I.includes('gear')?15:0); }
+  if(/^br/.test(s)){ const k=+s[2]; if(k<S.brakes) return 1; return 16+(S.round>=3?18:0)+(S.brakes===0?10:0)+(I.includes('brakes')?15:0); }
+  if(/^co/.test(s)) return S.coffee<3?11+(I.includes('coffee')?18:0):0.5;
+  if(s==='ke') return S.keroUsed?-50:30-5*v;
+  if(/^i[PC]/.test(s)){ const k=+s[2], ps=S.sl[(w==='P'?'iC':'iP')+k]; return ps?70:18+(S.round>=2?10:0); }
+  return 0; }
+function aiChoose(S,w,rng){ rng=rng||Math.random; const lv=S.level, noise=lv==='debutant'?28:lv==='confirme'?7:0;
+  const dice=S.dice[w]; let best=null;
+  const adjs=lv==='debutant'?[0]:[0,-1,1,-2,2].filter(a=>Math.abs(a)<=S.coffee);
+  dice.forEach((d,i)=>{ if(d.used) return; adjs.forEach(a=>{ const v=d.v+a; if(v<1||v>6) return;
+    validSlots(S,w,v).forEach(s=>{ let sc=slotScore(S,w,v,s)-9*Math.abs(a)+(rng()-.5)*noise;
+      if(lv!=='debutant'){ // anticipation : garder de bons dés pour Axe / Moteurs
+        const rest=dice.filter((x,k)=>!x.used&&k!==i), mo=mandOpen(S,w).filter(x=>x!==s);
+        mo.forEach(ms=>{ let b=-60; rest.forEach(x=>{ b=Math.max(b,slotScore(S,w,x.v,ms)); }); sc+=0.6*b; }); }
+      if(!best||sc>best.sc) best={i,s,adj:a,sc}; }); }); });
+  if(best&&(S.rerolls>0||S.offer[w])&&lv!=='debutant'&&best.sc<12&&left(S,w)>=2){
+    const idx=[]; dice.forEach((d,i)=>{ if(d.used) return; let b=-1e9; validSlots(S,w,d.v).forEach(s=>{ b=Math.max(b,slotScore(S,w,d.v,s)); }); if(b<15) idx.push(i); });
+    if(idx.length) return {reroll:idx,free:!!S.offer[w]}; }
+  return best; }
+function aiBrief(S,w){ const out=[], d=desired(S), pv=S.track.slice(S.pos,S.pos+3);
+  if(S.round>=FINAL){ out.push("Dernier tour : on freine, vitesse sous "+brakeThr(S)+" et on remet l’avion à plat."); return out; }
+  out.push(d<0.6?"Je propose qu’on n’avance pas ce tour.":d<1.4?"Je vise une case d’avance ce tour.":"Il faut accélérer : visons deux cases.");
+  if(pv[0]&&pv[0].p) out.push("Un avion est dans notre case : la radio d’abord !");
+  else if(pv[1]&&pv[1].p) out.push("Avion juste devant : je surveille la radio.");
+  if(S.axis) out.push("On penche côté "+(S.axis>0?'copilote':'pilote')+" : à l’axe, "+(S.axis>0?'le pilote':'le copilote')+" doit jouer plus fort.");
+  if(w==='P'){ const g=S.gear.filter(x=>!x).length; if(g) out.push("Je sors le train dès que mes dés le permettent ("+g+" restant"+(g>1?'s':'')+")."); else if(S.brakes<3&&!has(S,'ice')) out.push("Train sorti : je m’occupe des freins."); }
+  else { if(S.flaps<4) out.push("Je continue les volets ("+S.flaps+"/4)."); }
+  if(S.coffee<2) out.push("Je prendrai un café si un dé ne sert à rien.");
+  return out.slice(0,4); }
+const INTENTS=[
+ {k:'fast',t:'On accélère : visons 2 cases'},{k:'slow',t:'On ralentit : 0 ou 1 case'},
+ {k:'axis1',t:'Je pose l’axe en premier'},{k:'axisYou',t:'Pose l’axe en premier, je m’aligne'},
+ {k:'engHigh',t:'Mes moteurs seront forts'},{k:'engLow',t:'Mes moteurs seront faibles'},
+ {k:'radioYou',t:'Prends la radio'},{k:'radioMe',t:'Je gère la radio'},
+ {k:'coffee',t:'Fais le plein de café'},{k:'gear',t:'Priorité train / volets'},{k:'brakes',t:'Priorité aux freins'}];
+if(IS_NODE) module.exports={SCEN,MODS,CARDS,newGame,startRound,rollDice,place,canPlace,validSlots,reroll,aiChoose,aiBrief,engineOutcome,blueThr,orangeThr,brakeThr,windVal,useCard,left,FINAL,timeUp};
+
+else {
+/* ===== interface ===== */
+let S=null, BUSY=false, GEN=0, VIEW=null, SEL=-1, ADJ=0, RR=null, TIMER=null; const GAME=window.GAME={help,menu};
+const KEY='apf';
+const ROLE={P:'Pilote',C:'Copilote'};
+const COL={P:'#3d86f2',C:'#f28c2c'};
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+const ai=()=>S&&S.mode==='ia'?other(S.human):null;
+const isAI=w=>S&&S.mode==='ia'&&w===ai();
+const nm=w=>S.mode==='ia'?(w===S.human?'Toi':(w==='P'?'Pilote IA':'Copilote IA')):S.names[w];
+function dieHTML(v,w,cls){ return `<div class="die d${w} ${cls||''}">${Array.from({length:9},(_,k)=>`<span class="${PIPS[v].includes(k)?'on':''}"></span>`).join('')}</div>`; }
+const PLANE_TOK=`<svg viewBox="-12 -12 24 24" class="tok"><path d="M0-11 2-4 10 1 10 3 2 1 1 7 4 9 4 10 0 9-4 10-4 9-1 7-2 1-10 3-10 1-2-4Z" fill="#e8edf5" stroke="#0a0f18" stroke-width="1"/></svg>`;
+const CUP=on=>`<svg viewBox="0 0 24 24" class="cup ${on?'':'off'}"><path d="M4 9h13v5a6 6 0 0 1-6 6H10a6 6 0 0 1-6-6Z" fill="#c8874a"/><path d="M17 11h1.5a2.5 2.5 0 0 1 0 5H16" fill="none" stroke="#c8874a" stroke-width="2"/><path d="M8 3c0 2 2 2 2 4M12 2c0 2 2 2 2 4" stroke="#ddd" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`;
+const RRI=on=>`<svg viewBox="0 0 24 24" class="rr" style="opacity:${on?1:.2}"><circle cx="12" cy="12" r="10" fill="#2fb3a4"/><path d="M7 12a5 5 0 1 0 1.5-3.5M7 6v3h3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>`;
+const BIG_PLANE=`<svg id="plane" viewBox="-20 -20 40 40"><path d="M0-18 3-6 17 2 17 5 3 2 2 11 7 14 7 16 0 14-7 16-7 14-2 11-3 2-17 5-17 2-3-6Z" fill="#ffd34d" stroke="#3a2a00" stroke-width="1.3"/><circle cx="0" cy="-9" r="1.6" fill="#3a2a00"/></svg>`;
+/* ---------- construction du tableau ---------- */
+function slotBtn(s,label){ const o=owner(s); return `<button class="slot s${o}" data-s="${s}" aria-label="${esc(label)}"><span>${esc(label)}</span></button>`; }
+function build(){ const sc=scen(S.sc);
+  $('#apName').textContent=sc.nom;
+  $('#appr').innerHTML=S.track.map((x,j)=>`<div class="ac ${j===S.L?'apt':''}" data-j="${j}"><span class="ix">${j===S.L?'Piste':j===0?'Départ':j}</span><div class="pls"></div>${x.t&&has(S,'traffic')?`<span class="tdie">${x.t}</span>`:''}${x.turn&&has(S,'turns')?`<span class="trn" title="Virage : axe entre ${x.turn[0]} et ${x.turn[1]} pour entrer">${turnTxt(x.turn)}</span>`:''}</div>`).join('')+BIG_PLANE;
+  $('#alti').innerHTML=ALTS.map((a,k)=>`<div class="al" data-k="${k}"><span class="ft">${a?a/1000+'k':'0'}</span><span class="fp" style="background:${COL[k%2===0?'P':'C']}" title="${ROLE[k%2===0?'P':'C']} commence"></span><span class="rri"></span><small>${k===FINAL?'piste':'pieds'}</small></div>`).join('');
+  const hd=w=>`<div class="who-h ${w}" id="hd${w}"><span class="nm2">${esc(ROLE[w])} · ${esc(nm(w))}</span><span class="hid" id="hid${w}"></span></div>`;
+  $('#colP').innerHTML=hd('P')+`<div class="grp"><div class="gt">Radio</div><div class="row">${slotBtn('raP','radio')}<span class="sl-l">Dé = case visée (1 = votre case)</span></div></div>
+   <div class="grp"><div class="gt">Train <em id="grN"></em></div>${GEAR_V.map((v,k)=>`<div class="row"><i class="lt" id="lgr${k}"></i>${slotBtn('gr'+k,v.join('·'))}<span class="sl-l">+1 marqueur bleu</span></div>`).join('')}</div>
+   ${has(S,'ice')?'':`<div class="grp"><div class="gt">Freins <em id="brN"></em></div>${BRAKE_V.map((v,k)=>`<div class="row"><i class="lt" id="lbr${k}"></i>${slotBtn('br'+k,String(v))}<span class="sl-l">${k?'après le '+BRAKE_V[k-1]:'dans l’ordre'}</span></div>`).join('')}</div>`}`;
+  $('#colC').innerHTML=hd('C')+`<div class="grp"><div class="gt">Radio</div><div class="row">${slotBtn('raC0','radio')}${slotBtn('raC1','radio')}</div></div>
+   <div class="grp"><div class="gt">Volets <em id="flN"></em></div>${FLAP_V.map((v,k)=>`<div class="row"><i class="lt" id="lfl${k}"></i>${slotBtn('fl'+k,v.join('·'))}<span class="sl-l">${k?'dans l’ordre':'+1 marqueur orange'}</span></div>`).join('')}</div>`;
+  let m=`<div class="grp"><div class="gt">Axe <em id="axT"></em></div><div class="axw">${slotBtn('axP','axe')}
+    <svg class="axsvg" viewBox="-70 -62 140 92"><defs><clipPath id="axc"><circle r="52"/></clipPath></defs>
+     <g clip-path="url(#axc)"><rect x="-60" y="-60" width="120" height="60" fill="#2a5d8f"/><rect x="-60" y="0" width="120" height="60" fill="#5a3d22"/><line x1="-60" x2="60" y1="0" y2="0" stroke="#fff" stroke-width="1.5"/></g>
+     <circle r="52" fill="none" stroke="#0a0f18" stroke-width="4"/>
+     ${[-3,-2,-1,0,1,2,3].map(a=>{ const r=(a*20-90)*Math.PI/180, x1=Math.cos(r)*52, y1=Math.sin(r)*52, x2=Math.cos(r)*62, y2=Math.sin(r)*62; return Math.abs(a)===3?`<text x="${x2}" y="${y2+4}" fill="#ff5b5f" font-size="14" font-weight="800" text-anchor="middle">✕</text>`:`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${a?'#cfd8e6':'#3fe08c'}" stroke-width="${a?2:3}"/>`; }).join('')}
+     <g id="axPlane"><line x1="-40" x2="40" y1="0" y2="0" stroke="#ffd34d" stroke-width="5" stroke-linecap="round"/><circle r="7" fill="#ffd34d" stroke="#3a2a00" stroke-width="1.5"/><line x1="0" x2="0" y1="-7" y2="-46" stroke="#ffd34d" stroke-width="2.5"/><path d="M0-52-4-44 4-44Z" fill="#ffd34d"/></g>
+     <text x="-62" y="26" font-size="9" fill="#9cc2ff" font-weight="800">PILOTE</text><text x="62" y="26" font-size="9" fill="#ffc58f" font-weight="800" text-anchor="end">COPILOTE</text>
+    </svg>${slotBtn('axC','axe')}</div></div>
+   <div class="grp"><div class="gt">Moteurs <em id="enT"></em></div><div class="pair">${slotBtn('enP','gaz')}<div style="flex:1;min-width:0"><div class="spd" id="spd">${Array.from({length:11},(_,k)=>`<div>${k+2}</div>`).join('')}<i class="mk b" id="mkB" title="Marqueur aérodynamique bleu"></i><i class="mk o" id="mkO" title="Marqueur aérodynamique orange"></i><i class="mk r" id="mkR" title="Marqueur de freinage"></i></div></div>${slotBtn('enC','gaz')}</div>
+     <div class="legend" id="spdLeg"></div></div>
+   <div class="grp"><div class="gt">Concentration <em>café partagé</em></div><div class="pair"><div class="row">${slotBtn('co0','café')}${slotBtn('co1','café')}${slotBtn('co2','café')}</div><div class="toks" id="cups"></div></div><div class="pair"><span class="sl-l">Relances disponibles</span><div class="toks" id="rrs"></div></div></div>`;
+  if(has(S,'ice')) m+=`<div class="grp"><div class="gt">Freins givrés <em id="iceN"></em></div>${[0,1,2,3].map(k=>`<div class="pair">${slotBtn('iP'+k,String(k+2))}<i class="lt" id="lic${k}"></i><span class="sl-l" style="text-align:center">niveau ${k+2} : deux ${k+2}</span>${slotBtn('iC'+k,String(k+2))}</div>`).join('')}</div>`;
+  if(has(S,'kero')) m+=`<div class="grp"><div class="gt">Kérosène <em id="keT"></em></div><div class="pair">${slotBtn('ke','plein')}<div class="fuel"><i id="fuelB"></i></div></div><span class="sl-l">Coût = valeur du dé. Sinon −6 en fin de tour.</span></div>`;
+  if(has(S,'wind')) m+=`<div class="grp"><div class="gt">Vent <em id="wiT"></em></div><div class="pair"><svg viewBox="-30 -30 60 60" style="width:64px;height:64px"><circle r="27" fill="#0a0f18" stroke="#3a4558" stroke-width="2"/>${WIND.map((v,k)=>{const r=(k*30-90)*Math.PI/180;return `<text x="${Math.cos(r)*20}" y="${Math.sin(r)*20+3}" font-size="7" fill="${v>0?'#ffc58f':v<0?'#9cc2ff':'#cfd8e6'}" text-anchor="middle" font-weight="800">${v>0?'+'+v:v}</text>`;}).join('')}<g id="windN"><path d="M0-14 3 0-3 0Z" fill="#2fb3a4"/></g><circle r="3" fill="#2fb3a4"/></svg><span class="sl-l">La rose tourne de l’inclinaison après chaque axe. Sa valeur s’ajoute aux moteurs.</span></div></div>`;
+  if(has(S,'chrono')) m+=`<div class="grp"><div class="gt">Sablier</div><div class="chrono" id="chr">60</div></div>`;
+  $('#colM').innerHTML=m;
+}
+const turnTxt=t=>t[0]===t[1]?`↻ ${sg(t[0])}`:`↻ ${sg(t[0])}/${sg(t[1])}`;
+const sg=n=>n>0?'+'+n:String(n);
+/* ---------- rendu ---------- */
+function curW(){ return S.phase==='play'&&!S.over?S.turn:null; }
+function viewDice(){ return VIEW&&S.phase==='play'?VIEW:null; }
+function render(){ if(!S) return; const sc=scen(S.sc);
+  $$('#appr .ac').forEach(c=>{ const j=+c.dataset.j; c.classList.toggle('cur',j===S.pos); c.classList.toggle('past',j<S.pos);
+    const pl=c.querySelector('.pls'); const n=S.track[j].p; if(pl.children.length!==n) pl.innerHTML=PLANE_TOK.repeat(n); });
+  $('#plane').style.left=`calc(${(S.pos+.5)/(S.L+1)*100}% + ${(S.pos-(S.L/2))*0}px)`;
+  $$('#alti .al').forEach(c=>{ const k=+c.dataset.k; c.classList.toggle('cur',k===S.round); c.classList.toggle('past',k<S.round); c.querySelector('.rri').innerHTML=S.rr.includes(k)?RRI(1):''; });
+  $('#altTxt').textContent=`tour ${S.round+1}/7 · ${ALTS[S.round]} pieds`;
+  // panneau
+  $('#axPlane').style.transform=`rotate(${S.axis*20}deg)`;
+  $('#axT').textContent=S.axis?`incliné ${Math.abs(S.axis)} côté ${S.axis>0?'copilote':'pilote'}`:'à plat';
+  const bt=blueThr(S), ot=orangeThr(S), rt=brakeThr(S), fin=S.round>=FINAL, wv=windVal(S);
+  $$('#spd div').forEach((d,k)=>{ const n=k+2; d.className=fin?(n<rt?'ok':'ko'):(n<bt?'':n<ot?'z1':'z2'); if(S.lastSum===n&&S.engDone) d.classList.add('hit'); });
+  const pos=n=>`${Math.max(0,Math.min(11,n-2))/11*100}%`;
+  $('#mkB').style.left=pos(bt); $('#mkO').style.left=pos(ot); $('#mkR').style.left=pos(rt);
+  $('#enT').textContent=fin?'atterrissage : sous le rouge':(S.engDone?`vitesse ${S.lastSum} → +${S.lastMove}`:'');
+  $('#spdLeg').innerHTML=fin?`<span>Dernier tour : la somme doit rester <b>sous ${rt}</b>${wv?` (vent ${sg(wv)} compris)`:''}.</span>`:`<span><b>&lt;${bt}</b> : 0 case</span><span><b>${bt}–${ot-1}</b> : 1 case</span><span><b>≥${ot}</b> : 2 cases</span>${wv?`<span>vent <b>${sg(wv)}</b></span>`:''}<span>frein <b>&lt;${rt}</b></span>`;
+  GEAR_V.forEach((_,k)=>$('#lgr'+k).classList.toggle('on',S.gear[k])); $('#grN').textContent=S.gear.filter(Boolean).length+'/3';
+  FLAP_V.forEach((_,k)=>$('#lfl'+k).classList.toggle('on',k<S.flaps)); $('#flN').textContent=S.flaps+'/4';
+  if(!has(S,'ice')){ BRAKE_V.forEach((_,k)=>$('#lbr'+k).classList.toggle('on',k<S.brakes)); $('#brN').textContent=S.brakes+'/3'; }
+  else { [0,1,2,3].forEach(k=>$('#lic'+k).classList.toggle('on',k<S.ice)); $('#iceN').textContent=S.ice+'/4'; }
+  $('#cups').innerHTML=[0,1,2].map(k=>CUP(k<S.coffee)).join('');
+  $('#rrs').innerHTML=S.rerolls?Array.from({length:S.rerolls},()=>RRI(1)).join(''):'<span class="sl-l">aucune</span>';
+  if(has(S,'kero')){ $('#fuelB').style.width=Math.max(0,S.fuel)/(sc.fuel||20)*100+'%'; $('#keT').textContent=S.fuel+' / '+(sc.fuel||20); }
+  if(has(S,'wind')){ $('#windN').style.transform=`rotate(${S.wind*30}deg)`; $('#wiT').textContent=sg(wv); }
+  // cases
+  const w=curW(), vd=viewDice(); let vs=[], selV=null;
+  if(w&&vd===w&&!BUSY&&SEL>=0&&!RR){ selV=S.dice[w][SEL].v+ADJ; vs=validSlots(S,w,selV); }
+  const mand=w&&vd===w?(left(S,w)<=mandOpen(S,w).length?mandOpen(S,w):[]):[];
+  $$('.slot').forEach(b=>{ const s=b.dataset.s, f=S.sl[s];
+    b.classList.toggle('full',!!f); b.classList.toggle('valid',vs.includes(s)); b.classList.toggle('mand',mand.includes(s));
+    const used=/^(gr|fl|br)/.test(s)&&!f&&((s[0]==='g'&&S.gear[+s[2]])||(s[0]==='f'&&+s[2]<S.flaps)||(s[0]==='b'&&+s[2]<S.brakes));
+    b.classList.toggle('used',used);
+    let html=f?dieHTML(f.v,f.w):`<span>${esc(b.getAttribute('aria-label'))}</span>`;
+    if(vs.includes(s)){ const pv=preview(w,selV,s); if(pv) html+=`<span class="pv ${pv.bad?'bad':''}">${esc(pv.t)}</span>`; }
+    if(b.dataset.h!==html){ b.innerHTML=html; b.dataset.h=html; } });
+  ['P','C'].forEach(x=>{ const h=$('#hd'+x); h.classList.toggle('act',w===x); const n=S.phase==='play'?left(S,x):0; const hidden=vd!==x;
+    $('#hid'+x).innerHTML=hidden&&n?Array.from({length:n},()=>'<i></i>').join(''):''; });
+  renderStatus(); renderTray(); }
+function preview(w,v,s){
+  if(s==='axP'||s==='axC'){ const p=S.sl[w==='P'?'axC':'axP']; if(!p) return null; const n=S.axis+(w==='C'?v-p.v:p.v-v); return {t:Math.abs(n)>=3?'vrille !':n?`axe ${sg(n)}`:'à plat',bad:Math.abs(n)>=2}; }
+  if(s==='enP'||s==='enC'){ const p=S.sl[w==='P'?'enC':'enP']; if(!p) return null; const sum=p.v+v+windVal(S), o=engineOutcome(S,sum); return {t:o.crash?(o.crash==='freins'?`${sum} : trop vite`:'danger !'):S.round>=FINAL?`${sum} : ok`:`${sum} → +${o.move}`,bad:!!o.crash}; }
+  if(/^ra/.test(s)){ const j=S.pos+v-1; const cn=j===S.pos?'votre case':j===S.L?'piste':`case ${j}`; return j>S.L?{t:'hors piste',bad:true}:S.track[j].p?{t:`${cn} ✓`}:{t:`${cn} vide`,bad:true}; }
+  if(s==='ke') return {t:`−${v} L`};
+  return null; }
+function renderStatus(){ const st=$('#status'); if(!S){ st.innerHTML=''; return; }
+  const ph=S.over?`<span class="phase">${S.over.win?'Posé !':'Vol terminé'}</span>`:S.phase==='brief'?`<span class="phase"><i></i>Briefing · communication libre</span>`:`<span class="phase sil"><i></i>Silence radio</span>`;
+  let msg=''; const w=curW();
+  if(S.over) msg=S.over.text; else if(S.phase==='brief') msg='Discutez de la stratégie, sans parler des valeurs de dés.';
+  else if(w) msg=isAI(w)?`${ROLE[w]} (IA) réfléchit…`:`${ROLE[w]} · ${nm(w)} pose un dé.`;
+  st.style.setProperty('--pc',S.over?(S.over.win?'#1d8a4e':'#7a2a2a'):S.phase==='brief'?'#1f6f68':(w?(w==='P'?'#1d4f9e':'#a65612'):'#333'));
+  st.innerHTML=`${ph}<span class="msg">${esc(msg)}</span><span class="right">Tour ${S.round+1}/7</span>`; }
+function renderTray(){ const t=$('#trin'); const vd=viewDice();
+  if(!S||S.over||!vd){ t.innerHTML=S&&S.phase==='brief'&&!S.over?`<span class="thint">Briefing en cours. <b>Lancez les dés</b> quand l’équipage est prêt.</span><button class="btn pri" data-a="brief">Briefing</button>`:`<span class="thint">${S&&S.over?'Vol terminé.':''}</span>${S&&S.over?'<button class="btn pri" data-c="new">Nouveau vol</button>':''}`; return; }
+  const w=vd, my=S.turn===w&&!BUSY; const ds=S.dice[w];
+  const dice=ds.map((d,i)=>{ if(d.used) return ''; const v=i===SEL?d.v+ADJ:d.v; const dead=!RR&&!validSlots(S,w,v).length&&my;
+    return `<button data-d="${i}" class="${i===SEL&&!RR?'sel':''} ${RR&&RR.has(i)?'rs':''} ${dead?'dead':''}" aria-label="dé ${v}">${dieHTML(v,w,i===SEL&&ADJ?'adj':'')}</button>`; }).join('');
+  let hint, ctl='';
+  if(RR){ hint=`<b>Relance</b> : touche les dés à relancer.`; ctl=`<button class="btn" data-a="rrcancel">Annuler</button><button class="btn pri" data-a="rrgo" ${RR.size?'':'disabled'}>Relancer ${RR.size||''}</button>`; }
+  else if(!my){ hint=`Tes dés restent secrets. <b>${esc(ROLE[S.turn])}</b> joue.`; }
+  else { const m=mandOpen(S,w); hint=SEL<0?`Choisis un dé${left(S,w)<=m.length?' : <b>il doit aller sur '+m.map(x=>x[0]==='a'?'l’axe':'les moteurs').join(' et ')+'</b>':''}.`:`Touche une case verte. ${S.coffee?'Le café modifie le dé de ±1.':''}`;
+    if(SEL>=0&&S.coffee) ctl+=`<span class="cof"><button data-a="adj-" ${ds[SEL].v+ADJ<=1||(ADJ<=0&&-ADJ>=S.coffee)?'disabled':''}>−</button><span>café ${ADJ?(ADJ>0?'+':'')+ADJ:'0'}/${S.coffee}</span><button data-a="adj+" ${ds[SEL].v+ADJ>=6||(ADJ>=0&&ADJ>=S.coffee)?'disabled':''}>+</button></span>`;
+    if(S.offer[w]) ctl+=`<button class="btn" data-a="rr" style="border-color:var(--warn)">Relance offerte</button>`;
+    else if(S.rerolls) ctl+=`<button class="btn" data-a="rr">Relance (${S.rerolls})</button>`;
+    if(S.cards.includes('tour')&&!S.used.tour) ctl+=`<button class="btn" data-a="card-tour">Contrôleur aérien</button>`;
+    if(S.cards.includes('trim')&&!S.used.trim&&S.axis) ctl+=`<button class="btn" data-a="card-trim">Correction d’assiette</button>`; }
+  t.innerHTML=`<div class="tdice">${dice}</div><span class="thint">${hint}</span><div class="tctl">${ctl}</div>`; }
+/* ---------- animations ---------- */
+function flyDie(fromEl,toEl,v,w){ return new Promise(res=>{ if(!fromEl||!toEl||REDUCED){ res(); return; }
+  const a=fromEl.getBoundingClientRect(), b=toEl.getBoundingClientRect(); const f=document.createElement('div'); f.className='fly'; f.innerHTML=dieHTML(v,w);
+  f.style.left=a.left+a.width/2-20+'px'; f.style.top=a.top+a.height/2-20+'px'; document.body.appendChild(f);
+  requestAnimationFrame(()=>{ f.style.transform=`translate(${b.left+b.width/2-a.left-a.width/2}px,${b.top+b.height/2-a.top-a.height/2}px) rotate(360deg)`; });
+  setTimeout(()=>{ f.remove(); res(); },470); }); }
+function pulse(id){ const e=$('#'+id); if(!e) return; e.classList.remove('pulse'); void e.offsetWidth; e.classList.add('pulse'); }
+async function showEvents(ev,my){ for(const e of ev){ if(my!==GEN) return;
+  switch(e.t){
+    case 'axis': render(); sfx('move'); if(e.to!==e.from) toast(e.to?`Axe : incliné de ${Math.abs(e.to)} côté ${e.to>0?'copilote':'pilote'}`:'Axe : retour à l’horizontale'); await wait(900); break;
+    case 'wind': render(); toast(`Le vent tourne : ${sg(e.to)}`); await wait(600); break;
+    case 'engines': render(); sfx('dice'); if(!e.final) toast(`Vitesse ${e.sum} : ${e.move?'+'+e.move+' case'+(e.move>1?'s':''):'on reste sur place'}`); await wait(500); break;
+    case 'move': render(); sfx('splash'); await wait(850); break;
+    case 'radio': { const c=$(`#appr .ac[data-j="${e.j}"]`); if(e.hit&&c){ const tk=c.querySelector('.tok:last-child'); if(tk){ tk.classList.add('gone'); sfx('pop'); await wait(450); } } else toast(e.j>S.L?'Radio : hors de la piste':`Radio : aucun avion en case ${e.j}`); render(); break; }
+    case 'gear': render(); pulse('lgr'+e.k); sfx('ding'); toast('Train sorti : le marqueur bleu avance'); await wait(500); break;
+    case 'flap': render(); pulse('lfl'+e.k); sfx('ding'); toast('Volet sorti : le marqueur orange avance'); await wait(500); break;
+    case 'brake': render(); pulse('lbr'+e.k); sfx('ding'); toast('Frein armé : le marqueur rouge avance'); await wait(500); break;
+    case 'ice': render(); pulse('lic'+e.k); sfx('ding'); toast(`Freins givrés : niveau ${e.k+2} activé`); await wait(500); break;
+    case 'coffee': render(); const cs=$$('#cups .cup'); const c2=cs[S.coffee-1]; if(c2){ c2.classList.add('new'); } sfx('pop'); await wait(300); break;
+    case 'fuel': render(); if(e.auto) toast(`Kérosène : personne n’a fait le plein, −6 (reste ${e.fuel})`); sfx('click'); await wait(e.auto?900:300); break;
+    case 'crash': render(); $('#panel').classList.add('shake'); sfx('boom'); await wait(700); $('#panel').classList.remove('shake'); break;
+    case 'timeup': banner('Temps écoulé','Les dés manquants sont posés d’office','#7a2a2a'); sfx('error'); await wait(1200); break;
+    case 'place': if(e.auto){ render(); await wait(350); } break;
+    case 'endRound': stopTimer(); VIEW=S.mode==='ia'?S.human:null; render(); if(!S.over&&S.round<FINAL||S.phase==='over'){} banner('Fin du tour','Communication rétablie','#1f6f68'); sfx('ding'); await wait(1500); break;
+  } } }
+/* ---------- déroulement ---------- */
+async function beginRound(){ const my=GEN; const ev=startRound(S); VIEW=S.mode==='ia'?S.human:null; render(); save();
+  banner(S.round>=FINAL?'Approche finale':`Tour ${S.round+1}`,`${ALTS[S.round]} pieds`,'#1f6f68'); await wait(1200); if(my!==GEN) return;
+  for(const e of ev){ if(e.t==='rerollGain'){ toast('Jeton de relance récupéré'); sfx('pop'); await wait(700); }
+    if(e.t==='traffic'){ sfx('dice'); toast(e.j<0?`Trafic : dé noir ${e.r}, l’avion passe au-delà de la piste`:`Trafic : dé noir ${e.r}, un avion apparaît en case ${e.j}`); render(); await wait(1200); } }
+  if(my!==GEN) return; save(); briefing(); }
+let PICK=[];
+function briefing(){ if(!S||S.over) return; const a=ai(); PICK=PICK.filter(k=>INTENTS.some(i=>i.k===k));
+  const pl=S.track.slice(S.pos).reduce((x,y)=>x+y.p,0);
+  const draw=()=>paintModal(`<h2>Briefing · tour ${S.round+1}/7</h2>
+   <div class="sit"><div>Altitude<b>${ALTS[S.round]} pi</b></div><div>Position<b>${S.pos===S.L?'piste en vue':S.pos+' / '+S.L}</b></div><div>Avions à dégager<b>${pl}</b></div><div>Axe<b>${S.axis?sg(S.axis)+(S.axis>0?' copilote':' pilote'):'à plat'}</b></div><div>Commence<b>${ROLE[firstOf(S)]}</b></div><div>Café · relances<b>${S.coffee} · ${S.rerolls}</b></div></div>
+   ${S.round>=FINAL?`<p><b>Dernier tour.</b> Les moteurs ne font plus avancer l’avion : leur somme doit être <b>inférieure à ${brakeThr(S)}</b>. Train, volets, axe à plat et ciel dégagé sont obligatoires.</p>`:''}
+   ${S.mode==='ia'?`<div class="radio"><div class="h">${ROLE[a]} (IA) au micro</div>${aiBrief(S,a).map(x=>`<p>« ${esc(x)} »</p>`).join('')}</div>
+   <h4>Tes consignes (jusqu’à 3)</h4><div class="chips">${INTENTS.filter(i=>okIntent(i.k)).map(i=>`<button class="${PICK.includes(i.k)?'on':''}" data-i="${i.k}">${esc(i.t)}</button>`).join('')}</div>
+   ${PICK.length?`<div class="radio"><div class="h">Réponse</div>${PICK.map(k=>`<p>« ${esc(ack(k))} »</p>`).join('')}</div>`:''}`
+   :`<p>Vous pouvez parler librement de la stratégie : qui gère la radio, quelle vitesse viser, qui pose l’axe en premier… mais <b>jamais des valeurs de dés</b>. Dès le lancer, c’est le <b>silence radio</b> jusqu’à la fin du tour.</p>`}
+   <div class="acts"><button class="btn pri" data-b="roll">Lancer les dés · silence radio</button></div>`);
+  window.MODAL_CLOSABLE=false; draw();
+  $('#mbox').onclick=async e=>{ const i=e.target.closest('[data-i]'); if(i){ const k=i.dataset.i; if(PICK.includes(k)) PICK=PICK.filter(x=>x!==k); else { const opp={fast:'slow',slow:'fast',engHigh:'engLow',engLow:'engHigh',radioYou:'radioMe',radioMe:'radioYou',axis1:'axisYou',axisYou:'axis1'}; PICK=PICK.filter(x=>x!==opp[k]); if(PICK.length>=3) PICK.shift(); PICK.push(k); } sfx('click'); draw(); return; }
+    if(e.target.closest('[data-b="roll"]')){ window.MODAL_CLOSABLE=true; closeModal(); S.intents=S.mode==='ia'?PICK.slice():[]; PICK=[]; await roll(); } }; }
+function okIntent(k){ const a=ai(); if(k==='brakes') return a==='P'&&!has(S,'ice'); return true; }
+function ack(k){ const a=ai(); return {fast:'Compris, je pousse les gaz si mes dés le permettent.',slow:'Compris, je garde des petites valeurs pour les moteurs.',axis1:'D’accord, je t’attends à l’axe et je m’aligne.',axisYou:'Je pose l’axe en premier avec une valeur moyenne.',engHigh:'Noté : tu joues fort aux moteurs, je compenserai bas.',engLow:'Noté : tu joues faible aux moteurs, je compenserai haut.',radioYou:'Je prends la radio en priorité.',radioMe:'La radio est à toi, je me concentre sur le reste.',coffee:'Je mets un dé sur le café dès que possible.',gear:a==='P'?'Je sors le train en priorité.':'Je sors les volets en priorité.',brakes:'Je garde mes 2, 4 et 6 pour les freins.'}[k]; }
+async function roll(){ const my=GEN; rollDice(S); SEL=-1; ADJ=0; RR=null; save(); sfx('dice'); banner('Silence radio','Plus un mot jusqu’à la fin du tour','#7a2a2a');
+  await wait(1100); if(my!==GEN) return; startTimer(); nextTurn(true); }
+function save(){ store(KEY,S); }
+function nextTurn(first){ if(!S||S.over) return; render(); const w=S.turn;
+  if(isAI(w)){ VIEW=S.human; render(); aiTurn(); return; }
+  if(S.mode==='2p'){ if(VIEW!==w){ VIEW=null; render(); cover(w); return; } }
+  else VIEW=S.human;
+  SEL=-1; ADJ=0; render(); if(first) $$('.tdice .die').forEach(d=>d.classList.add('rolling')); }
+function cover(w){ const c=$('#cover'); PAUSED=true;
+  c.innerHTML=`<div class="cv"><span class="ph">SILENCE RADIO</span><h2>${esc(ROLE[w])}</h2><p>Passe l’appareil à <b>${esc(S.names[w])}</b>. ${esc(S.names[other(w)])}, détourne les yeux : les dés sont secrets.</p><button class="btn pri" style="font-size:17px;padding:12px 20px" data-a="reveal">Je suis ${esc(S.names[w])}, voir mes dés</button></div>`;
+  c.style.setProperty('--bg','#070b12'); c.hidden=false; }
+async function aiTurn(){ const my=GEN, w=S.turn; BUSY=true; render(); await wait(650); if(my!==GEN) return;
+  const c=aiChoose(S,w);
+  if(c&&c.reroll){ reroll(S,w,c.reroll,null,c.free); toast(`${ROLE[w]} (IA) relance ${c.reroll.length} dé${c.reroll.length>1?'s':''}`+(c.free?'':' · relance offerte à toi aussi')); sfx('dice'); save(); BUSY=false; render(); await wait(600); if(my===GEN) aiTurn(); return; }
+  if(!c){ BUSY=false; return; }
+  const v=S.dice[w][c.i].v+c.adj; await flyDie($('#hd'+w),$(`.slot[data-s="${c.s}"]`),v,w); if(my!==GEN) return;
+  const ev=place(S,w,c.i,c.s,c.adj); sfx('card'); if(c.adj) toast(`${ROLE[w]} (IA) boit ${Math.abs(c.adj)} café${Math.abs(c.adj)>1?'s':''} pour ajuster son dé`);
+  await after(ev,my); }
+async function after(ev,my){ render(); await showEvents(ev,my); if(my!==GEN) return; BUSY=false; save();
+  if(S.over){ finish(); return; }
+  if(ev.some(e=>e.t==='newRound')){ beginRound(); return; }
+  nextTurn(); }
+async function humanPlace(s){ const w=S.turn; if(BUSY||SEL<0||VIEW!==w) return; const i=SEL, adj=ADJ, v=S.dice[w][i].v+adj;
+  if(!canPlace(S,w,v,s)){ sfx('error'); return; } BUSY=true; const my=GEN;
+  const from=$(`.tdice [data-d="${i}"]`); render(); await flyDie(from,$(`.slot[data-s="${s}"]`),v,w); if(my!==GEN) return;
+  SEL=-1; ADJ=0; const ev=place(S,w,i,s,adj); sfx('card'); await after(ev,my); }
+/* chrono */
+let PAUSED=false, TLEFT=0;
+function startTimer(){ stopTimer(); if(!has(S,'chrono')) return; TLEFT=S.chrono; updChr(); TIMER=setInterval(()=>{ if(PAUSED||BUSY||!$('#modal').hidden) return; TLEFT--; updChr(); if(TLEFT<=10&&TLEFT>0) sfx('click'); if(TLEFT<=0){ stopTimer(); timeOut(); } },1000); }
+function stopTimer(){ if(TIMER) clearInterval(TIMER); TIMER=null; }
+function updChr(){ const c=$('#chr'); if(c){ c.textContent=Math.max(0,TLEFT)+' s'; c.classList.toggle('low',TLEFT<=10); } }
+async function timeOut(){ const my=++GEN; BUSY=true; $('#cover').hidden=true; PAUSED=false; const ev=timeUp(S); await after(ev,my); }
+/* fin */
+function finish(){ stopTimer(); VIEW=null; render(); store(KEY,null); const sc=scen(S.sc);
+  if(S.over.win){ const w=load('apf-wins')||{}; w[S.sc]=true; store('apf-wins',w); banner('Atterrissage réussi',sc.nom,'#1d8a4e'); sfx('win'); confetti(['#3d86f2','#f28c2c','#3fe08c','#ffd34d','#fff']); }
+  else { banner('Crash','Débriefing','#7a2a2a'); sfx('lose'); }
+  setTimeout(()=>{ if(!S||!S.over) return; openModal(`<h2>${S.over.win?'Posé en douceur !':'Vol perdu'}</h2><p>${esc(S.over.text)}</p>
+    <div class="sit"><div>Atterrissage<b>${esc(sc.nom)}</b></div><div>Tour atteint<b>${S.round+1} / 7</b></div><div>Position<b>${S.pos} / ${S.L}</b></div><div>Train · volets<b>${S.gear.filter(Boolean).length}/3 · ${S.flaps}/4</b></div></div>
+    <div class="acts"><button class="btn" data-c="new">Autre atterrissage</button><button class="btn pri" data-a="again">Rejouer ce vol</button></div>`); },1800); }
+/* ---------- clics ---------- */
+document.addEventListener('click',async e=>{ const t=e.target.closest('[data-a],[data-d],[data-s],.ac'); if(!t||!S) return;
+  if(t.dataset.a==='reveal'){ $('#cover').hidden=true; PAUSED=false; VIEW=S.turn; SEL=-1; ADJ=0; RR=null; render(); sfx('flip'); return; }
+  if(t.dataset.a==='again'){ closeModal(); const o={sc:S.sc,mode:S.mode,human:S.human,level:S.level,names:S.names,cards:scen(S.sc).cards?(S.cards||[]):[]}; startGame(o); return; }
+  if(t.dataset.a==='brief'){ if(S.phase==='brief'&&!S.over) briefing(); return; }
+  if(BUSY||S.over||S.phase!=='play') return; const w=S.turn; if(VIEW!==w||isAI(w)) return;
+  if(t.classList.contains('ac')){ if(PICKTOUR){ const j=+t.dataset.j; if(useCard(S,'tour',j)){ PICKTOUR=false; $$('.ac').forEach(c=>c.classList.remove('hl')); sfx('pop'); toast(`Contrôleur aérien : avion retiré en case ${j}`); save(); render(); } } return; }
+  if(t.dataset.d!=null){ const i=+t.dataset.d; if(RR){ RR.has(i)?RR.delete(i):RR.add(i); sfx('click'); render(); return; } SEL=SEL===i?-1:i; ADJ=0; sfx('click'); render(); return; }
+  if(t.dataset.s){ if(SEL<0){ toast('Choisis d’abord un dé dans ton plateau'); return; } humanPlace(t.dataset.s); return; }
+  switch(t.dataset.a){
+    case 'adj+': if(ADJ<S.coffee||ADJ<0) ADJ++; sfx('pop'); render(); break;
+    case 'adj-': if(-ADJ<S.coffee||ADJ>0) ADJ--; sfx('pop'); render(); break;
+    case 'rr': RR=new Set(); SEL=-1; ADJ=0; render(); break;
+    case 'rrcancel': RR=null; render(); break;
+    case 'rrgo': { const idx=[...RR], free=!!S.offer[w]; reroll(S,w,idx,null,free); RR=null; sfx('dice'); save(); render(); idx.forEach(i=>{ const d=$(`.tdice [data-d="${i}"] .die`); if(d) d.classList.add('rolling'); }); toast(free?'Relance offerte utilisée':'Relance utilisée · ton équipier peut aussi relancer'); break; }
+    case 'card-trim': if(useCard(S,'trim')){ sfx('ding'); toast('Correction d’assiette : l’axe revient d’un cran'); save(); render(); } break;
+    case 'card-tour': PICKTOUR=true; $$('.ac').forEach(c=>{ if(S.track[+c.dataset.j].p) c.classList.add('hl'); }); toast('Touche la case dont tu veux retirer un avion'); break;
+  } });
+let PICKTOUR=false;
+window.APF={get S(){return S;},get BUSY(){return BUSY;}};
+/* ---------- menus ---------- */
+let M={mode:'ia',human:'P',level:'confirme',names:{P:'',C:''},sc:'lyon',cards:[],step:1};
+function kitSVG(k){ const d={
+  panel:`<rect x="8" y="6" width="80" height="46" rx="6" fill="#1a2230"/><circle cx="48" cy="22" r="11" fill="#2a5d8f"/><line x1="38" x2="58" y1="22" y2="22" stroke="#ffd34d" stroke-width="3"/>${[0,1,2].map(i=>`<circle cx="${18}" cy="${16+i*10}" r="3" fill="#3fe08c"/><circle cx="${78}" cy="${16+i*10}" r="3" fill="#3fe08c"/>`).join('')}<rect x="30" y="38" width="36" height="7" rx="2" fill="#ffffff22"/>`,
+  dP:[0,1,2,3].map(i=>`<rect x="${8+i*21}" y="18" width="18" height="18" rx="4" fill="#3d86f2"/><circle cx="${17+i*21}" cy="27" r="2.3" fill="#fff"/>`).join(''),
+  dC:[0,1,2,3].map(i=>`<rect x="${8+i*21}" y="18" width="18" height="18" rx="4" fill="#f28c2c"/><circle cx="${17+i*21}" cy="27" r="2.3" fill="#fff"/>`).join(''),
+  screen:`<path d="M10 50V14l26-6v42ZM38 8l22 6v36H38ZM62 14l24-6v42l-24 0Z" fill="#c9b98f" stroke="#7a6a45"/>`,
+  appr:`${Array.from({length:7},(_,i)=>`<rect x="${4+i*13}" y="18" width="11" height="24" rx="2" fill="${i===6?'#555':'#2a5d8f'}"/>`).join('')}<path d="M10 30l3-6 1 4 5 2-5 1-1 4Z" fill="#ffd34d"/>`,
+  alti:`${Array.from({length:7},(_,i)=>`<rect x="${4+i*13}" y="18" width="11" height="24" rx="2" fill="${i?'#30394a':'#2fb3a4'}"/>`).join('')}`,
+  planes:`${[0,1,2,3].map(i=>`<path transform="translate(${18+i*20},29) scale(.8)" d="M0-11 2-4 10 1 10 3 2 1 1 7 4 9 4 10 0 9-4 10-4 9-1 7-2 1-10 3-10 1-2-4Z" fill="#e8edf5" stroke="#333"/>`).join('')}`,
+  coffee:`${[0,1,2].map(i=>`<g transform="translate(${16+i*24},14)"><path d="M0 8h16v8a6 6 0 0 1-6 6H6a6 6 0 0 1-6-6Z" fill="#c8874a"/><path d="M16 10h3a3 3 0 0 1 0 6h-3" fill="none" stroke="#c8874a" stroke-width="2"/></g>`).join('')}`,
+  markers:`<rect x="6" y="34" width="84" height="10" rx="3" fill="#ffffff22"/><path d="M30 20l5 10 5-10Z" fill="#3d86f2"/><path d="M58 20l5 10 5-10Z" fill="#f28c2c"/><path d="M12 20l5 10 5-10Z" fill="#ff5b5f"/>`,
+  reroll:`<circle cx="36" cy="29" r="13" fill="#2fb3a4"/><circle cx="62" cy="29" r="13" fill="#2fb3a4"/><path d="M30 29a6 6 0 1 0 2-4.5" stroke="#fff" stroke-width="2" fill="none"/><path d="M56 29a6 6 0 1 0 2-4.5" stroke="#fff" stroke-width="2" fill="none"/>`,
+  wind:`<circle cx="48" cy="29" r="22" fill="#14202f" stroke="#3a4558" stroke-width="2"/><path d="M48 12l4 17h-8Z" fill="#2fb3a4"/><text x="48" y="46" font-size="9" fill="#ffc58f" text-anchor="middle" font-weight="800">+2</text>`,
+  turns:`<path d="M14 46C30 46 30 14 48 14S66 46 82 46" stroke="#ffcf4a" stroke-width="4" fill="none" stroke-dasharray="6 4"/><rect x="36" y="22" width="24" height="12" rx="3" fill="#0008"/><text x="48" y="31" font-size="8" fill="#ffcf4a" text-anchor="middle" font-weight="800">+1…+2</text>`,
+  traffic:`<rect x="34" y="15" width="28" height="28" rx="5" fill="#111"/><circle cx="41" cy="22" r="2.5" fill="#fff"/><circle cx="48" cy="29" r="2.5" fill="#fff"/><circle cx="55" cy="36" r="2.5" fill="#fff"/>`,
+  ice:`<rect x="10" y="14" width="76" height="30" rx="5" fill="#cfe8f7"/>${[0,1,2,3].map(i=>`<circle cx="${22+i*17}" cy="29" r="5" fill="${i?'#8fb7cf':'#3fe08c'}"/>`).join('')}<path d="M12 14l6 6M80 14l5 6" stroke="#fff" stroke-width="2"/>`,
+  kero:`<rect x="14" y="22" width="68" height="14" rx="7" fill="#ffffff22"/><rect x="14" y="22" width="48" height="14" rx="7" fill="#3fe08c"/><text x="48" y="50" font-size="9" fill="#5a4a2a" text-anchor="middle" font-weight="800">20 L</text>`,
+  chrono:`<path d="M36 10h24M36 48h24M38 10c0 14 20 14 20 19S38 34 38 48M58 10c0 14-20 14-20 19s20 5 20 19" stroke="#7a6a45" stroke-width="2.5" fill="#f3d58a55"/>`,
+  cards:`<rect x="24" y="10" width="28" height="38" rx="4" fill="#fff" stroke="#1d8a4e" stroke-width="2" transform="rotate(-8 38 29)"/><rect x="44" y="10" width="28" height="38" rx="4" fill="#e8f7ee" stroke="#1d8a4e" stroke-width="2" transform="rotate(8 58 29)"/>`
+ }[k]; return `<svg viewBox="0 0 96 58">${d}</svg>`; }
+function kitList(sc){ const tot=sc.track.reduce((a,x)=>a+(x.p||0),0); const L=sc.track.length-1;
+  const k=[['panel','Tableau de bord','Axe, moteurs, radio, train, volets, '+(sc.mods.includes('ice')?'café':'freins, café')],['dP','4 dés bleus','Pilote'],['dC','4 dés orange','Copilote'],['screen','2 écrans','Pour cacher ses dés'],
+   ['appr','Piste d’approche · '+sc.nom,`${L} cases jusqu’à la piste`],['planes',`${tot} avions`,'Placés sur la piste d’approche'],['alti','Piste d’altitude','7 paliers, de 6 000 pieds à 0'],['reroll',`${sc.rr.length} jetons relance`,'Sur la piste d’altitude'],
+   ['coffee','3 jetons café','Réserve commune'],['markers','3 marqueurs','Aérodynamique bleu et orange, frein rouge']];
+  if(sc.mods.includes('wind')) k.push(['wind','Rose des vents','Module Vent']);
+  if(sc.mods.includes('turns')) k.push(['turns',`${sc.track.filter(x=>x.turn).length} virages`,'Module Virages']);
+  if(sc.mods.includes('traffic')) k.push(['traffic','Dé noir de trafic',`${sc.track.filter(x=>x.t).length} cases marquées`]);
+  if(sc.mods.includes('ice')) k.push(['ice','Plaque de freins givrés','Remplace les freins']);
+  if(sc.mods.includes('kero')) k.push(['kero','Jauge de kérosène',`${sc.fuel||20} litres au départ`]);
+  if(sc.mods.includes('chrono')) k.push(['chrono','Sablier',`${sc.chrono||60} secondes par tour`]);
+  if(sc.cards) k.push(['cards',`${sc.cards} carte${sc.cards>1?'s':''} atout`,'À choisir ci-dessous']);
+  return k; }
+function menu(){ const wins=load('apf-wins')||{}; window.MODAL_CLOSABLE=true;
+  const draw=()=>{ const sc=scen(M.sc);
+   if(M.step===1) paintModal(`<h2>Nouveau vol</h2>
+    <h4>Équipage</h4><div class="seg"><button class="${M.mode==='ia'?'on':''}" data-m="mode:ia">Avec l’IA</button><button class="${M.mode==='2p'?'on':''}" data-m="mode:2p">À deux sur cet appareil</button></div>
+    ${M.mode==='ia'?`<h4>Ton poste</h4><div class="seg"><button class="${M.human==='P'?'on':''}" data-m="human:P">Pilote (bleu)</button><button class="${M.human==='C'?'on':''}" data-m="human:C">Copilote (orange)</button></div>
+     <h4>Niveau de l’IA</h4><div class="seg">${[['debutant','Débutante'],['confirme','Confirmée'],['expert','Experte']].map(([k,l])=>`<button class="${M.level===k?'on':''}" data-m="level:${k}">${l}</button>`).join('')}</div>`
+     :`<div class="prow"><span>Pilote</span><input type="text" id="nP" value="${esc(M.names.P)}" placeholder="Camille" maxlength="14"><span>Copilote</span><input type="text" id="nC" value="${esc(M.names.C)}" placeholder="Lucas" maxlength="14"></div>`}
+    <h4>Atterrissage</h4><div class="scl">${SCEN.map(s=>`<button class="scc ${M.sc===s.id?'on':''}" data-m="sc:${s.id}"><b>${esc(s.nom)}</b><span>${esc(s.sous)} <span class="st">${'★'.repeat(s.st)}${'☆'.repeat(4-s.st)}</span></span><span class="tg">${s.mods.length?s.mods.map(m=>`<span>${MODS[m].nom}</span>`).join(''):'<span>Règles de base</span>'}</span>${wins[s.id]?'<span class="won">✓ déjà réussi</span>':''}</button>`).join('')}</div>
+    <div class="acts">${S&&!S.over?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="step:2">Préparer le vol</button></div>`);
+   else { const nc=sc.cards; M.cards=M.cards.filter(c=>CARDS[c]).slice(0,nc);
+    paintModal(`<h2>Préparation · ${esc(sc.nom)}</h2><p>${esc(sc.desc)}</p>
+    <h4>Matériel à installer</h4><div class="kit">${kitList(sc).map(([k,t,d],n)=>`<div style="animation-delay:${n*45}ms">${kitSVG(k)}<b>${esc(t)}</b><small>${esc(d)}</small></div>`).join('')}</div>
+    ${sc.mods.length?`<h4>Modules de ce vol</h4>${sc.mods.map(m=>`<p><span class="mtag">${MODS[m].nom}</span> ${esc(MODS[m].desc)}</p>`).join('')}`:''}
+    ${nc?`<h4>Cartes atout : choisissez-en ${nc}</h4><div class="cards">${Object.entries(CARDS).map(([k,c])=>`<button class="cardx ${M.cards.includes(k)?'on':''}" data-m="card:${k}"><b>${esc(c.nom)}</b><br><small>${esc(c.desc)}</small></button>`).join('')}</div>`:''}
+    <div class="acts"><button class="btn" data-m="step:1">Retour</button><button class="btn pri" data-m="go" ${nc&&M.cards.length<nc?'disabled':''}>Décoller</button></div>`); } };
+  draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; if($('#nP')) M.names={P:$('#nP').value,C:$('#nC').value};
+    const [k,v]=x.dataset.m.split(':'); sfx('click');
+    if(k==='go'){ closeModal(); M.step=1; store('apfp',M); const sc=scen(M.sc);
+      startGame({sc:M.sc,mode:M.mode,human:M.human,level:M.level,names:{P:M.names.P.trim()||'Camille',C:M.names.C.trim()||'Lucas'},cards:sc.cards?M.cards.slice(0,sc.cards):[]}); return; }
+    if(k==='card'){ const n=scen(M.sc).cards; if(M.cards.includes(v)) M.cards=M.cards.filter(c=>c!==v); else { M.cards.push(v); if(M.cards.length>n) M.cards.shift(); } draw(); return; }
+    M[k]=k==='step'?+v:v; if(k==='sc') M.cards=[]; draw(); }; }
+function startGame(o){ GEN++; stopTimer(); BUSY=false; $('#cover').hidden=true; PAUSED=false; S=newGame(o); build(); VIEW=S.mode==='ia'?S.human:null; render();
+  if(S.cards.length) toast('Cartes atout : '+S.cards.map(c=>CARDS[c].nom).join(', ')); beginRound(); }
+function help(){ const tabs=['Le vol','Le tableau','Communication','Modules']; let tab=0;
+  const body=[`<p>Jeu coopératif à deux : le <b>pilote</b> (dés bleus) et le <b>copilote</b> (dés orange) doivent poser l’avion en 7 tours, de 6 000 pieds jusqu’à la piste. Vous gagnez ou perdez ensemble.</p>
+   <p>Chaque tour : <b>briefing</b> (on parle), puis on lance ses 4 dés en secret et c’est le <b>silence radio</b>. On pose un dé chacun son tour, en commençant par le joueur indiqué sur la piste d’altitude. À la fin du tour, l’avion descend de 1 000 pieds.</p>
+   <h4>Pour gagner, au dernier tour</h4><ul><li>l’avion est sur la case piste ;</li><li>plus aucun avion sur l’approche ;</li><li>train (3) et volets (4) sortis ;</li><li>axe à l’horizontale ;</li><li>vitesse (somme des moteurs) <b>inférieure</b> au marqueur rouge des freins.</li></ul>
+   <h4>On perd aussitôt si</h4><ul><li>l’axe atteint la croix rouge (3 crans) ;</li><li>on avance alors qu’un avion occupe notre case ;</li><li>on dépasse la piste, ou on arrive au dernier palier sans la voir.</li></ul>`,
+   `<ul><li><b>Axe</b> (obligatoire, un dé chacun) : l’avion penche du côté du dé le plus fort, d’autant que l’écart. L’inclinaison se cumule d’un tour à l’autre.</li>
+   <li><b>Moteurs</b> (obligatoire, un dé chacun) : la somme se lit sur l’échelle de vitesse. Sous le marqueur bleu : 0 case ; entre bleu et orange : 1 case ; au-delà de l’orange : 2 cases. Au dernier tour, elle doit rester sous le marqueur rouge.</li>
+   <li><b>Radio</b> (1 case pilote, 2 copilote) : la valeur du dé désigne une case (1 = la vôtre) et en retire un avion.</li>
+   <li><b>Train</b> (pilote, 1·2, 3·4, 5·6) : chaque élément pousse le marqueur bleu. <b>Volets</b> (copilote, dans l’ordre) : chaque volet pousse le marqueur orange.</li>
+   <li><b>Freins</b> (pilote, 2 puis 4 puis 6) : chaque frein pousse le marqueur rouge (sous 3, 5 puis 7).</li>
+   <li><b>Concentration</b> : n’importe quel dé rapporte un café (3 max). Un café change la valeur d’un dé de ±1 au moment de le poser.</li>
+   <li><b>Relance</b> : jeton gagné sur la piste d’altitude. Celui qui l’utilise relance les dés de son choix, puis son équipier peut faire de même.</li></ul>
+   <p>Astuce : quand tu choisis un dé, les cases possibles s’allument en vert avec le résultat prévu (axe, vitesse, case radio).</p>`,
+   `<p><b>Briefing</b> (bandeau vert) : avant le lancer, on discute de la stratégie, jamais des valeurs.</p><p><b>Silence radio</b> (bandeau rouge) : du lancer jusqu’à la fin du tour, aucun échange. Les dés posés parlent pour vous.</p>
+   <p><b>Avec l’IA</b> : au briefing, l’IA annonce ses intentions et tu lui donnes jusqu’à 3 consignes dans une liste (accélérer, qui pose l’axe en premier, qui gère la radio, moteurs forts ou faibles…). Elle en tient compte pendant le silence.</p>
+   <p><b>À deux sur un appareil</b> : un écran de passage cache les dés à chaque changement de joueur.</p>`,
+   Object.values(MODS).map(m=>`<p><span class="mtag">${m.nom}</span> ${esc(m.desc)}</p>`).join('')+`<h4>Cartes atout</h4>`+Object.values(CARDS).map(c=>`<p><b>${esc(c.nom)}</b> : ${esc(c.desc)}</p>`).join('')];
+  const draw=()=>paintModal(`<h2>Approche finale</h2><div class="tabs">${tabs.map((t,i)=>`<button class="${i===tab?'on':''}" data-h="${i}">${t}</button>`).join('')}</div>${body[tab]}<div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`);
+  const prevClosable=window.MODAL_CLOSABLE; window.MODAL_CLOSABLE=true;
+  draw(); $('#mbox').onclick=e=>{ const h=e.target.closest('[data-h]'); if(h){ tab=+h.dataset.h; draw(); } if(e.target.closest('[data-c="close"]')&&S&&S.phase==='brief'&&!S.over) setTimeout(briefing,50); }; }
+(function boot(){ const p=load('apfp'); if(p) Object.assign(M,p,{step:1}); const s=load(KEY);
+  if(s&&!s.over&&s.dice){ S=s; build(); VIEW=S.mode==='ia'?S.human:null; render();
+    if(S.phase==='brief') briefing(); else { startTimer(); nextTurn(); } }
+  else { S=newGame({sc:'lyon'}); build(); render(); S=null; renderStatus(); renderTray(); menu(); } })();
+}
+
+</script>
+<script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>

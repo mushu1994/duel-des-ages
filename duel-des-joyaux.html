@@ -218,6 +218,9 @@ main,aside{min-width:0;display:flex;flex-direction:column;gap:14px}
 .flytok{position:fixed;z-index:44;pointer-events:none;--gs:34px}
 @keyframes pop{to{transform:scale(1.4);opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.float,.splash,.flytok{display:none}}
+
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{z-index:61!important}
 </style>
 </head>
 <body>
@@ -846,5 +849,8 @@ if(hd&&!hd.G.over)resumeGame(hd);else render();
 }
 if(IS_NODE)module.exports={newGame,get G(){return G},points,checkWin,simulate,setG:g=>{G=g}};
 </script>
+<script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
 </body>
 </html>

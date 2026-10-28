@@ -170,6 +170,9 @@ table.res tr.win td{background:#f6df9f}
 #map .waves{animation:wv 6s linear infinite}
 @keyframes wv{from{transform:translateX(0)}to{transform:translateX(24px)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
+
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style>
 </head>
 <body>
@@ -1311,7 +1314,7 @@ function confetti(){ if(REDUCED) return; for(let i=0;i<70;i++){ const c=document
 /* ---------------- modales ---------------- */
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
 function openModal(h){ $('#mbox').innerHTML=h; $('#mbox').onclick=null; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 let MENU=null;
 function openMenu(){ const s=loadSave(); MENU={n:PREFS.n,slots:PREFS.slots||[{h:1,name:'Toi',lv:'normal'}].concat(AI_NAMES.slice(0,5).map(n=>({h:0,name:n,lv:'normal'}))),nav:PREFS.nav,ck:PREFS.ck,target:PREFS.target,speed:PREFS.speed}; drawMenu(s); }
 const HUMAN_NAMES=['Camille','Lucas','Emma','Hugo','Léa','Jules'];
@@ -1411,7 +1414,7 @@ document.addEventListener('click',e=>{
     case 'costs': openCosts(); break;
     case 'sound': MUTED=!MUTED; try{localStorage.setItem('nt-mute',MUTED?'1':'0');}catch(e){} updSnd(); break;
     case 'help': openHelp(); break; case 'helptab': openHelp(v); break;
-    case 'menu': openMenu(); break; case 'close': closeModal(); UI.tradeOpen=false; break;
+    case 'menu': { const cv=$('#cover'); openMenu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; } case 'close': { const cv=window.COVER_HIDDEN; closeModal(); UI.tradeOpen=false; if(cv) cv.hidden=false; break; }
     case 'resume': { const s=loadSave(); if(s) resumeGame(s); break; }
     case 'tnav': MENU.nav=!MENU.nav; MENU.target=null; drawMenu(loadSave()); break;
     case 'tck': MENU.ck=!MENU.ck; MENU.target=null; drawMenu(loadSave()); break;
@@ -1432,5 +1435,8 @@ document.addEventListener('click',e=>{
 })();
 
 </script>
+<script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
 </body>
 </html>

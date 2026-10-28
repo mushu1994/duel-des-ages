@@ -223,6 +223,9 @@ body{background:radial-gradient(ellipse at 40% 0%,#1f625a,#0b2826 72%) fixed,#0b
 @media (max-width:900px){ .lay{flex-direction:column;align-items:center;padding:8px} .side{width:100%;flex:auto;max-width:640px} .plist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px} .pl.cur{transform:none} }
 @media (max-width:600px){ html,body{overflow-x:hidden} .pl .pn small{display:none} .status .right{margin-left:0;font-size:12px} .top h1 small{display:none} .top{gap:8px;padding:8px 10px} .top .btn{padding:6px 9px;font-size:13px} .pl{padding:7px 8px} .pl .tags span:last-child{display:none} .chips i{width:8px;height:11px} }
 @media (max-width:420px){ .pl .pn{font-size:14px} .pl .cash{font-size:15px} .tcols{grid-template-columns:1fr} }
+
+/*top-above*//*hh*/#modal,#cover,#info{top:var(--hh,0px)!important}#modal>*,#info>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style></head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Grand Propriétaire<small>dans l’esprit du Monopoly</small></h1>
 <div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
@@ -239,7 +242,7 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
 function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
@@ -270,13 +273,13 @@ function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
   if(!MUTED) ac();
-  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
     case 'help': GAME.help(); break;
-    case 'new': GAME.menu(); break;
-    case 'close': closeModal(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
   }
 });
 addEventListener('DOMContentLoaded',updSnd);
@@ -1010,8 +1013,11 @@ function help(){ info(`<h2>Règles du Grand Propriétaire</h2>
  <li>Le bouton <b>Échanger</b> permet de proposer terrains, argent et laissez-passer à un autre joueur.</li>
  <li>Si tu ne peux pas payer, vends tes constructions et hypothèque tes terrains. Sinon c’est la <b>faillite</b> : tes biens vont à ton créancier (ou redeviennent libres si tu dois à la banque). Le dernier joueur en lice gagne.</li></ul>
  <p>Astuce : touche une case du plateau pour voir son titre de propriété, ou un joueur pour voir ses biens. Barre d’espace = bouton principal.</p>`); }
-const GAME={help,menu};
+const GAME=window.GAME={help,menu};
 (function boot(){ const p=load(PREF); if(p) Object.assign(M,p,{slots:(p.slots&&p.slots.length===6)?p.slots:M.slots}); buildBoard();
   const s=load(SAVE); if(s&&!s.over&&s.v===1){ G=s; loop(); } else { G=newGame({players:[0,1,2,3].map(i=>({name:AIN[i],ai:true,col:i}))}); renderAll(); G=null; $('#status').innerHTML='<span class="who">Bienvenue !</span>'; menu(); } })();
 }
-</script></body></html>
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>

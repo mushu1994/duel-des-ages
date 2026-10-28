@@ -96,6 +96,10 @@ body{background:radial-gradient(ellipse at 50% 40%,#7a1f2a,#2a0a10 80%) fixed,#2
 .me .head .role{color:#ffd98a;font-size:13px}
 .me .acts2{margin-left:auto;display:flex;gap:8px}
 .fan .pcard{--cw:min(70px,13vw)}
+
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style></head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Président</h1>
 <div class="tools"><button class="btn" data-a="scores">Scores</button><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
@@ -111,7 +115,8 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
 function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
@@ -142,13 +147,13 @@ function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
   if(!MUTED) ac();
-  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
     case 'help': GAME.help(); break;
-    case 'new': GAME.menu(); break;
-    case 'close': closeModal(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
   }
 });
 addEventListener('DOMContentLoaded',updSnd);
@@ -184,7 +189,7 @@ function aiChoice(hand,cur,opt,level){ // cur: {rank,count} ou null
 if(IS_NODE) module.exports={aiChoice,groups,rv};
 else {
 /* ===== interface ===== */
-let P=null, GEN=0, SEL=new Set(), WAIT=null; const GAME={help,menu};
+let P=null, GEN=0, SEL=new Set(), WAIT=null; const GAME=window.GAME={help,menu};
 const AIN=['Gaspard','Héloïse','Basile','Margot','Félix'];
 function newMatch(cfg){ GEN++; P={cfg,players:Array.from({length:cfg.n},(_,i)=>({name:i===0?cfg.me:AIN[i-1],ai:i>0,hand:[],role:null,score:0,done:false})),round:0}; newRound(); }
 function sortHand(h){ h.sort((a,b)=>rv(a)-rv(b)||a.s-b.s); }
@@ -256,8 +261,11 @@ function menu(){ const draw=()=>paintModal(`<h2>Nouvelle partie</h2><h4>Joueurs<
   draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; M.me=$('#me').value; const [k,v]=x.dataset.m.split(':');
     if(k==='start'){ closeModal(); M.me=M.me.trim()||'Toi'; store('pres-prefs',M); newMatch({...M}); return; }
     M[k]=k==='level'?v:(k==='equal'||k==='twoCloses')?v==='1':+v; draw(); }; }
-function help(){ openModal(`<h2>Président</h2><ul><li>Toutes les cartes sont distribuées. Ordre : 3 &lt; 4 &lt; … &lt; Roi &lt; As &lt; <b>2</b> (le plus fort).</li><li>Celui qui ouvre pose une carte seule, une paire, un brelan ou un carré. Les suivants doivent poser <b>le même nombre</b> de cartes, plus fortes, ou passer.</li><li>Quand tout le monde passe, le dernier à avoir joué ramasse le pli et rouvre. Un carré (et le 2, selon la règle) ferme le pli.</li><li>Le premier sans carte devient <b>Président</b>, le dernier <b>Trou</b>. À la manche suivante, le Trou donne ses 2 meilleures cartes au Président, qui lui en rend 2 au choix (idem 1 carte entre Vice-trou et Vice-président).</li></ul><p>Touche tes cartes de même valeur puis « Jouer ».</p><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+function help(){ helpTabs("Président",[["But du jeu","<p>Être le premier à se débarrasser de toutes ses cartes pour devenir <b>Président</b>. Le dernier devient <b>Trou</b> (Trouduc).</p><p>Ordre des cartes : 3 &lt; 4 &lt; … &lt; Roi &lt; As &lt; <b>2</b> (le plus fort). Toutes les cartes sont distribuées.</p>"],["Déroulement","<ol><li>Celui qui ouvre pose une carte seule, une paire, un brelan ou un carré.</li><li>Les suivants doivent poser <b>le même nombre de cartes</b>, d’une valeur plus forte, ou passer.</li><li>Quand tout le monde a passé, le dernier à avoir joué ramasse le pli et rouvre.</li><li>Un carré ferme le pli. Selon l’option, le 2 le ferme aussi.</li></ol>"],["Échanges et options","<p>À la manche suivante, le Trou donne ses 2 meilleures cartes au Président, qui lui rend 2 cartes de son choix. Même chose avec 1 carte entre Vice-trou et Vice-président.</p><ul><li><b>Le 2 ferme le pli</b> ou non.</li><li><b>Strictement plus fort</b> : il faut une valeur supérieure. <b>Égalité permise</b> : on peut aussi poser la même valeur.</li><li>3 à 6 joueurs, trois niveaux d’adversaires, trois vitesses.</li></ul><p class=\"ex\">Jouer ici : touche tes cartes de même valeur, puis « Jouer ». « Scores » montre le classement.</p>"]]); }
 window.__T={get P(){return P},get WAIT(){return WAIT},set SEL(v){SEL=v},act,aiChoice};
 (function boot(){ const p=load('pres-prefs'); if(p) Object.assign(M,p); menu(); })();
 }
-</script></body></html>
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>

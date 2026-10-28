@@ -81,6 +81,10 @@ body{background:linear-gradient(160deg,#eef2fb,#dfe6f5) fixed,#eef2fb}
 .tools2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .tools2 button{padding:10px;border-radius:10px;border:1px solid #c3cde5;background:#fff;font-weight:800;color:#22304f}
 .tools2 button.on{background:#3f6fd8;color:#fff;border-color:#3f6fd8}
+
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style></head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Sudoku <small id="lvl"></small></h1>
 <div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle grille</button></div></header>
@@ -102,7 +106,8 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
 function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
@@ -133,13 +138,13 @@ function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
   if(!MUTED) ac();
-  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
     case 'help': GAME.help(); break;
-    case 'new': GAME.menu(); break;
-    case 'close': closeModal(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
   }
 });
 addEventListener('DOMContentLoaded',updSnd);
@@ -169,7 +174,7 @@ else {
 /* ===== interface ===== */
 const SAVE='sudoku-save';
 let S=null, SELI=40, NOTES=false, H=[];
-const GAME={help,menu};
+const GAME=window.GAME={help,menu};
 function newGame(level){ $('#grid').style.opacity=.4; setTimeout(()=>{ const g=generate(level); S={level,puzzle:g.puzzle,solution:g.solution,v:g.puzzle.slice(),notes:Array.from({length:81},()=>[]),errs:0,t:0,check:S?S.check:true,won:false}; H=[]; SELI=40; $('#grid').style.opacity=1; save(); build(); render(); intro(); },30); }
 function save(){ store(SAVE,S); }
 function build(){ const gr=$('#grid'); gr.innerHTML=''; for(let i=0;i<81;i++){ const c=document.createElement('div'); c.className='c'+(COL(i)%3===2&&COL(i)<8?' br':'')+(ROW(i)%3===2&&ROW(i)<8?' bb':''); c.dataset.i=i; gr.appendChild(c); }
@@ -226,8 +231,10 @@ document.addEventListener('keydown',e=>{ if(!S||!$('#modal').hidden) return;
 function menu(){ const s=load(SAVE); openModal(`<h2>Nouvelle grille</h2><p>Chaque grille est générée au hasard et n'a qu'une seule solution.</p>
   <div class="prow">${[['facile','≈ 40 chiffres donnés'],['moyen','≈ 33'],['difficile','≈ 28'],['expert','≈ 24']].map(([l,d])=>`<button class="btn pri" data-lv="${l}" style="flex:1;min-width:130px">${l[0].toUpperCase()+l.slice(1)}<br><small style="font-weight:600;opacity:.85">${d}</small></button>`).join('')}</div>
   <div class="acts">${S?'<button class="btn" data-c="close">Annuler</button>':''}</div>`, e=>{ const b=e.target.closest('[data-lv]'); if(b){ closeModal(); newGame(b.dataset.lv); } }); }
-function help(){ openModal(`<h2>Sudoku</h2><p>Remplis la grille pour que chaque <b>ligne</b>, chaque <b>colonne</b> et chaque <b>carré 3×3</b> contienne une seule fois les chiffres de 1 à 9.</p>
-  <ul><li>Touche une case puis un chiffre (ou tape-le au clavier ; flèches pour se déplacer).</li><li><b>Notes</b> (touche N) : inscris les candidats en petit. Ils s'effacent tout seuls quand tu poses un chiffre voisin.</li><li><b>Vérif. auto</b> : les erreurs apparaissent en rouge.</li><li><b>Indice</b> : remplit la case la plus facile et explique pourquoi.</li><li>Le petit nombre sur chaque touche indique combien de fois il reste ce chiffre à placer.</li></ul><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+function help(){ helpTabs("Sudoku",[["But du jeu","<p>Remplir la grille pour que chaque <b>ligne</b>, chaque <b>colonne</b> et chaque <b>carré 3 × 3</b> contienne une seule fois les chiffres de 1 à 9.</p><p>Chaque grille a une seule solution. Niveaux : facile (environ 40 chiffres donnés), moyen (33), difficile (28), expert (24).</p>"],["Jouer ici","<ul><li>Touche une case puis un chiffre (ou tape-le au clavier ; flèches pour te déplacer).</li><li><b>Notes</b> (touche N) : inscris les candidats possibles en petit. Ils s’effacent seuls quand tu poses le chiffre dans une case voisine. « Toutes les notes » les remplit d’un coup.</li><li><b>Vérif. auto</b> : les erreurs apparaissent en rouge.</li><li><b>Indice</b> : remplit la case la plus facile et explique pourquoi.</li><li>Le petit nombre sur chaque touche indique combien de fois ce chiffre reste à placer.</li></ul>"]]); }
 (function boot(){ const s=load(SAVE); if(s&&!s.won){ S=s; build(); render(); intro(); } else { menu(); } })();
 }
-</script></body></html>
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>

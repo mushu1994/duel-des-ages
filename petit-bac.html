@@ -86,6 +86,10 @@ table.res th{background:#2b3a8a;color:#fff}
 .tot{background:#fff;border-radius:12px;padding:8px 14px;box-shadow:0 4px 12px #0002;font-weight:900}
 .tot b{color:#e2553a;font-size:20px;margin-left:6px}
 .center{text-align:center}
+
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style></head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Petit Bac</h1>
 <div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
@@ -102,7 +106,8 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
 function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
@@ -133,13 +138,13 @@ function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
   if(!MUTED) ac();
-  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
     case 'help': GAME.help(); break;
-    case 'new': GAME.menu(); break;
-    case 'close': closeModal(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
   }
 });
 addEventListener('DOMContentLoaded',updSnd);
@@ -158,7 +163,7 @@ const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(
 const LISTS={}; for(const [k] of CATS){ LISTS[k]={}; PBDATA[k].split(/[|,]/).map(w=>w.trim()).filter(Boolean).forEach(w=>{ const l=norm(w)[0].toUpperCase(); (LISTS[k][l]=LISTS[k][l]||[]).push(w); }); }
 const NORMSET={}; for(const [k] of CATS){ NORMSET[k]=new Set(); Object.values(LISTS[k]).flat().forEach(w=>{ const n=norm(w); NORMSET[k].add(n); if(k==='celeb'){ const parts=n.split(' '); if(parts.length>1) NORMSET[k].add(parts[parts.length-1]); } if(k==='fruit'||k==='objet'||k==='metier'){ NORMSET[k].add(n+'s'); NORMSET[k].add(n.replace(/s$/,'')); } }); }
 const EASY='ABCDEFGHIJLMNOPRSTV', HARD='KQUWYZ';
-const GAME={help,menu};
+const GAME=window.GAME={help,menu};
 let B=null, TIMER=null, GEN=0;
 const AIN=['Rosalie','Anatole','Philomène'];
 function check(cat,word,letter){ const n=norm(word); if(!n) return 'vide'; const first=n[0].toUpperCase();
@@ -219,6 +224,9 @@ function menu(){ const draw=()=>paintModal(`<h2>Nouvelle partie</h2>
   draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; keep(); const [k,v]=x.dataset.m.split(':');
     if(k==='start'){ if(!M.ai&&M.humans.length<2&&false) return; closeModal(); const humans=M.humans.map((n,i)=>n.trim()||['Toi','Camille','Lucas','Emma'][i]); store('pb-prefs',M); newMatch({...M,humans}); return; }
     if(k==='addh') M.humans.push(''); else if(k==='rmh') M.humans.splice(+v,1); else M[k]=(k==='level')?v:(k==='hard'||k==='trust')?v==='1':+v; draw(); }; }
-function help(){ openModal(`<h2>Petit Bac</h2><p>Une lettre est tirée au sort. Trouve le plus vite possible un mot commençant par cette lettre dans chaque catégorie : <b>prénom, ville ou pays, métier, objet, fruit ou légume, célébrité</b>.</p><ul><li>Appuie sur <b>STOP</b> quand tu as fini (ou quand le temps est écoulé).</li><li>10 points par réponse valable et unique, 5 si quelqu'un a trouvé la même, 0 sinon.</li><li>Le jeu connaît plus de mille mots. Si un mot n'est pas dans sa liste, il apparaît comme « inconnu » et vous décidez de l'accepter.</li><li>À plusieurs sur le même appareil, chacun remplit sa grille à son tour avec la même lettre.</li></ul><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+function help(){ helpTabs("Petit Bac",[["But du jeu","<p>Une lettre est tirée au sort. Trouve le plus vite possible un mot commençant par cette lettre dans chaque catégorie : prénom, ville ou pays, métier, objet, fruit ou légume, célébrité.</p><p>Celui qui a le plus de points à la fin des manches gagne.</p>"],["Points","<ul><li><b>10 points</b> : réponse valable que personne d’autre n’a donnée.</li><li><b>5 points</b> : réponse valable, mais un autre joueur a trouvé la même.</li><li><b>0 point</b> : case vide ou réponse refusée.</li></ul><p class=\"ex\">Exemple avec la lettre B : « Bordeaux » en ville rapporte 10 points, ou 5 si un adversaire a aussi écrit Bordeaux.</p>"],["Options","<ul><li>Joueurs humains (à tour de rôle sur le même appareil, avec la même lettre) et de 0 à 3 adversaires ordinateur.</li><li>Manches : 3, 5 ou 10. Temps par manche : 1 min, 1 min 30, 2 min ou sans limite.</li><li><b>Lettres faciles</b> ou avec <b>K Q U W Y Z</b>.</li><li><b>Mots inconnus à valider</b> : un mot absent du dictionnaire du jeu (plus de mille mots) vous est soumis. <b>Tout accepter</b> : pas de vérification.</li></ul><p>Appuie sur <b>STOP !</b> quand ta grille est remplie.</p>"]]); }
 (function boot(){ const p=load('pb-prefs'); if(p) Object.assign(M,p); $('#wrap').innerHTML='<div class="letterbox"><div class="letter">B</div></div>'; menu(); })();
-</script></body></html>
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>

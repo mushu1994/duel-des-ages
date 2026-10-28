@@ -80,6 +80,10 @@ body{background:radial-gradient(ellipse at 50% 0%,#2f7a58,#123a2a 70%) fixed,#12
 #map .tgt{fill:#fff;opacity:.0;animation:tg 1s infinite}
 @keyframes tg{50%{opacity:.55}}
 #log{font-size:13px;max-height:200px;overflow:auto;display:flex;flex-direction:column-reverse;gap:2px}
+
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style></head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Petits Chevaux</h1>
 <div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
@@ -103,7 +107,8 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
 function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
@@ -134,13 +139,13 @@ function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
   if(!MUTED) ac();
-  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
     case 'help': GAME.help(); break;
-    case 'new': GAME.menu(); break;
-    case 'close': closeModal(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
   }
 });
 addEventListener('DOMContentLoaded',updSnd);
@@ -191,7 +196,7 @@ else {
 /* ===== interface ===== */
 const SAVE='petits-chevaux-save', CS=40;
 let S=null, BUSY=false, GEN=0, WAIT=null;
-const GAME={help,menu};
+const GAME=window.GAME={help,menu};
 const cx=c=>c*CS+CS/2, cy=r=>r*CS+CS/2;
 function horseSVG(g,x,y,col){ const c=COLORS[col];
   sel('ellipse',{cx:x+1,cy:y+13,rx:13,ry:4.5,fill:'#0005'},g);
@@ -301,14 +306,11 @@ function colsFor(n){ return n===2?[0,2]:n===3?[0,1,2]:[0,1,2,3]; }
 function start(){ GEN++; const cols=colsFor(M.n);
   S={players:M.slots.slice(0,M.n).map((p,i)=>({name:(p.name||'').trim()||(p.h?HN[i]:AIN[i]),ai:!p.h,level:M.level,col:cols[i],h:[-1,-1,-1,-1]})),cur:0,opt:{noPass:M.noPass,classic:!!M.classic},log:[],over:null};
   buildBoard(); render(); log('Les chevaux piaffent dans leurs écuries…'); store(SAVE,S); turn(); }
-function help(){ openModal(`<h2>Règles des petits chevaux</h2><ul>
-  <li>Chacun a 4 chevaux dans son écurie. Il faut un <b>6</b> pour en sortir un sur la case de départ (la case colorée avec une flèche).</li>
-  <li>Les chevaux font le tour du plateau dans le sens des aiguilles d'une montre. Un <b>6</b> permet de rejouer.</li>
-  <li>Arriver <b>exactement</b> sur un cheval adverse le renvoie dans son écurie. On ne peut pas s'arrêter sur un de ses propres chevaux.</li>
-  <li>Au bout du tour, le cheval grimpe son escalier coloré. <b>Escalier rapide</b> : on monte du nombre du dé et il faut tomber pile sur la marche 6 pour arriver au centre. <b>Escalier classique</b> : il faut s'arrêter pile devant l'escalier, puis faire 1 pour la marche 1, 2 pour la marche 2… jusqu'au 6.</li>
-  <li>Le premier à amener ses 4 chevaux au centre gagne. Variante : « interdit de doubler » empêche de passer par-dessus un autre cheval.</li></ul>
-  <p>Touche le dé ou appuie sur Espace pour lancer, puis touche le cheval entouré de blanc à avancer.</p><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+function help(){ helpTabs("Petits Chevaux",[["But du jeu","<p>Être le premier à amener ses <b>4 chevaux</b> au centre du plateau.</p>"],["Déroulement","<ol><li>Il faut un <b>6</b> pour sortir un cheval de l’écurie sur sa case de départ (case colorée avec une flèche).</li><li>Les chevaux font le tour du plateau dans le sens des aiguilles d’une montre, du nombre indiqué par le dé.</li><li>Un <b>6</b> permet de rejouer.</li><li>Arriver pile sur un cheval adverse le renvoie dans son écurie. On ne peut pas s’arrêter sur un de ses propres chevaux.</li><li>Après un tour complet, le cheval monte son escalier coloré jusqu’au centre.</li></ol>"],["Variantes","<ul><li><b>Escalier rapide</b> : on monte du nombre du dé et il faut tomber pile sur la marche 6.</li><li><b>Escalier classique</b> : on s’arrête pile au pied de l’escalier, puis il faut un 1 pour la marche 1, un 2 pour la marche 2… jusqu’au 6.</li><li><b>On peut sauter les chevaux</b> ou <b>interdit de doubler</b> (on ne passe pas par-dessus un autre cheval).</li></ul><p class=\"ex\">Jouer ici : touche le dé (ou Espace) pour lancer, puis le cheval entouré de blanc à avancer.</p>"]]); }
 (function boot(){ buildDie(); const p=load('pc-prefs'); if(p) Object.assign(M,p); const s=load(SAVE);
   if(s&&!s.over){ S=s; buildBoard(); render(); turn(); } else { M.n=M.n||4; S={players:colsFor(4).map((c,i)=>({name:'',ai:true,col:c,h:[-1,-1,-1,-1]})),cur:0,opt:{},log:[],over:null}; buildBoard(); renderHorses(); S=null; menu(); } })();
 }
-</script></body></html>
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>

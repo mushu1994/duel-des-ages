@@ -4,7 +4,11 @@ Une ludothèque de jeux de société à jouer dans le navigateur, contre l'ordin
 
 **Jouer :** https://mushu1994.github.io/duel-des-ages/
 
-Grands jeux : Duel des Âges, Duel des Joyaux, Plus Bas, Têtes de Bœuf, Rails d'Europe, Nouvelle Terre, Grand Propriétaire (avec le dé de rapidité).
-Classiques : Dames, Petits Chevaux, Solitaire, Sudoku, La Bataille, Code Secret, Bataille Navale, Échecs, Reversi, Quatre en ligne, Dominos, Président, Tarot, Poker, Rami voleur, Petit Bac, Mots croisés.
+Le portail classe les jeux par type, avec une recherche et des filtres (type de jeu, seul, contre l'ordinateur, à 2 ou à 3 et plus).
+
+- **Jeux de cartes** : Duel des Âges, Duel des Joyaux, Plus Bas, Têtes de Bœuf, La Bataille, Président, Tarot, Poker, Rami voleur, Solitaire (cartes et billes).
+- **Jeux de plateau** : Nouvelle Terre, Rails d'Europe, Grand Propriétaire (avec le dé de rapidité), Échecs, Dames, Reversi, Quatre en ligne, Bataille Navale, Petits Chevaux.
+- **Dés et dominos** : Approche finale (coopératif à deux ou avec l'IA, dans l'esprit de Sky Team), Dominos.
+- **Lettres, chiffres et logique** : Sudoku, Mots croisés, Petit Bac, Code Secret.
 
 Les jeux sont des créations originales inspirées de mécaniques de jeux connus ; noms, cartes et illustrations sont propres à la salle.

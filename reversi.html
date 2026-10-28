@@ -73,6 +73,10 @@ body{background:radial-gradient(ellipse at 50% 0%,#2a3a34,#101814 75%) fixed,#10
 .p.white{transform:rotateY(180deg)}
 .p.new{animation:pn .25s}
 @keyframes pn{from{transform:scale(.3)}}
+
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style></head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Reversi</h1>
 <div class="tools"><button class="btn" data-a="undo">Annuler</button><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
@@ -88,7 +92,8 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
 function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
@@ -119,13 +124,13 @@ function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
   if(!MUTED) ac();
-  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
     case 'help': GAME.help(); break;
-    case 'new': GAME.menu(); break;
-    case 'close': closeModal(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
   }
 });
 addEventListener('DOMContentLoaded',updSnd);
@@ -156,7 +161,7 @@ function aiMove(b,p,level){ const ms=moves(b,p); if(!ms.length) return -1;
 if(IS_NODE) module.exports={init,moves,apply,aiMove};
 else {
 /* ===== interface ===== */
-let S=null, BUSY=false, GEN=0; const GAME={help,menu};
+let S=null, BUSY=false, GEN=0; const GAME=window.GAME={help,menu};
 function build(){ $('#g').innerHTML=Array.from({length:64},(_,i)=>`<div class="c" data-i="${i}"><div class="p" hidden><div class="f n"></div><div class="f w"></div></div></div>`).join(''); }
 const isAI=p=>S.mode==='ia'&&p===S.ai;
 function render(newI){ const ms=S.over||isAI(S.turn)?[]:moves(S.b,S.turn);
@@ -186,7 +191,10 @@ function menu(){ const draw=()=>paintModal(`<h2>Nouvelle partie</h2><h4>Adversai
   ${M.mode==='ia'?`<h4>Niveau</h4><div class="seg">${['facile','normal','difficile'].map(l=>`<button class="${M.level===l?'on':''}" data-m="level:${l}">${l}</button>`).join('')}</div><h4>Ta couleur</h4><div class="seg"><button class="${M.color===1?'on':''}" data-m="color:1">Noirs (tu commences)</button><button class="${M.color===2?'on':''}" data-m="color:2">Blancs</button></div>`:`<div class="prow"><input type="text" id="n0" value="${esc(M.names[0])}" placeholder="Camille" maxlength="14"> (noirs) contre <input type="text" id="n1" value="${esc(M.names[1])}" placeholder="Lucas" maxlength="14"></div>`}
   <div class="acts">${S?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="start">Jouer</button></div>`);
   draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; if($('#n0')) M.names=[$('#n0').value,$('#n1').value]; const [k,v]=x.dataset.m.split(':'); if(k==='start'){ closeModal(); store('rvp',M); newGame(); return; } M[k]=k==='color'?+v:v; draw(); }; }
-function help(){ openModal(`<h2>Reversi</h2><p>Pose un pion de façon à <b>encadrer</b> une ou plusieurs lignes de pions adverses (horizontale, verticale ou diagonale) : ils sont retournés et prennent ta couleur. Si tu ne peux pas jouer, tu passes. Quand personne ne peut plus jouer, celui qui a le plus de pions gagne.</p><p>Astuce : les coins sont précieux, les cases voisines des coins sont dangereuses.</p><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+function help(){ helpTabs("Reversi",[["But du jeu","<p>Avoir le plus de pions de sa couleur quand plus personne ne peut jouer. Les Noirs commencent.</p>"],["Déroulement","<ul><li>Pose un pion de façon à <b>encadrer</b> une ou plusieurs lignes de pions adverses (horizontale, verticale ou diagonale) entre ton nouveau pion et un pion à toi.</li><li>Tous les pions encadrés sont retournés et prennent ta couleur.</li><li>Un coup doit retourner au moins un pion. Si tu ne peux pas jouer, tu passes ton tour.</li></ul><p class=\"ex\">Astuce : les coins ne peuvent jamais être repris, ils sont précieux. Les cases voisines des coins sont dangereuses : elles les offrent à l’adversaire.</p><p>Jouer ici : les points clairs montrent où tu peux jouer. « Annuler » reprend ton dernier coup.</p>"]]); }
 (function boot(){ const p=load('rvp'); if(p) Object.assign(M,p); build(); const s=load('rv'); if(s&&!s.over){ S=s; render(); next(); } else { S={b:init(),turn:1,mode:'2p',names:['',''],hist:[],last:-1}; render(); S=null; menu(); } })();
 }
-</script></body></html>
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>

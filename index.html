@@ -56,6 +56,26 @@ section{margin-bottom:40px}
 .tile p{margin:0;font-size:14px;color:var(--chalk-mute)}
 .tile .spirit{font-size:12px;color:var(--gold);letter-spacing:.02em}
 .tile .players{font-size:12px;color:var(--chalk-mute);font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+.finder{position:relative;top:env(safe-area-inset-top,0px);z-index:5;margin:0 calc(-1*max(16px,env(safe-area-inset-left,0px))) 28px;padding:12px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:rgba(13,40,29,.94);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:8px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--felt2)}
+.fsearch{display:flex;align-items:center;gap:10px;background:var(--cream);border-radius:12px;padding:0 12px;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.fsearch svg{width:20px;height:20px;color:var(--mute);flex:none}
+.fsearch input{flex:1;min-width:0;border:0;background:transparent;font:500 16px var(--body);padding:12px 0;color:var(--ink);-webkit-text-fill-color:var(--ink);outline:none}
+.fsearch input::placeholder{color:#8f846c;-webkit-text-fill-color:#8f846c}
+.fsearch:focus-within{box-shadow:0 0 0 2px var(--gold)}
+.frow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.flab{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk-mute);font-weight:700;width:70px;flex:none}
+.chip{font:700 14px var(--body);border-radius:999px;padding:6px 12px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.05);color:var(--chalk);cursor:pointer;touch-action:manipulation}
+.chip:hover{border-color:var(--gold)}
+.chip.on{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.fres{margin:0;font-size:13px;color:var(--chalk-mute)}
+.cnt{font-weight:500;letter-spacing:0;text-transform:none;color:var(--gold)}
+.cat .games+.classics{margin-top:16px}
+.empty{text-align:center;color:var(--chalk-mute);padding:30px 0}
+@media (min-width:760px){.finder{position:sticky}}
+@media (max-width:560px){.flab{width:auto;margin-right:2px}.chip{font-size:13px;padding:5px 10px}.frow{gap:5px}}
 footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
 </style>
 </head>
@@ -64,13 +84,23 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
   <header>
     <span class="eyebrow">Ludothèque maison</span>
     <h1>Salle de jeux</h1>
-    <p class="lead">Des jeux de société à jouer dans le navigateur, seul contre l’ordinateur ou à deux sur le même écran. Chaque partie se sauvegarde toute seule.</p>
+    <p class="lead">Des jeux de société à jouer dans le navigateur, seul, contre l’ordinateur ou à plusieurs sur le même écran. Chaque partie se sauvegarde toute seule.</p>
   </header>
 
-  <section aria-labelledby="dispo">
-    <h2 id="dispo">Jeux disponibles</h2>
+  <div class="finder" role="search">
+    <div class="fsearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <input id="q" type="search" placeholder="Rechercher un jeu, une règle, un style…" autocomplete="off" aria-label="Rechercher un jeu"></div>
+    <div class="frow" aria-label="Type de jeu"><span class="flab">Type</span>
+      <button class="chip on" data-f="type" data-v="">Tous</button><button class="chip" data-f="type" data-v="cartes">Cartes</button><button class="chip" data-f="type" data-v="plateau">Plateau</button><button class="chip" data-f="type" data-v="des">Dés et dominos</button><button class="chip" data-f="type" data-v="lettres">Lettres et logique</button></div>
+    <div class="frow" aria-label="Joueurs"><span class="flab">Joueurs</span>
+      <button class="chip on" data-f="who" data-v="">Peu importe</button><button class="chip" data-f="who" data-v="solo">Seul, sans adversaire</button><button class="chip" data-f="who" data-v="ia">Contre l’ordinateur</button><button class="chip" data-f="who" data-v="2">À 2 sur un écran</button><button class="chip" data-f="who" data-v="3">À 3 ou plus</button></div>
+    <p class="fres" id="fres" aria-live="polite"></p>
+  </div>
+  <div class="empty" id="empty" hidden><p>Aucun jeu ne correspond à ces critères.</p><button class="chip on" id="reset">Effacer les filtres</button></div>
+  <section class="cat" aria-labelledby="s-cartes">
+    <h2 id="s-cartes">Jeux de cartes <span class="cnt"></span></h2>
     <div class="games">
-      <a class="game" href="duel-des-ages.html">
+      <a class="game" href="duel-des-ages.html" data-type="cartes" data-humans="2" data-solo="0" data-ia="1" data-kw="civilisation merveilles science guerre stratégie">
         <div class="art ages" aria-hidden="true">
           <svg viewBox="0 0 120 110">
             <g stroke="rgba(0,0,0,.4)" stroke-width="1">
@@ -91,7 +121,7 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
           <div class="play"><span class="btn">Jouer</span><span class="saved" data-save="duel-des-ages-save" hidden>Partie en cours</span></div>
         </div>
       </a>
-      <a class="game" href="duel-des-joyaux.html">
+      <a class="game" href="duel-des-joyaux.html" data-type="cartes" data-humans="2" data-solo="0" data-ia="1" data-kw="jetons gemmes prestige couronnes">
         <div class="art joyaux" aria-hidden="true">
           <svg viewBox="0 0 120 110">
             <defs>
@@ -117,7 +147,7 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
           <div class="play"><span class="btn">Jouer</span><span class="saved" data-save="duel-des-joyaux-save" hidden>Partie en cours</span></div>
         </div>
       </a>
-      <a class="game" href="plus-bas.html">
+      <a class="game" href="plus-bas.html" data-type="cartes" data-humans="8" data-solo="0" data-ia="1" data-kw="grille colonnes">
         <div class="art" style="background:linear-gradient(180deg,#0b1a28,#1d4a5e)" aria-hidden="true">
           <svg viewBox="0 0 120 110">
             <path d="M0 96 L30 60 L48 78 L70 44 L96 80 L120 62 V110 H0Z" fill="#173a52"/><path d="M70 44 L78 56 L66 56Z" fill="#eef6fb"/>
@@ -136,7 +166,7 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
           <div class="play"><span class="btn">Jouer</span><span class="saved" data-save="plus-bas-save" hidden>Partie en cours</span></div>
         </div>
       </a>
-      <a class="game" href="tetes-de-boeuf.html">
+      <a class="game" href="tetes-de-boeuf.html" data-type="cartes" data-humans="10" data-solo="0" data-ia="1" data-kw="rangées têtes">
         <div class="art" style="background:linear-gradient(180deg,#2c160e,#1c0e09)" aria-hidden="true">
           <svg viewBox="0 0 120 110">
             <g font-family="Georgia,serif" font-weight="700" text-anchor="middle">
@@ -154,27 +184,39 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
           <div class="play"><span class="btn">Jouer</span><span class="saved" data-save="tetes-de-boeuf-save" hidden>Partie en cours</span></div>
         </div>
       </a>
-      <a class="game" href="rails-d-europe.html">
-        <div class="art" style="background:linear-gradient(180deg,#b9cfc9,#9fbcb4)" aria-hidden="true">
-          <svg viewBox="0 0 120 110">
-            <path d="M8 30 C30 18 44 40 60 26 S96 12 112 30 L112 96 C88 104 70 86 52 98 S20 100 8 92Z" fill="#ecdcb8" stroke="#4a3423" stroke-width="1.4"/>
-            <g stroke="#2f2215" stroke-width=".8">
-              <g fill="#c9363a"><rect x="24" y="72" width="12" height="6" rx="1.5" transform="rotate(-28 30 75)"/><rect x="38" y="63" width="12" height="6" rx="1.5" transform="rotate(-28 44 66)"/></g>
-              <g fill="#2d6fc2"><rect x="58" y="52" width="12" height="6" rx="1.5" transform="rotate(-12 64 55)"/><rect x="73" y="49" width="12" height="6" rx="1.5" transform="rotate(-12 79 52)"/></g>
-              <g fill="#eec535"><rect x="66" y="72" width="12" height="6" rx="1.5" transform="rotate(20 72 75)"/><rect x="80" y="78" width="12" height="6" rx="1.5" transform="rotate(20 86 81)"/></g>
-            </g>
-            <g fill="#efe2c4" stroke="#4a3423" stroke-width="1.6"><circle cx="20" cy="82" r="4.5"/><circle cx="56" cy="58" r="4.5"/><circle cx="92" cy="46" r="4.5"/><circle cx="98" cy="86" r="4.5"/></g>
-            <g transform="translate(78 26)" opacity=".75" stroke="#4a3423" fill="none"><circle r="9"/><path d="M0 -12 L2.5 0 L0 12 L-2.5 0Z" fill="#8b2e1f"/></g>
-          </svg>
-        </div>
-        <div class="body">
-          <h3>Rails d’Europe</h3>
-          <p>Pose tes wagons, relie les villes de tes billets et file d’un bout à l’autre de la carte.</p>
-          <div class="tags"><span class="tag">2 à 5 joueurs</span><span class="tag">Contre l’IA</span><span class="tag ext">5 cartes</span><span class="tag ext">Tunnels · ferries · gares</span></div>
-          <div class="play"><span class="btn">Jouer</span><span class="saved" data-save="rails-d-europe-save" hidden>Partie en cours</span></div>
-        </div>
+    </div>
+    <div class="classics">
+      <a class="cl" href="bataille.html" data-type="cartes" data-humans="2" data-solo="0" data-ia="1" data-kw="enfants hasard">
+        <div class="art" style="background:linear-gradient(160deg,#1f7a46,#0d3a20)" aria-hidden="true"><svg viewBox="0 0 120 80"><g transform="rotate(-12 45 42)"><rect x="25" y="12" width="40" height="56" rx="5" fill="#fff" stroke="#999"/><text x="31" y="28" font-size="13" font-weight="800" fill="#1c1c24">R</text><text x="40" y="52" font-size="20">♠</text></g><g transform="rotate(10 78 42)"><rect x="58" y="12" width="40" height="56" rx="5" fill="#fff" stroke="#999"/><text x="64" y="28" font-size="13" font-weight="800" fill="#c8203a">R</text><text x="73" y="52" font-size="20" fill="#c8203a">♥</text></g></svg></div>
+        <div class="body"><h3>La Bataille</h3><p>Le grand classique des cartes : la plus forte l’emporte… sauf en cas de bataille !</p><div class="tags"><span class="tag">Contre l’IA</span><span class="tag">À deux</span></div><span class="saved" data-save="bat-save" hidden>Partie en cours</span></div>
       </a>
-      <a class="game" href="nouvelle-terre.html">
+      <a class="cl" href="president.html" data-type="cartes" data-humans="1" data-solo="0" data-ia="1" data-kw="trou défausse">
+        <div class="art" style="background:linear-gradient(160deg,#7a1f2a,#2a0a10)" aria-hidden="true"><svg viewBox="0 0 120 80"><g transform="rotate(-8 50 40)"><rect x="34" y="12" width="34" height="50" rx="4" fill="#fff" stroke="#999"/><text x="40" y="28" font-size="12" font-weight="800" fill="#1c1c24">2</text><text x="46" y="50" font-size="18">♠</text></g><g transform="rotate(8 70 40)"><rect x="54" y="12" width="34" height="50" rx="4" fill="#fff" stroke="#999"/><text x="60" y="28" font-size="12" font-weight="800" fill="#c8203a">2</text><text x="66" y="50" font-size="18" fill="#c8203a">♥</text></g><path d="M50 8 l6 -6 l4 5 l4 -5 l6 6 v4 h-20z" fill="#ffd34a"/></svg></div>
+        <div class="body"><h3>Président</h3><p>Débarrasse-toi de tes cartes le premier pour devenir Président.</p><div class="tags"><span class="tag">3 à 6 joueurs</span><span class="tag">Contre l’IA</span></div></div>
+      </a>
+      <a class="cl" href="tarot.html" data-type="cartes" data-humans="1" data-solo="0" data-ia="1" data-kw="atouts chien bouts enchères">
+        <div class="art" style="background:linear-gradient(160deg,#2a4a7a,#0e1a30)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="28" y="8" width="38" height="62" rx="5" fill="#fdf6e4" stroke="#a89a80"/><text x="47" y="48" font-size="24" font-weight="900" text-anchor="middle" fill="#1e3c8a">21</text><rect x="58" y="12" width="38" height="62" rx="5" fill="#fff" stroke="#a89a80" transform="rotate(10 77 43)"/><text x="78" y="52" font-size="22" text-anchor="middle" fill="#7a3fb0" transform="rotate(10 77 43)">★</text></svg></div>
+        <div class="body"><h3>Tarot</h3><p>Le tarot à quatre : enchères, chien, écart, bouts et petit au bout.</p><div class="tags"><span class="tag">4 joueurs</span><span class="tag">Contre l’IA</span></div></div>
+      </a>
+      <a class="cl" href="poker.html" data-type="cartes" data-humans="1" data-solo="0" data-ia="1" data-kw="texas holdem jetons bluff">
+        <div class="art" style="background:linear-gradient(160deg,#2a2230,#0c0a10)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="24" y="14" width="32" height="46" rx="4" fill="#fff" stroke="#999" transform="rotate(-10 40 37)"/><text x="30" y="30" font-size="12" font-weight="800" fill="#1c1c24" transform="rotate(-10 40 37)">A♠</text><rect x="44" y="14" width="32" height="46" rx="4" fill="#fff" stroke="#999" transform="rotate(6 60 37)"/><text x="50" y="30" font-size="12" font-weight="800" fill="#c8203a" transform="rotate(6 60 37)">A♥</text><g><circle cx="88" cy="58" r="11" fill="#c9302c" stroke="#fff" stroke-width="3" stroke-dasharray="4 3"/><circle cx="94" cy="50" r="11" fill="#1e3d8b" stroke="#fff" stroke-width="3" stroke-dasharray="4 3"/></g></svg></div>
+        <div class="body"><h3>Poker</h3><p>Texas Hold’em en tournoi contre l’ordinateur : relance, bluff et tapis.</p><div class="tags"><span class="tag">2 à 6 joueurs</span><span class="tag">Contre l’IA</span></div></div>
+      </a>
+      <a class="cl" href="rami.html" data-type="cartes" data-humans="1" data-solo="0" data-ia="1" data-kw="combinaisons suites brelans">
+        <div class="art" style="background:linear-gradient(160deg,#1f6a5a,#0a2a24)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="20" y="18" width="30" height="44" rx="4" fill="#fff" stroke="#999"/><text x="25" y="33" font-size="11" font-weight="800" fill="#c8203a">7♥</text><rect x="40" y="18" width="30" height="44" rx="4" fill="#fff" stroke="#999"/><text x="45" y="33" font-size="11" font-weight="800" fill="#c8203a">8♥</text><rect x="60" y="18" width="30" height="44" rx="4" fill="#fff" stroke="#999"/><text x="65" y="33" font-size="11" font-weight="800" fill="#c8203a">9♥</text><rect x="80" y="18" width="30" height="44" rx="4" fill="#fff" stroke="#999"/><text x="85" y="33" font-size="11" font-weight="800" fill="#c8203a">10♥</text></svg></div>
+        <div class="body"><h3>Rami voleur</h3><p>Pose tes combinaisons et vole celles de la table pour vider ta main.</p><div class="tags"><span class="tag">2 à 4 joueurs</span><span class="tag">Contre l’IA</span></div></div>
+      </a>
+      <a class="cl" href="solitaire.html" data-type="cartes plateau" data-humans="1" data-solo="1" data-ia="0" data-kw="billes klondike patience réussite">
+        <div class="art" style="background:linear-gradient(160deg,#2f7f4c,#11391f)" aria-hidden="true"><svg viewBox="0 0 120 80"><circle cx="40" cy="42" r="34" fill="#8a5228"/><circle cx="40" cy="18" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="40" cy="30" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="28" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="52" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="40" cy="54" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="40" cy="66" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="16" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="64" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><rect x="78" y="14" width="30" height="42" rx="4" fill="#fff" stroke="#999"/><text x="84" y="28" font-size="12" font-weight="800" fill="#c8203a">A</text><text x="93" y="47" font-size="18" fill="#c8203a">♥</text></svg></div>
+        <div class="body"><h3>Solitaire</h3><p>Le solitaire à billes (anglais ou européen) et le solitaire aux cartes.</p><div class="tags"><span class="tag">Solo</span><span class="tag">Billes & cartes</span></div></div>
+      </a>
+    </div>
+  </section>
+
+  <section class="cat" aria-labelledby="s-plateau">
+    <h2 id="s-plateau">Jeux de plateau <span class="cnt"></span></h2>
+    <div class="games">
+      <a class="game" href="nouvelle-terre.html" data-type="plateau des" data-humans="6" data-solo="0" data-ia="1" data-kw="colons île ressources échanges">
         <div class="art" style="background:radial-gradient(circle at 50% 40%,#3f8fb5,#123e58)" aria-hidden="true">
           <svg viewBox="0 0 120 110">
             <g stroke="#2a1a0a" stroke-width="1">
@@ -194,7 +236,27 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
           <div class="play"><span class="btn">Jouer</span><span class="saved" data-save="nouvelle-terre-save" hidden>Partie en cours</span></div>
         </div>
       </a>
-      <a class="game" href="grand-proprietaire.html">
+      <a class="game" href="rails-d-europe.html" data-type="plateau" data-humans="5" data-solo="0" data-ia="1" data-kw="trains wagons carte europe tunnels ferries">
+        <div class="art" style="background:linear-gradient(180deg,#b9cfc9,#9fbcb4)" aria-hidden="true">
+          <svg viewBox="0 0 120 110">
+            <path d="M8 30 C30 18 44 40 60 26 S96 12 112 30 L112 96 C88 104 70 86 52 98 S20 100 8 92Z" fill="#ecdcb8" stroke="#4a3423" stroke-width="1.4"/>
+            <g stroke="#2f2215" stroke-width=".8">
+              <g fill="#c9363a"><rect x="24" y="72" width="12" height="6" rx="1.5" transform="rotate(-28 30 75)"/><rect x="38" y="63" width="12" height="6" rx="1.5" transform="rotate(-28 44 66)"/></g>
+              <g fill="#2d6fc2"><rect x="58" y="52" width="12" height="6" rx="1.5" transform="rotate(-12 64 55)"/><rect x="73" y="49" width="12" height="6" rx="1.5" transform="rotate(-12 79 52)"/></g>
+              <g fill="#eec535"><rect x="66" y="72" width="12" height="6" rx="1.5" transform="rotate(20 72 75)"/><rect x="80" y="78" width="12" height="6" rx="1.5" transform="rotate(20 86 81)"/></g>
+            </g>
+            <g fill="#efe2c4" stroke="#4a3423" stroke-width="1.6"><circle cx="20" cy="82" r="4.5"/><circle cx="56" cy="58" r="4.5"/><circle cx="92" cy="46" r="4.5"/><circle cx="98" cy="86" r="4.5"/></g>
+            <g transform="translate(78 26)" opacity=".75" stroke="#4a3423" fill="none"><circle r="9"/><path d="M0 -12 L2.5 0 L0 12 L-2.5 0Z" fill="#8b2e1f"/></g>
+          </svg>
+        </div>
+        <div class="body">
+          <h3>Rails d’Europe</h3>
+          <p>Pose tes wagons, relie les villes de tes billets et file d’un bout à l’autre de la carte.</p>
+          <div class="tags"><span class="tag">2 à 5 joueurs</span><span class="tag">Contre l’IA</span><span class="tag ext">5 cartes</span><span class="tag ext">Tunnels · ferries · gares</span></div>
+          <div class="play"><span class="btn">Jouer</span><span class="saved" data-save="rails-d-europe-save" hidden>Partie en cours</span></div>
+        </div>
+      </a>
+      <a class="game" href="grand-proprietaire.html" data-type="plateau des" data-humans="6" data-solo="0" data-ia="1" data-kw="monopoly immobilier argent enchères">
         <div class="art" style="background:radial-gradient(circle at 50% 40%,#2a7a6f,#0b2826)" aria-hidden="true">
           <svg viewBox="0 0 120 110">
             <rect x="20" y="15" width="80" height="80" fill="#f6eed8" stroke="#1d2925" stroke-width="2"/>
@@ -217,84 +279,81 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
         </div>
       </a>
     </div>
-  </section>
-
-  <section aria-labelledby="classiques">
-    <h2 id="classiques">Les grands classiques</h2>
     <div class="classics">
-      <a class="cl" href="dames.html">
+      <a class="cl" href="echecs.html" data-type="plateau" data-humans="2" data-solo="0" data-ia="1" data-kw="roi dame stratégie">
+        <div class="art" style="background:linear-gradient(160deg,#3b3530,#141210)" aria-hidden="true"><svg viewBox="0 0 120 80"><text x="38" y="62" font-size="54" fill="#fffaf0" stroke="#000" stroke-width="1.5" font-family="DejaVu Sans,serif">♚</text><text x="70" y="62" font-size="54" fill="#1c1410" stroke="#c9b089" stroke-width="1" font-family="DejaVu Sans,serif">♞</text></svg></div>
+        <div class="body"><h3>Échecs</h3><p>Toutes les règles officielles et un ordinateur de 3 forces.</p><div class="tags"><span class="tag">Contre l’IA</span><span class="tag">À deux</span></div><span class="saved" data-save="ech" hidden>Partie en cours</span></div>
+      </a>
+      <a class="cl" href="dames.html" data-type="plateau" data-humans="2" data-solo="0" data-ia="1" data-kw="damier pions stratégie">
         <div class="art" style="background:linear-gradient(160deg,#6b3f22,#2c180b)" aria-hidden="true"><svg viewBox="0 0 120 80"><g><rect x="10" y="0" width="20" height="20" fill="#e2c393"/><rect x="30" y="0" width="20" height="20" fill="#7a4a28"/><rect x="50" y="0" width="20" height="20" fill="#e2c393"/><rect x="70" y="0" width="20" height="20" fill="#7a4a28"/><rect x="90" y="0" width="20" height="20" fill="#e2c393"/><rect x="10" y="20" width="20" height="20" fill="#7a4a28"/><rect x="30" y="20" width="20" height="20" fill="#e2c393"/><rect x="50" y="20" width="20" height="20" fill="#7a4a28"/><rect x="70" y="20" width="20" height="20" fill="#e2c393"/><rect x="90" y="20" width="20" height="20" fill="#7a4a28"/><rect x="10" y="40" width="20" height="20" fill="#e2c393"/><rect x="30" y="40" width="20" height="20" fill="#7a4a28"/><rect x="50" y="40" width="20" height="20" fill="#e2c393"/><rect x="70" y="40" width="20" height="20" fill="#7a4a28"/><rect x="90" y="40" width="20" height="20" fill="#e2c393"/><rect x="10" y="60" width="20" height="20" fill="#7a4a28"/><rect x="30" y="60" width="20" height="20" fill="#e2c393"/><rect x="50" y="60" width="20" height="20" fill="#7a4a28"/><rect x="70" y="60" width="20" height="20" fill="#e2c393"/><rect x="90" y="60" width="20" height="20" fill="#7a4a28"/></g><circle cx="40" cy="30" r="8" fill="#f3ead6" stroke="#a89a80" stroke-width="2"/><circle cx="80" cy="50" r="8" fill="#2a1f19" stroke="#000" stroke-width="2"/><circle cx="60" cy="70" r="8" fill="#2a1f19" stroke="#000" stroke-width="2"/><text x="80" y="54" font-size="9" text-anchor="middle" fill="#f2c44f">♛</text></svg></div>
         <div class="body"><h3>Dames</h3><p>Damier international 10×10 ou 8×8, prise majoritaire et dames volantes.</p><div class="tags"><span class="tag">Contre l’IA</span><span class="tag">À deux</span></div><span class="saved" data-save="dames-save" hidden>Partie en cours</span></div>
       </a>
-      <a class="cl" href="petits-chevaux.html">
-        <div class="art" style="background:linear-gradient(160deg,#2f7a58,#123a2a)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="10" y="5" width="30" height="30" rx="6" fill="#e03b2f"/><rect x="80" y="5" width="30" height="30" rx="6" fill="#2f9e4f"/><rect x="10" y="45" width="30" height="30" rx="6" fill="#2f6fd6"/><rect x="80" y="45" width="30" height="30" rx="6" fill="#f2c12e"/><path d="M60 40 L45 25 H75Z" fill="#2f9e4f"/><path d="M60 40 L75 55 H45Z" fill="#2f6fd6"/><path d="M60 40 L45 25 V55Z" fill="#e03b2f"/><path d="M60 40 L75 25 V55Z" fill="#f2c12e"/><rect x="50" y="62" width="16" height="16" rx="3" fill="#fff"/><circle cx="54" cy="66" r="1.8"/><circle cx="62" cy="74" r="1.8"/><circle cx="58" cy="70" r="1.8"/></svg></div>
-        <div class="body"><h3>Petits Chevaux</h3><p>La grande course autour du plateau : un 6 pour sortir de l’écurie !</p><div class="tags"><span class="tag">2 à 4 joueurs</span><span class="tag">Contre l’IA</span></div><span class="saved" data-save="petits-chevaux-save" hidden>Partie en cours</span></div>
+      <a class="cl" href="reversi.html" data-type="plateau" data-humans="2" data-solo="0" data-ia="1" data-kw="othello pions stratégie">
+        <div class="art" style="background:linear-gradient(160deg,#2a3a34,#101814)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="30" y="6" width="68" height="68" rx="4" fill="#1f8a4e"/><path d="M47 6V74M64 6V74M81 6V74M30 23H98M30 40H98M30 57H98" stroke="#0b3d22" stroke-width="1.5"/><circle cx="55.5" cy="31.5" r="7" fill="#111"/><circle cx="72.5" cy="31.5" r="7" fill="#f4f1e6"/><circle cx="55.5" cy="48.5" r="7" fill="#f4f1e6"/><circle cx="72.5" cy="48.5" r="7" fill="#111"/></svg></div>
+        <div class="body"><h3>Reversi</h3><p>Encadre les pions adverses pour les retourner (dans l’esprit d’Othello).</p><div class="tags"><span class="tag">Contre l’IA</span><span class="tag">À deux</span></div><span class="saved" data-save="rv" hidden>Partie en cours</span></div>
       </a>
-      <a class="cl" href="solitaire.html">
-        <div class="art" style="background:linear-gradient(160deg,#2f7f4c,#11391f)" aria-hidden="true"><svg viewBox="0 0 120 80"><circle cx="40" cy="42" r="34" fill="#8a5228"/><circle cx="40" cy="18" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="40" cy="30" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="28" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="52" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="40" cy="54" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="40" cy="66" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="16" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="64" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><rect x="78" y="14" width="30" height="42" rx="4" fill="#fff" stroke="#999"/><text x="84" y="28" font-size="12" font-weight="800" fill="#c8203a">A</text><text x="93" y="47" font-size="18" fill="#c8203a">♥</text></svg></div>
-        <div class="body"><h3>Solitaire</h3><p>Le solitaire à billes (anglais ou européen) et le solitaire aux cartes.</p><div class="tags"><span class="tag">Solo</span><span class="tag">Billes & cartes</span></div></div>
+      <a class="cl" href="quatre-en-ligne.html" data-type="plateau" data-humans="2" data-solo="0" data-ia="1" data-kw="puissance 4 pions">
+        <div class="art" style="background:linear-gradient(160deg,#2b4fb8,#0d1a4a)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="22" y="8" width="76" height="64" rx="8" fill="#2350d0"/><circle cx="33.0" cy="20" r="5" fill="#e8433a"/><circle cx="46.5" cy="20" r="5" fill="#0d1a4a"/><circle cx="60.0" cy="20" r="5" fill="#0d1a4a"/><circle cx="73.5" cy="20" r="5" fill="#0d1a4a"/><circle cx="87.0" cy="20" r="5" fill="#ffd84a"/><circle cx="100.5" cy="20" r="5" fill="#e8433a"/><circle cx="33.0" cy="33" r="5" fill="#0d1a4a"/><circle cx="46.5" cy="33" r="5" fill="#0d1a4a"/><circle cx="60.0" cy="33" r="5" fill="#e8433a"/><circle cx="73.5" cy="33" r="5" fill="#ffd84a"/><circle cx="87.0" cy="33" r="5" fill="#0d1a4a"/><circle cx="100.5" cy="33" r="5" fill="#0d1a4a"/><circle cx="33.0" cy="46" r="5" fill="#0d1a4a"/><circle cx="46.5" cy="46" r="5" fill="#0d1a4a"/><circle cx="60.0" cy="46" r="5" fill="#ffd84a"/><circle cx="73.5" cy="46" r="5" fill="#0d1a4a"/><circle cx="87.0" cy="46" r="5" fill="#e8433a"/><circle cx="100.5" cy="46" r="5" fill="#0d1a4a"/><circle cx="33.0" cy="59" r="5" fill="#0d1a4a"/><circle cx="46.5" cy="59" r="5" fill="#e8433a"/><circle cx="60.0" cy="59" r="5" fill="#0d1a4a"/><circle cx="73.5" cy="59" r="5" fill="#0d1a4a"/><circle cx="87.0" cy="59" r="5" fill="#0d1a4a"/><circle cx="100.5" cy="59" r="5" fill="#ffd84a"/></svg></div>
+        <div class="body"><h3>Quatre en ligne</h3><p>Aligne quatre pions avant l’adversaire (dans l’esprit de Puissance 4).</p><div class="tags"><span class="tag">Contre l’IA</span><span class="tag">À deux</span></div><span class="saved" data-save="q4" hidden>Partie en cours</span></div>
       </a>
-      <a class="cl" href="sudoku.html">
-        <div class="art" style="background:linear-gradient(160deg,#eef2fb,#c9d5f0)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="30" y="4" width="72" height="72" rx="6" fill="#fff" stroke="#22304f" stroke-width="2.5"/><path d="M54 4V76M78 4V76M30 28H102M30 52H102" stroke="#22304f" stroke-width="1.6"/><g font-size="13" font-weight="800" font-family="Arial" fill="#22304f"><text x="37" y="21">5</text><text x="85" y="21">3</text><text x="61" y="45" fill="#3f6fd8">7</text><text x="37" y="69">9</text><text x="85" y="69">1</text></g></svg></div>
-        <div class="body"><h3>Sudoku</h3><p>Grilles générées à l’infini, une seule solution, quatre niveaux.</p><div class="tags"><span class="tag">Solo</span><span class="tag">Notes & indices</span></div><span class="saved" data-save="sudoku-save" hidden>Partie en cours</span></div>
-      </a>
-      <a class="cl" href="bataille.html">
-        <div class="art" style="background:linear-gradient(160deg,#1f7a46,#0d3a20)" aria-hidden="true"><svg viewBox="0 0 120 80"><g transform="rotate(-12 45 42)"><rect x="25" y="12" width="40" height="56" rx="5" fill="#fff" stroke="#999"/><text x="31" y="28" font-size="13" font-weight="800" fill="#1c1c24">R</text><text x="40" y="52" font-size="20">♠</text></g><g transform="rotate(10 78 42)"><rect x="58" y="12" width="40" height="56" rx="5" fill="#fff" stroke="#999"/><text x="64" y="28" font-size="13" font-weight="800" fill="#c8203a">R</text><text x="73" y="52" font-size="20" fill="#c8203a">♥</text></g></svg></div>
-        <div class="body"><h3>La Bataille</h3><p>Le grand classique des cartes : la plus forte l’emporte… sauf en cas de bataille !</p><div class="tags"><span class="tag">Contre l’IA</span><span class="tag">À deux</span></div><span class="saved" data-save="bat-save" hidden>Partie en cours</span></div>
-      </a>
-      <a class="cl" href="code-secret.html">
-        <div class="art" style="background:linear-gradient(160deg,#3a2a4f,#141022)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="18" y="8" width="84" height="64" rx="8" fill="#8a552c"/><circle cx="32" cy="24" r="6" fill="#e8433a"/><circle cx="48" cy="24" r="6" fill="#2f7ee0"/><circle cx="64" cy="24" r="6" fill="#3fbf5a"/><circle cx="80" cy="24" r="6" fill="#f2c230"/><circle cx="32" cy="42" r="6" fill="#f08a2a"/><circle cx="48" cy="42" r="6" fill="#a84fd8"/><circle cx="64" cy="42" r="6" fill="#e8433a"/><circle cx="80" cy="42" r="6" fill="#2f7ee0"/><g fill="#c41f1f"><circle cx="96" cy="20" r="2.5"/><circle cx="96" cy="27" r="2.5"/></g><circle cx="96" cy="45" r="2.5" fill="#fff"/></svg></div>
-        <div class="body"><h3>Code Secret</h3><p>Trouve la combinaison de couleurs cachée… ou laisse l’ordinateur deviner la tienne.</p><div class="tags"><span class="tag">Solo</span><span class="tag">À deux</span></div><span class="saved" data-save="cs-save" hidden>Partie en cours</span></div>
-      </a>
-      <a class="cl" href="bataille-navale.html">
+      <a class="cl" href="bataille-navale.html" data-type="plateau" data-humans="2" data-solo="0" data-ia="1" data-kw="navires flotte grille">
         <div class="art" style="background:linear-gradient(160deg,#14506e,#06192a)" aria-hidden="true"><svg viewBox="0 0 120 80"><g stroke="#0d3d58"><rect x="12" y="4" width="16" height="16" fill="#1d6f99"/><rect x="28" y="4" width="16" height="16" fill="#1d6f99"/><rect x="44" y="4" width="16" height="16" fill="#1d6f99"/><rect x="60" y="4" width="16" height="16" fill="#1d6f99"/><rect x="76" y="4" width="16" height="16" fill="#1d6f99"/><rect x="92" y="4" width="16" height="16" fill="#1d6f99"/><rect x="12" y="20" width="16" height="16" fill="#1d6f99"/><rect x="28" y="20" width="16" height="16" fill="#1d6f99"/><rect x="44" y="20" width="16" height="16" fill="#1d6f99"/><rect x="60" y="20" width="16" height="16" fill="#1d6f99"/><rect x="76" y="20" width="16" height="16" fill="#1d6f99"/><rect x="92" y="20" width="16" height="16" fill="#1d6f99"/><rect x="12" y="36" width="16" height="16" fill="#1d6f99"/><rect x="28" y="36" width="16" height="16" fill="#1d6f99"/><rect x="44" y="36" width="16" height="16" fill="#1d6f99"/><rect x="60" y="36" width="16" height="16" fill="#1d6f99"/><rect x="76" y="36" width="16" height="16" fill="#1d6f99"/><rect x="92" y="36" width="16" height="16" fill="#1d6f99"/><rect x="12" y="52" width="16" height="16" fill="#1d6f99"/><rect x="28" y="52" width="16" height="16" fill="#1d6f99"/><rect x="44" y="52" width="16" height="16" fill="#1d6f99"/><rect x="60" y="52" width="16" height="16" fill="#1d6f99"/><rect x="76" y="52" width="16" height="16" fill="#1d6f99"/><rect x="92" y="52" width="16" height="16" fill="#1d6f99"/><rect x="12" y="68" width="16" height="16" fill="#1d6f99"/><rect x="28" y="68" width="16" height="16" fill="#1d6f99"/><rect x="44" y="68" width="16" height="16" fill="#1d6f99"/><rect x="60" y="68" width="16" height="16" fill="#1d6f99"/><rect x="76" y="68" width="16" height="16" fill="#1d6f99"/><rect x="92" y="68" width="16" height="16" fill="#1d6f99"/></g><path d="M30 30 Q34 22 44 22 H86 Q94 24 94 30 Q94 36 86 38 H44 Q34 38 30 30Z" fill="#8a9aa6" stroke="#2a3640" stroke-width="2"/><circle cx="68" cy="62" r="7" fill="#e2553a"/><circle cx="36" cy="60" r="3" fill="#d8eef9"/></svg></div>
         <div class="body"><h3>Bataille Navale</h3><p>Cache ta flotte et coule celle de l’Amiral avant qu’il ne trouve la tienne.</p><div class="tags"><span class="tag">Contre l’IA</span><span class="tag">À deux</span></div><span class="saved" data-save="bn-save" hidden>Partie en cours</span></div>
+      </a>
+      <a class="cl" href="petits-chevaux.html" data-type="plateau des" data-humans="4" data-solo="0" data-ia="1" data-kw="course écurie enfants">
+        <div class="art" style="background:linear-gradient(160deg,#2f7a58,#123a2a)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="10" y="5" width="30" height="30" rx="6" fill="#e03b2f"/><rect x="80" y="5" width="30" height="30" rx="6" fill="#2f9e4f"/><rect x="10" y="45" width="30" height="30" rx="6" fill="#2f6fd6"/><rect x="80" y="45" width="30" height="30" rx="6" fill="#f2c12e"/><path d="M60 40 L45 25 H75Z" fill="#2f9e4f"/><path d="M60 40 L75 55 H45Z" fill="#2f6fd6"/><path d="M60 40 L45 25 V55Z" fill="#e03b2f"/><path d="M60 40 L75 25 V55Z" fill="#f2c12e"/><rect x="50" y="62" width="16" height="16" rx="3" fill="#fff"/><circle cx="54" cy="66" r="1.8"/><circle cx="62" cy="74" r="1.8"/><circle cx="58" cy="70" r="1.8"/></svg></div>
+        <div class="body"><h3>Petits Chevaux</h3><p>La grande course autour du plateau : un 6 pour sortir de l’écurie !</p><div class="tags"><span class="tag">2 à 4 joueurs</span><span class="tag">Contre l’IA</span></div><span class="saved" data-save="petits-chevaux-save" hidden>Partie en cours</span></div>
       </a>
     </div>
   </section>
 
-  <section aria-labelledby="cartes">
-    <h2 id="cartes">Cartes, plateaux et jeux de lettres</h2>
+  <section class="cat" aria-labelledby="s-des">
+    <h2 id="s-des">Dés et dominos <span class="cnt"></span></h2>
+    <div class="games">
+      <a class="game" href="approche-finale.html" data-type="des" data-humans="2" data-solo="0" data-ia="1" data-kw="avion pilote copilote coopératif sky team atterrissage">
+        <div class="art" style="background:linear-gradient(160deg,#1d3a63,#0b111c)" aria-hidden="true">
+          <svg viewBox="0 0 120 110">
+            <rect x="8" y="78" width="104" height="14" rx="3" fill="#3a3f48"/><path d="M14 85h92" stroke="#f2f2f2" stroke-width="2" stroke-dasharray="7 6"/>
+            <path d="M18 28C40 30 70 46 92 70" stroke="#ffd34d" stroke-width="1.5" stroke-dasharray="3 4" fill="none" opacity=".7"/>
+            <g transform="translate(40,38) rotate(28)"><path d="M0-17 3-5 16 2 16 5 3 2 2 11 7 14 7 16 0 14-7 16-7 14-2 11-3 2-16 5-16 2-3-5Z" fill="#ffd34d" stroke="#3a2a00" stroke-width="1.2"/></g>
+            <rect x="74" y="14" width="16" height="16" rx="4" fill="#3d86f2"/><circle cx="78.5" cy="18.5" r="1.8" fill="#fff"/><circle cx="85.5" cy="25.5" r="1.8" fill="#fff"/>
+            <rect x="94" y="22" width="16" height="16" rx="4" fill="#f28c2c"/><circle cx="102" cy="30" r="1.8" fill="#fff"/><circle cx="97.5" cy="25.5" r="1.8" fill="#fff"/><circle cx="106.5" cy="34.5" r="1.8" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="body">
+          <h3>Approche finale</h3>
+          <p>Pilote et copilote posent l’avion ensemble, en silence radio : chaque dé compte. Dans l’esprit de Sky Team.</p>
+          <div class="tags"><span class="tag">1 ou 2 joueurs</span><span class="tag">Coopératif</span><span class="tag">Avec l’IA</span><span class="tag ext">8 atterrissages</span><span class="tag ext">6 modules</span></div>
+          <div class="play"><span class="btn">Jouer</span><span class="saved" data-save="apf" hidden>Vol en cours</span></div>
+        </div>
+      </a>
+    </div>
     <div class="classics">
-      <a class="cl" href="echecs.html">
-        <div class="art" style="background:linear-gradient(160deg,#3b3530,#141210)" aria-hidden="true"><svg viewBox="0 0 120 80"><text x="38" y="62" font-size="54" fill="#fffaf0" stroke="#000" stroke-width="1.5" font-family="DejaVu Sans,serif">♚</text><text x="70" y="62" font-size="54" fill="#1c1410" stroke="#c9b089" stroke-width="1" font-family="DejaVu Sans,serif">♞</text></svg></div>
-        <div class="body"><h3>Échecs</h3><p>Toutes les règles officielles et un ordinateur de 3 forces.</p><div class="tags"><span class="tag">Contre l’IA</span><span class="tag">À deux</span></div><span class="saved" data-save="ech" hidden>Partie en cours</span></div>
-      </a>
-      <a class="cl" href="reversi.html">
-        <div class="art" style="background:linear-gradient(160deg,#2a3a34,#101814)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="30" y="6" width="68" height="68" rx="4" fill="#1f8a4e"/><path d="M47 6V74M64 6V74M81 6V74M30 23H98M30 40H98M30 57H98" stroke="#0b3d22" stroke-width="1.5"/><circle cx="55.5" cy="31.5" r="7" fill="#111"/><circle cx="72.5" cy="31.5" r="7" fill="#f4f1e6"/><circle cx="55.5" cy="48.5" r="7" fill="#f4f1e6"/><circle cx="72.5" cy="48.5" r="7" fill="#111"/></svg></div>
-        <div class="body"><h3>Reversi</h3><p>Encadre les pions adverses pour les retourner (dans l’esprit d’Othello).</p><div class="tags"><span class="tag">Contre l’IA</span><span class="tag">À deux</span></div><span class="saved" data-save="rv" hidden>Partie en cours</span></div>
-      </a>
-      <a class="cl" href="quatre-en-ligne.html">
-        <div class="art" style="background:linear-gradient(160deg,#2b4fb8,#0d1a4a)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="22" y="8" width="76" height="64" rx="8" fill="#2350d0"/><circle cx="33.0" cy="20" r="5" fill="#e8433a"/><circle cx="46.5" cy="20" r="5" fill="#0d1a4a"/><circle cx="60.0" cy="20" r="5" fill="#0d1a4a"/><circle cx="73.5" cy="20" r="5" fill="#0d1a4a"/><circle cx="87.0" cy="20" r="5" fill="#ffd84a"/><circle cx="100.5" cy="20" r="5" fill="#e8433a"/><circle cx="33.0" cy="33" r="5" fill="#0d1a4a"/><circle cx="46.5" cy="33" r="5" fill="#0d1a4a"/><circle cx="60.0" cy="33" r="5" fill="#e8433a"/><circle cx="73.5" cy="33" r="5" fill="#ffd84a"/><circle cx="87.0" cy="33" r="5" fill="#0d1a4a"/><circle cx="100.5" cy="33" r="5" fill="#0d1a4a"/><circle cx="33.0" cy="46" r="5" fill="#0d1a4a"/><circle cx="46.5" cy="46" r="5" fill="#0d1a4a"/><circle cx="60.0" cy="46" r="5" fill="#ffd84a"/><circle cx="73.5" cy="46" r="5" fill="#0d1a4a"/><circle cx="87.0" cy="46" r="5" fill="#e8433a"/><circle cx="100.5" cy="46" r="5" fill="#0d1a4a"/><circle cx="33.0" cy="59" r="5" fill="#0d1a4a"/><circle cx="46.5" cy="59" r="5" fill="#e8433a"/><circle cx="60.0" cy="59" r="5" fill="#0d1a4a"/><circle cx="73.5" cy="59" r="5" fill="#0d1a4a"/><circle cx="87.0" cy="59" r="5" fill="#0d1a4a"/><circle cx="100.5" cy="59" r="5" fill="#ffd84a"/></svg></div>
-        <div class="body"><h3>Quatre en ligne</h3><p>Aligne quatre pions avant l’adversaire (dans l’esprit de Puissance 4).</p><div class="tags"><span class="tag">Contre l’IA</span><span class="tag">À deux</span></div><span class="saved" data-save="q4" hidden>Partie en cours</span></div>
-      </a>
-      <a class="cl" href="dominos.html">
+      <a class="cl" href="dominos.html" data-type="des" data-humans="4" data-solo="0" data-ia="1" data-kw="double-six tuiles">
         <div class="art" style="background:linear-gradient(160deg,#7a3a22,#2a120a)" aria-hidden="true"><svg viewBox="0 0 120 80"><g transform="rotate(-10 60 40)"><rect x="20" y="28" width="44" height="22" rx="3" fill="#faf5e8" stroke="#2a1a0a"/><line x1="42" y1="31" x2="42" y2="47" stroke="#2a1a0a"/><circle cx="31" cy="39" r="2.5"/><circle cx="48" cy="34" r="2.5"/><circle cx="58" cy="44" r="2.5"/><rect x="66" y="22" width="22" height="44" rx="3" fill="#faf5e8" stroke="#2a1a0a"/><line x1="69" y1="44" x2="85" y2="44" stroke="#2a1a0a"/><circle cx="72" cy="28" r="2.5"/><circle cx="82" cy="28" r="2.5"/><circle cx="72" cy="38" r="2.5"/><circle cx="82" cy="38" r="2.5"/><circle cx="77" cy="55" r="2.5"/></g></svg></div>
         <div class="body"><h3>Dominos</h3><p>Le double-six classique, avec ou sans pioche, de 2 à 4 joueurs.</p><div class="tags"><span class="tag">2 à 4 joueurs</span><span class="tag">Contre l’IA</span></div><span class="saved" data-save="dom" hidden>Partie en cours</span></div>
       </a>
-      <a class="cl" href="president.html">
-        <div class="art" style="background:linear-gradient(160deg,#7a1f2a,#2a0a10)" aria-hidden="true"><svg viewBox="0 0 120 80"><g transform="rotate(-8 50 40)"><rect x="34" y="12" width="34" height="50" rx="4" fill="#fff" stroke="#999"/><text x="40" y="28" font-size="12" font-weight="800" fill="#1c1c24">2</text><text x="46" y="50" font-size="18">♠</text></g><g transform="rotate(8 70 40)"><rect x="54" y="12" width="34" height="50" rx="4" fill="#fff" stroke="#999"/><text x="60" y="28" font-size="12" font-weight="800" fill="#c8203a">2</text><text x="66" y="50" font-size="18" fill="#c8203a">♥</text></g><path d="M50 8 l6 -6 l4 5 l4 -5 l6 6 v4 h-20z" fill="#ffd34a"/></svg></div>
-        <div class="body"><h3>Président</h3><p>Débarrasse-toi de tes cartes le premier pour devenir Président.</p><div class="tags"><span class="tag">3 à 6 joueurs</span><span class="tag">Contre l’IA</span></div></div>
+    </div>
+  </section>
+
+  <section class="cat" aria-labelledby="s-lettres">
+    <h2 id="s-lettres">Lettres, chiffres et logique <span class="cnt"></span></h2>
+    <div class="classics">
+      <a class="cl" href="sudoku.html" data-type="lettres" data-humans="1" data-solo="1" data-ia="0" data-kw="chiffres grille logique">
+        <div class="art" style="background:linear-gradient(160deg,#eef2fb,#c9d5f0)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="30" y="4" width="72" height="72" rx="6" fill="#fff" stroke="#22304f" stroke-width="2.5"/><path d="M54 4V76M78 4V76M30 28H102M30 52H102" stroke="#22304f" stroke-width="1.6"/><g font-size="13" font-weight="800" font-family="Arial" fill="#22304f"><text x="37" y="21">5</text><text x="85" y="21">3</text><text x="61" y="45" fill="#3f6fd8">7</text><text x="37" y="69">9</text><text x="85" y="69">1</text></g></svg></div>
+        <div class="body"><h3>Sudoku</h3><p>Grilles générées à l’infini, une seule solution, quatre niveaux.</p><div class="tags"><span class="tag">Solo</span><span class="tag">Notes & indices</span></div><span class="saved" data-save="sudoku-save" hidden>Partie en cours</span></div>
       </a>
-      <a class="cl" href="tarot.html">
-        <div class="art" style="background:linear-gradient(160deg,#2a4a7a,#0e1a30)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="28" y="8" width="38" height="62" rx="5" fill="#fdf6e4" stroke="#a89a80"/><text x="47" y="48" font-size="24" font-weight="900" text-anchor="middle" fill="#1e3c8a">21</text><rect x="58" y="12" width="38" height="62" rx="5" fill="#fff" stroke="#a89a80" transform="rotate(10 77 43)"/><text x="78" y="52" font-size="22" text-anchor="middle" fill="#7a3fb0" transform="rotate(10 77 43)">★</text></svg></div>
-        <div class="body"><h3>Tarot</h3><p>Le tarot à quatre : enchères, chien, écart, bouts et petit au bout.</p><div class="tags"><span class="tag">4 joueurs</span><span class="tag">Contre l’IA</span></div></div>
+      <a class="cl" href="mots-croises.html" data-type="lettres" data-humans="1" data-solo="1" data-ia="0" data-kw="définitions grille vocabulaire">
+        <div class="art" style="background:linear-gradient(160deg,#fff,#e2e1db)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="30" y="6" width="68" height="68" fill="#111"/><rect x="45.2" y="8.0" width="12" height="12" fill="#fff"/><rect x="32.0" y="21.2" width="12" height="12" fill="#fff"/><rect x="45.2" y="21.2" width="12" height="12" fill="#fff"/><rect x="58.4" y="21.2" width="12" height="12" fill="#fff"/><rect x="71.6" y="21.2" width="12" height="12" fill="#fff"/><rect x="45.2" y="34.4" width="12" height="12" fill="#fff"/><rect x="45.2" y="47.599999999999994" width="12" height="12" fill="#fff"/><rect x="58.4" y="47.599999999999994" width="12" height="12" fill="#fff"/><rect x="71.6" y="47.599999999999994" width="12" height="12" fill="#fff"/><rect x="84.8" y="47.599999999999994" width="12" height="12" fill="#fff"/><rect x="71.6" y="34.4" width="12" height="12" fill="#fff"/><rect x="71.6" y="60.8" width="12" height="12" fill="#fff"/><text x="47" y="31" font-size="9" font-weight="900" font-family="Arial">M</text><text x="60" y="31" font-size="9" font-weight="900" font-family="Arial">O</text><text x="73" y="31" font-size="9" font-weight="900" font-family="Arial">T</text></svg></div>
+        <div class="body"><h3>Mots croisés</h3><p>Des grilles composées au hasard avec plus de 300 définitions.</p><div class="tags"><span class="tag">Solo</span><span class="tag">3 niveaux</span></div><span class="saved" data-save="mc-save" hidden>Partie en cours</span></div>
       </a>
-      <a class="cl" href="poker.html">
-        <div class="art" style="background:linear-gradient(160deg,#2a2230,#0c0a10)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="24" y="14" width="32" height="46" rx="4" fill="#fff" stroke="#999" transform="rotate(-10 40 37)"/><text x="30" y="30" font-size="12" font-weight="800" fill="#1c1c24" transform="rotate(-10 40 37)">A♠</text><rect x="44" y="14" width="32" height="46" rx="4" fill="#fff" stroke="#999" transform="rotate(6 60 37)"/><text x="50" y="30" font-size="12" font-weight="800" fill="#c8203a" transform="rotate(6 60 37)">A♥</text><g><circle cx="88" cy="58" r="11" fill="#c9302c" stroke="#fff" stroke-width="3" stroke-dasharray="4 3"/><circle cx="94" cy="50" r="11" fill="#1e3d8b" stroke="#fff" stroke-width="3" stroke-dasharray="4 3"/></g></svg></div>
-        <div class="body"><h3>Poker</h3><p>Texas Hold’em en tournoi contre l’ordinateur : relance, bluff et tapis.</p><div class="tags"><span class="tag">2 à 6 joueurs</span><span class="tag">Contre l’IA</span></div></div>
-      </a>
-      <a class="cl" href="rami.html">
-        <div class="art" style="background:linear-gradient(160deg,#1f6a5a,#0a2a24)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="20" y="18" width="30" height="44" rx="4" fill="#fff" stroke="#999"/><text x="25" y="33" font-size="11" font-weight="800" fill="#c8203a">7♥</text><rect x="40" y="18" width="30" height="44" rx="4" fill="#fff" stroke="#999"/><text x="45" y="33" font-size="11" font-weight="800" fill="#c8203a">8♥</text><rect x="60" y="18" width="30" height="44" rx="4" fill="#fff" stroke="#999"/><text x="65" y="33" font-size="11" font-weight="800" fill="#c8203a">9♥</text><rect x="80" y="18" width="30" height="44" rx="4" fill="#fff" stroke="#999"/><text x="85" y="33" font-size="11" font-weight="800" fill="#c8203a">10♥</text></svg></div>
-        <div class="body"><h3>Rami voleur</h3><p>Pose tes combinaisons et vole celles de la table pour vider ta main.</p><div class="tags"><span class="tag">2 à 4 joueurs</span><span class="tag">Contre l’IA</span></div></div>
-      </a>
-      <a class="cl" href="petit-bac.html">
+      <a class="cl" href="petit-bac.html" data-type="lettres" data-humans="8" data-solo="1" data-ia="1" data-kw="mots catégories chrono">
         <div class="art" style="background:linear-gradient(160deg,#f4f1e8,#d9e2f2)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="40" y="12" width="44" height="44" rx="10" fill="#2b3a8a" transform="rotate(-6 62 34)"/><text x="62" y="46" font-size="34" font-weight="900" fill="#fff" text-anchor="middle" font-family="Comic Sans MS,cursive" transform="rotate(-6 62 34)">B</text><path d="M20 66 H100" stroke="#e2553a" stroke-width="2"/></svg></div>
         <div class="body"><h3>Petit Bac</h3><p>Une lettre, six catégories, et un chrono : prénom, ville, métier, objet, fruit, célébrité.</p><div class="tags"><span class="tag">Solo ou à plusieurs</span><span class="tag">Contre l’IA</span></div></div>
       </a>
-      <a class="cl" href="mots-croises.html">
-        <div class="art" style="background:linear-gradient(160deg,#fff,#e2e1db)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="30" y="6" width="68" height="68" fill="#111"/><rect x="45.2" y="8.0" width="12" height="12" fill="#fff"/><rect x="32.0" y="21.2" width="12" height="12" fill="#fff"/><rect x="45.2" y="21.2" width="12" height="12" fill="#fff"/><rect x="58.4" y="21.2" width="12" height="12" fill="#fff"/><rect x="71.6" y="21.2" width="12" height="12" fill="#fff"/><rect x="45.2" y="34.4" width="12" height="12" fill="#fff"/><rect x="45.2" y="47.599999999999994" width="12" height="12" fill="#fff"/><rect x="58.4" y="47.599999999999994" width="12" height="12" fill="#fff"/><rect x="71.6" y="47.599999999999994" width="12" height="12" fill="#fff"/><rect x="84.8" y="47.599999999999994" width="12" height="12" fill="#fff"/><rect x="71.6" y="34.4" width="12" height="12" fill="#fff"/><rect x="71.6" y="60.8" width="12" height="12" fill="#fff"/><text x="47" y="31" font-size="9" font-weight="900" font-family="Arial">M</text><text x="60" y="31" font-size="9" font-weight="900" font-family="Arial">O</text><text x="73" y="31" font-size="9" font-weight="900" font-family="Arial">T</text></svg></div>
-        <div class="body"><h3>Mots croisés</h3><p>Des grilles composées au hasard avec plus de 300 définitions.</p><div class="tags"><span class="tag">Solo</span><span class="tag">3 niveaux</span></div><span class="saved" data-save="mc-save" hidden>Partie en cours</span></div>
+      <a class="cl" href="code-secret.html" data-type="lettres" data-humans="2" data-solo="1" data-ia="1" data-kw="couleurs déduction logique">
+        <div class="art" style="background:linear-gradient(160deg,#3a2a4f,#141022)" aria-hidden="true"><svg viewBox="0 0 120 80"><rect x="18" y="8" width="84" height="64" rx="8" fill="#8a552c"/><circle cx="32" cy="24" r="6" fill="#e8433a"/><circle cx="48" cy="24" r="6" fill="#2f7ee0"/><circle cx="64" cy="24" r="6" fill="#3fbf5a"/><circle cx="80" cy="24" r="6" fill="#f2c230"/><circle cx="32" cy="42" r="6" fill="#f08a2a"/><circle cx="48" cy="42" r="6" fill="#a84fd8"/><circle cx="64" cy="42" r="6" fill="#e8433a"/><circle cx="80" cy="42" r="6" fill="#2f7ee0"/><g fill="#c41f1f"><circle cx="96" cy="20" r="2.5"/><circle cx="96" cy="27" r="2.5"/></g><circle cx="96" cy="45" r="2.5" fill="#fff"/></svg></div>
+        <div class="body"><h3>Code Secret</h3><p>Trouve la combinaison de couleurs cachée… ou laisse l’ordinateur deviner la tienne.</p><div class="tags"><span class="tag">Solo</span><span class="tag">À deux</span></div><span class="saved" data-save="cs-save" hidden>Partie en cours</span></div>
       </a>
     </div>
   </section>
@@ -321,5 +380,34 @@ document.querySelectorAll('[data-save]').forEach(el=>{
 });
 </script>
 
+<script>
+(function(){
+  var F={type:'',who:'',q:''}; try{var sv=JSON.parse(localStorage.getItem('salle-filtres')||'null'); if(sv) F=Object.assign(F,sv,{q:''});}catch(e){}
+  var tiles=[].slice.call(document.querySelectorAll('.cat a[data-type]'));
+  var norm=function(t){return (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’']/g,' ');};
+  tiles.forEach(function(a){a._t=norm(a.textContent+' '+a.dataset.kw+' '+a.dataset.type);});
+  function ok(a){ var d=a.dataset, h=+d.humans;
+    if(F.type&&d.type.split(' ').indexOf(F.type)<0) return false;
+    if(F.who==='solo'&&d.solo!=='1') return false;
+    if(F.who==='ia'&&d.ia!=='1') return false;
+    if(F.who==='2'&&h<2) return false;
+    if(F.who==='3'&&h<3) return false;
+    if(F.q){ var ws=norm(F.q).split(/\s+/).filter(Boolean); for(var i=0;i<ws.length;i++) if(a._t.indexOf(ws[i])<0) return false; }
+    return true; }
+  function apply(){ var n=0;
+    tiles.forEach(function(a){ var v=ok(a); a.hidden=!v; if(v) n++; });
+    [].forEach.call(document.querySelectorAll('.cat'),function(sec){ var vis=sec.querySelectorAll('a[data-type]:not([hidden])').length; sec.hidden=!vis; sec.querySelector('.cnt').textContent='· '+vis;
+      [].forEach.call(sec.querySelectorAll('.games,.classics'),function(g){ g.hidden=!g.querySelector('a[data-type]:not([hidden])'); }); });
+    [].forEach.call(document.querySelectorAll('.chip[data-f]'),function(c){ c.classList.toggle('on',F[c.dataset.f]===c.dataset.v); c.setAttribute('aria-pressed',F[c.dataset.f]===c.dataset.v); });
+    var all=!F.type&&!F.who&&!F.q;
+    document.getElementById('fres').textContent=all?tiles.length+' jeux dans la salle':n+' jeu'+(n>1?'x':'')+' sur '+tiles.length;
+    document.getElementById('empty').hidden=n>0;
+    try{localStorage.setItem('salle-filtres',JSON.stringify({type:F.type,who:F.who}));}catch(e){} }
+  document.addEventListener('click',function(e){ var c=e.target.closest('.chip[data-f]'); if(c){ F[c.dataset.f]=c.dataset.v; apply(); return; }
+    if(e.target.closest('#reset')){ F={type:'',who:'',q:''}; document.getElementById('q').value=''; apply(); } });
+  document.getElementById('q').addEventListener('input',function(e){ F.q=e.target.value; apply(); });
+  apply();
+})();
+</script>
 </body>
 </html>

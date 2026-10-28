@@ -81,6 +81,10 @@ body{background:#ecebe6}
 @media (pointer:coarse){.kbd{display:flex}}
 #hidden{position:absolute;opacity:0;left:-1000px;width:1px;height:1px}
 .tools2{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;justify-content:center}
+
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
 </style></head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Mots croisés</h1>
 <div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle grille</button></div></header>
@@ -99,7 +103,8 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
 function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
@@ -130,13 +135,13 @@ function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
   if(!MUTED) ac();
-  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ closeModal(); return; }
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
     case 'help': GAME.help(); break;
-    case 'new': GAME.menu(); break;
-    case 'close': closeModal(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
   }
 });
 addEventListener('DOMContentLoaded',updSnd);
@@ -488,7 +493,7 @@ function generate(level){
 if(IS_NODE) module.exports={generate,WORDS};
 else {
 /* ===== interface ===== */
-let X=null, CUR={r:0,c:0,d:'h'}; const GAME={help,menu};
+let X=null, CUR={r:0,c:0,d:'h'}; const GAME=window.GAME={help,menu};
 function newGrid(level){ const g=generate(level); X={level,R:g.R,C:g.C,words:g.placed,sol:{},val:{},rev:{},bad:{},t0:Date.now(),done:false};
   g.placed.forEach(p=>{ for(let k=0;k<p.w.length;k++){ const r=p.r+(p.d==='v'?k:0), c=p.c+(p.d==='h'?k:0); X.sol[r+','+c]=p.w[k]; } });
   const w0=X.words.find(w=>w.n===1); CUR={r:w0.r,c:w0.c,d:w0.d}; store('mc-save',X); build(); render(true); }
@@ -533,7 +538,10 @@ document.addEventListener('click',e=>{ const kb=e.target.closest('[data-key]'); 
   save(); render(); checkWin(); });
 addEventListener('resize',()=>{ if(X){ build(); render(); } });
 function menu(){ openModal(`<h2>Nouvelle grille</h2><p>Chaque grille est composée au hasard à partir de plus de 300 mots et définitions.</p><div class="prow">${[['facile','Facile · ~10 mots courts'],['normal','Moyen · ~14 mots'],['difficile','Difficile · ~18 mots plus longs']].map(([k,l])=>`<button class="btn pri" data-lv="${k}" style="flex:1;min-width:150px">${l}</button>`).join('')}</div><div class="acts">${X?'<button class="btn" data-c="close">Annuler</button>':''}</div>`,e=>{ const b=e.target.closest('[data-lv]'); if(b){ closeModal(); newGrid(b.dataset.lv); } }); }
-function help(){ openModal(`<h2>Mots croisés</h2><p>Trouve les mots à partir des définitions. Touche une case (ou une définition) puis tape les lettres au clavier ; toucher deux fois la même case change de sens (↔/↕). Les accents sont ignorés.</p><ul><li><b>Vérifier</b> marque en rouge les lettres fausses.</li><li><b>Révéler</b> une lettre ou le mot entier si tu bloques.</li><li>Les définitions trouvées sont barrées en vert.</li></ul><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>`); }
+function help(){ helpTabs("Mots croisés",[["But du jeu","<p>Remplir toute la grille à l’aide des définitions horizontales et verticales. Les accents sont ignorés (E = É = È).</p><p>Chaque grille est tirée au hasard parmi plus de 300 mots : facile (environ 10 mots courts), moyen (14) ou difficile (18 mots plus longs).</p>"],["Jouer ici","<ul><li>Touche une case ou une définition, puis tape les lettres au clavier. Le curseur avance tout seul.</li><li>Toucher deux fois la même case change le sens (↔ / ↕).</li><li><b>Vérifier</b> marque en rouge les lettres fausses.</li><li><b>Révéler une lettre</b> ou <b>le mot</b> si tu bloques.</li><li>Les définitions trouvées sont barrées en vert.</li></ul>"]]); }
 (function boot(){ const s=load('mc-save'); if(s&&!s.done){ X=s; X.t0=Date.now(); const w0=X.words.find(w=>w.n===1); CUR={r:w0.r,c:w0.c,d:w0.d}; build(); render(); } else menu(); })();
 }
-</script></body></html>
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>
