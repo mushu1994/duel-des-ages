@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Joyaux de la Renaissance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800;6..12,900&display=swap" rel="stylesheet">
+<style>
+/* Atelier de joaillier : velours émeraude, rangées de cartes de mines à gauche, banque de jetons au centre, comptoirs des joueurs à droite */
+:root{--bg:#0e2a22;--fg:#f4ead2;--accent:#c9a13b;--title:"Marcellus",Georgia,serif;--ui:"Nunito Sans",system-ui,sans-serif;--titlec:#f1d68a;--gw:#f4f1ea;--gu:#2f6fd6;--gg:#1f9d55;--gr:#d6363c;--gk:#3a2e2a;--go:#e8b72c;--parch:#f6ecd4;--ink:#2b2117;color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui,"Nunito Sans",system-ui,sans-serif);min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bar,#0006);border-bottom:1px solid #fff2;flex-wrap:wrap}
+.top h1{font-family:var(--title,Georgia,serif);font-weight:800;font-size:24px;margin:0;color:var(--titlec,#fff);letter-spacing:.5px}
+.top h1 small{font-family:var(--ui);font-weight:600;font-size:13px;opacity:.75;margin-left:8px;letter-spacing:0}
+.back{color:inherit;opacity:.9;text-decoration:none;font-size:14px;border:1px solid #fff4;padding:5px 10px;border-radius:8px}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#ffffff1c;color:inherit;border:1px solid #ffffff40;border-radius:9px;padding:7px 12px;font-size:14px;font-weight:700}
+.btn:hover{background:#ffffff2e}.btn:disabled{opacity:.4;cursor:default}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.on{background:#fff;color:#222}
+.status{display:flex;align-items:center;gap:12px;padding:9px 16px;background:var(--pc,var(--accent));color:#fff;font-weight:800;min-height:44px;box-shadow:0 4px 14px #0005;transition:background .35s;flex-wrap:wrap}
+.status .who{font-family:var(--title,Georgia,serif);font-size:19px}
+.status .msg{font-weight:600}
+.status .right{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:14px}
+#modal{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:12px}
+#modal[hidden]{display:none}
+.mbox{background:#fbf6ea;color:#2a2418;border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;animation:pop .3s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.mbox h2{font-family:var(--title,Georgia,serif);font-size:26px;margin:0 0 6px}
+.mbox h4{font-family:var(--title,Georgia,serif);font-size:16px;margin:14px 0 6px}
+.mbox p,.mbox li{line-height:1.5}
+.mbox .btn{background:#ece3cf;color:#2a2418;border-color:#c9b98f}
+.mbox .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mbox .btn.on{background:#2a2418;color:#fff}
+.seg{display:inline-flex;border:1px solid #c9b98f;border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:#f6efdc;padding:7px 11px;font-weight:700;color:#2a2418;font-size:13.5px}
+.seg button.on{background:#2a2418;color:#fff}
+.prow{display:flex;gap:8px;align-items:center;margin:7px 0;flex-wrap:wrap}
+.prow .dot{width:16px;height:16px;border-radius:50%;background:var(--pc);border:2px solid #0004}
+.prow input[type=text]{font-family:inherit;font-weight:700;font-size:16px;padding:6px 9px;border-radius:8px;border:1px solid #c9b98f;background:#fff;color:#2a2418;-webkit-text-fill-color:#2a2418;caret-color:var(--accent);width:150px;color-scheme:light}
+.prow input[type=text]::placeholder{color:#a3926e;-webkit-text-fill-color:#a3926e;font-weight:600}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{border:1px solid #c9b98f;background:#f6efdc;border-radius:20px;padding:5px 12px;font-weight:800;color:#2a2418}
+.tabs button.on{background:#2a2418;color:#fff}
+.toast{position:fixed;left:50%;top:100px;transform:translateX(-50%);background:#1b1b1f;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 10px 30px #000a;z-index:70;font-weight:700;animation:toast 2.6s forwards;pointer-events:none;max-width:90vw;text-align:center}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.bannerx{position:fixed;inset:0;display:grid;place-items:center;z-index:65;pointer-events:none}
+.bannerx div{font-family:var(--title,Georgia,serif);font-weight:800;font-size:clamp(30px,6vw,64px);color:#fff;background:var(--bc,var(--accent));padding:10px 36px;border-radius:14px;box-shadow:0 20px 50px #000a;animation:ban 2.3s forwards;text-align:center}
+.bannerx small{display:block;font-family:var(--ui);font-size:.34em;font-weight:700}
+@keyframes ban{0%{transform:scale(2);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:0;transform:scale(.92)}}
+#cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);text-align:center;padding:20px}
+#cover[hidden]{display:none}
+#cover h2{font-family:var(--title,Georgia,serif);font-size:36px;margin:0 0 8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
+
+body{background:radial-gradient(ellipse at 40% 0%,#1d4a3b 0%,#0e2a22 60%,#08181339 100%) fixed,#0b201a}
+.jr{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px;padding:10px max(10px,env(safe-area-inset-right,0px)) 110px max(10px,env(safe-area-inset-left,0px));max-width:1320px;margin:0 auto;--cw:clamp(64px,7.4vw,96px)}
+.mainc{display:flex;flex-direction:column;gap:10px;min-width:0}
+.patrons{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.noble{width:calc(var(--cw)*.95);aspect-ratio:1;max-width:100%;border-radius:10px;background:linear-gradient(160deg,#5a3c22,#2f1f12);border:2px solid #c9a13b;padding:6px;display:flex;flex-direction:column;justify-content:space-between;position:relative}
+.noble b{font-family:var(--title);font-size:calc(var(--cw)*.28);color:#f1d68a;line-height:1}
+.noble .rq{display:flex;flex-wrap:wrap;gap:2px}
+.noble.res::after{content:"réservé";position:absolute;right:4px;top:4px;font-size:10px;font-weight:900;background:#c9a13b;color:#2b2117;border-radius:6px;padding:0 4px}
+.noble.pick{cursor:pointer;box-shadow:0 0 0 3px #f1d68a;animation:glow 1.2s infinite}
+@keyframes glow{50%{box-shadow:0 0 0 6px #f1d68a66}}
+.city{min-width:calc(var(--cw)*1.7);border-radius:10px;background:linear-gradient(160deg,#3d4f6b,#1f2a3c);border:2px solid #b8c8e8;padding:6px 8px;display:flex;flex-direction:column;gap:4px}
+.city b{font-family:var(--title);font-size:20px;color:#e8f0ff}
+.posts{display:flex;gap:6px;flex-wrap:wrap}
+.post{flex:1;min-width:150px;border-radius:10px;background:#00000033;border:1px solid #c9a13b88;padding:6px 8px;font-size:12px;display:flex;flex-direction:column;gap:4px}
+.post .arms{display:flex;gap:3px;min-height:14px}.post .arms i{width:14px;height:14px;border-radius:3px 3px 7px 7px}
+.req{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:20px;padding:0 4px;border-radius:4px;font-weight:900;font-size:12px;color:#fff;border:1px solid #0006}
+.req.w{background:var(--gw);color:#2b2117}.req.u{background:var(--gu)}.req.g{background:var(--gg)}.req.r{background:var(--gr)}.req.k{background:var(--gk)}.req.s{background:#777}
+.tiers{display:flex;flex-direction:column;gap:8px}
+.tier{display:flex;gap:7px;align-items:flex-start;flex-wrap:wrap}
+.deck{width:var(--cw);height:calc(var(--cw)*1.38);border-radius:10px;border:2px solid #c9a13b;display:grid;place-items:center;font-family:var(--title);color:#f1d68a;font-size:22px;position:relative;cursor:pointer;flex:none;background:repeating-linear-gradient(45deg,#2a5a48 0 6px,#244e3e 6px 12px)}
+.deck.t2{background:repeating-linear-gradient(45deg,#6b5a22 0 6px,#5d4e1d 6px 12px)}.deck.t3{background:repeating-linear-gradient(45deg,#2d3f73 0 6px,#273765 6px 12px)}
+.deck small{position:absolute;bottom:4px;font-family:var(--ui);font-size:11px;font-weight:800}
+.deck.sel{box-shadow:0 0 0 3px #fff}
+.ocol{display:flex;gap:7px;padding-left:7px;border-left:2px dashed #c9a13b66}
+/* cartes */
+.jc{width:var(--cw);height:calc(var(--cw)*1.38);border-radius:10px;background:var(--parch);color:var(--ink);position:relative;flex:none;box-shadow:0 4px 10px #0007;border:2px solid #fff8;cursor:pointer;transition:transform .15s,box-shadow .2s;display:flex;flex-direction:column;overflow:hidden}
+.jc:hover{transform:translateY(-3px)}
+.jc .band{height:34%;background:linear-gradient(160deg,var(--bc),color-mix(in srgb,var(--bc) 65%,#000));display:flex;justify-content:space-between;align-items:flex-start;padding:4px 6px}
+.jc .pt{font-family:var(--title);font-size:calc(var(--cw)*.3);line-height:1;color:#fff;text-shadow:0 2px 0 #0006}
+.jc.cw .pt{color:#2b2117;text-shadow:none}
+.jc .gem{width:calc(var(--cw)*.3);height:calc(var(--cw)*.3)}
+.jc .cost{margin-top:auto;display:grid;grid-template-columns:repeat(2,max-content);grid-auto-flow:row;gap:2px;padding:4px 5px;justify-content:start;direction:ltr}
+.jc .cost span{display:inline-flex;align-items:center;justify-content:center;width:calc(var(--cw)*.24);height:calc(var(--cw)*.24);border-radius:50%;font-weight:900;font-size:calc(var(--cw)*.15);color:#fff;border:1px solid #0005}
+.jc .art{position:absolute;right:4px;bottom:4px;width:44%;opacity:.35}
+.jc.sel{box-shadow:0 0 0 3px #fff,0 0 18px #fff8;transform:translateY(-4px)}
+.jc.can::after{content:"";position:absolute;inset:0;border-radius:8px;box-shadow:inset 0 0 0 3px #3fd17a;pointer-events:none}
+.jc.pick{box-shadow:0 0 0 3px #f1d68a;animation:glow 1.2s infinite}
+.jc.blocked{filter:grayscale(.5) brightness(.8)}
+.jc .ori{position:absolute;left:0;right:0;top:34%;background:#2b2117;color:#f1d68a;font-size:calc(var(--cw)*.12);font-weight:900;text-align:center;letter-spacing:.03em;padding:1px 0}
+.jc.o{background:linear-gradient(#fff6e2,#f1dfb8)}
+.jc .fort{position:absolute;left:4px;top:38%;display:flex;gap:1px}
+.jc .fort i{width:12px;height:14px;clip-path:polygon(0 30%,20% 30%,20% 0,40% 0,40% 30%,60% 30%,60% 0,80% 0,80% 30%,100% 30%,100% 100%,0 100%);border:none}
+.jc.new{animation:cin .5s cubic-bezier(.3,1.4,.5,1)}
+@keyframes cin{from{transform:rotateY(90deg) scale(.8)}}
+.jc.mini{--cw:54px}
+/* banque */
+.bank{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#00000030;border:1px solid #c9a13b55;border-radius:14px;padding:8px 10px}
+.bank h3,.pp h3{font-family:var(--title);font-size:15px;margin:0 6px 0 0;color:#f1d68a}
+.tk{position:relative;width:52px;height:52px;border-radius:50%;border:none;padding:0;background:none;cursor:pointer;transition:transform .15s}
+.tk svg{width:100%;height:100%;filter:drop-shadow(0 3px 3px #0008)}
+.tk b{position:absolute;right:-4px;bottom:-4px;background:#0b201a;color:#fff;border:2px solid #c9a13b;border-radius:10px;font-size:12px;min-width:22px;height:20px;display:grid;place-items:center;padding:0 3px}
+.tk.sel{transform:translateY(-6px) scale(1.08)}
+.tk.sel::after{content:attr(data-n);position:absolute;left:-4px;top:-6px;background:#fff;color:#0b201a;border-radius:50%;width:18px;height:18px;font-size:12px;font-weight:900;display:grid;place-items:center}
+.tk:disabled{opacity:.35;cursor:default}
+/* joueurs */
+.side{display:flex;flex-direction:column;gap:8px;min-width:0}
+.pp{background:linear-gradient(#21483b,#173a2f);border:1px solid #c9a13b55;border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.pp.on{box-shadow:0 0 0 2px #f1d68a,0 0 18px #f1d68a44}
+.pp .hd{display:flex;align-items:center;gap:8px}.pp .hd .nm{font-weight:900;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp .pts{font-family:var(--title);font-size:26px;color:#f1d68a;line-height:1}
+.pp .row6{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.pp .cell{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:900}
+.pp .cell .bn{width:30px;height:22px;border-radius:5px;display:grid;place-items:center;color:#fff;border:1px solid #0006;font-size:13px}
+.pp .cell .tn{display:flex;align-items:center;gap:2px;color:#e8dcc0}
+.pp .cell .tn svg{width:14px;height:14px}
+.pp .extra{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:#d8cba8}
+.pp .resv{display:flex;gap:5px;flex-wrap:wrap}
+.pp .resv .back{width:54px;height:74px;border-radius:8px;background:repeating-linear-gradient(45deg,#2a5a48 0 6px,#244e3e 6px 12px);border:2px solid #c9a13b}
+/* barre d'action */
+.act{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(#123a2ef4,#0b201a);border-top:1px solid #c9a13b66;padding:10px max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));box-shadow:0 -8px 24px #0009}
+.act .in2{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.act .msg2{flex:1;min-width:200px;font-size:14px;color:#e8dcc0}.act .msg2 b{color:#fff}
+.fly{position:fixed;z-index:80;pointer-events:none;transition:transform .5s cubic-bezier(.35,.1,.25,1.15),opacity .5s}
+.seatrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0}.seatrow input[type=text]{width:130px}
+.modsel{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin:6px 0}
+.modsel button{text-align:left;border:2px solid #d9cba6;background:#fff9ec;border-radius:12px;padding:8px 10px;color:#2a2418}
+.modsel button.on{border-color:#1d6f3e;background:#e8f7ee}
+.modsel b{display:block;font-family:var(--title);font-size:16px}
+.scl{width:100%;border-collapse:collapse;margin:8px 0}.scl td,.scl th{padding:5px 8px;border-bottom:1px solid #e2d6b8;text-align:left}.scl td:not(:first-child),.scl th:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}.scl tr.w td{font-weight:900;color:#1d6f3e}
+.pickc{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.pickc .jc{--cw:70px}
+.tkrow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.tkrow .tk{width:44px;height:44px}
+@media (max-width:900px){.jr{grid-template-columns:1fr;--cw:clamp(52px,15vw,74px)}.side{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}.tk{width:44px;height:44px}}
+@media (max-width:480px){.jr{--cw:clamp(46px,17vw,64px);padding-inline:8px}.ocol{border-left:none;padding-left:0}.posts .post{min-width:130px}}
+</style></head><body>
+<header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Joyaux de la Renaissance<small>dans l’esprit de Splendor</small></h1>
+<div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
+<div class="status" id="status"></div>
+<main class="jr" id="tbl"></main>
+<section class="act" id="act"><div class="in2" id="actin"></div></section>
+<div id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SVGNS='http://www.w3.org/2000/svg';
+function sel(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
+function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
+function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
+function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
+function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
+function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
+  c.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${(Math.random()-.5)*220}px,${innerHeight+40}px) rotate(${Math.random()*720}deg)`}],{duration:2200+Math.random()*1800,delay:Math.random()*700,easing:'ease-in'}).finished.then(()=>c.remove()); } }
+function store(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+/* sons */
+let MUTED=!!load('salle-mute'), AC=null, NOISE=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;} } if(AC.state==='suspended') AC.resume().catch(()=>{}); return AC; }
+function tn(a,t,f,d,type,v,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);}
+function nz(a,t,d,v,type,f){ if(!NOISE){NOISE=a.createBuffer(1,a.sampleRate,a.sampleRate);const c=NOISE.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;} const s=a.createBufferSource();s.buffer=NOISE;const fl=a.createBiquadFilter();fl.type=type;fl.frequency.value=f;const g=a.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl).connect(g).connect(a.destination);s.start(t);s.stop(t+d+.02); }
+function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') return; const t=a.currentTime+.01;
+  switch(n){
+    case 'click': tn(a,t,900,.06,'triangle',.06); break;
+    case 'move': nz(a,t,.08,.25,'bandpass',900); tn(a,t,220,.08,'sine',.08); break;
+    case 'capture': nz(a,t,.12,.35,'bandpass',1400); tn(a,t,520,.12,'triangle',.1,260); break;
+    case 'card': nz(a,t,.1,.22,'bandpass',2800); break;
+    case 'flip': nz(a,t,.06,.25,'highpass',3000); tn(a,t,1200,.05,'triangle',.04); break;
+    case 'dice': for(let k=0;k<6;k++) nz(a,t+k*.07+Math.random()*.03,.05,.3,'bandpass',1800+Math.random()*1200); break;
+    case 'ding': tn(a,t,1320,.5,'sine',.1); tn(a,t+.07,1760,.4,'sine',.06); break;
+    case 'error': tn(a,t,220,.25,'square',.05,160); break;
+    case 'win': [523,659,784,1046].forEach((f,k)=>tn(a,t+k*.12,f,.4,'triangle',.11)); break;
+    case 'lose': [392,330,262].forEach((f,k)=>tn(a,t+k*.16,f,.45,'triangle',.1)); break;
+    case 'splash': nz(a,t,.5,.3,'lowpass',800); break;
+    case 'boom': nz(a,t,.7,.6,'lowpass',300); tn(a,t,90,.6,'sawtooth',.15,40); break;
+    case 'pop': tn(a,t,600,.08,'sine',.1,900); break;
+  } }
+function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
+document.addEventListener('click',e=>{
+  if(!MUTED) ac();
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
+  const t=e.target.closest('[data-c]'); if(!t) return;
+  switch(t.dataset.c){
+    case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
+    case 'help': GAME.help(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
+  }
+});
+addEventListener('DOMContentLoaded',updSnd);
+
+
+/* ===== moteur ===== */
+const IS_NODE=typeof window==='undefined';
+/* Joyaux de la Renaissance : moteur pur (dans l'esprit de Splendor et des Cités de Splendor) */
+const GEMS=['w','u','g','r','k'];
+const rel=(c,k)=>GEMS[(GEMS.indexOf(c)+k)%5];
+function mkCost(c,o){ const r={w:0,u:0,g:0,r:0,k:0}; for(const key in o){ const col=key==='own'?c:rel(c,+key.slice(1)); r[col]+=o[key]; } return r; }
+const PAT={1:[[{o1:1,o2:1,o3:1,o4:1},0],[{o1:1,o2:2,o3:1,o4:1},0],[{o1:2,o2:2,o4:1},0],[{own:3,o1:1,o4:1},0],[{o3:2,o4:1},0],[{o1:2,o4:2},0],[{o1:3},0],[{o2:4},1]],
+ 2:[[{o2:3,o3:2,o4:2},1],[{o1:3,o3:3,own:2},1],[{o2:1,o3:4,o4:2},2],[{o3:5,o4:3},2],[{o3:5},2],[{own:6},3]],
+ 3:[[{o1:3,o2:3,o3:5,o4:3},3],[{o4:7},4],[{own:3,o3:3,o4:6},4],[{own:3,o4:7},5]]};
+function baseCards(){ const out=[]; let id=0; for(const t of [1,2,3]) for(const c of GEMS) for(const [o,p] of PAT[t]) out.push({id:'c'+(id++),t,c,pts:p,cost:mkCost(c,o)}); return out; }
+function orientCards(){ const out=[]; let id=0; const C=GEMS;
+  C.forEach((c,i)=>{ out.push({id:'o'+(id++),t:1,o:'pair',c:null,pts:0,cost:mkCost(c,{o1:2,o2:2})}); out.push({id:'o'+(id++),t:1,o:'gold2',c:null,pts:0,cost:mkCost(c,{own:3})}); });
+  C.forEach((c,i)=>{ if(i<4) out.push({id:'o'+(id++),t:2,o:'pairL1',c:null,pts:1,cost:mkCost(c,{o1:3,o2:2,o3:2})}); });
+  C.forEach((c,i)=>{ if(i<4) out.push({id:'o'+(id++),t:2,o:'double',c,pts:0,cost:mkCost(c,{o2:4,o3:3})}); });
+  out.push({id:'o'+(id++),t:2,o:'noble',c:null,pts:2,cost:mkCost('w',{o1:4,o2:3})}); out.push({id:'o'+(id++),t:2,o:'noble',c:null,pts:2,cost:mkCost('r',{o1:4,o2:3})});
+  C.forEach(c=>{ for(let k=0;k<2;k++) out.push({id:'o'+(id++),t:3,o:'claim',c:null,sc:c,pts:3+k,cost:{w:0,u:0,g:0,r:0,k:0},sac:2}); });
+  return out; }
+function nobles(){ const out=[]; GEMS.forEach((c,i)=>{ const a=rel(c,1); out.push({id:'n'+i,pts:3,req:{[c]:4,[a]:4}}); }); GEMS.forEach((c,i)=>{ out.push({id:'n'+(5+i),pts:3,req:{[c]:3,[rel(c,2)]:3,[rel(c,3)]:3}}); }); return out; }
+const CITIES=[[{pts:13,req:[['r',4],['k',3]]},{pts:15,req:[['*',5]]}],[{pts:14,req:[['g',4],['*',4]]},{pts:11,req:[['w',3],['u',3],['g',3]]}],[{pts:12,req:[['k',4],['w',2],['u',2]]},{pts:16,req:[]}],
+ [{pts:13,req:[['u',4],['g',3]]},{pts:12,req:[['w',2],['u',2],['g',2],['r',2],['k',2]]}],[{pts:14,req:[['w',4],['r',3]]},{pts:11,req:[['*',4],['*',4]]}],[{pts:13,req:[['g',4],['r',3]]},{pts:15,req:[['*',3],['*',3]]}],[{pts:12,req:[['k',3],['r',3],['g',3]]},{pts:14,req:[['u',4],['k',3]]}]];
+const POSTS=[{id:0,req:{r:3,w:1},txt:'Après chaque achat, prends 1 jeton'},{id:1,req:{w:2},txt:'Quand tu prends 2 jetons identiques, prends-en 1 d’une autre couleur'},{id:2,req:{u:3,k:1},txt:'Chaque jeton or vaut 2 jetons de la même couleur'},{id:3,req:{g:5},noble:1,txt:'+5 points'},{id:4,req:{k:3},txt:'+1 point par blason posé'}];
+function shuffle(a,rng){ rng=rng||Math.random; for(let i=a.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+const Z=()=>({w:0,u:0,g:0,r:0,k:0,o:0});
+function newGame(o,rng){ rng=rng||Math.random; const n=o.players.length, mod=o.mod||'none', tok={2:4,3:5,4:7}[n];
+  const G={mod,players:o.players.map(p=>({name:p.name,ai:!!p.ai,level:p.level||'normal',tok:Z(),cards:[],res:[],nobles:[],nres:[],gold2:0,arms:[],str:3,city:null,pts:0})),bank:{w:tok,u:tok,g:tok,r:tok,k:tok,o:5},
+   decks:{},rows:{},odecks:{},orows:{},nobles:[],cities:[],posts:mod==='posts'?POSTS.map(p=>({id:p.id,by:[]})):null,strong:{},cur:0,turn:0,need:null,phase:'play',ending:false,over:null,log:[],used:false};
+  const bc=baseCards(); for(const t of [1,2,3]){ G.decks[t]=shuffle(bc.filter(c=>c.t===t),rng); G.rows[t]=G.decks[t].splice(0,4); }
+  if(mod==='orient'){ const oc=orientCards(); for(const t of [1,2,3]){ G.odecks[t]=shuffle(oc.filter(c=>c.t===t),rng); G.orows[t]=G.odecks[t].splice(0,2); } }
+  if(mod==='cities') G.cities=shuffle(CITIES.map((s,i)=>Object.assign({id:'v'+i},s[Math.floor(rng()*2)])),rng).slice(0,3);
+  else G.nobles=shuffle(nobles(),rng).slice(0,n+1);
+  return G; }
+/* ---------- calculs ---------- */
+function bonus(P){ const b={w:0,u:0,g:0,r:0,k:0}; P.cards.forEach(c=>{ const col=c.pc||c.c; if(!col) return; b[col]+=c.o==='double'?2:1; }); return b; }
+function findCard(G,id){ for(const t of [1,2,3]){ let i=G.rows[t].findIndex(c=>c.id===id); if(i>=0) return {c:G.rows[t][i],where:'row',t,i}; if(G.orows[t]){ i=G.orows[t].findIndex(c=>c.id===id); if(i>=0) return {c:G.orows[t][i],where:'orow',t,i}; } } return null; }
+function payPlan(G,p,card){ const P=G.players[p], b=bonus(P), pay=Z(); let goldNeed=0;
+  for(const c of GEMS){ const need=Math.max(0,(card.cost[c]||0)-b[c]); const use=Math.min(need,P.tok[c]); pay[c]=use; goldNeed+=need-use; }
+  // or : jetons or (doublés avec le comptoir 3), puis carte « deux ors »
+  const dbl=G.posts&&hasPost(G,p,2); let g2=0, gold=0;
+  if(goldNeed>0&&P.gold2>0&&!dbl){ g2=Math.min(2,goldNeed)>0?1:0; goldNeed=Math.max(0,goldNeed-2); }
+  if(goldNeed>0){ if(dbl){ // un or couvre 2 manques d'une même couleur : approximation par couleur
+      let left=0; for(const c of GEMS){ const miss=Math.max(0,(card.cost[c]||0)-b[c]-pay[c]); left+=Math.ceil(miss/2); } gold=left; if(gold>P.tok.o&&P.gold2>0){ g2=1; gold=Math.max(0,gold-2); } }
+    else gold=goldNeed; }
+  if(gold>P.tok.o) return null; if(card.o==='claim'&&b[card.sc]<2) return null; if(card.o==='pair'||card.o==='pairL1'){ if(!P.cards.some(c=>c.pc||c.c)) return null; }
+  pay.o=gold; return {pay,g2}; }
+function canBuy(G,p,card){ if(blockedFor(G,p,card.id)) return false; return !!payPlan(G,p,card); }
+function blockedFor(G,p,id){ const s=G.strong[id]; return !!(s&&s.p!==p&&s.n>0); }
+function hasPost(G,p,i){ return G.posts&&G.posts[i].by.includes(p); }
+function tokCount(P){ return GEMS.reduce((a,c)=>a+P.tok[c],0)+P.tok.o; }
+function pts(G,p){ const P=G.players[p]; let s=P.cards.reduce((a,c)=>a+c.pts,0)+P.nobles.reduce((a,n)=>a+n.pts,0); if(G.posts){ if(hasPost(G,p,3)) s+=5; if(hasPost(G,p,4)) s+=P.arms.length; } return s; }
+/* ---------- actions ---------- */
+function canTake(G,p,cols){ if(G.need||G.phase!=='play'||G.cur!==p) return false; if(!cols.length) return false;
+  if(cols.length===2&&cols[0]===cols[1]) return G.bank[cols[0]]>=4;
+  if(new Set(cols).size!==cols.length||cols.length>3) return false; if(cols.some(c=>!GEMS.includes(c)||G.bank[c]<1)) return false;
+  const avail=GEMS.filter(c=>G.bank[c]>0).length; return cols.length===Math.min(3,avail)||cols.length===3; }
+function take(G,p,cols){ if(!canTake(G,p,cols)) return null; const P=G.players[p], ev=[{t:'take',p,cols:cols.slice()}]; cols.forEach(c=>{ G.bank[c]--; P.tok[c]++; });
+  if(cols.length===2&&cols[0]===cols[1]&&hasPost(G,p,1)){ const opts=GEMS.filter(c=>c!==cols[0]&&G.bank[c]>0); if(opts.length) G.need={type:'gem',p,opts,why:'post2'}; }
+  return finishAction(G,p,ev); }
+function reserve(G,p,ref){ if(G.need||G.cur!==p||G.phase!=='play') return null; const P=G.players[p]; if(P.res.length>=3) return null; let card;
+  if(typeof ref==='number'){ if(!G.decks[ref].length) return null; card=G.decks[ref].pop(); card.hidden=true; }
+  else { const f=findCard(G,ref); if(!f||blockedFor(G,p,ref)) return null; card=f.c; removeFromRow(G,f); clearStrong(G,ref); }
+  P.res.push(card); const ev=[{t:'reserve',p,id:card.id,t2:card.t,blind:typeof ref==='number'}]; if(G.bank.o>0){ G.bank.o--; P.tok.o++; ev.push({t:'gold',p}); }
+  return finishAction(G,p,ev); }
+function removeFromRow(G,f){ if(f.where==='row'){ const nc=G.decks[f.t].pop(); if(nc) G.rows[f.t][f.i]=nc; else G.rows[f.t].splice(f.i,1); } else { const nc=G.odecks[f.t].pop(); if(nc) G.orows[f.t][f.i]=nc; else G.orows[f.t].splice(f.i,1); } }
+function clearStrong(G,id){ const s=G.strong[id]; if(s){ G.players[s.p].str+=s.n; delete G.strong[id]; } }
+function buy(G,p,id,conquest){ if(G.need||G.cur!==p||G.phase!=='play') return null; if(G.used&&!conquest) return null; const P=G.players[p]; let card, f=null; const ri=P.res.findIndex(c=>c.id===id);
+  if(ri>=0) card=P.res[ri]; else { f=findCard(G,id); if(!f) return null; card=f.c; if(blockedFor(G,p,id)) return null; if(conquest&&!(G.strong[id]&&G.strong[id].p===p&&G.strong[id].n===3)) return null; }
+  const plan=payPlan(G,p,card); if(!plan) return null;
+  for(const c of [...GEMS,'o']){ P.tok[c]-=plan.pay[c]; G.bank[c]+=plan.pay[c]; } if(plan.g2) P.gold2=Math.max(0,P.gold2-2);
+  if(ri>=0) P.res.splice(ri,1); delete card.hidden; const ev=[{t:'buy',p,card,from:ri>=0?'res':'row',pay:plan.pay}];
+  if(f){ clearStrong(G,id); removeFromRow(G,f); }
+  P.cards.push(card); if(card.o==='gold2') P.gold2+=2;
+  // effets d'Orient (avant de remplir la rangée)
+  const q=[]; if(card.o==='pair'||card.o==='pairL1') q.push({type:'pair',p,id:card.id}); if(card.o==='pairL1') q.push({type:'free',p,t:1});
+  if(card.o==='noble'&&G.nobles.length) q.push({type:'nres',p}); if(card.o==='claim'){ q.push({type:'sac',p,c:card.sc,n:2}); q.push({type:'free',p,t:2}); }
+  if(G.mod==='posts'&&hasPost(G,p,0)&&!card.newPost) q.push({type:'gem',p,opts:GEMS.filter(c=>G.bank[c]>0),why:'post1'});
+  if(G.mod==='strong') q.push({type:'strong',p});
+  G.q=(G.q||[]).concat(q); if(!conquest) G.used=true; G.conq=conquest;
+  return ev.concat(nextNeed(G,p)); }
+function nextNeed(G,p){ const ev=[];
+  while(G.q&&G.q.length){ const n=G.q.shift();
+    if(n.type==='gem'&&!n.opts.length) continue;
+    if(n.type==='free'){ n.opts=[...G.rows[n.t],...(G.orows[n.t]||[])].filter(c=>!blockedFor(G,p,c.id)&&!(c.o==='claim')).map(c=>c.id); if(!n.opts.length) continue; }
+    if(n.type==='strong'){ n.opts=strongOpts(G,p); if(!n.opts.length) continue; }
+    if(n.type==='sac'){ const P=G.players[p]; n.opts=P.cards.filter(c=>(c.pc||c.c)===n.c&&c.o!=='claim').map(c=>c.id); }
+    if(n.type==='pair'){ n.opts=G.players[p].cards.filter(c=>(c.pc||c.c)&&c.id!==n.id).map(c=>c.id); if(!n.opts.length) continue; }
+    G.need=n; return ev; }
+  // remplir les rangées, puis la conquête éventuelle, puis la fin du tour
+  return ev.concat(afterBuy(G,p)); }
+function refill(G){ for(const f of G.pendingRefill||[]){ const row=f.where==='row'?G.rows[f.t]:G.orows[f.t], deck=f.where==='row'?G.decks[f.t]:G.odecks[f.t]; const i=row.indexOf(f.c); if(i>=0){ const nc=deck.pop(); if(nc) row[i]=nc; else row.splice(i,1); } } }
+function afterBuy(G,p){ // conquête possible ?
+  if(G.mod==='strong'&&!G.conq){ const ids=Object.keys(G.strong).filter(id=>G.strong[id].p===p&&G.strong[id].n===3&&findCard(G,id)); const ok=ids.filter(id=>canBuy(G,p,findCard(G,id).c)); if(ok.length){ G.need={type:'conquest',p,opts:ok}; return []; } }
+  return finishAction(G,p,[]); }
+function strongOpts(G,p){ const P=G.players[p], o=[]; const all=[1,2,3].flatMap(t=>[...G.rows[t],...(G.orows[t]||[])]);
+  if(P.str>0) all.forEach(c=>{ const s=G.strong[c.id]; if(!s||s.p===p&&s.n<3) o.push({a:'place',id:c.id}); });
+  else { const mine=Object.keys(G.strong).filter(id=>G.strong[id].p===p); mine.forEach(from=>all.forEach(c=>{ const s=G.strong[c.id]; if(c.id!==from&&(!s||s.p===p&&s.n<3)) o.push({a:'move',from,id:c.id}); })); }
+  Object.keys(G.strong).forEach(id=>{ const s=G.strong[id]; if(s.p!==p&&s.n===1) o.push({a:'remove',id}); });
+  return o; }
+function resolve(G,p,choice){ const n=G.need; if(!n||n.p!==p) return null; const P=G.players[p], ev=[];
+  switch(n.type){
+    case 'gem': if(!n.opts.includes(choice)) return null; G.bank[choice]--; P.tok[choice]++; ev.push({t:'take',p,cols:[choice],bonus:true}); break;
+    case 'pair': { if(!n.opts.includes(choice)) return null; const target=P.cards.find(c=>c.id===choice), me=P.cards.find(c=>c.id===n.id); me.pc=target.pc||target.c; ev.push({t:'pair',p,c:me.pc}); break; }
+    case 'free': { if(!n.opts.includes(choice)) return null; const f=findCard(G,choice); clearStrong(G,choice); P.cards.push(f.c); removeFromRow(G,f); ev.push({t:'free',p,card:f.c}); if(f.c.o==='gold2') P.gold2+=2; if(f.c.o==='pair') G.q.unshift({type:'pair',p,id:f.c.id}); break; }
+    case 'nres': { const nb=G.nobles.find(x=>x.id===choice); if(!nb) return null; G.nobles=G.nobles.filter(x=>x!==nb); P.nres.push(nb); ev.push({t:'nres',p,noble:nb}); break; }
+    case 'sac': { const bv=id=>{ const c=P.cards.find(x=>x.id===id); return c&&c.o==='double'?2:1; }; if(!Array.isArray(choice)||!choice.every(id=>n.opts.includes(id))||new Set(choice).size!==choice.length) return null; const sum=choice.reduce((a,id)=>a+bv(id),0); if(sum<n.n||choice.some(id=>sum-bv(id)>=n.n)) return null; P.cards=P.cards.filter(c=>!choice.includes(c.id)); ev.push({t:'sac',p,n:choice.length,c:n.c}); break; }
+    case 'strong': { const o=n.opts.find(x=>x.a===choice.a&&x.id===choice.id&&x.from===choice.from); if(!o) return null;
+      if(o.a==='remove'){ const s=G.strong[o.id]; G.players[s.p].str+=1; delete G.strong[o.id]; ev.push({t:'unstrong',p,id:o.id,of:s.p}); }
+      else { if(o.a==='move'){ const s=G.strong[o.from]; s.n--; if(!s.n) delete G.strong[o.from]; } else P.str--; G.strong[o.id]=G.strong[o.id]||{p,n:0}; G.strong[o.id].n++; ev.push({t:'strong',p,id:o.id,n:G.strong[o.id].n}); }
+      break; }
+    case 'conquest': { G.need=null; if(choice==null) return finishAction(G,p,ev); return buy(G,p,choice,true); }
+    case 'discard': { if(!Array.isArray(choice)) return null; const tot=choice.length; if(tokCount(P)-tot!==10) return null; const cnt=Z(); choice.forEach(c=>cnt[c]++); if([...GEMS,'o'].some(c=>cnt[c]>P.tok[c])) return null; choice.forEach(c=>{ P.tok[c]--; G.bank[c]++; }); ev.push({t:'discard',p,n:tot}); G.need=null; return ev.concat(endTurn(G,p,true)); }
+    case 'noble': { const nb=n.opts.find(x=>x.id===choice); if(!nb) return null; G.need=null; return ev.concat(visitNoble(G,p,nb),endTurn(G,p,true,true)); }
+    default: return null; }
+  G.need=null; if(n.why==='post2') return ev.concat(endTurn(G,p)); return ev.concat(nextNeed(G,p)); }
+function finishAction(G,p,ev){ if(G.need) return ev; return ev.concat(endTurn(G,p)); }
+function visitNoble(G,p,nb){ const P=G.players[p]; G.nobles=G.nobles.filter(x=>x!==nb); P.nres=P.nres.filter(x=>x!==nb); P.nobles.push(nb); return [{t:'noble',p,noble:nb}]; }
+function meets(b,req){ for(const c in req) if(b[c]<req[c]) return false; return true; }
+function cityOk(G,p,city){ if(pts(G,p)<city.pts) return false; const b=bonus(G.players[p]); const fixed=city.req.filter(r=>r[0]!=='*'), wild=city.req.filter(r=>r[0]==='*');
+  if(fixed.some(([c,n])=>b[c]<n)) return false; const used=new Set(fixed.map(r=>r[0]));
+  const avail=GEMS.filter(c=>!used.has(c)).map(c=>b[c]).sort((a,c)=>c-a); const need=wild.map(r=>r[1]).sort((a,c)=>c-a);
+  return need.every((n,i)=>avail[i]>=n); }
+function endTurn(G,p,skipDiscard,nobleDone){ const P=G.players[p], ev=[];
+  if(!skipDiscard&&tokCount(P)>10){ G.need={type:'discard',p,n:tokCount(P)-10}; return ev; }
+  if(!nobleDone&&G.mod!=='cities'){ const b=bonus(P); const ok=[...G.nobles,...P.nres].filter(nb=>meets(b,nb.req)); if(ok.length>1){ G.need={type:'noble',p,opts:ok}; return ev; } if(ok.length===1) ev.push(...visitNoble(G,p,ok[0])); }
+  if(G.posts){ const b=bonus(P); G.posts.forEach((po,i)=>{ const def=POSTS[i]; if(po.by.includes(p)||P.arms.length>=5) return; if(meets(b,def.req)&&(!def.noble||P.nobles.length)){ po.by.push(p); P.arms.push(i); ev.push({t:'post',p,i}); } }); }
+  if(G.mod==='cities'&&!P.city){ const ok=G.cities.filter(c=>cityOk(G,p,c)); if(ok.length){ ok.sort((a,b)=>b.pts-a.pts); P.city=ok[0]; ev.push({t:'city',p,city:ok[0]}); G.ending=true; } }
+  P.pts=pts(G,p); if(G.mod!=='cities'&&P.pts>=15&&!G.ending){ G.ending=true; ev.push({t:'lastRound',p}); } else if(G.mod==='cities'&&P.city&&ev.some(e=>e.t==='city')) ev.push({t:'lastRound',p});
+  G.used=false; G.conq=false; G.q=[];
+  const nx=(p+1)%G.players.length; if(G.ending&&nx===0){ return ev.concat(gameOver(G)); }
+  G.cur=nx; if(nx===0) G.turn++; ev.push({t:'next',p:nx}); return ev; }
+function gameOver(G){ G.phase='over'; G.players.forEach((P,i)=>P.pts=pts(G,i)); let cand=G.players.map((P,i)=>i); if(G.mod==='cities'){ const w=cand.filter(i=>G.players[i].city); if(w.length) cand=w; }
+  const best=Math.max(...cand.map(i=>G.players[i].pts)); cand=cand.filter(i=>G.players[i].pts===best); const fc=Math.min(...cand.map(i=>G.players[i].cards.length)); cand=cand.filter(i=>G.players[i].cards.length===fc);
+  G.over={winners:cand}; return [{t:'over',winners:cand}]; }
+/* ===== IA ===== */
+function deficit(G,p,card){ const P=G.players[p], b=bonus(P); let d=0; for(const c of GEMS) d+=Math.max(0,(card.cost[c]||0)-b[c]-P.tok[c]); return Math.max(0,d-P.tok.o-(P.gold2?2:0)); }
+function goalColors(G,p){ const P=G.players[p], b=bonus(P), w={w:0,u:0,g:0,r:0,k:0};
+  for(const nb of [...G.nobles,...P.nres]) for(const c in nb.req) if(b[c]<nb.req[c]) w[c]+=1/(1+nb.req[c]-b[c]);
+  if(G.mod==='cities') for(const ct of G.cities) ct.req.forEach(([c,n])=>{ if(c!=='*'&&b[c]<n) w[c]+=1.2/(1+n-b[c]); });
+  if(G.posts) G.posts.forEach((po,i)=>{ if(po.by.includes(p)) return; for(const c in POSTS[i].req) if(b[c]<POSTS[i].req[c]) w[c]+=.6/(1+POSTS[i].req[c]-b[c]); });
+  return w; }
+function cardVal(G,p,card){ const w=goalColors(G,p), late=G.players.some(x=>x.pts>=10); let v=card.pts*(late?3.2:2.4);
+  const col=card.c; if(col&&card.o!=='claim') v+=(card.o==='double'?2:1)*(1.2+w[col]*2)*(late?.5:1);
+  if(card.o==='pair'||card.o==='pairL1') v+=1.6; if(card.o==='pairL1') v+=2.5; if(card.o==='gold2') v+=1.5; if(card.o==='noble') v+=2.5; if(card.o==='claim') v+=2;
+  return v; }
+function allCards(G){ return [1,2,3].flatMap(t=>[...G.rows[t],...(G.orows[t]||[])]); }
+function aiTurn(G,rng){ rng=rng||Math.random; const p=G.cur, P=G.players[p], lv=P.level;
+  if(G.need&&G.need.p===p) return {res:aiResolve(G,p,rng)};
+  const noise=lv==='facile'?3:lv==='normal'?.8:.15;
+  const opts=[...allCards(G).filter(c=>!blockedFor(G,p,c.id)),...P.res];
+  let best=null;
+  for(const c of opts){ const d=deficit(G,p,c), v=cardVal(G,p,c)+(rng()-.5)*noise; const sc=v/(1+d*(lv==='difficile'?.45:.55))+(P.res.includes(c)?.6:0); if(!best||sc>best.sc) best={c,sc,d}; }
+  // acheter ce qui est achetable et rentable
+  const buyable=opts.filter(c=>canBuy(G,p,c)).map(c=>({c,v:cardVal(G,p,c)+(rng()-.5)*noise})).sort((a,b)=>b.v-a.v);
+  if(buyable.length&&(lv!=='difficile'||buyable[0].v>=best.sc*.55||tokCount(P)>=7)) return {buy:buyable[0].c.id};
+  // prendre des jetons utiles pour la cible
+  const tgt=best&&best.c, b=bonus(P), need={};
+  if(tgt) for(const c of GEMS) need[c]=Math.max(0,(tgt.cost[c]||0)-b[c]-P.tok[c]);
+  const wv=goalColors(G,p); const score=c=>(need[c]||0)*3+wv[c]+(rng()-.5)*noise*.5;
+  const avail=GEMS.filter(c=>G.bank[c]>0).sort((a,c)=>score(c)-score(a));
+  if(tgt){ const two=GEMS.find(c=>(need[c]||0)>=2&&G.bank[c]>=4); const three=avail.slice(0,3);
+    const usefulThree=three.filter(c=>(need[c]||0)>0).length;
+    if(tokCount(P)<=8||usefulThree>0){ if(two&&usefulThree<=1&&lv!=='facile') return {take:[two,two]}; if(three.length&&tokCount(P)<=7) return {take:three}; if(two&&tokCount(P)<=8) return {take:[two,two]}; } }
+  // réserver la cible si on ne peut rien faire d'utile
+  if(P.res.length<3&&tgt&&!P.res.includes(tgt)&&findCard(G,tgt.id)&&lv!=='facile'&&tgt.pts>=3&&best.d<=4&&G.players.some((x,i)=>i!==p&&deficit(G,i,tgt)<=1)) return {reserve:tgt.id};
+  if(avail.length&&tokCount(P)<=7) return {take:avail.slice(0,Math.min(3,avail.length))};
+  if(buyable.length) return {buy:buyable[0].c.id};
+  if(P.res.length<3){ const t=[3,2,1].find(t=>G.decks[t].length); if(t) return {reserve:t}; }
+  return {take:avail.slice(0,Math.min(3,avail.length))}; }
+function aiResolve(G,p,rng){ const n=G.need, P=G.players[p], w=goalColors(G,p);
+  if(n.type==='gem') return n.opts.slice().sort((a,b)=>w[b]-w[a])[0];
+  if(n.type==='pair'){ return n.opts.slice().sort((a,b)=>{ const ca=P.cards.find(c=>c.id===a), cb=P.cards.find(c=>c.id===b); return w[cb.pc||cb.c]-w[ca.pc||ca.c]; })[0]; }
+  if(n.type==='free') return n.opts.slice().sort((a,b)=>cardVal(G,p,findCard(G,b).c)-cardVal(G,p,findCard(G,a).c))[0];
+  if(n.type==='nres'){ const b=bonus(P); return G.nobles.slice().sort((x,y)=>Object.keys(x.req).reduce((s,c)=>s+Math.max(0,x.req[c]-b[c]),0)-Object.keys(y.req).reduce((s,c)=>s+Math.max(0,y.req[c]-b[c]),0))[0].id; }
+  if(n.type==='sac'){ const bv=id=>P.cards.find(c=>c.id===id).o==='double'?2:1; const d=n.opts.find(id=>bv(id)===2); if(d) return [d]; return n.opts.slice().sort((a,b)=>P.cards.find(c=>c.id===a).pts-P.cards.find(c=>c.id===b).pts).slice(0,n.n); }
+  if(n.type==='strong'){ const rm=n.opts.filter(o=>o.a==='remove'); const pl=n.opts.filter(o=>o.a!=='remove');
+    const tv=o=>{ const f=findCard(G,o.id); return f?cardVal(G,p,f.c)/(1+deficit(G,p,f.c)*.5)+(G.strong[o.id]&&G.strong[o.id].p===p?1:0):0; };
+    if(rm.length&&(!pl.length||rng()<.35)) return rm[0]; return pl.sort((a,b)=>tv(b)-tv(a))[0]||rm[0]; }
+  if(n.type==='conquest') return n.opts[0];
+  if(n.type==='discard'){ const out=[]; const tk=Object.assign({},P.tok); const order=[...GEMS].sort((a,b)=>w[a]-w[b]); while(out.length<n.n){ const c=order.find(c=>tk[c]>0)||'o'; tk[c]--; out.push(c); } return out; }
+  if(n.type==='noble') return n.opts[0].id;
+  return null; }
+function aiAct(G,rng){ const p=G.cur; const a=aiTurn(G,rng); if(a.res!==undefined) return resolve(G,G.need.p,a.res); if(a.buy) return buy(G,p,a.buy); if(a.reserve!=null) return reserve(G,p,a.reserve); return take(G,p,a.take); }
+if(IS_NODE) module.exports={GEMS,baseCards,orientCards,nobles,newGame,take,reserve,buy,resolve,canBuy,canTake,bonus,pts,aiTurn,aiAct,findCard,tokCount,payPlan,cityOk,POSTS,strongOpts};
+
+else {
+/* ===== interface ===== */
+let G=null, BUSY=false, GEN=0, TSEL=[], CSEL=null, DSEL=null, SMOVE=null, BEFORE=new Set();
+const GAME=window.GAME={help,menu};
+const KEY='jr';
+const GC={w:'#f4f1ea',u:'#2f6fd6',g:'#1f9d55',r:'#d6363c',k:'#3a2e2a',o:'#e8b72c'};
+const GN={w:'Diamant',u:'Saphir',g:'Émeraude',r:'Rubis',k:'Onyx',o:'Or'};
+const PCOL=['#e04848','#3b82f6','#f2b632','#9b5de5'];
+const NAMES=['Camille','Lucas','Inès','Hugo'];
+const ON={pair:'JUMELAGE',gold2:'DEUX ORS',pairL1:'JUMELAGE + CADEAU',double:'DOUBLE',noble:'MÉCÈNE',claim:'SACRIFICE'};
+const MODS={none:['Jeu de base','Nobles, 15 points pour finir.'],orient:['Les Orients','30 cartes spéciales : jumelage, double bonus, cartes offertes, sacrifice.'],cities:['Les Cités','Les cités remplacent les nobles : la première conquise termine la partie.'],posts:['Les Comptoirs','Cinq comptoirs à pouvoirs permanents sur la route d’Orient.'],strong:['Les Forteresses','Occupe les cartes convoitées, conquiers-les avec 3 forts.']};
+function gemSVG(c,s){ const col=GC[c]; return `<svg viewBox="0 0 40 40" width="${s||40}" height="${s||40}"><circle cx="20" cy="20" r="19" fill="${c==='o'?'#c9971f':'#2b2117'}" /><circle cx="20" cy="20" r="16.5" fill="${col}" stroke="#ffffff55" stroke-width="1.2"/><path d="M20 8l9 6v12l-9 6-9-6V14Z" fill="#ffffff2a" stroke="${c==='w'?'#b9b2a2':'#ffffff66'}" stroke-width="1"/><path d="M20 8v24M11 14l18 12M29 14L11 26" stroke="${c==='w'?'#c9c2b0':'#ffffff33'}" stroke-width=".8"/><circle cx="15" cy="13" r="2.4" fill="#fff" opacity=".7"/></svg>`; }
+const isH=p=>G&&!G.players[p].ai;
+function costHTML(cost){ return GEMS.filter(c=>cost[c]>0).map(c=>`<span style="background:${GC[c]};${c==='w'?'color:#2b2117':''}">${cost[c]}</span>`).join(''); }
+function jcHTML(card,o){ o=o||{}; const col=card.pc||card.c, bc=col?GC[col]:'#9b7b3b'; const st=G.strong[card.id];
+  const cls=['jc',col==='w'?'cw':'',card.o?'o':'',o.cls||''].join(' ');
+  return `<div class="${cls}" data-card="${card.id}" style="--bc:${bc}"><div class="band"><span class="pt">${card.pts||''}</span>${col?`<span class="gem">${gemSVG(col,'100%')}</span>${card.o==='double'?`<span class="gem">${gemSVG(col,'100%')}</span>`:''}`:''}</div>${card.o?`<div class="ori">${ON[card.o]}</div>`:''}<div class="cost">${card.o==='claim'?`<span style="background:${GC[card.sc]};width:auto;padding:0 4px;border-radius:5px">−2</span>`:costHTML(card.cost)}</div>${st?`<div class="fort">${Array.from({length:st.n},()=>`<i style="background:${PCOL[st.p]}"></i>`).join('')}</div>`:''}</div>`; }
+function reqHTML(req){ return Object.keys(req).map(c=>`<span class="req ${c}">${req[c]}</span>`).join(''); }
+function cityReq(c){ return c.req.map(([k,n])=>`<span class="req ${k==='*'?'s':k}">${n}${k==='*'?'×?':''}</span>`).join(''); }
+/* ---------- rendu ---------- */
+function render(){ if(!G){ $('#tbl').innerHTML=''; $('#actin').innerHTML=''; renderStatus(); return; }
+  const me=G.cur, need=G.need&&isH(G.need.p)?G.need:null, myTurn=isH(me)&&!BUSY&&G.phase==='play';
+  const pickC=need&&need.type==='free'?need.opts:[], pickN=need&&(need.type==='nres'?G.nobles.map(n=>n.id):need.type==='noble'?need.opts.map(n=>n.id):[]);
+  const strongSet=need&&need.type==='strong'?new Set(need.opts.map(o=>o.id)):new Set();
+  let pat='';
+  if(G.mod==='cities') pat=G.cities.map(c=>`<div class="city"><b>${c.pts} pts</b><div class="rq">${cityReq(c)||'<span class="req s">rien d’autre</span>'}</div></div>`).join('');
+  else pat=[...G.nobles.map(n=>({n,res:false})),...G.players.flatMap(P=>P.nres.map(n=>({n,res:true})))].map(({n,res})=>`<div class="noble ${res?'res':''} ${pickN&&pickN.includes(n.id)?'pick':''}" data-noble="${n.id}"><b>${n.pts}</b><div class="rq">${reqHTML(n.req)}</div></div>`).join('');
+  let posts=''; if(G.posts) posts=`<div class="posts">${G.posts.map((po,i)=>`<div class="post"><div>${reqHTML(POSTS[i].req)}${POSTS[i].noble?' <span class="req s">+ noble</span>':''}</div><div>${POSTS[i].txt}</div><div class="arms">${po.by.map(p=>`<i style="background:${PCOL[p]}"></i>`).join('')}</div></div>`).join('')}</div>`;
+  const P=G.players[isH(me)?me:(G.players.findIndex(x=>!x.ai)>=0?G.players.findIndex(x=>!x.ai):me)];
+  const bank=`<div class="bank"><h3>Banque</h3>${[...GEMS,'o'].map(c=>{ const n=TSEL.filter(x=>x===c).length; return `<button class="tk ${n?'sel':''}" data-tk="${c}" data-n="${n}" ${c==='o'||!myTurn||need||G.bank[c]<1?'disabled':''} aria-label="${GN[c]} (${G.bank[c]})">${gemSVG(c,'100%')}<b>${G.bank[c]}</b></button>`; }).join('')}</div>`;
+  const cardCls=c=>{ const cl=[]; if(CSEL===c.id) cl.push('sel'); if(myTurn&&!need&&canBuy(G,me,c)) cl.push('can'); if(pickC.includes(c.id)||strongSet.has(c.id)) cl.push('pick'); if(blockedFor(G,me,c.id)) cl.push('blocked'); if(BEFORE.size&&!BEFORE.has(c.id)) cl.push('new'); return cl.join(' '); };
+  const tiers=[3,2,1].map(t=>`<div class="tier"><div class="deck t${t} ${DSEL===t?'sel':''}" data-deck="${t}">${'I'.repeat(t)}<small>${G.decks[t].length}</small></div>${G.rows[t].map(c=>jcHTML(c,{cls:cardCls(c)})).join('')}${G.mod==='orient'?`<div class="ocol">${(G.orows[t]||[]).map(c=>jcHTML(c,{cls:cardCls(c)})).join('')}</div>`:''}</div>`).join('');
+  const side=G.players.map((Q,i)=>{ const b=bonus(Q); return `<div class="pp ${i===G.cur&&G.phase==='play'?'on':''}" id="pp-${i}"><div class="hd"><span style="width:12px;height:12px;border-radius:50%;background:${PCOL[i]}"></span><span class="nm">${esc(Q.name)}</span><span class="pts">${pts(G,i)}</span></div>
+    <div class="row6">${[...GEMS,'o'].map(c=>`<div class="cell">${c==='o'?`<span class="bn" style="background:${GC.o};color:#2b2117">★</span>`:`<span class="bn" style="background:${GC[c]};${c==='w'?'color:#2b2117':''}">${b[c]}</span>`}<span class="tn">${gemSVG(c,14)}${Q.tok[c]}</span></div>`).join('')}</div>
+    <div class="extra"><span>${Q.cards.length} carte${Q.cards.length>1?'s':''}</span><span>${tokCount(Q)}/10 jetons</span>${Q.nobles.length?`<span>👑 ${Q.nobles.length}</span>`:''}${Q.gold2?`<span>${Q.gold2} or en carte</span>`:''}${G.mod==='strong'?`<span>${Q.str} fort${Q.str>1?'s':''} en main</span>`:''}${Q.city?`<span>🏰 cité ${Q.city.pts}</span>`:''}${G.posts?`<span>${Q.arms.length} blason${Q.arms.length>1?'s':''}</span>`:''}</div>
+    ${Q.res.length?`<div class="resv">${Q.res.map(c=>c.hidden&&!(isH(i)&&i===G.cur)?`<div class="back" title="Carte réservée cachée"></div>`:jcHTML(c,{cls:'mini '+(i===G.cur?cardCls(c):'')})).join('')}</div>`:''}</div>`; }).join('');
+  $('#tbl').innerHTML=`<div class="mainc">${pat||posts?`<div class="patrons">${pat}</div>${posts}`:''}${bank}<div class="tiers">${tiers}</div></div><aside class="side">${side}</aside>`;
+  BEFORE=new Set(); renderAct(); renderStatus(); }
+function renderAct(){ const a=$('#actin'), me=G.cur; let h='';
+  if(G.phase==='over'){ a.innerHTML=`<span class="msg2">Partie terminée.</span><button class="btn pri" data-c="new">Nouvelle partie</button>`; return; }
+  if(!isH(me)||BUSY){ a.innerHTML=`<span class="msg2"><b>${esc(G.players[me].name)}</b> réfléchit…</span>`; return; }
+  const n=G.need;
+  if(n){ const msg={free:'Choisis la carte offerte (en surbrillance).',nres:'Choisis le noble à réserver.',noble:'Plusieurs nobles te rendent visite : choisis-en un.',strong:SMOVE?'Choisis la carte où déplacer ton fort.':(G.players[me].str?'Pose un fort sur une carte en surbrillance, ou retire un fort adverse isolé.':'Plus de fort en main : choisis un de tes forts à déplacer, ou retire un fort adverse isolé.')}[n.type];
+    a.innerHTML=`<span class="msg2">${msg||'Fais ton choix.'}</span>`; return; }
+  if(TSEL.length){ const ok=canTake(G,me,TSEL); h=`<span class="msg2">Jetons choisis : ${TSEL.map(c=>GN[c]).join(', ')}. ${ok?'':'Prends 3 couleurs différentes, ou 2 identiques s’il en reste au moins 4.'}</span><button class="btn" data-a="cancel">Annuler</button><button class="btn pri" data-a="take" ${ok?'':'disabled'}>Prendre</button>`; }
+  else if(CSEL){ const f=findCard(G,CSEL), mine=G.players[me].res.find(c=>c.id===CSEL), card=f?f.c:mine; const plan=payPlan(G,me,card), cb=canBuy(G,me,card)&&(!G.used);
+    const pay=plan?[...GEMS,'o'].filter(c=>plan.pay[c]).map(c=>`${plan.pay[c]} ${GN[c].toLowerCase()}`).join(', ')+(plan.g2?' (carte d’or utilisée)':''):'';
+    h=`<span class="msg2">${cb?(pay?`Coût : ${pay}.`:'Gratuite grâce à tes bonus !'):'Tu ne peux pas encore l’acheter.'}${card.o?' '+ohelp(card.o):''}</span><button class="btn" data-a="cancel">Annuler</button>${f&&G.players[me].res.length<3&&!blockedFor(G,me,CSEL)?`<button class="btn" data-a="reserve">Réserver${G.bank.o?' (+1 or)':''}</button>`:''}<button class="btn pri" data-a="buy" ${cb?'':'disabled'}>Acheter</button>`; }
+  else if(DSEL){ h=`<span class="msg2">Réserver la carte du dessus du paquet de niveau ${DSEL}, sans la montrer.</span><button class="btn" data-a="cancel">Annuler</button><button class="btn pri" data-a="reserveD" ${G.players[me].res.length<3?'':'disabled'}>Réserver</button>`; }
+  else h=`<span class="msg2">Choisis des <b>jetons</b> dans la banque, une <b>carte</b> à acheter (bordure verte) ou à réserver, ou un <b>paquet</b> pour réserver à l’aveugle.</span>`;
+  a.innerHTML=h; }
+function ohelp(o){ return {pair:'Jumelage : elle prend la couleur d’une de tes cartes.',gold2:'Vaut 2 ors pour un achat.',pairL1:'Jumelage, puis une carte de niveau I offerte.',double:'Donne 2 bonus.',noble:'Réserve un noble pour toi.',claim:'Défausse 2 bonus de la couleur, puis une carte de niveau II offerte.'}[o]; }
+function renderStatus(){ const st=$('#status'); if(!G){ st.innerHTML=''; return; } const P=G.players[G.cur];
+  st.style.setProperty('--pc',G.phase==='over'?'#1d6f3e':PCOL[G.cur]);
+  st.innerHTML=G.phase==='over'?`<span class="who">Fin</span><span class="msg">${G.over.winners.map(i=>esc(G.players[i].name)).join(' et ')} l’emporte avec ${pts(G,G.over.winners[0])} points.</span>`:`<span class="who">${esc(P.name)}</span><span class="msg">${G.ending?'Dernier tour !':'à toi de jouer'}</span><span class="right">${MODS[G.mod][0]} · tour ${G.turn+1}</span>`; }
+/* ---------- animations ---------- */
+const R=el=>el?el.getBoundingClientRect():null;
+function fly(html,from,to,w){ return new Promise(res=>{ if(!from||!to||REDUCED){ res(); return; } const f=document.createElement('div'); f.className='fly'; f.innerHTML=html; f.style.left=from.left+'px'; f.style.top=from.top+'px'; f.style.width=(w||from.width)+'px'; f.style.setProperty('--cw',getComputedStyle($('#tbl')).getPropertyValue('--cw')); document.body.appendChild(f);
+  requestAnimationFrame(()=>{ f.style.transform=`translate(${to.left+to.width/2-from.left-(w||from.width)/2}px,${to.top+20-from.top}px) scale(.55)`; f.style.opacity='.6'; }); setTimeout(()=>{ f.remove(); res(); },520); }); }
+async function show(ev,my){ for(const e of ev||[]){ if(my!==GEN) return;
+  switch(e.t){
+   case 'take': { const to=R($('#pp-'+e.p)); for(const c of e.cols){ fly(gemSVG(c,44),R($(`[data-tk="${c}"]`)),to,44); sfx('click'); await wait(110); } await wait(380); render(); if(e.bonus) toast(`${G.players[e.p].name} prend un ${GN[e.cols[0]].toLowerCase()} en plus`); break; }
+   case 'buy': { const el=$(`[data-card="${e.card.id}"]`); if(el) await fly(el.outerHTML,R(el),R($('#pp-'+e.p))); sfx('card'); render(); if(!isH(e.p)) toast(`${G.players[e.p].name} achète une carte${e.card.pts?` (${e.card.pts} pt${e.card.pts>1?'s':''})`:''}`); await wait(200); break; }
+   case 'reserve': { const el=$(`[data-card="${e.id}"]`)||$(`[data-deck="${e.t2}"]`); if(el) await fly(el.outerHTML,R(el),R($('#pp-'+e.p))); sfx('flip'); render(); if(!isH(e.p)) toast(`${G.players[e.p].name} réserve une carte${e.blind?' cachée':''}`); break; }
+   case 'gold': render(); break;
+   case 'pair': render(); toast(`Jumelage : la carte devient ${GN[e.c].toLowerCase()}`); sfx('ding'); await wait(300); break;
+   case 'free': render(); toast(`Carte offerte à ${G.players[e.p].name} !`); sfx('ding'); await wait(400); break;
+   case 'nres': render(); toast(`${G.players[e.p].name} réserve un noble`); sfx('ding'); await wait(300); break;
+   case 'sac': render(); toast(`${G.players[e.p].name} sacrifie ${e.n} carte${e.n>1?'s':''} ${GN[e.c].toLowerCase()}`); sfx('boom'); await wait(400); break;
+   case 'strong': render(); sfx('pop'); if(!isH(e.p)) toast(`${G.players[e.p].name} pose un fort (${e.n}/3)`); await wait(300); break;
+   case 'unstrong': render(); sfx('capture'); toast(`${G.players[e.p].name} renverse un fort de ${G.players[e.of].name}`); await wait(300); break;
+   case 'discard': render(); toast(`${G.players[e.p].name} rend ${e.n} jeton${e.n>1?'s':''}`); break;
+   case 'noble': render(); banner('Visite d’un noble',`${G.players[e.p].name} · +3 points`,PCOL[e.p]); sfx('win'); await wait(1300); break;
+   case 'post': render(); toast(`${G.players[e.p].name} ouvre un comptoir : ${POSTS[e.i].txt.toLowerCase()}`); sfx('ding'); await wait(500); break;
+   case 'city': render(); banner('Cité conquise !',`${G.players[e.p].name} · fin de partie à la fin du tour`,PCOL[e.p]); sfx('win'); await wait(1600); break;
+   case 'lastRound': render(); if(G.mod!=='cities') banner('Dernier tour',`${G.players[e.p].name} atteint ${pts(G,e.p)} points`,'#8a6a1a'); await wait(1400); break;
+   case 'next': render(); break;
+  } } }
+/* ---------- déroulement ---------- */
+function save(){ store(KEY,G&&G.phase!=='over'?G:null); }
+function snap(){ BEFORE=new Set([1,2,3].flatMap(t=>[...G.rows[t],...(G.orows[t]||[])]).map(c=>c.id)); }
+async function apply(ev,my){ if(!ev){ sfx('error'); return; } TSEL=[]; CSEL=null; DSEL=null; SMOVE=null; BUSY=true; await show(ev,my); if(my!==GEN) return; BUSY=false; step(); }
+function act(fn){ snap(); const ev=fn(); if(!ev){ BEFORE=new Set(); sfx('error'); return; } apply(ev,GEN); }
+function step(){ if(!G) return; render(); save(); const my=GEN;
+  if(G.phase==='over'){ setTimeout(()=>{ if(my===GEN) gameEnd(); },500); return; }
+  const actor=G.need?G.need.p:G.cur;
+  if(G.players[actor].ai){ setTimeout(()=>{ if(my!==GEN||BUSY) return; snap(); const ev=aiAct(G); if(ev) apply(ev,my); },850); return; }
+  const n=G.need; if(!n) return;
+  if(n.type==='gem') gemModal(n); else if(n.type==='pair') pairModal(n); else if(n.type==='conquest') conqModal(n); else if(n.type==='discard') discardModal(n);
+  else if(n.type==='sac'){ const auto=aiResolve(G,n.p); toast('Sacrifice : les cartes les moins précieuses sont défaussées'); act(()=>resolve(G,n.p,auto)); } }
+function gemModal(n){ window.MODAL_CLOSABLE=false; openModal(`<h2>Prends un jeton</h2><p>${n.why==='post2'?'Comptoir : un jeton d’une autre couleur en plus.':'Comptoir : un jeton offert après ton achat.'}</p><div class="tkrow">${n.opts.map(c=>`<button class="tk" data-g="${c}">${gemSVG(c,'100%')}</button>`).join('')}</div>`,e=>{ const b=e.target.closest('[data-g]'); if(!b) return; closeModal(); window.MODAL_CLOSABLE=true; act(()=>resolve(G,n.p,b.dataset.g)); }); }
+function pairModal(n){ const P=G.players[n.p]; window.MODAL_CLOSABLE=false; openModal(`<h2>Jumelage</h2><p>Associe la carte à l’une des tiennes : elle prendra sa couleur de bonus.</p><div class="pickc">${n.opts.map(id=>{ const c=P.cards.find(x=>x.id===id); return `<span data-pr="${id}">${jcHTML(c)}</span>`; }).join('')}</div>`,e=>{ const b=e.target.closest('[data-pr]'); if(!b) return; closeModal(); window.MODAL_CLOSABLE=true; act(()=>resolve(G,n.p,b.dataset.pr)); }); }
+function conqModal(n){ window.MODAL_CLOSABLE=false; openModal(`<h2>Conquête !</h2><p>Tes trois forts tiennent une carte : tu peux l’acheter tout de suite.</p><div class="pickc">${n.opts.map(id=>jcHTML(findCard(G,id).c)).join('')}</div><div class="acts"><button class="btn" data-q="no">Plus tard</button><button class="btn pri" data-q="${n.opts[0]}">Acheter</button></div>`,e=>{ const b=e.target.closest('[data-q]'); if(!b) return; closeModal(); window.MODAL_CLOSABLE=true; act(()=>resolve(G,n.p,b.dataset.q==='no'?null:b.dataset.q)); }); }
+function discardModal(n){ const P=G.players[n.p]; let sel=[]; window.MODAL_CLOSABLE=false;
+  const draw=()=>paintModal(`<h2>Trop de jetons</h2><p>Tu ne peux garder que 10 jetons : rends-en <b>${n.n}</b> (${sel.length} choisi${sel.length>1?'s':''}).</p><div class="tkrow">${[...GEMS,'o'].filter(c=>P.tok[c]).map(c=>{ const k=sel.filter(x=>x===c).length; return `<button class="tk ${k?'sel':''}" data-n="${k}" data-d="${c}">${gemSVG(c,'100%')}<b>${P.tok[c]-k}</b></button>`; }).join('')}</div><div class="acts"><button class="btn" data-x="reset">Recommencer</button><button class="btn pri" data-x="ok" ${sel.length===n.n?'':'disabled'}>Rendre</button></div>`);
+  draw(); $('#mbox').onclick=e=>{ const d=e.target.closest('[data-d]'); if(d){ const c=d.dataset.d; if(sel.length<n.n&&sel.filter(x=>x===c).length<P.tok[c]) sel.push(c); draw(); return; } const x=e.target.closest('[data-x]'); if(!x) return; if(x.dataset.x==='reset'){ sel=[]; draw(); return; } closeModal(); window.MODAL_CLOSABLE=true; act(()=>resolve(G,n.p,sel)); }; }
+function gameEnd(){ store(KEY,null); const w=G.over.winners, hw=w.some(i=>isH(i)); banner(hw?'Victoire !':'Fin de partie',w.map(i=>G.players[i].name).join(' et '),PCOL[w[0]]); sfx(hw?'win':'lose'); if(hw) confetti(Object.values(GC));
+  setTimeout(()=>{ window.MODAL_CLOSABLE=true; openModal(`<h2>${w.map(i=>esc(G.players[i].name)).join(' et ')} l’emporte</h2><table class="scl"><tr><th>Joaillier</th><th>Points</th><th>Cartes</th></tr>${G.players.map((P,i)=>({P,i})).sort((a,b)=>pts(G,b.i)-pts(G,a.i)).map(({P,i})=>`<tr class="${w.includes(i)?'w':''}"><td>${esc(P.name)}${P.city?' · cité':''}</td><td>${pts(G,i)}</td><td>${P.cards.length}</td></tr>`).join('')}</table><p>${G.mod==='cities'?'Les cités départagent d’abord, puis les points.':'En cas d’égalité, le joueur avec le moins de cartes gagne.'}</p><div class="acts"><button class="btn" data-c="new">Changer les réglages</button><button class="btn pri" data-a="again">Rejouer</button></div>`); },1700); }
+/* ---------- clics ---------- */
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-tk],[data-card],[data-deck],[data-noble],[data-a]'); if(!t||!G) return;
+  if(t.dataset.a==='again'){ closeModal(); startGame(); return; }
+  if(BUSY||G.phase!=='play') return; const me=G.cur, n=G.need;
+  if(n&&isH(n.p)){ const id=t.dataset.card, nid=t.dataset.noble;
+    if(n.type==='free'&&id&&n.opts.includes(id)) return act(()=>resolve(G,n.p,id));
+    if((n.type==='nres'||n.type==='noble')&&nid) return act(()=>resolve(G,n.p,nid));
+    if(n.type==='strong'&&id){ const P=G.players[n.p]; const rm=n.opts.find(o=>o.a==='remove'&&o.id===id); if(rm) return act(()=>resolve(G,n.p,rm));
+      if(P.str>0){ const o=n.opts.find(o=>o.a==='place'&&o.id===id); if(o) return act(()=>resolve(G,n.p,o)); }
+      else { if(!SMOVE){ if(G.strong[id]&&G.strong[id].p===n.p){ SMOVE=id; render(); } return; } const o=n.opts.find(o=>o.a==='move'&&o.from===SMOVE&&o.id===id); if(o) return act(()=>resolve(G,n.p,o)); SMOVE=null; render(); } }
+    return; }
+  if(!isH(me)) return;
+  if(t.dataset.tk){ const c=t.dataset.tk; const k=TSEL.filter(x=>x===c).length; CSEL=null; DSEL=null;
+    if(k&&!(TSEL.length===1&&G.bank[c]>=4)) TSEL=TSEL.filter(x=>x!==c); else if(k) TSEL.push(c); else if(TSEL.length<3&&!(TSEL.length===2&&TSEL[0]===TSEL[1])) TSEL.push(c); else TSEL=[c];
+    if(TSEL.length===2&&TSEL[0]===TSEL[1]&&G.bank[c]<4) TSEL=[c]; sfx('click'); render(); return; }
+  if(t.dataset.card){ CSEL=CSEL===t.dataset.card?null:t.dataset.card; TSEL=[]; DSEL=null; sfx('click'); render(); return; }
+  if(t.dataset.deck){ const d=+t.dataset.deck; DSEL=DSEL===d?null:d; TSEL=[]; CSEL=null; render(); return; }
+  switch(t.dataset.a){
+   case 'cancel': TSEL=[]; CSEL=null; DSEL=null; render(); break;
+   case 'take': act(()=>take(G,me,TSEL)); break;
+   case 'buy': act(()=>buy(G,me,CSEL)); break;
+   case 'reserve': act(()=>reserve(G,me,CSEL)); break;
+   case 'reserveD': act(()=>reserve(G,me,DSEL)); break; } });
+/* ---------- menu ---------- */
+let M={n:2,seats:Array.from({length:4},(_,i)=>({h:i===0?1:0,name:''})),level:'normal',mod:'none'};
+function startGame(){ GEN++; const hs=M.seats.slice(0,M.n).filter(s=>s.h).length;
+  G=newGame({players:M.seats.slice(0,M.n).map((s,i)=>({name:(s.name||'').trim()||(s.h?(hs===1?'Toi':NAMES[i]):NAMES[(i+1)%4]),ai:!s.h,level:M.level})),mod:M.mod}); TSEL=[]; CSEL=null; DSEL=null; BEFORE=new Set(); step(); }
+function menu(){ window.MODAL_CLOSABLE=true;
+  const draw=()=>{ const hs=M.seats.slice(0,M.n).filter(s=>s.h).length; paintModal(`<h2>Nouvelle partie</h2>
+   <h4>Joailliers</h4><div class="seg">${[2,3,4].map(n=>`<button class="${M.n===n?'on':''}" data-m="n:${n}">${n}</button>`).join('')}</div>
+   ${M.seats.slice(0,M.n).map((s,i)=>`<div class="seatrow"><span style="width:14px;height:14px;border-radius:50%;background:${PCOL[i]}"></span><input type="text" data-nm="${i}" value="${esc(s.name)}" placeholder="${s.h?(i===0?'Toi':NAMES[i]):NAMES[(i+1)%4]}" maxlength="14"><div class="seg"><button class="${s.h?'on':''}" data-m="h:${i}:1">Humain</button><button class="${s.h?'':'on'}" data-m="h:${i}:0">Ordinateur</button></div></div>`).join('')}
+   ${hs<M.n?`<h4>Niveau de l’ordinateur</h4><div class="seg">${['facile','normal','difficile'].map(l=>`<button class="${M.level===l?'on':''}" data-m="level:${l}">${l}</button>`).join('')}</div>`:''}
+   <h4>Module des Cités (un à la fois, comme dans la règle)</h4><div class="modsel">${Object.entries(MODS).map(([k,[t,d]])=>`<button class="${M.mod===k?'on':''}" data-m="mod:${k}"><b>${t}</b>${d}</button>`).join('')}</div>
+   <div class="acts">${G&&G.phase!=='over'?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="go" ${hs?'':'disabled'}>Ouvrir l’atelier</button></div>`); };
+  draw(); $('#mbox').onclick=e=>{ $$('#mbox [data-nm]').forEach(i=>{ M.seats[+i.dataset.nm].name=i.value; }); const x=e.target.closest('[data-m]'); if(!x) return; const [k,v,w]=x.dataset.m.split(':'); sfx('click');
+    if(k==='go'){ closeModal(); store('jrp',M); startGame(); return; } if(k==='h') M.seats[+v].h=+w; else if(k==='n') M.n=+v; else M[k]=v; draw(); }; }
+function help(){ helpTabs('Joyaux de la Renaissance',[
+ ['But du jeu',`<p>Riches marchands de la Renaissance, vous achetez des mines et des ateliers pour attirer les nobles. Le premier à <b>15 points</b> déclenche le dernier tour : on le termine pour que chacun ait joué autant de fois. Le plus haut score gagne ; en cas d’égalité, celui qui a le moins de cartes.</p><p>Jetons : diamant, saphir, émeraude, rubis, onyx (4 chacun à 2 joueurs, 5 à 3, 7 à 4) et 5 ors.</p>`],
+ ['Ton tour',`<p>Fais <b>une seule</b> de ces actions :</p><ul><li>Prendre <b>3 jetons de couleurs différentes</b>.</li><li>Prendre <b>2 jetons de la même couleur</b>, s’il en reste au moins 4 dans la banque.</li><li><b>Réserver</b> une carte (visible ou cachée en haut d’un paquet) et prendre 1 or s’il en reste. Trois réservations au maximum.</li><li><b>Acheter</b> une carte visible ou réservée en payant son coût.</li></ul><p>Chaque carte achetée donne un <b>bonus</b> permanent : une réduction d’un jeton de sa couleur sur tous tes achats. L’or remplace n’importe quelle couleur. À la fin du tour, il faut rendre les jetons au-delà de 10.</p><p class="ex">Exemple : avec 2 cartes rubis, une carte qui coûte 3 rubis ne te coûte plus qu’1 rubis.</p>`],
+ ['Nobles',`<p>Un noble te rend visite automatiquement à la fin de ton tour dès que tes <b>bonus</b> (les cartes, pas les jetons) atteignent ses exigences : il rapporte 3 points. Un seul noble par tour.</p>`],
+ ['Les Orients',`<ul><li><b>Jumelage</b> : la carte prend la couleur de bonus d’une de tes cartes.</li><li><b>Deux ors</b> : vaut 2 ors pour un seul achat, sans compter dans ta limite de jetons.</li><li><b>Jumelage + cadeau</b> : jumelage, puis une carte de niveau I offerte.</li><li><b>Double</b> : compte comme 2 bonus.</li><li><b>Mécène</b> : réserve un noble pour toi seul.</li><li><b>Sacrifice</b> : défausse 2 bonus de la couleur indiquée, puis prends une carte de niveau II gratuitement.</li></ul><p>Deux cartes Orient sont proposées à côté de chaque rangée.</p>`],
+ ['Cités et comptoirs',`<p><b>Les Cités</b> remplacent les nobles. À la fin de ton tour, tu prends une cité si tu as ses points et ses bonus (« ×? » : autant de bonus d’une même couleur, au choix). La première cité conquise termine la partie à la fin du tour ; si plusieurs joueurs en ont une, le plus de points gagne.</p><p><b>Les Comptoirs</b> : quand tes bonus atteignent l’exigence d’un comptoir, tu y poses un blason et gagnes son pouvoir pour toute la partie : jeton bonus après chaque achat, jeton bonus quand tu prends 2 identiques, or qui vaut double, 5 points (avec un noble), ou 1 point par blason.</p>`],
+ ['Forteresses',`<p>Chaque joueur a 3 forts. Après <b>chaque achat</b>, tu dois poser un fort sur une carte visible (ou en ajouter un à un de tes forts, ou en déplacer un s’ils sont tous posés), ou <b>renverser un fort adverse</b> isolé.</p><ul><li>Une carte qui porte un fort ne peut être achetée ou réservée que par son propriétaire.</li><li>Avec tes 3 forts sur une même carte, tu peux l’acheter tout de suite après ton action : c’est la conquête.</li></ul>`],
+ ['Jouer ici',`<ul><li>Touche des jetons dans la banque puis « Prendre ».</li><li>Touche une carte : « Acheter » (les cartes achetables ont une bordure verte) ou « Réserver ». Touche un paquet pour réserver à l’aveugle.</li><li>Les choix spéciaux (carte offerte, noble, fort) se font en touchant les éléments en surbrillance.</li><li>De 2 à 4 joueurs, humains ou ordinateurs. Les modules se jouent un à la fois, comme dans la règle. La partie est sauvegardée automatiquement.</li></ul>`]]); }
+window.JR={get G(){return G;},get BUSY(){return BUSY;}};
+(function boot(){ const p=load('jrp'); if(p) Object.assign(M,p); const s=load(KEY); if(s&&s.players&&s.phase!=='over'){ G=s; step(); } else { G=null; render(); menu(); } })();
+}
+
+</script>
+<script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>
