@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Conquête</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800;6..12,900&display=swap" rel="stylesheet">
+<style>
+/* Salle des cartes d'état-major : carte du monde sur table lumineuse au centre, registre des armées à droite, ordres en bas */
+:root{--bg:#1b2026;--fg:#eef1f4;--accent:#c0392b;--title:"Alegreya SC",Georgia,serif;--ui:"Nunito Sans",system-ui,sans-serif;--titlec:#f3e3b8;--sea:#a9c9d6;--sea2:#8fb6c6;color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui,"Nunito Sans",system-ui,sans-serif);min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bar,#0006);border-bottom:1px solid #fff2;flex-wrap:wrap}
+.top h1{font-family:var(--title,Georgia,serif);font-weight:800;font-size:24px;margin:0;color:var(--titlec,#fff);letter-spacing:.5px}
+.top h1 small{font-family:var(--ui);font-weight:600;font-size:13px;opacity:.75;margin-left:8px;letter-spacing:0}
+.back{color:inherit;opacity:.9;text-decoration:none;font-size:14px;border:1px solid #fff4;padding:5px 10px;border-radius:8px}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#ffffff1c;color:inherit;border:1px solid #ffffff40;border-radius:9px;padding:7px 12px;font-size:14px;font-weight:700}
+.btn:hover{background:#ffffff2e}.btn:disabled{opacity:.4;cursor:default}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.on{background:#fff;color:#222}
+.status{display:flex;align-items:center;gap:12px;padding:9px 16px;background:var(--pc,var(--accent));color:#fff;font-weight:800;min-height:44px;box-shadow:0 4px 14px #0005;transition:background .35s;flex-wrap:wrap}
+.status .who{font-family:var(--title,Georgia,serif);font-size:19px}
+.status .msg{font-weight:600}
+.status .right{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:14px}
+#modal{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:12px}
+#modal[hidden]{display:none}
+.mbox{background:#fbf6ea;color:#2a2418;border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;animation:pop .3s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.mbox h2{font-family:var(--title,Georgia,serif);font-size:26px;margin:0 0 6px}
+.mbox h4{font-family:var(--title,Georgia,serif);font-size:16px;margin:14px 0 6px}
+.mbox p,.mbox li{line-height:1.5}
+.mbox .btn{background:#ece3cf;color:#2a2418;border-color:#c9b98f}
+.mbox .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mbox .btn.on{background:#2a2418;color:#fff}
+.seg{display:inline-flex;border:1px solid #c9b98f;border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:#f6efdc;padding:7px 11px;font-weight:700;color:#2a2418;font-size:13.5px}
+.seg button.on{background:#2a2418;color:#fff}
+.prow{display:flex;gap:8px;align-items:center;margin:7px 0;flex-wrap:wrap}
+.prow .dot{width:16px;height:16px;border-radius:50%;background:var(--pc);border:2px solid #0004}
+.prow input[type=text]{font-family:inherit;font-weight:700;font-size:16px;padding:6px 9px;border-radius:8px;border:1px solid #c9b98f;background:#fff;color:#2a2418;-webkit-text-fill-color:#2a2418;caret-color:var(--accent);width:150px;color-scheme:light}
+.prow input[type=text]::placeholder{color:#a3926e;-webkit-text-fill-color:#a3926e;font-weight:600}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{border:1px solid #c9b98f;background:#f6efdc;border-radius:20px;padding:5px 12px;font-weight:800;color:#2a2418}
+.tabs button.on{background:#2a2418;color:#fff}
+.toast{position:fixed;left:50%;top:100px;transform:translateX(-50%);background:#1b1b1f;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 10px 30px #000a;z-index:70;font-weight:700;animation:toast 2.6s forwards;pointer-events:none;max-width:90vw;text-align:center}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.bannerx{position:fixed;inset:0;display:grid;place-items:center;z-index:65;pointer-events:none}
+.bannerx div{font-family:var(--title,Georgia,serif);font-weight:800;font-size:clamp(30px,6vw,64px);color:#fff;background:var(--bc,var(--accent));padding:10px 36px;border-radius:14px;box-shadow:0 20px 50px #000a;animation:ban 2.3s forwards;text-align:center}
+.bannerx small{display:block;font-family:var(--ui);font-size:.34em;font-weight:700}
+@keyframes ban{0%{transform:scale(2);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:0;transform:scale(.92)}}
+#cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);text-align:center;padding:20px}
+#cover[hidden]{display:none}
+#cover h2{font-family:var(--title,Georgia,serif);font-size:36px;margin:0 0 8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
+
+body{background:radial-gradient(ellipse at 50% 0%,#2b3640,#1b2026 70%) fixed,#14181d}
+.cq{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:10px;padding:10px max(10px,env(safe-area-inset-right,0px)) 96px max(10px,env(safe-area-inset-left,0px));height:calc(100vh - 110px);height:calc(100dvh - 110px);min-height:460px}
+.mapw{position:relative;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#b6d2dd,#9fc0cf);box-shadow:inset 0 0 50px #2d4a5a66,0 10px 30px #0008;touch-action:none;min-height:0;border:3px solid #6b5a3a}
+#mp{width:100%;height:100%;display:block;cursor:grab;user-select:none}
+#mp.drag{cursor:grabbing}
+.terr{stroke:#3b3328;stroke-width:1;stroke-linejoin:round;transition:fill .5s,filter .2s}
+.terr.sel{filter:brightness(1.25) drop-shadow(0 0 4px #fff);stroke:#fff;stroke-width:2.2}
+.terr.tgt{animation:tgt 1s infinite;stroke:#fff;stroke-width:1.6}
+@keyframes tgt{50%{filter:brightness(1.3)}}
+.terr.dim{filter:saturate(.35) brightness(.8)}
+.coast{fill:none;stroke:#2d4a5a;stroke-width:5;opacity:.25}
+.link{stroke:#4a5560;stroke-width:1.4;stroke-dasharray:4 4;fill:none;opacity:.8}
+.badge circle{stroke:#fff;stroke-width:1.6;transition:fill .5s}
+.badge text{font:900 11px "Nunito Sans",Arial;fill:#fff;text-anchor:middle;pointer-events:none}
+.badge.pop circle{animation:bpop .5s}
+@keyframes bpop{40%{transform:scale(1.5)}}
+.badge{transform-box:fill-box;transform-origin:center}
+.clabel{font:700 13px "Alegreya SC",Georgia;fill:#2d3a44;opacity:.55;letter-spacing:.1em;pointer-events:none}
+.tname{font:700 6.5px "Nunito Sans",Arial;fill:#2b2620;text-anchor:middle;pointer-events:none;opacity:.75}
+.arrow{stroke:#fff;stroke-width:3;fill:none;marker-end:url(#ah);filter:drop-shadow(0 1px 2px #000);stroke-dasharray:6 4;animation:dash .6s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-20}}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:3}
+.zoom button{width:38px;height:38px;border-radius:10px;border:1px solid #6b5a3a;background:#f3ead4e8;color:#2b2620;font-size:20px;font-weight:900}
+.dice{position:absolute;left:50%;top:12px;transform:translateX(-50%);display:flex;gap:16px;align-items:center;background:#1b2026e8;border-radius:14px;padding:8px 14px;z-index:4;box-shadow:0 8px 20px #000a}
+.dice .grp{display:flex;gap:6px}
+.die{width:34px;height:34px;border-radius:7px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:5px;box-shadow:inset 0 -3px 0 #0003}
+.die span{width:6px;height:6px;border-radius:50%;background:#fff;align-self:center;justify-self:center;opacity:0}
+.die span.on{opacity:1}
+.die.a{background:#d64541}.die.d{background:#3b7dd8}
+.die.lost{opacity:.35;transform:scale(.85)}
+.die.roll{animation:droll .5s cubic-bezier(.3,1.5,.5,1)}
+@keyframes droll{from{transform:rotate(-270deg) scale(.4)}}
+.side{display:flex;flex-direction:column;gap:8px;min-height:0;overflow:auto}
+.card3{background:linear-gradient(#2b333c,#222930);border:1px solid #47515c;border-radius:12px;padding:9px 11px}
+.card3 h3{font-family:var(--title);font-size:15px;margin:0 0 6px;color:#f3e3b8;letter-spacing:.04em}
+.steps{display:flex;gap:4px}.steps span{flex:1;text-align:center;font-size:12px;font-weight:800;padding:5px 2px;border-radius:7px;background:#ffffff10;color:#aab4be}.steps span.on{background:var(--pc,#c0392b);color:#fff}
+.plr{display:grid;grid-template-columns:auto 1fr auto auto;gap:4px 8px;align-items:center;padding:4px 6px;border-radius:8px;font-size:13px}
+.plr.on{background:#ffffff12}.plr.dead{opacity:.4;text-decoration:line-through}
+.plr i{width:12px;height:12px;border-radius:50%}
+.plr b{font-variant-numeric:tabular-nums}
+.cards{display:flex;gap:5px;flex-wrap:wrap}
+.tc{width:52px;height:70px;border-radius:7px;background:#f3ead4;color:#2b2620;border:2px solid #b9a77c;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:3px;font-size:8.5px;font-weight:800;text-align:center;line-height:1.05;cursor:pointer}
+.tc.sel{border-color:#c0392b;box-shadow:0 0 0 2px #c0392b;transform:translateY(-3px)}
+.tc svg{width:28px;height:28px}
+.mission{font-size:13px;line-height:1.4}
+.act{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(#262e36f4,#181d22);border-top:1px solid #47515c;padding:10px max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));box-shadow:0 -8px 24px #0009}
+.act .in2{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.act .msg2{flex:1;min-width:200px;font-size:14px;color:#cfd6dd}.act .msg2 b{color:#fff}
+.act input[type=range]{width:160px;accent-color:#c0392b}
+.seatrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0}.seatrow input[type=text]{width:130px}
+.scl{width:100%;border-collapse:collapse;margin:8px 0}.scl td,.scl th{padding:5px 8px;border-bottom:1px solid #e2d6b8;text-align:left}.scl td:not(:first-child),.scl th:not(:first-child){text-align:right}.scl tr.w td{font-weight:900;color:#1d6f3e}
+@media (max-width:860px){.cq{grid-template-columns:1fr;grid-template-rows:minmax(300px,1fr) auto;height:auto;min-height:0}.mapw{height:56vh;height:56dvh}.side{overflow:visible}.act .in2{gap:6px}.act input[type=range]{width:120px}}
+</style></head><body>
+<header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Conquête<small>dans l’esprit de Risk</small></h1>
+<div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
+<div class="status" id="status"></div>
+<main class="cq"><div class="mapw" id="mapw"><svg id="mp" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#fff"/></marker><pattern id="waves" width="40" height="16" patternUnits="userSpaceOnUse"><path d="M0 8q10-6 20 0t20 0" stroke="#ffffff40" fill="none" stroke-width="1.2"/></pattern></defs><g id="world"></g></svg>
+<div class="zoom"><button data-z="in" aria-label="Zoomer">+</button><button data-z="out" aria-label="Dézoomer">−</button><button data-z="fit" aria-label="Vue entière" style="font-size:15px">⤢</button></div><div class="dice" id="dice" hidden></div></div>
+<aside class="side" id="side"></aside></main>
+<section class="act" id="act"><div class="in2" id="actin"></div></section>
+<div id="cover" hidden></div>
+<div id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SVGNS='http://www.w3.org/2000/svg';
+function sel(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
+function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
+function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
+function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
+function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
+function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
+  c.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${(Math.random()-.5)*220}px,${innerHeight+40}px) rotate(${Math.random()*720}deg)`}],{duration:2200+Math.random()*1800,delay:Math.random()*700,easing:'ease-in'}).finished.then(()=>c.remove()); } }
+function store(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+/* sons */
+let MUTED=!!load('salle-mute'), AC=null, NOISE=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;} } if(AC.state==='suspended') AC.resume().catch(()=>{}); return AC; }
+function tn(a,t,f,d,type,v,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);}
+function nz(a,t,d,v,type,f){ if(!NOISE){NOISE=a.createBuffer(1,a.sampleRate,a.sampleRate);const c=NOISE.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;} const s=a.createBufferSource();s.buffer=NOISE;const fl=a.createBiquadFilter();fl.type=type;fl.frequency.value=f;const g=a.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl).connect(g).connect(a.destination);s.start(t);s.stop(t+d+.02); }
+function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') return; const t=a.currentTime+.01;
+  switch(n){
+    case 'click': tn(a,t,900,.06,'triangle',.06); break;
+    case 'move': nz(a,t,.08,.25,'bandpass',900); tn(a,t,220,.08,'sine',.08); break;
+    case 'capture': nz(a,t,.12,.35,'bandpass',1400); tn(a,t,520,.12,'triangle',.1,260); break;
+    case 'card': nz(a,t,.1,.22,'bandpass',2800); break;
+    case 'flip': nz(a,t,.06,.25,'highpass',3000); tn(a,t,1200,.05,'triangle',.04); break;
+    case 'dice': for(let k=0;k<6;k++) nz(a,t+k*.07+Math.random()*.03,.05,.3,'bandpass',1800+Math.random()*1200); break;
+    case 'ding': tn(a,t,1320,.5,'sine',.1); tn(a,t+.07,1760,.4,'sine',.06); break;
+    case 'error': tn(a,t,220,.25,'square',.05,160); break;
+    case 'win': [523,659,784,1046].forEach((f,k)=>tn(a,t+k*.12,f,.4,'triangle',.11)); break;
+    case 'lose': [392,330,262].forEach((f,k)=>tn(a,t+k*.16,f,.45,'triangle',.1)); break;
+    case 'splash': nz(a,t,.5,.3,'lowpass',800); break;
+    case 'boom': nz(a,t,.7,.6,'lowpass',300); tn(a,t,90,.6,'sawtooth',.15,40); break;
+    case 'pop': tn(a,t,600,.08,'sine',.1,900); break;
+  } }
+function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
+document.addEventListener('click',e=>{
+  if(!MUTED) ac();
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
+  const t=e.target.closest('[data-c]'); if(!t) return;
+  switch(t.dataset.c){
+    case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
+    case 'help': GAME.help(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
+  }
+});
+addEventListener('DOMContentLoaded',updSnd);
+
+
+const __MAP={"W":1000,"H":560,"cont":{"NA":{"name":"Amérique du Nord","bonus":5,"color":"#e7c56b"},"SA":{"name":"Amérique du Sud","bonus":2,"color":"#e08e6b"},"EU":{"name":"Europe","bonus":5,"color":"#7fa8d8"},"AF":{"name":"Afrique","bonus":3,"color":"#d9a35a"},"AS":{"name":"Asie","bonus":7,"color":"#8cc07a"},"OC":{"name":"Océanie","bonus":2,"color":"#c88fc9"}},"terr":[{"id":"alaska","name":"Alaska","c":"NA","path":"M40 90L46.4 82.9L57.3 84.6L63.3 76.7L71.1 72.2L80.7 71.4L88.1 66.2L92.9 62.8L110.8 116.5L74.6 164.9L73.9 164.2L66.7 159.9L60 155L54.1 148.9L48.5 142.5L40 140L39.3 131.7L41.5 123.3L38.3 115L40.6 106.7L39 98.3Z","x":68.1,"y":111,"adj":["yukon","rocheuses","kamtchatka"]},{"id":"yukon","name":"Yukon","c":"NA","path":"M92.9 62.8L95.5 60.9L104.8 59.6L112.8 55.6L120 50L129.2 49.5L138.5 49.6L147.6 48.4L156.9 48.9L165.7 44L169.5 44.1L183.3 99.2L163.7 124.8L110.8 116.5Z","x":137,"y":80.4,"adj":["alaska","nunavut","rocheuses","lacs"]},{"id":"nunavut","name":"Nunavut","c":"NA","path":"M169.5 44.1L174.9 44.1L184.3 45.6L193.5 44.7L202.2 39.4L211.8 42.9L220.8 40.6L230 40L237.6 46.5L246.7 49.5L257.3 48.8L265 55.1L272.6 61.5L282 63.7L290.9 67.2L300 70L302.8 75.3L240.5 108.7L183.3 99.2Z","x":223.7,"y":64.4,"adj":["yukon","lacs","labrador","groenland"]},{"id":"rocheuses","name":"Rocheuses","c":"NA","path":"M97.4 183.2L96 181L87.8 175.7L80 170L74.6 164.9L110.8 116.5L163.7 124.8L171.9 178.1Z","x":122.1,"y":155.3,"adj":["alaska","yukon","lacs","californie"]},{"id":"lacs","name":"Grands Lacs","c":"NA","path":"M171.9 178.1L163.7 124.8L183.3 99.2L240.5 108.7L224.2 200L189.8 197Z","x":202.5,"y":143.8,"adj":["yukon","nunavut","rocheuses","mexique","labrador","californie"]},{"id":"labrador","name":"Labrador","c":"NA","path":"M302.8 75.3L304.5 78.6L307.5 88.2L312.5 96.5L320.8 102.9L326 111.1L330 120L323 127.1L321 137.3L317.1 146.3L311.2 154.1L305.4 161.9L300 170L296.1 177.5L287.6 181.5L284.7 189.8L278.7 195.7L272.9 201.7L270 210L268.8 219.4L264.6 225.1L224.2 200L240.5 108.7Z","x":272.8,"y":150.4,"adj":["nunavut","lacs","mexique","groenland"]},{"id":"californie","name":"Californie","c":"NA","path":"M152.8 248.6L149.2 243.1L144.6 235.9L139.1 229.4L135.2 221.7L130 215L123.4 208L114.5 203.5L110.5 193.6L101.2 189.5L97.4 183.2L171.9 178.1L189.8 197Z","x":133.1,"y":210.4,"adj":["rocheuses","lacs","mexique"]},{"id":"mexique","name":"Mexique","c":"NA","path":"M264.6 225.1L263.4 226.7L257.6 233.8L253.9 242L250 250L243.7 255.8L238 262.3L228.2 263.8L225.3 273.8L217.3 277.4L210 282L201.7 280.6L194.3 276.1L186.9 272L178 272.3L170 270L163.1 264.5L159.5 256.6L153.8 250.3L152.8 248.6L189.8 197L224.2 200Z","x":200.8,"y":255.2,"adj":["lacs","labrador","californie","colombie"]},{"id":"groenland","name":"Groenland","c":"NA","path":"M312 32L320.4 29.8L328.9 29.2L337.7 31L346.3 30.6L354.2 24.3L363.3 28.2L371.2 22.1L380 24L386 32.1L393 39.7L399 47.9L402 58L393.2 61.9L390.7 72.1L382.3 76.3L378.4 85.1L370.5 89.9L364 96L355.8 92.6L346.4 92.8L339.7 84.8L331.3 82.2L322 82L323 73.1L321.3 64.8L319.8 56.4L317.1 48.3L312.1 40.6Z","x":356.6,"y":57.4,"adj":["nunavut","labrador","islande"]},{"id":"colombie","name":"Colombie","c":"SA","path":"M215 302L224.1 297.6L233.8 298.2L243.2 296L252.6 294.5L262.6 297.8L272 296L280.2 299.6L285.3 307.7L293.5 311.4L294.6 312.5L254.6 360.4L208.1 352.7L207.3 344.8L207.5 336L212.3 328L214.8 319.6L212.9 310.5Z","x":245,"y":319.6,"adj":["perou","amazonie","mexique"]},{"id":"amazonie","name":"Amazonie","c":"SA","path":"M294.6 312.5L299.8 317.6L308.8 320.2L313.3 329L322 332L325.5 340L326.2 348.5L324.3 357.5L331.3 364.8L330.4 373.7L332 382L330.8 392.1L320.8 397.8L318.3 407.3L312.2 415L313.2 423.3L283 413.6L254.6 360.4Z","x":300.5,"y":363.3,"adj":["colombie","perou","pampa","sahel"]},{"id":"perou","name":"Pérou","c":"SA","path":"M223.3 438.2L224 432L222.9 422.9L221.9 413.8L213.7 406.6L217.1 396.3L214.6 387.6L213.1 378.6L210.4 369.9L205 362L208.3 353.7L208.1 352.7L254.6 360.4L283 413.6Z","x":230.3,"y":393.3,"adj":["colombie","amazonie","pampa"]},{"id":"pampa","name":"Pampa","c":"SA","path":"M313.2 423.3L313.6 426.4L303.8 432.2L302 442L299.5 450.9L290.3 455.9L288.3 465.1L283.1 472.5L281.2 481.7L277 489.6L272.7 497.5L266.1 504L262 512L252.2 511.6L245.3 503.6L236 502L235.9 493L234.5 484.2L231.5 475.8L226.8 467.6L225.8 458.7L229.9 449L223 441.2L223.3 438.2L283 413.6Z","x":262.7,"y":463.9,"adj":["amazonie","perou"]},{"id":"islande","name":"Islande","c":"EU","path":"M393 84L401.7 84.8L409.3 81.2L417.8 81.1L425 76L431.1 82.1L429.3 91.4L434 98L424.1 101.3L414.1 104.6L405 110L403.5 100.2L394.1 94Z","x":414,"y":92.5,"adj":["groenland","britannia","scandinavie"]},{"id":"britannia","name":"Îles Britanniques","c":"EU","path":"M414 134L421.5 127.1L429.9 122.1L440 120L444.5 127.4L446.4 135.4L448.7 143.2L446.5 152.2L449 160L439 162.7L433.5 172.5L424 176L419.5 168.2L418 159.7L419.2 150.5L414.3 142.8Z","x":431.9,"y":147.7,"adj":["islande","gaule","scandinavie"]},{"id":"scandinavie","name":"Scandinavie","c":"EU","path":"M456.8 105.7L457.6 104.6L465.3 99.5L474.4 96L479.7 88.3L485.6 81.2L493.7 76.6L500 70L508.9 69.9L516.9 65.4L526 66.4L534.2 62.6L542.4 59.4L551.2 58.4L560 58L559.2 67.6L561.7 76.3L566.6 84.3L567.5 93.4L569.7 102.1L575 110L576.3 118.5L575.1 121L481.8 121Z","x":522.8,"y":89.9,"adj":["gaule","germanie","islande","britannia","oural"]},{"id":"gaule","name":"Gaule","c":"EU","path":"M452 112L456.8 105.7L481.8 121L508.2 184.6L500.4 199.7L446.9 183.7L446.2 181.8L445 172L447.1 163.6L446.5 154.8L445 145.9L450.9 137.9L452.2 129.4L453.9 120.9Z","x":469.2,"y":163.6,"adj":["scandinavie","iberie","germanie","balkans","britannia"]},{"id":"iberie","name":"Ibérie","c":"EU","path":"M502.6 228L500 228L492.4 224.3L483.2 227.2L475.7 223.4L468.1 219.7L460 218L455 209.4L455.5 199.1L449.6 190.9L446.9 183.7L500.4 199.7Z","x":466,"y":210.9,"adj":["gaule","balkans","maghreb"]},{"id":"germanie","name":"Germanie","c":"EU","path":"M575.1 121L572.3 126.6L575 135.3L571.7 143.3L570.4 151.6L570 160L568.4 164.5L508.2 184.6L481.8 121Z","x":532.9,"y":148.4,"adj":["gaule","scandinavie","balkans","oural","asiec"]},{"id":"balkans","name":"Balkans","c":"EU","path":"M568.4 164.5L567 168.6L564.6 177.3L566.7 186.6L567.6 195.7L564.7 204.3L565.5 213.4L562 222L553 221.7L544.3 223.6L535.4 224.1L526.6 225.4L517.5 224.5L508.9 228.1L502.6 228L500.4 199.7L508.2 184.6Z","x":540.9,"y":204.5,"adj":["gaule","iberie","germanie","egypte","moyenorient","asiec"]},{"id":"maghreb","name":"Maghreb","c":"AF","path":"M445 256L453.5 254.6L462.4 257.2L470.4 252.2L479.2 252.8L487.7 252.4L495.9 248.7L504.4 247.7L512.6 244.2L521.3 244.2L522.5 244.3L519.4 305.5L447.3 300.9L446.5 294L446.7 284.5L448.2 275L447 265.5Z","x":480.4,"y":269.2,"adj":["sahel","egypte","iberie"]},{"id":"egypte","name":"Égypte","c":"AF","path":"M522.5 244.3L530 245L538.2 249.6L546.6 253.2L556.9 250.2L564.2 257.9L573.7 257.6L583.2 257.5L591.8 260.5L600 265L601.8 274.4L607.2 282.7L608.2 285.6L534.9 327.5L519.4 305.5Z","x":561.7,"y":273.3,"adj":["maghreb","sahel","corne","balkans","moyenorient"]},{"id":"sahel","name":"Sahel","c":"AF","path":"M468.3 388.9L467 383.4L460.2 375.9L457.4 367L457.4 357.2L454.4 348.4L447.2 341.1L445 332L442.1 322.5L443.9 313L447.7 303.5L447.3 300.9L519.4 305.5L534.9 327.5L535 332.1Z","x":474.8,"y":336,"adj":["maghreb","egypte","corne","congo","amazonie"]},{"id":"corne","name":"Corne de l’Afrique","c":"AF","path":"M608.2 285.6L610.3 291.7L611.5 301.2L611.5 311.1L615 320L611.3 328.7L608.6 337.8L601.9 345.4L604.6 356.5L599.1 364.5L596.5 373.6L592 382L591.4 392.1L589 397.7L535 332.1L534.9 327.5Z","x":593,"y":334.8,"adj":["egypte","sahel","congo","moyenorient"]},{"id":"congo","name":"Congo","c":"AF","path":"M589 397.7L587.7 400.9L581.3 408.5L579.6 418.1L578.3 420.4L476.7 423.4L476 419.4L474.8 410.2L470 402L469.2 392.4L468.3 388.9L535 332.1Z","x":523.9,"y":392.4,"adj":["sahel","corne","australe"]},{"id":"australe","name":"Afrique australe","c":"AF","path":"M578.3 420.4L575 426.5L566.8 433.3L564 442.5L562 452L554.8 458L550.9 466.6L542.9 471.9L536.6 478.5L531.8 486.4L526.8 494.1L522 502L514.3 496.6L505.4 492.9L497.7 487.6L490 482L487.8 473.1L485.5 464.2L483.8 455.2L482.6 446.1L480 437.3L477.6 428.4L476.7 423.4Z","x":524.5,"y":457.9,"adj":["congo"]},{"id":"oural","name":"Oural","c":"AS","path":"M586 58L594.4 54.6L603.3 53.4L612.6 55.9L620.6 49.7L630.3 54L637.6 52.1L667 124.6L589.7 162L590.4 156L588 146.9L589.8 137.9L591.4 129L592 120L589.2 111.3L587.2 102.6L586.3 93.7L585.7 84.8L588.6 75.6L586.6 66.9Z","x":612.3,"y":104.8,"adj":["siberie","asiec","scandinavie","germanie"]},{"id":"siberie","name":"Sibérie","c":"AS","path":"M637.6 52.1L638.9 51.8L647.5 49.2L656.4 48.4L665 45.8L673.6 43.8L682.9 45.3L691.3 41.8L700 40L708.8 42.6L717.5 38.4L726.3 41.3L735 39.5L738.4 39.4L744.6 100.6L706.9 143.7L667 124.6Z","x":691.5,"y":72.7,"adj":["oural","yakoutie","asiec","mongolie"]},{"id":"yakoutie","name":"Yakoutie","c":"AS","path":"M738.4 39.4L743.8 39.3L752.5 37.8L761.3 40.6L770 38.1L778.8 42.8L787.5 42.3L796.3 38.9L805 41.3L813.8 42.6L822.5 37.3L831.3 38.7L840 40L847.5 45.3L851.9 43.7L835.1 123.3L744.6 100.6Z","x":793.1,"y":63,"adj":["siberie","kamtchatka","mongolie"]},{"id":"kamtchatka","name":"Kamtchatka","c":"AS","path":"M851.9 43.7L857.7 41.7L865.7 45L873.5 49.3L882.6 49.3L889.6 56.3L897.5 60.2L907.3 57.8L915.6 60.6L922.4 68L931.3 68.8L940 70L944.2 77.8L946.6 86L945.1 95.2L951.3 102.5L947.9 112.2L952 120L944.1 123.1L935.9 125.7L930.1 133.3L921.8 135.7L913 137L906 142L898.4 148.7L896 158.4L890.9 166.5L884.9 174.2L881.6 180.6L851 157.3L835.1 123.3Z","x":899.6,"y":95.4,"adj":["yakoutie","mongolie","chine","alaska","japon"]},{"id":"asiec","name":"Asie centrale","c":"AS","path":"M587.9 191.6L586.4 182.9L585.7 173.8L589.3 165L589.7 162L667 124.6L706.9 143.7L712.6 175.4L651.4 215.6Z","x":642.3,"y":171.5,"adj":["oural","siberie","mongolie","moyenorient","perse","germanie","balkans"]},{"id":"mongolie","name":"Mongolie","c":"AS","path":"M712.6 175.4L706.9 143.7L744.6 100.6L835.1 123.3L851 157.3L741 202.5Z","x":769.7,"y":150.2,"adj":["kamtchatka","asiec","siberie","yakoutie","perse","chine","japon"]},{"id":"chine","name":"Chine","c":"AS","path":"M881.6 180.6L880.5 182.7L875.4 190.9L874.3 193.9L785.2 266.8L745.6 230.7L741 202.5L851 157.3Z","x":809.8,"y":212.2,"adj":["kamtchatka","mongolie","perse","inde","indochine","japon"]},{"id":"moyenorient","name":"Moyen-Orient","c":"AS","path":"M663.5 311.8L660 309.9L649.2 308.9L642 302L637.5 293.9L628.7 289.2L622.8 282.2L621.6 271.5L615.9 264.3L605.3 261.1L602 252L597.1 244.1L596.4 235.2L599 225.6L596.5 217.1L595.1 208.4L588.5 200.9L588 192L587.9 191.6L651.4 215.6L664.6 308.4Z","x":619.9,"y":249.5,"adj":["asiec","perse","inde","balkans","egypte","corne"]},{"id":"perse","name":"Perse","c":"AS","path":"M664.6 308.4L651.4 215.6L712.6 175.4L741 202.5L745.6 230.7Z","x":694.3,"y":232.8,"adj":["asiec","mongolie","chine","moyenorient","inde"]},{"id":"inde","name":"Inde","c":"AS","path":"M798 319L792 322L783.9 317.9L774.7 316.9L766.9 311.5L758.1 309.5L749.8 305.7L739.7 307.5L732 302L723.6 304.7L718.7 312L710.6 315.2L705.6 322.4L697.1 324.9L692 332L684.7 325.3L676.2 320.6L668.5 314.6L663.5 311.8L664.6 308.4L745.6 230.7L785.2 266.8Z","x":734.9,"y":293.7,"adj":["chine","moyenorient","perse","indochine"]},{"id":"indochine","name":"Indochine","c":"AS","path":"M874.3 193.9L872 200L868.5 208.6L868.9 218.6L866.5 227.5L859.8 235.2L859.5 244.9L854.3 253L852 262L846.6 269.9L840 276.7L831.4 281.4L824.7 288L817.1 293.8L813.3 303.3L803.3 306.7L800.9 317.5L798 319L785.2 266.8Z","x":836.9,"y":261.8,"adj":["chine","inde","indonesie"]},{"id":"japon","name":"Japon","c":"AS","path":"M905 168L912.9 166.6L919.7 162.8L926 158L927.9 166.4L928.6 175.1L932.8 183L933.2 191.8L936 200L928.2 206.3L924.4 215L918.3 222.3L916 232L911.8 225L905.9 219.5L900 214L903.1 205L899.7 195.4L900 186.1L905.6 177.4Z","x":917.6,"y":195.2,"adj":["kamtchatka","mongolie","chine"]},{"id":"indonesie","name":"Indonésie","c":"OC","path":"M798 350L806.8 349.9L815.3 347.2L824 346.8L832.6 344.5L841.3 344.1L850 343L859.5 346L867.7 351L875.6 356.3L882 364L874 368.5L865.6 372.2L857.6 376.7L848 377.5L840 382L831.4 382.8L823.3 381.5L815.2 380L808.5 372.5L800 373L801.9 365.1L795.5 357.9Z","x":834.5,"y":362.1,"adj":["indochine","guinee","ouest"]},{"id":"guinee","name":"Nouvelle-Guinée","c":"OC","path":"M894 354L902.9 354.9L911.2 350.7L919.9 350.3L929 352.8L937.6 351.1L946 348L952.8 354.6L950.2 365.4L957 372L948.6 375.4L939.5 373.7L931.1 376.5L922.8 380.6L914 380.9L905 380L903 370.6L899.3 362Z","x":924.6,"y":364,"adj":["indonesie","est"]},{"id":"ouest","name":"Australie de l’Ouest","c":"OC","path":"M820 422L828 417.2L838 418.1L846.5 414.6L853.8 408.2L862.8 406L870.9 401.8L880 400L889.1 400.1L889.7 400.5L896.1 512.4L895.6 512.2L886.7 511.4L877.5 516.3L868.7 514.4L860 512L852.5 507.5L845.6 502.4L842.4 493.6L837.5 486.5L830.6 481.4L825.7 474.3L818 470L821 460.5L821 450.9L817.2 441.1L820 431.6Z","x":855.9,"y":459.3,"adj":["est","indonesie"]},{"id":"est","name":"Australie de l’Est","c":"OC","path":"M889.7 400.5L897 406.1L905.7 407.8L914.8 408.2L923.8 408.7L932 413L940.8 414.4L950 414L950.6 423.9L953.6 433.2L954.8 442.9L959.4 451.7L964.8 460.3L966 470L958.6 475.5L954.3 484L945.3 488L942.6 497.9L932.8 501.2L927.5 508.7L922 516L913.3 513.2L904.3 515.1L896.1 512.4Z","x":929.8,"y":456.3,"adj":["ouest","guinee"]}],"coasts":[{"c":"NA","path":"M40 90L46.4 82.9L57.3 84.6L63.3 76.7L71.1 72.2L80.7 71.4L88.1 66.2L95.5 60.9L104.8 59.6L112.8 55.6L120 50L129.2 49.5L138.5 49.6L147.6 48.4L156.9 48.9L165.7 44L174.9 44.1L184.3 45.6L193.5 44.7L202.2 39.4L211.8 42.9L220.8 40.6L230 40L237.6 46.5L246.7 49.5L257.3 48.8L265 55.1L272.6 61.5L282 63.7L290.9 67.2L300 70L304.5 78.6L307.5 88.2L312.5 96.5L320.8 102.9L326 111.1L330 120L323 127.1L321 137.3L317.1 146.3L311.2 154.1L305.4 161.9L300 170L296.1 177.5L287.6 181.5L284.7 189.8L278.7 195.7L272.9 201.7L270 210L268.8 219.4L263.4 226.7L257.6 233.8L253.9 242L250 250L243.7 255.8L238 262.3L228.2 263.8L225.3 273.8L217.3 277.4L210 282L201.7 280.6L194.3 276.1L186.9 272L178 272.3L170 270L163.1 264.5L159.5 256.6L153.8 250.3L149.2 243.1L144.6 235.9L139.1 229.4L135.2 221.7L130 215L123.4 208L114.5 203.5L110.5 193.6L101.2 189.5L96 181L87.8 175.7L80 170L73.9 164.2L66.7 159.9L60 155L54.1 148.9L48.5 142.5L40 140L39.3 131.7L41.5 123.3L38.3 115L40.6 106.7L39 98.3Z"},{"c":"NA","path":"M312 32L320.4 29.8L328.9 29.2L337.7 31L346.3 30.6L354.2 24.3L363.3 28.2L371.2 22.1L380 24L386 32.1L393 39.7L399 47.9L402 58L393.2 61.9L390.7 72.1L382.3 76.3L378.4 85.1L370.5 89.9L364 96L355.8 92.6L346.4 92.8L339.7 84.8L331.3 82.2L322 82L323 73.1L321.3 64.8L319.8 56.4L317.1 48.3L312.1 40.6Z"},{"c":"SA","path":"M215 302L224.1 297.6L233.8 298.2L243.2 296L252.6 294.5L262.6 297.8L272 296L280.2 299.6L285.3 307.7L293.5 311.4L299.8 317.6L308.8 320.2L313.3 329L322 332L325.5 340L326.2 348.5L324.3 357.5L331.3 364.8L330.4 373.7L332 382L330.8 392.1L320.8 397.8L318.3 407.3L312.2 415L313.6 426.4L303.8 432.2L302 442L299.5 450.9L290.3 455.9L288.3 465.1L283.1 472.5L281.2 481.7L277 489.6L272.7 497.5L266.1 504L262 512L252.2 511.6L245.3 503.6L236 502L235.9 493L234.5 484.2L231.5 475.8L226.8 467.6L225.8 458.7L229.9 449L223 441.2L224 432L222.9 422.9L221.9 413.8L213.7 406.6L217.1 396.3L214.6 387.6L213.1 378.6L210.4 369.9L205 362L208.3 353.7L207.3 344.8L207.5 336L212.3 328L214.8 319.6L212.9 310.5Z"},{"c":"EU","path":"M452 112L457.6 104.6L465.3 99.5L474.4 96L479.7 88.3L485.6 81.2L493.7 76.6L500 70L508.9 69.9L516.9 65.4L526 66.4L534.2 62.6L542.4 59.4L551.2 58.4L560 58L559.2 67.6L561.7 76.3L566.6 84.3L567.5 93.4L569.7 102.1L575 110L576.3 118.5L572.3 126.6L575 135.3L571.7 143.3L570.4 151.6L570 160L567 168.6L564.6 177.3L566.7 186.6L567.6 195.7L564.7 204.3L565.5 213.4L562 222L553 221.7L544.3 223.6L535.4 224.1L526.6 225.4L517.5 224.5L508.9 228.1L500 228L492.4 224.3L483.2 227.2L475.7 223.4L468.1 219.7L460 218L455 209.4L455.5 199.1L449.6 190.9L446.2 181.8L445 172L447.1 163.6L446.5 154.8L445 145.9L450.9 137.9L452.2 129.4L453.9 120.9Z"},{"c":"EU","path":"M393 84L401.7 84.8L409.3 81.2L417.8 81.1L425 76L431.1 82.1L429.3 91.4L434 98L424.1 101.3L414.1 104.6L405 110L403.5 100.2L394.1 94Z"},{"c":"EU","path":"M414 134L421.5 127.1L429.9 122.1L440 120L444.5 127.4L446.4 135.4L448.7 143.2L446.5 152.2L449 160L439 162.7L433.5 172.5L424 176L419.5 168.2L418 159.7L419.2 150.5L414.3 142.8Z"},{"c":"AF","path":"M445 256L453.5 254.6L462.4 257.2L470.4 252.2L479.2 252.8L487.7 252.4L495.9 248.7L504.4 247.7L512.6 244.2L521.3 244.2L530 245L538.2 249.6L546.6 253.2L556.9 250.2L564.2 257.9L573.7 257.6L583.2 257.5L591.8 260.5L600 265L601.8 274.4L607.2 282.7L610.3 291.7L611.5 301.2L611.5 311.1L615 320L611.3 328.7L608.6 337.8L601.9 345.4L604.6 356.5L599.1 364.5L596.5 373.6L592 382L591.4 392.1L587.7 400.9L581.3 408.5L579.6 418.1L575 426.5L566.8 433.3L564 442.5L562 452L554.8 458L550.9 466.6L542.9 471.9L536.6 478.5L531.8 486.4L526.8 494.1L522 502L514.3 496.6L505.4 492.9L497.7 487.6L490 482L487.8 473.1L485.5 464.2L483.8 455.2L482.6 446.1L480 437.3L477.6 428.4L476 419.4L474.8 410.2L470 402L469.2 392.4L467 383.4L460.2 375.9L457.4 367L457.4 357.2L454.4 348.4L447.2 341.1L445 332L442.1 322.5L443.9 313L447.7 303.5L446.5 294L446.7 284.5L448.2 275L447 265.5Z"},{"c":"AS","path":"M586 58L594.4 54.6L603.3 53.4L612.6 55.9L620.6 49.7L630.3 54L638.9 51.8L647.5 49.2L656.4 48.4L665 45.8L673.6 43.8L682.9 45.3L691.3 41.8L700 40L708.8 42.6L717.5 38.4L726.3 41.3L735 39.5L743.8 39.3L752.5 37.8L761.3 40.6L770 38.1L778.8 42.8L787.5 42.3L796.3 38.9L805 41.3L813.8 42.6L822.5 37.3L831.3 38.7L840 40L847.5 45.3L857.7 41.7L865.7 45L873.5 49.3L882.6 49.3L889.6 56.3L897.5 60.2L907.3 57.8L915.6 60.6L922.4 68L931.3 68.8L940 70L944.2 77.8L946.6 86L945.1 95.2L951.3 102.5L947.9 112.2L952 120L944.1 123.1L935.9 125.7L930.1 133.3L921.8 135.7L913 137L906 142L898.4 148.7L896 158.4L890.9 166.5L884.9 174.2L880.5 182.7L875.4 190.9L872 200L868.5 208.6L868.9 218.6L866.5 227.5L859.8 235.2L859.5 244.9L854.3 253L852 262L846.6 269.9L840 276.7L831.4 281.4L824.7 288L817.1 293.8L813.3 303.3L803.3 306.7L800.9 317.5L792 322L783.9 317.9L774.7 316.9L766.9 311.5L758.1 309.5L749.8 305.7L739.7 307.5L732 302L723.6 304.7L718.7 312L710.6 315.2L705.6 322.4L697.1 324.9L692 332L684.7 325.3L676.2 320.6L668.5 314.6L660 309.9L649.2 308.9L642 302L637.5 293.9L628.7 289.2L622.8 282.2L621.6 271.5L615.9 264.3L605.3 261.1L602 252L597.1 244.1L596.4 235.2L599 225.6L596.5 217.1L595.1 208.4L588.5 200.9L588 192L586.4 182.9L585.7 173.8L589.3 165L590.4 156L588 146.9L589.8 137.9L591.4 129L592 120L589.2 111.3L587.2 102.6L586.3 93.7L585.7 84.8L588.6 75.6L586.6 66.9Z"},{"c":"AS","path":"M905 168L912.9 166.6L919.7 162.8L926 158L927.9 166.4L928.6 175.1L932.8 183L933.2 191.8L936 200L928.2 206.3L924.4 215L918.3 222.3L916 232L911.8 225L905.9 219.5L900 214L903.1 205L899.7 195.4L900 186.1L905.6 177.4Z"},{"c":"OC","path":"M798 350L806.8 349.9L815.3 347.2L824 346.8L832.6 344.5L841.3 344.1L850 343L859.5 346L867.7 351L875.6 356.3L882 364L874 368.5L865.6 372.2L857.6 376.7L848 377.5L840 382L831.4 382.8L823.3 381.5L815.2 380L808.5 372.5L800 373L801.9 365.1L795.5 357.9Z"},{"c":"OC","path":"M894 354L902.9 354.9L911.2 350.7L919.9 350.3L929 352.8L937.6 351.1L946 348L952.8 354.6L950.2 365.4L957 372L948.6 375.4L939.5 373.7L931.1 376.5L922.8 380.6L914 380.9L905 380L903 370.6L899.3 362Z"},{"c":"OC","path":"M820 422L828 417.2L838 418.1L846.5 414.6L853.8 408.2L862.8 406L870.9 401.8L880 400L889.1 400.1L897 406.1L905.7 407.8L914.8 408.2L923.8 408.7L932 413L940.8 414.4L950 414L950.6 423.9L953.6 433.2L954.8 442.9L959.4 451.7L964.8 460.3L966 470L958.6 475.5L954.3 484L945.3 488L942.6 497.9L932.8 501.2L927.5 508.7L922 516L913.3 513.2L904.3 515.1L895.6 512.2L886.7 511.4L877.5 516.3L868.7 514.4L860 512L852.5 507.5L845.6 502.4L842.4 493.6L837.5 486.5L830.6 481.4L825.7 474.3L818 470L821 460.5L821 450.9L817.2 441.1L820 431.6Z"}],"links":[["alaska","kamtchatka"],["nunavut","groenland"],["labrador","groenland"],["groenland","islande"],["mexique","colombie"],["amazonie","sahel"],["islande","britannia"],["islande","scandinavie"],["britannia","gaule"],["britannia","scandinavie"],["iberie","maghreb"],["balkans","egypte"],["balkans","moyenorient"],["scandinavie","oural"],["germanie","oural"],["germanie","asiec"],["balkans","asiec"],["egypte","moyenorient"],["corne","moyenorient"],["kamtchatka","japon"],["mongolie","japon"],["chine","japon"],["indochine","indonesie"],["indonesie","guinee"],["indonesie","ouest"],["guinee","est"]]};
+/* ===== moteur ===== */
+const IS_NODE=typeof window==='undefined';
+/* Conquête : moteur pur (dans l'esprit de Risk) */
+const MAP=IS_NODE?require('./cq-map.json'):__MAP;
+const TERR={}; MAP.terr.forEach(t=>TERR[t.id]=t);
+const TIDS=MAP.terr.map(t=>t.id);
+const CONTS=Object.keys(MAP.cont);
+const inCont=c=>TIDS.filter(id=>TERR[id].c===c);
+const SYMS=['fant','cav','art'];
+function shuffle(a,rng){ rng=rng||Math.random; for(let i=a.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+const MISSIONS=[{k:'t24',txt:'Conquérir 24 territoires'},{k:'t18x2',txt:'Conquérir 18 territoires avec au moins 2 armées sur chacun'},
+ {k:'c',cs:['NA','AF'],txt:'Conquérir l’Amérique du Nord et l’Afrique'},{k:'c',cs:['AS','AF'],txt:'Conquérir l’Asie et l’Afrique'},{k:'c',cs:['NA','OC'],txt:'Conquérir l’Amérique du Nord et l’Océanie'},{k:'c',cs:['AS','SA'],txt:'Conquérir l’Asie et l’Amérique du Sud'},
+ {k:'c',cs:['EU','SA'],plus:1,txt:'Conquérir l’Europe, l’Amérique du Sud et un troisième continent au choix'},{k:'c',cs:['EU','OC'],plus:1,txt:'Conquérir l’Europe, l’Océanie et un troisième continent au choix'}];
+const START={2:40,3:35,4:30,5:25,6:20};
+function newGame(o,rng){ rng=rng||Math.random; const n=o.players.length;
+  const G={players:o.players.map((p,i)=>({name:p.name,ai:!!p.ai,level:p.level||'normal',cards:[],alive:true,mission:null,neutral:false})),own:{},arm:{},cur:0,phase:'setup',reinf:0,deck:[],discard:[],trades:0,conquered:false,missions:!!o.missions,over:null,turn:1,fixed:!!o.fixedTrade,log:[],pendingMove:null};
+  if(n===2&&o.neutral!==false){ G.players.push({name:'Neutre',ai:true,level:'neutre',cards:[],alive:true,neutral:true}); }
+  const N=G.players.length, ids=shuffle(TIDS.slice(),rng);
+  ids.forEach((id,i)=>{ G.own[id]=i%N; G.arm[id]=1; });
+  // cartes : 42 territoires + 2 jokers
+  G.deck=shuffle(TIDS.map((id,i)=>({id,s:SYMS[i%3]})).concat([{id:null,s:'joker'},{id:null,s:'joker'}]),rng);
+  // missions
+  if(G.missions){ const ms=MISSIONS.slice(); G.players.forEach((P,i)=>{ if(!P.neutral) ms.push({k:'kill',target:i,txt:'Détruire les armées '+colName(i)}); });
+    shuffle(ms,rng); G.players.forEach((P,i)=>{ if(P.neutral) return; let k=ms.findIndex(m=>!(m.k==='kill'&&m.target===i)); P.mission=ms.splice(k,1)[0]; }); }
+  // armées de départ
+  const total=START[Math.min(6,Math.max(2,n))]; G.pool=G.players.map((P,i)=>total-TIDS.filter(id=>G.own[id]===i).length);
+  G.players.forEach((P,i)=>{ if(!P.neutral) return; const mine=TIDS.filter(id=>G.own[id]===i); while(G.pool[i]>0){ G.arm[mine[Math.floor(rng()*mine.length)]]++; G.pool[i]--; } });
+  if(o.autoSetup) autoPlace(G,rng); else { G.cur=0; G.phase='setup'; }
+  return G; }
+const COLN=['rouges','bleues','jaunes','vertes','violettes','noires','grises'];
+function colName(i){ return COLN[i]||'adverses'; }
+function autoPlace(G,rng){ rng=rng||Math.random; G.players.forEach((P,i)=>{ const mine=TIDS.filter(id=>G.own[id]===i); while(G.pool[i]>0){ const id=P.neutral?mine[Math.floor(rng()*mine.length)]:aiSetupPick(G,i,rng); G.arm[id]++; G.pool[i]--; } }); startTurn(G,0); }
+function setupPlace(G,p,id){ if(G.phase!=='setup'||G.cur!==p||G.own[id]!==p||G.pool[p]<1) return null; G.arm[id]++; G.pool[p]--; const ev=[{t:'add',id,n:1,p}];
+  let nx=p; for(let k=0;k<G.players.length;k++){ nx=(nx+1)%G.players.length; if(G.pool[nx]>0&&!G.players[nx].neutral) break; }
+  if(!G.players.some((P,i)=>!P.neutral&&G.pool[i]>0)) return ev.concat(startTurn(G,0));
+  G.cur=nx; return ev; }
+const owned=(G,p)=>TIDS.filter(id=>G.own[id]===p);
+function contOwner(G,c){ const ts=inCont(c), o=G.own[ts[0]]; return ts.every(id=>G.own[id]===o)?o:-1; }
+function reinforcements(G,p){ const n=owned(G,p).length; let r=Math.max(3,Math.floor(n/3)); const bon=[]; CONTS.forEach(c=>{ if(contOwner(G,c)===p){ r+=MAP.cont[c].bonus; bon.push(c); } }); return {r,bon}; }
+function startTurn(G,p){ G.cur=p; G.phase='reinforce'; const {r,bon}=reinforcements(G,p); G.reinf=r; G.conquered=false; G.from=null; return [{t:'turn',p,r,bon}]; }
+/* cartes */
+function setKind(cs){ if(cs.length!==3) return false; const s=cs.map(c=>c.s), j=s.filter(x=>x==='joker').length, o=s.filter(x=>x!=='joker');
+  if(j>=1) return true; if(o.every(x=>x===o[0])) return true; return new Set(o).size===3; }
+function tradeValue(G){ if(G.fixed) return null; const v=[4,6,8,10,12,15]; return G.trades<v.length?v[G.trades]:15+5*(G.trades-5); }
+function fixedValue(cs){ const s=cs.map(c=>c.s).filter(x=>x!=='joker'); if(s.length<3) return 12; if(s[0]===s[1]&&s[1]===s[2]) return {fant:4,cav:6,art:8}[s[0]]; return 10; }
+function trade(G,p,idx){ if(G.cur!==p||G.phase!=='reinforce') return null; const P=G.players[p]; const cs=idx.map(i=>P.cards[i]); if(new Set(idx).size!==3||cs.some(c=>!c)||!setKind(cs)) return null;
+  const val=G.fixed?fixedValue(cs):tradeValue(G); G.trades++; let extra=null; for(const c of cs){ if(c.id&&G.own[c.id]===p){ G.arm[c.id]+=2; extra=c.id; break; } }
+  P.cards=P.cards.filter((c,i)=>!idx.includes(i)); G.discard.push(...cs); G.reinf+=val; return [{t:'trade',p,val,extra}]; }
+function mustTrade(G,p){ return G.players[p].cards.length>=5; }
+function bestSet(cards){ const n=cards.length; let best=null; for(let a=0;a<n;a++) for(let b=a+1;b<n;b++) for(let c=b+1;c<n;c++){ const cs=[cards[a],cards[b],cards[c]]; if(setKind(cs)){ const j=cs.filter(x=>x.s==='joker').length; if(!best||j<best.j) best={i:[a,b,c],j}; } } return best&&best.i; }
+function place(G,p,id,n){ n=n||1; if(G.cur!==p||G.phase!=='reinforce'||G.own[id]!==p||n<1||n>G.reinf) return null; if(mustTrade(G,p)) return null; G.arm[id]+=n; G.reinf-=n; const ev=[{t:'add',id,n,p}]; if(!G.reinf){ G.phase='attack'; ev.push({t:'phase',ph:'attack'}); } return ev; }
+function canAttack(G,p,a,b){ return G.phase==='attack'&&G.cur===p&&!G.pendingMove&&G.own[a]===p&&G.own[b]!==p&&G.arm[a]>=2&&TERR[a].adj.includes(b); }
+function roll(n,rng){ return Array.from({length:n},()=>1+Math.floor(rng()*6)).sort((x,y)=>y-x); }
+function attack(G,p,a,b,nd,rng){ rng=rng||Math.random; if(!canAttack(G,p,a,b)) return null; const da=Math.max(1,Math.min(3,G.arm[a]-1,nd||3)), dd=Math.min(2,G.arm[b]);
+  const A=roll(da,rng), D=roll(dd,rng); let la=0, ld=0; for(let i=0;i<Math.min(da,dd);i++){ if(A[i]>D[i]) ld++; else la++; }
+  G.arm[a]-=la; G.arm[b]-=ld; const ev=[{t:'dice',a,b,A,D,la,ld}];
+  if(G.arm[b]<=0){ const loser=G.own[b]; G.own[b]=p; G.arm[b]=0; G.conquered=true; G.pendingMove={a,b,min:da,max:G.arm[a]-1}; ev.push({t:'conquer',a,b,p,from:loser});
+    if(!owned(G,loser).length){ G.players[loser].alive=false; G.players[loser].killedBy=p; const got=G.players[loser].cards.splice(0); G.players[p].cards.push(...got); ev.push({t:'eliminated',p:loser,by:p,cards:got.length}); }
+    const w=checkWin(G); if(w!=null){ G.pendingMove=null; G.arm[b]=Math.max(1,da); G.arm[a]-=Math.max(1,da); G.phase='over'; G.over={winner:w}; ev.push({t:'win',p:w}); } }
+  return ev; }
+function moveIn(G,p,n){ const m=G.pendingMove; if(!m||G.cur!==p) return null; n=Math.max(m.min,Math.min(m.max,n)); G.arm[m.a]-=n; G.arm[m.b]+=n; G.pendingMove=null; const ev=[{t:'move',a:m.a,b:m.b,n}];
+  if(G.players[p].cards.length>=6){ G.phase='reinforce'; G.reinf=0; ev.push({t:'mustTrade'}); } return ev; }
+function connected(G,p,a,b){ if(G.own[a]!==p||G.own[b]!==p||a===b) return false; const seen=new Set([a]), st=[a]; while(st.length){ const x=st.pop(); for(const y of TERR[x].adj) if(!seen.has(y)&&G.own[y]===p){ if(y===b) return true; seen.add(y); st.push(y); } } return false; }
+function toFortify(G,p){ if(G.cur!==p||G.phase!=='attack'||G.pendingMove) return null; G.phase='fortify'; return [{t:'phase',ph:'fortify'}]; }
+function fortify(G,p,a,b,n){ if(G.cur!==p||G.phase!=='fortify'||!connected(G,p,a,b)||n<1||n>G.arm[a]-1) return null; G.arm[a]-=n; G.arm[b]+=n; return [{t:'fort',a,b,n}].concat(endTurn(G,p)); }
+function endTurn(G,p){ if(G.cur!==p||G.phase==='over'||G.pendingMove) return null; const ev=[];
+  if(G.conquered){ if(!G.deck.length){ G.deck=shuffle(G.discard.splice(0)); } const c=G.deck.pop(); if(c){ G.players[p].cards.push(c); ev.push({t:'card',p,c}); } }
+  let nx=p; do { nx=(nx+1)%G.players.length; } while(!G.players[nx].alive||G.players[nx].neutral);
+  if(nx<=p) G.turn++; return ev.concat(startTurn(G,nx)); }
+/* victoire */
+function missionDone(G,p){ const M=G.players[p].mission; if(!M) return false; const mine=owned(G,p);
+  if(M.k==='t24') return mine.length>=24; if(M.k==='t18x2') return mine.filter(id=>G.arm[id]>=2).length>=18;
+  if(M.k==='c'){ if(!M.cs.every(c=>contOwner(G,c)===p)) return false; if(M.plus) return CONTS.some(c=>!M.cs.includes(c)&&contOwner(G,c)===p); return true; }
+  if(M.k==='kill'){ const t=G.players[M.target]; if(!t||t.neutral||(!t.alive&&t.killedBy!==p)) return mine.length>=24; return !t.alive; } return false; }
+function checkWin(G){ const alive=G.players.map((P,i)=>i).filter(i=>G.players[i].alive&&!G.players[i].neutral); if(alive.length===1) return alive[0];
+  const real=G.players.map((P,i)=>i).filter(i=>!G.players[i].neutral); if(real.every(i=>i===G.cur||!owned(G,i).length)) return G.cur;
+  if(G.missions){ for(const i of alive) if(missionDone(G,i)) return i; }
+  return null; }
+/* ===== IA ===== */
+function contWeights(G,p){ const w={}; const M=G.players[p].mission; CONTS.forEach(c=>{ const ts=inCont(c), mine=ts.filter(id=>G.own[id]===p).length; w[c]=(mine/ts.length)*2+MAP.cont[c].bonus/ts.length; if(M&&M.k==='c'&&M.cs.includes(c)) w[c]+=2.5; }); return w; }
+function border(G,p,id){ return TERR[id].adj.some(b=>G.own[b]!==p); }
+function threat(G,p,id){ return TERR[id].adj.filter(b=>G.own[b]!==p).reduce((s,b)=>s+G.arm[b],0); }
+function aiSetupPick(G,p,rng){ const w=contWeights(G,p); const mine=owned(G,p).filter(id=>border(G,p,id)); const list=mine.length?mine:owned(G,p); let best=list[0],bv=-1e9; for(const id of list){ const v=w[TERR[id].c]*3+threat(G,p,id)*.15-G.arm[id]*.3+rng(); if(v>bv){ bv=v; best=id; } } return best; }
+function aiReinforce(G,p,rng){ const w=contWeights(G,p), lv=G.players[p].level; const ids=owned(G,p).filter(id=>border(G,p,id));
+  // concentrer sur un territoire d'attaque prometteur
+  let best=null,bv=-1e9; for(const id of ids){ const weak=TERR[id].adj.filter(b=>G.own[b]!==p).map(b=>G.arm[b]); const v=w[TERR[id].c]*2+(weak.length?(6-Math.min(...weak))*.5:0)+threat(G,p,id)*.08+(lv==='facile'?rng()*4:rng()*.5); if(v>bv){ bv=v; best=id; } }
+  return best||owned(G,p)[0]; }
+function aiAttack(G,p,rng){ const lv=G.players[p].level, ratio=lv==='facile'?1.0:lv==='normal'?1.4:1.2, w=contWeights(G,p); let best=null,bv=0;
+  for(const a of owned(G,p)){ if(G.arm[a]<2) continue; for(const b of TERR[a].adj){ if(G.own[b]===p) continue; const r=(G.arm[a]-1)/G.arm[b]; if(r<ratio&&!(G.arm[a]>=4&&G.arm[b]<=1)) continue;
+    let v=r+w[TERR[b].c]*.6; const M=G.players[p].mission; if(M&&M.k==='kill'&&G.own[b]===M.target) v+=1.5; if(contOwner(G,TERR[b].c)===G.own[b]&&G.own[b]!==p) v+=.8; if(lv==='facile') v+=rng()*1.5;
+    if(v>bv){ bv=v; best={a,b}; } } }
+  return best; }
+function aiFortify(G,p){ let best=null,bv=0; for(const a of owned(G,p)){ if(G.arm[a]<2||border(G,p,a)) continue; for(const b of owned(G,p)){ if(!border(G,p,b)||!connected(G,p,a,b)) continue; const v=(G.arm[a]-1)*(1+threat(G,p,b)*.05); if(v>bv){ bv=v; best={a,b,n:G.arm[a]-1}; } } } return best; }
+/* exécute un pas d'IA : renvoie les événements */
+function aiStep(G,rng){ rng=rng||Math.random; const p=G.cur;
+  if(G.phase==='setup') return setupPlace(G,p,aiSetupPick(G,p,rng));
+  if(G.phase==='reinforce'){ const P=G.players[p]; const s=bestSet(P.cards); if(s&&(mustTrade(G,p)||P.level!=='facile')) return trade(G,p,s); if(mustTrade(G,p)) return null;
+    if(!G.reinf){ G.phase='attack'; return [{t:'phase',ph:'attack'}]; } const id=aiReinforce(G,p,rng); return place(G,p,id,G.reinf); }
+  if(G.pendingMove){ const m=G.pendingMove, inner=!border(G,p,m.a); return moveIn(G,p,inner?m.max:Math.max(m.min,Math.ceil(m.max*.66))); }
+  if(G.phase==='attack'){ const t=aiAttack(G,p,rng); if(t) return attack(G,p,t.a,t.b,3,rng); return toFortify(G,p); }
+  if(G.phase==='fortify'){ const f=aiFortify(G,p); if(f) return fortify(G,p,f.a,f.b,f.n); return endTurn(G,p); }
+  return null; }
+if(IS_NODE) module.exports={MAP,TERR,TIDS,newGame,setupPlace,place,trade,attack,moveIn,toFortify,fortify,endTurn,aiStep,reinforcements,owned,connected,missionDone,bestSet,setKind,canAttack,contOwner};
+
+else {
+/* ===== interface ===== */
+let G=null, BUSY=false, GEN=0, VIEW=null, SRC=null, DST=null, AMT=1, CSEL=[], MOVEN=1, SHOWM=false, V={cx:500,cy:280,s:1}, ND=3;
+const GAME=window.GAME={help,menu};
+const KEY='cq';
+const PC=['#d64541','#3b7dd8','#e8b931','#3aa65b','#9b59b6','#4a4a4a','#9a9a9a'];
+const PF=['#f0a29a','#a9c6ee','#f5dc8e','#a3d9b1','#d4b3e2','#a8a8a8','#d0cfc9'];
+const NAMES=['Camille','Lucas','Inès','Hugo','Léa','Nathan'];
+const SYMN={fant:'Fantassin',cav:'Cavalier',art:'Canon',joker:'Joker'};
+const SYMSVG={fant:'<svg viewBox="0 0 30 30"><circle cx="15" cy="7" r="4" fill="#5a4a32"/><path d="M9 28l2-14h8l2 14M11 15l-4 6M19 15l5-9" stroke="#5a4a32" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>',
+ cav:'<svg viewBox="0 0 30 30"><path d="M5 24l3-8 6-3 3-6 4 1 2 4-3 2 1 6 2 4M8 16l-2 8M20 18l3 6" stroke="#5a4a32" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ art:'<svg viewBox="0 0 30 30"><circle cx="11" cy="22" r="5" fill="none" stroke="#5a4a32" stroke-width="2.5"/><path d="M13 18l14-9" stroke="#5a4a32" stroke-width="5" stroke-linecap="round"/></svg>',
+ joker:'<svg viewBox="0 0 30 30"><path d="M15 3l3.5 8 8.5.5-6.5 5.5 2 8.5-7.5-4.5-7.5 4.5 2-8.5L3 11.5l8.5-.5Z" fill="#c0392b"/></svg>'};
+const isH=p=>G&&!G.players[p].ai;
+const humans=()=>G.players.map((P,i)=>i).filter(i=>!G.players[i].ai);
+/* ---------- carte ---------- */
+function buildMap(){ let s=`<rect x="-400" y="-300" width="1800" height="1200" fill="url(#waves)"/>`;
+  MAP.coasts.forEach(c=>s+=`<path class="coast" d="${c.path}"/>`);
+  MAP.links.forEach(([a,b])=>{ const A=TERR[a], B=TERR[b]; if(a==='alaska'&&b==='kamtchatka'){ s+=`<path class="link" d="M${A.x} ${A.y}L-10 ${A.y-10}M${B.x} ${B.y}L1010 ${B.y+8}"/>`; } else s+=`<path class="link" d="M${A.x} ${A.y}L${B.x} ${B.y}"/>`; });
+  MAP.terr.forEach(t=>s+=`<path class="terr" id="t-${t.id}" data-t="${t.id}" d="${t.path}"/>`);
+  const LP={NA:[150,30],SA:[350,470],EU:[470,40],AF:[620,470],AS:[760,25],OC:[880,545]};
+  Object.keys(MAP.cont).forEach(c=>s+=`<text class="clabel" x="${LP[c][0]}" y="${LP[c][1]}">${MAP.cont[c].name} · +${MAP.cont[c].bonus}</text>`);
+  MAP.terr.forEach(t=>s+=`<text class="tname" x="${t.x}" y="${t.y+19}">${t.name}</text>`);
+  MAP.terr.forEach(t=>s+=`<g class="badge" id="b-${t.id}" data-t="${t.id}"><circle cx="${t.x}" cy="${t.y}" r="10"/><text x="${t.x}" y="${t.y+4}"></text></g>`);
+  s+=`<g id="arrows"></g>`; $('#world').innerHTML=s; }
+function applyView(){ const r=$('#mp').getBoundingClientRect(); $('#world').setAttribute('transform',`translate(${r.width/2-V.cx*V.s} ${r.height/2-V.cy*V.s}) scale(${V.s})`); }
+function fit(){ const r=$('#mp').getBoundingClientRect(); V.cx=500; V.cy=280; const base=Math.min(r.width/1000,r.height/560)*0.98; V.s=r.width<600?Math.min(r.height/560,Math.max(base,.64)):base; applyView(); }
+function zoomAt(f,px,py){ const r=$('#mp').getBoundingClientRect(); px=px??r.width/2; py=py??r.height/2; const wx=V.cx+(px-r.width/2)/V.s, wy=V.cy+(py-r.height/2)/V.s; V.s=Math.max(.25,Math.min(4,V.s*f)); V.cx=wx-(px-r.width/2)/V.s; V.cy=wy-(py-r.height/2)/V.s; applyView(); }
+/* ---------- rendu ---------- */
+function targets(){ if(!G||!SRC) return []; const p=G.cur;
+  if(G.phase==='attack') return TERR[SRC].adj.filter(b=>canAttack(G,p,SRC,b));
+  if(G.phase==='fortify') return TIDS.filter(b=>connected(G,p,SRC,b)); return []; }
+function render(){ if(!G){ renderStatus(); return; } const tg=targets(), p=G.cur, me=isH(p)&&!BUSY;
+  TIDS.forEach(id=>{ const o=G.own[id], el=$('#t-'+id); el.setAttribute('fill',PF[o]); el.classList.toggle('sel',id===SRC||id===DST); el.classList.toggle('tgt',me&&tg.includes(id)&&id!==DST);
+    el.classList.toggle('dim',!!(me&&SRC&&!tg.includes(id)&&id!==SRC&&(G.phase==='attack'||G.phase==='fortify')));
+    const b=$('#b-'+id); b.querySelector('circle').setAttribute('fill',PC[o]); b.querySelector('text').textContent=G.arm[id]; });
+  let ar=''; if(SRC&&DST){ const A=TERR[SRC], B=TERR[DST]; ar=`<path class="arrow" d="M${A.x} ${A.y}Q${(A.x+B.x)/2} ${(A.y+B.y)/2-25} ${B.x} ${B.y}"/>`; } $('#arrows').innerHTML=ar;
+  renderSide(); renderAct(); renderStatus(); }
+function viewer(){ if(isH(G.cur)) return G.cur; if(VIEW!=null) return VIEW; const h=humans(); return h.length===1?h[0]:null; }
+function renderSide(){ const p=G.cur, v=viewer(); const ph={setup:0,reinforce:1,attack:2,fortify:3}[G.phase];
+  const stats=G.players.map((P,i)=>{ const t=owned(G,i); const a=t.reduce((s,id)=>s+G.arm[id],0); return `<div class="plr ${i===p?'on':''} ${P.alive?'':'dead'}"><i style="background:${PC[i]}"></i><span>${esc(P.name)}</span><b title="territoires">${t.length} ⚑</b><b title="armées">${a} ⚔</b></div>`; }).join('');
+  let cards='', mis='';
+  if(v!=null){ const P=G.players[v]; cards=`<div class="card3"><h3>Cartes de ${esc(P.name)} (${P.cards.length})</h3><div class="cards">${P.cards.map((c,i)=>`<div class="tc ${CSEL.includes(i)?'sel':''}" data-cd="${i}">${c.id?esc(TERR[c.id].name):'Joker'}${SYMSVG[c.s]}<span>${SYMN[c.s]}</span></div>`).join('')||'<span style="font-size:13px;color:#aab4be">Conquiers un territoire dans le tour pour gagner une carte.</span>'}</div>${P.cards.length?`<p style="font-size:12px;color:#aab4be;margin:6px 0 0">3 symboles identiques ou 3 différents (le joker remplace tout). Prochain échange : ${G.fixed?'4 à 12 armées selon les symboles':tradeValue(G)+' armées'}.</p>`:''}</div>`;
+    if(G.missions&&P.mission) mis=`<div class="card3"><h3>Mission secrète</h3>${SHOWM?`<div class="mission">${esc(P.mission.txt)}</div>`:''}<button class="btn" data-a="mission" style="margin-top:6px">${SHOWM?'Cacher':'Voir ma mission'}</button></div>`; }
+  const r=G.phase==='reinforce'||G.phase==='setup'?reinforcements(G,p):null;
+  $('#side').innerHTML=`<div class="card3" style="--pc:${PC[p]}"><h3>${esc(G.players[p].name)} · tour ${G.turn}</h3><div class="steps"><span class="${ph===0?'on':''}">Déploiement</span><span class="${ph===1?'on':''}">Renforts</span><span class="${ph===2?'on':''}">Attaque</span><span class="${ph===3?'on':''}">Manœuvre</span></div>${G.phase==='reinforce'&&r?`<p style="font-size:13px;margin:6px 0 0;color:#cfd6dd">${owned(G,p).length} territoires → ${Math.max(3,Math.floor(owned(G,p).length/3))}${r.bon.length?' + continents : '+r.bon.map(c=>MAP.cont[c].name+' +'+MAP.cont[c].bonus).join(', '):''}</p>`:''}</div>${mis}${cards}<div class="card3"><h3>Armées</h3>${stats}</div>`; }
+function renderAct(){ const a=$('#actin'), p=G.cur;
+  if(G.phase==='over'){ a.innerHTML=`<span class="msg2"><b>${esc(G.players[G.over.winner].name)}</b> a gagné.</span><button class="btn pri" data-c="new">Nouvelle partie</button>`; return; }
+  if(!isH(p)||BUSY){ a.innerHTML=`<span class="msg2"><b>${esc(G.players[p].name)}</b> ${G.players[p].ai?'manœuvre…':'joue…'}</span>`; return; }
+  if(G.phase==='setup'){ a.innerHTML=`<span class="msg2">Déploiement : touche un de tes territoires pour y poser 1 armée (il t’en reste <b>${G.pool[p]}</b>).</span><button class="btn" data-a="autosetup">Placer automatiquement</button>`; return; }
+  if(G.pendingMove){ const m=G.pendingMove; MOVEN=Math.max(m.min,Math.min(m.max,MOVEN)); a.innerHTML=`<span class="msg2"><b>${esc(TERR[m.b].name)}</b> conquis ! Combien d’armées y envoyer ?</span><input type="range" id="mv" min="${m.min}" max="${m.max}" value="${MOVEN}"><b id="mvn">${MOVEN}</b><button class="btn pri" data-a="movein">Confirmer</button>`; return; }
+  if(G.phase==='reinforce'){ if(G.players[p].cards.length>=5){ a.innerHTML=`<span class="msg2">Tu as ${G.players[p].cards.length} cartes : échange un ensemble avant de placer tes renforts.</span><button class="btn pri" data-a="trade" ${CSEL.length===3&&setKind(CSEL.map(i=>G.players[p].cards[i]))?'':'disabled'}>Échanger</button><button class="btn" data-a="autotrade">Choisir pour moi</button>`; return; }
+    a.innerHTML=`<span class="msg2"><b>${G.reinf}</b> renfort${G.reinf>1?'s':''} : touche tes territoires.</span><div class="seg">${[[1,'+1'],[5,'+5'],['all','Tout']].map(([v,l])=>`<button class="${AMT===v?'on':''}" data-amt="${v}">${l}</button>`).join('')}</div>${CSEL.length===3?`<button class="btn" data-a="trade" ${setKind(CSEL.map(i=>G.players[p].cards[i]))?'':'disabled'}>Échanger les cartes</button>`:''}`; return; }
+  if(G.phase==='attack'){ let h; if(!SRC) h=`<span class="msg2">Attaque : touche un de tes territoires (au moins 2 armées), puis une cible voisine.</span>`;
+    else if(!DST) h=`<span class="msg2">Depuis <b>${esc(TERR[SRC].name)}</b> (${G.arm[SRC]}) : touche une cible qui clignote.</span><button class="btn" data-a="cancel">Annuler</button>`;
+    else { const mx=Math.min(3,G.arm[SRC]-1); ND=Math.min(ND,mx)||1; h=`<span class="msg2"><b>${esc(TERR[SRC].name)}</b> (${G.arm[SRC]}) → <b>${esc(TERR[DST].name)}</b> (${G.arm[DST]})</span><div class="seg">${[1,2,3].filter(n=>n<=mx).map(n=>`<button class="${ND===n?'on':''}" data-nd="${n}">${n} dé${n>1?'s':''}</button>`).join('')}</div><button class="btn" data-a="cancel">Annuler</button><button class="btn" data-a="blitz">Attaque éclair</button><button class="btn pri" data-a="attack">Attaquer</button>`; }
+    a.innerHTML=h+`<button class="btn" data-a="tofort">Fin des attaques</button>`; return; }
+  if(G.phase==='fortify'){ let h; if(!SRC) h=`<span class="msg2">Manœuvre (facultative) : touche un territoire de départ, puis un territoire relié par tes terres.</span>`;
+    else if(!DST) h=`<span class="msg2">Depuis <b>${esc(TERR[SRC].name)}</b> : choisis la destination.</span><button class="btn" data-a="cancel">Annuler</button>`;
+    else { const mx=G.arm[SRC]-1; MOVEN=Math.max(1,Math.min(mx,MOVEN)); h=`<span class="msg2">${esc(TERR[SRC].name)} → ${esc(TERR[DST].name)}</span><input type="range" id="mv" min="1" max="${mx}" value="${MOVEN}"><b id="mvn">${MOVEN}</b><button class="btn" data-a="cancel">Annuler</button><button class="btn pri" data-a="fortify">Déplacer et finir</button>`; }
+    a.innerHTML=h+`<button class="btn" data-a="end">Terminer le tour</button>`; return; } }
+function renderStatus(){ const st=$('#status'); if(!G){ st.innerHTML=''; return; } const p=G.cur, P=G.players[p];
+  st.style.setProperty('--pc',G.phase==='over'?'#1d6f3e':PC[p]);
+  const ph={setup:'déploiement',reinforce:'renforts',attack:'attaque',fortify:'manœuvre',over:'fin'}[G.phase];
+  st.innerHTML=G.phase==='over'?`<span class="who">Victoire</span><span class="msg">${esc(G.players[G.over.winner].name)}${G.missions&&G.players[G.over.winner].mission?' accomplit sa mission : '+esc(G.players[G.over.winner].mission.txt):' domine le monde'}.</span>`:`<span class="who">${esc(P.name)}</span><span class="msg">${ph}</span><span class="right">${G.missions?'missions secrètes':'domination'}</span>`; }
+/* ---------- animations ---------- */
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+const dieH=(v,c,lost)=>`<div class="die ${c} roll ${lost?'lost':''}">${Array.from({length:9},(_,k)=>`<span class="${PIPS[v].includes(k)?'on':''}"></span>`).join('')}</div>`;
+function pop(id){ const b=$('#b-'+id); if(!b) return; b.classList.remove('pop'); void b.getBBox(); b.classList.add('pop'); }
+async function show(ev,my,fast){ for(const e of ev||[]){ if(my!==GEN) return;
+  switch(e.t){
+   case 'add': render(); pop(e.id); sfx('pop'); if(G.players[e.p].ai) await wait(fast?40:120); break;
+   case 'dice': { const d=$('#dice'); const la=e.la, ld=e.ld; const A=e.A.map((v,i)=>dieH(v,'a',i<Math.min(e.A.length,e.D.length)&&!(v>e.D[i]))), D=e.D.map((v,i)=>dieH(v,'d',i<Math.min(e.A.length,e.D.length)&&v<e.A[i]));
+     d.innerHTML=`<div class="grp">${A.join('')}</div><b style="font-family:var(--title)">contre</b><div class="grp">${D.join('')}</div>`; d.hidden=false; SRC=e.a; DST=e.b; render(); sfx('dice'); await wait(fast?320:650); pop(e.a); pop(e.b); if(ld) sfx('capture'); else sfx('error'); await wait(fast?150:350); break; }
+   case 'conquer': d0(); render(); pop(e.b); sfx('boom'); toast(`${G.players[e.p].name} conquiert ${TERR[e.b].name}`); await wait(400); break;
+   case 'eliminated': banner(`${G.players[e.p].name} est éliminé`,e.cards?`${G.players[e.by].name} récupère ${e.cards} carte${e.cards>1?'s':''}`:'',PC[e.p]); sfx('lose'); await wait(1500); break;
+   case 'move': case 'fort': SRC=e.a; DST=e.b; render(); sfx('move'); await wait(450); SRC=null; DST=null; render(); pop(e.b); await wait(150); break;
+   case 'trade': render(); toast(`${G.players[e.p].name} échange 3 cartes : +${e.val} armées${e.extra?' (+2 sur '+TERR[e.extra].name+')':''}`); sfx('ding'); await wait(600); break;
+   case 'card': if(isH(e.p)) toast('Carte gagnée : '+(e.c.id?TERR[e.c.id].name:'joker')); sfx('flip'); break;
+   case 'turn': d0(); SRC=null; DST=null; render(); if(!fast) { banner(G.players[e.p].name,`${e.r} renforts${e.bon.length?' · '+e.bon.map(c=>MAP.cont[c].name).join(', '):''}`,PC[e.p]); await wait(1100); } break;
+   case 'phase': d0(); render(); break;
+   case 'win': d0(); render(); break;
+  } } }
+function d0(){ $('#dice').hidden=true; }
+/* ---------- déroulement ---------- */
+function save(){ store(KEY,G&&G.phase!=='over'?G:null); }
+async function apply(ev,my,fast){ if(!ev){ sfx('error'); return false; } BUSY=true; await show(ev,my,fast); if(my!==GEN) return false; BUSY=false; step(); return true; }
+function step(){ if(!G) return; render(); save(); const my=GEN;
+  if(G.phase==='over'){ setTimeout(()=>{ if(my===GEN) gameEnd(); },600); return; }
+  const p=G.cur;
+  if(G.players[p].ai){ setTimeout(()=>{ if(my!==GEN||BUSY) return; const ev=aiStep(G); if(!ev){ endTurn(G,p); step(); return; } apply(ev,my,G.phase==='setup'); },G.phase==='setup'?60:420); return; }
+  if(humans().length>1&&VIEW!==p){ VIEW=null; SHOWM=false; render(); cover(p); return; }
+  VIEW=p; }
+function cover(p){ const c=$('#cover'); c.innerHTML=`<div><span style="font-family:var(--title);letter-spacing:.15em;color:#f3e3b8">ORDRES SECRETS</span><h2 style="font-family:var(--title);color:${PC[p]}">${esc(G.players[p].name)}</h2><p>Passe l’appareil : tes cartes${G.missions?' et ta mission':''} sont confidentielles.</p><button class="btn pri" style="font-size:17px;padding:12px 20px" data-a="reveal">Prendre le commandement</button></div>`; c.style.background='radial-gradient(circle at 50% 35%,#2b3640,#101317)'; c.hidden=false; }
+function gameEnd(){ store(KEY,null); const w=G.over.winner, hw=isH(w); banner(hw?'Victoire !':'Défaite',G.players[w].name,PC[w]); sfx(hw?'win':'lose'); if(hw) confetti(PC);
+  setTimeout(()=>{ window.MODAL_CLOSABLE=true; openModal(`<h2>${esc(G.players[w].name)} l’emporte</h2>${G.missions?`<h4>Missions</h4><ul>${G.players.filter(P=>P.mission).map(P=>`<li><b>${esc(P.name)}</b> : ${esc(P.mission.txt)}</li>`).join('')}</ul>`:''}<table class="scl"><tr><th>Armée</th><th>Territoires</th><th>Armées</th></tr>${G.players.map((P,i)=>`<tr class="${i===w?'w':''}"><td><span style="color:${PC[i]}">●</span> ${esc(P.name)}</td><td>${owned(G,i).length}</td><td>${owned(G,i).reduce((s,id)=>s+G.arm[id],0)}</td></tr>`).join('')}</table><div class="acts"><button class="btn" data-c="new">Changer les réglages</button><button class="btn pri" data-a="again">Rejouer</button></div>`); },1700); }
+async function blitz(){ const my=GEN, p=G.cur, a=SRC, b=DST; BUSY=true; render();
+  while(my===GEN&&canAttack(G,p,a,b)){ const ev=attack(G,p,a,b,3); await show(ev,my,true); if(G.own[b]===p||G.phase==='over') break; }
+  if(my!==GEN) return; BUSY=false; if(G.own[b]!==p){ SRC=null; DST=null; } step(); }
+/* ---------- interactions carte ---------- */
+(function(){ const svg=$('#mp'); const pts=new Map(); let start=null, moved=false, pinch=null;
+  svg.addEventListener('pointerdown',e=>{ svg.setPointerCapture(e.pointerId); pts.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(pts.size===1){ start={x:e.clientX,y:e.clientY,cx:V.cx,cy:V.cy,t:e.target}; moved=false; } else if(pts.size===2){ const [a,b]=[...pts.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y),s:V.s}; moved=true; } });
+  svg.addEventListener('pointermove',e=>{ if(!pts.has(e.pointerId)) return; pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===2&&pinch){ const [a,b]=[...pts.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y), r=svg.getBoundingClientRect(); zoomAt((pinch.s*d/pinch.d)/V.s,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top); return; }
+    if(!start) return; const dx=e.clientX-start.x, dy=e.clientY-start.y; if(!moved&&Math.hypot(dx,dy)>8){ moved=true; svg.classList.add('drag'); } if(moved&&pts.size===1){ V.cx=start.cx-dx/V.s; V.cy=start.cy-dy/V.s; applyView(); } });
+  const up=e=>{ pts.delete(e.pointerId); if(pts.size<2) pinch=null; if(pts.size) return; svg.classList.remove('drag'); if(start&&!moved) tap(start.t); start=null; };
+  svg.addEventListener('pointerup',up); svg.addEventListener('pointercancel',e=>{ pts.delete(e.pointerId); start=null; svg.classList.remove('drag'); });
+  svg.addEventListener('wheel',e=>{ e.preventDefault(); const r=svg.getBoundingClientRect(); zoomAt(e.deltaY<0?1.12:1/1.12,e.clientX-r.left,e.clientY-r.top); },{passive:false});
+  addEventListener('resize',()=>applyView()); })();
+function tap(t){ const el=t.closest&&t.closest('[data-t]'); if(!el||!G||BUSY) return; const id=el.dataset.t, p=G.cur; if(!isH(p)||VIEW!==p) return;
+  if(G.phase==='setup'){ if(G.own[id]!==p){ sfx('error'); return; } apply(setupPlace(G,p,id),GEN,true); return; }
+  if(G.pendingMove) return;
+  if(G.phase==='reinforce'){ if(G.own[id]!==p){ sfx('error'); return; } const n=AMT==='all'?G.reinf:Math.min(AMT,G.reinf); apply(place(G,p,id,n),GEN,true); return; }
+  if(G.phase==='attack'){ if(G.own[id]===p){ SRC=G.arm[id]>=2?id:null; DST=null; if(!SRC) toast('Il faut au moins 2 armées pour attaquer'); sfx('click'); render(); return; }
+    if(SRC&&canAttack(G,p,SRC,id)){ DST=id; ND=Math.min(3,G.arm[SRC]-1); sfx('click'); render(); } else sfx('error'); return; }
+  if(G.phase==='fortify'){ if(!SRC||G.own[id]===p&&!connected(G,p,SRC,id)){ if(G.own[id]===p&&G.arm[id]>=2){ SRC=id; DST=null; MOVEN=G.arm[id]-1; render(); } else sfx('error'); return; } if(connected(G,p,SRC,id)){ DST=id; render(); } } }
+document.addEventListener('input',e=>{ if(e.target.id==='mv'){ MOVEN=+e.target.value; $('#mvn').textContent=MOVEN; } });
+document.addEventListener('click',e=>{ const z=e.target.closest('[data-z]'); if(z){ if(z.dataset.z==='fit') fit(); else zoomAt(z.dataset.z==='in'?1.3:1/1.3); return; }
+  const t=e.target.closest('[data-a],[data-amt],[data-nd],[data-cd]'); if(!t||!G) return;
+  if(t.dataset.a==='again'){ closeModal(); startGame(); return; }
+  if(t.dataset.a==='reveal'){ $('#cover').hidden=true; VIEW=G.cur; render(); sfx('flip'); return; }
+  if(t.dataset.a==='mission'){ SHOWM=!SHOWM; render(); return; }
+  if(BUSY) return; const p=G.cur; if(!isH(p)) return;
+  if(t.dataset.cd!=null){ const i=+t.dataset.cd; CSEL=CSEL.includes(i)?CSEL.filter(x=>x!==i):CSEL.concat(i).slice(-3); sfx('click'); render(); return; }
+  if(t.dataset.amt){ AMT=t.dataset.amt==='all'?'all':+t.dataset.amt; render(); return; }
+  if(t.dataset.nd){ ND=+t.dataset.nd; render(); return; }
+  switch(t.dataset.a){
+   case 'autosetup': { const my=GEN; BUSY=true; (async()=>{ while(G.phase==='setup'&&G.cur===p&&my===GEN){ const ev=setupPlace(G,p,aiSetupPick(G,p,Math.random)); if(!ev) break; await show(ev,my,true); } BUSY=false; step(); })(); break; }
+   case 'trade': { const ev=trade(G,p,CSEL); CSEL=[]; apply(ev,GEN); break; }
+   case 'autotrade': { const s=bestSet(G.players[p].cards); if(s) apply(trade(G,p,s),GEN); break; }
+   case 'cancel': SRC=null; DST=null; render(); break;
+   case 'attack': apply(attack(G,p,SRC,DST,ND),GEN).then(()=>{ if(G.own[DST]===p&&!G.pendingMove){ SRC=null; DST=null; render(); } else if(SRC&&G.arm[SRC]<2){ SRC=null; DST=null; render(); } }); break;
+   case 'blitz': blitz(); break;
+   case 'movein': { const ev=moveIn(G,p,MOVEN); SRC=null; DST=null; MOVEN=1; apply(ev,GEN); break; }
+   case 'tofort': SRC=null; DST=null; apply(toFortify(G,p),GEN); break;
+   case 'fortify': { const ev=fortify(G,p,SRC,DST,MOVEN); SRC=null; DST=null; apply(ev,GEN); break; }
+   case 'end': SRC=null; DST=null; apply(endTurn(G,p),GEN); break; } });
+/* ---------- menu ---------- */
+let M={n:3,seats:Array.from({length:6},(_,i)=>({h:i===0?1:0,name:''})),level:'normal',missions:true,auto:true,fixed:false};
+function startGame(){ GEN++; $('#cover').hidden=true; const hs=M.seats.slice(0,M.n).filter(s=>s.h).length;
+  G=newGame({players:M.seats.slice(0,M.n).map((s,i)=>({name:(s.name||'').trim()||(s.h?(hs===1?'Toi':NAMES[i]):NAMES[(i+1)%6]),ai:!s.h,level:M.level})),missions:M.missions,autoSetup:M.auto,fixedTrade:M.fixed});
+  VIEW=null; SRC=null; DST=null; CSEL=[]; SHOWM=false; buildMap(); fit(); render(); step(); }
+
+function menu(){ window.MODAL_CLOSABLE=true;
+  const draw=()=>{ const hs=M.seats.slice(0,M.n).filter(s=>s.h).length; paintModal(`<h2>Nouvelle partie</h2>
+   <h4>Armées</h4><div class="seg">${[2,3,4,5,6].map(n=>`<button class="${M.n===n?'on':''}" data-m="n:${n}">${n}</button>`).join('')}</div>
+   ${M.seats.slice(0,M.n).map((s,i)=>`<div class="seatrow"><span style="width:14px;height:14px;border-radius:50%;background:${PC[i]}"></span><input type="text" data-nm="${i}" value="${esc(s.name)}" placeholder="${s.h?(i===0?'Toi':NAMES[i]):NAMES[(i+1)%6]}" maxlength="14"><div class="seg"><button class="${s.h?'on':''}" data-m="h:${i}:1">Humain</button><button class="${s.h?'':'on'}" data-m="h:${i}:0">Ordinateur</button></div></div>`).join('')}
+   ${M.n===2?'<p style="font-size:14px">À deux, une armée neutre grise occupe un tiers du monde et se défend sans attaquer.</p>':''}
+   ${hs<M.n?`<h4>Niveau de l’ordinateur</h4><div class="seg">${['facile','normal','difficile'].map(l=>`<button class="${M.level===l?'on':''}" data-m="level:${l}">${l}</button>`).join('')}</div>`:''}
+   <h4>Victoire</h4><div class="seg"><button class="${M.missions?'on':''}" data-m="missions:1">Missions secrètes</button><button class="${M.missions?'':'on'}" data-m="missions:0">Domination du monde</button></div>
+   <h4>Déploiement initial</h4><div class="seg"><button class="${M.auto?'on':''}" data-m="auto:1">Automatique (rapide)</button><button class="${M.auto?'':'on'}" data-m="auto:0">Armée par armée</button></div>
+   <h4>Échange des cartes</h4><div class="seg"><button class="${M.fixed?'':'on'}" data-m="fixed:0">Valeur croissante (4, 6, 8…)</button><button class="${M.fixed?'on':''}" data-m="fixed:1">Valeur fixe selon les symboles</button></div>
+   <div class="acts">${G&&G.phase!=='over'?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="go" ${hs?'':'disabled'}>Partir en campagne</button></div>`); };
+  draw(); $('#mbox').onclick=e=>{ $$('#mbox [data-nm]').forEach(i=>{ M.seats[+i.dataset.nm].name=i.value; }); const x=e.target.closest('[data-m]'); if(!x) return; const [k,v,w]=x.dataset.m.split(':'); sfx('click');
+    if(k==='go'){ closeModal(); store('cqp',M); startGame(); return; } if(k==='h') M.seats[+v].h=+w; else if(k==='n') M.n=+v; else if(['missions','auto','fixed'].includes(k)) M[k]=v==='1'; else M[k]=v; draw(); }; }
+function help(){ helpTabs('Conquête',[
+ ['But du jeu',`<p>Chaque joueur dirige une armée sur une carte du monde de 42 territoires répartis en 6 continents.</p><ul><li><b>Domination</b> : éliminer tous les adversaires.</li><li><b>Missions secrètes</b> : chacun reçoit une mission (conquérir des continents, 24 territoires, détruire une armée…). Le premier qui l’accomplit gagne aussitôt. Si l’armée à détruire est éliminée par un autre, la mission devient « conquérir 24 territoires ».</li></ul>`],
+ ['Un tour',`<ol><li><b>Renforts</b> : 1 armée pour 3 territoires (au moins 3), plus le bonus de chaque continent contrôlé en entier, plus les échanges de cartes.</li><li><b>Attaque</b> (facultative, autant de fois que tu veux) : depuis un territoire d’au moins 2 armées vers un voisin ennemi (les pointillés relient les territoires séparés par la mer).</li><li><b>Manœuvre</b> (facultative) : un seul déplacement d’armées entre deux de tes territoires reliés par tes terres. Il doit toujours rester une armée.</li></ol>`],
+ ['Combats',`<ul><li>L’attaquant lance jusqu’à 3 dés (une armée doit rester en arrière), le défenseur jusqu’à 2.</li><li>On compare les plus forts dés entre eux, puis les seconds. Le plus fort gagne, <b>l’égalité profite au défenseur</b>. Chaque dé perdu coûte une armée.</li><li>Quand le territoire est vidé, tu le conquiers et y fais entrer au moins autant d’armées que de dés lancés.</li></ul><p class="ex">Exemple : 6-4-2 contre 5-4 → le 6 bat le 5, le 4 contre le 4 est gagné par le défenseur : chacun perd une armée.</p>`],
+ ['Cartes',`<ul><li>Si tu conquiers au moins un territoire pendant ton tour, tu gagnes une carte (fantassin, cavalier, canon ou joker).</li><li>Échange 3 cartes de même symbole ou de 3 symboles différents (le joker remplace n’importe lequel) contre des renforts : 4, 6, 8, 10, 12, 15 puis +5 à chaque échange, ou une valeur fixe selon l’option.</li><li>+2 armées sur un territoire d’une carte échangée que tu possèdes.</li><li>Avec 5 cartes ou plus, l’échange est obligatoire. Qui élimine un joueur récupère ses cartes.</li></ul>`],
+ ['Jouer ici',`<ul><li>Touche tes territoires pour placer les renforts (+1, +5 ou tout).</li><li>Attaque : touche ton territoire, puis la cible qui clignote ; « Attaquer » lance un combat, « Attaque éclair » enchaîne jusqu’à la victoire ou l’épuisement.</li><li>Glisse pour déplacer la carte, pince ou utilise + et − pour zoomer.</li><li>À plusieurs humains, un écran de passage protège cartes et missions. À deux, une armée neutre occupe une partie du monde. La partie est sauvegardée automatiquement.</li></ul>`]]); }
+window.CQ={get G(){return G;},get BUSY(){return BUSY;}};
+(function boot(){ const p=load('cqp'); if(p) Object.assign(M,p); const s=load(KEY);
+  if(s&&s.own&&s.phase!=='over'){ G=s; buildMap(); setTimeout(()=>{ fit(); render(); step(); },30); } else { G=null; buildMap(); setTimeout(fit,30); $$('.terr').forEach(el=>el.setAttribute('fill',MAP.cont[TERR[el.dataset.t].c].color)); $$('.badge').forEach(b=>b.style.display='none'); renderStatus(); menu(); } })();
+}
+
+</script>
+<script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>
