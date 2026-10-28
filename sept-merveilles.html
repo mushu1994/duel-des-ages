@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sept Merveilles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800;6..12,900&display=swap" rel="stylesheet">
+<style>
+/* Forum antique au crépuscule : ta cité et ta merveille en haut, tes voisins de part et d'autre, ta main de cartes en bas */
+:root{--bg:#231a12;--fg:#f5ead2;--accent:#b8862b;--title:"Cinzel Decorative","Cinzel",Georgia,serif;--ui:"Nunito Sans",system-ui,sans-serif;--titlec:#f3d58a;--brown:#8a5a2b;--grey:#8a8f96;--blue:#2f6fb8;--yellow:#d9a520;--red:#c0392b;--green:#2e8b57;--purple:#7d3c98;--black:#2b2b2b;--leader:#e6dcc0;--parch:#f4e9cf;--ink:#2a1f14;color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui,"Nunito Sans",system-ui,sans-serif);min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bar,#0006);border-bottom:1px solid #fff2;flex-wrap:wrap}
+.top h1{font-family:var(--title,Georgia,serif);font-weight:800;font-size:24px;margin:0;color:var(--titlec,#fff);letter-spacing:.5px}
+.top h1 small{font-family:var(--ui);font-weight:600;font-size:13px;opacity:.75;margin-left:8px;letter-spacing:0}
+.back{color:inherit;opacity:.9;text-decoration:none;font-size:14px;border:1px solid #fff4;padding:5px 10px;border-radius:8px}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#ffffff1c;color:inherit;border:1px solid #ffffff40;border-radius:9px;padding:7px 12px;font-size:14px;font-weight:700}
+.btn:hover{background:#ffffff2e}.btn:disabled{opacity:.4;cursor:default}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.on{background:#fff;color:#222}
+.status{display:flex;align-items:center;gap:12px;padding:9px 16px;background:var(--pc,var(--accent));color:#fff;font-weight:800;min-height:44px;box-shadow:0 4px 14px #0005;transition:background .35s;flex-wrap:wrap}
+.status .who{font-family:var(--title,Georgia,serif);font-size:19px}
+.status .msg{font-weight:600}
+.status .right{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:14px}
+#modal{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:12px}
+#modal[hidden]{display:none}
+.mbox{background:#fbf6ea;color:#2a2418;border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;animation:pop .3s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.mbox h2{font-family:var(--title,Georgia,serif);font-size:26px;margin:0 0 6px}
+.mbox h4{font-family:var(--title,Georgia,serif);font-size:16px;margin:14px 0 6px}
+.mbox p,.mbox li{line-height:1.5}
+.mbox .btn{background:#ece3cf;color:#2a2418;border-color:#c9b98f}
+.mbox .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mbox .btn.on{background:#2a2418;color:#fff}
+.seg{display:inline-flex;border:1px solid #c9b98f;border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:#f6efdc;padding:7px 11px;font-weight:700;color:#2a2418;font-size:13.5px}
+.seg button.on{background:#2a2418;color:#fff}
+.prow{display:flex;gap:8px;align-items:center;margin:7px 0;flex-wrap:wrap}
+.prow .dot{width:16px;height:16px;border-radius:50%;background:var(--pc);border:2px solid #0004}
+.prow input[type=text]{font-family:inherit;font-weight:700;font-size:16px;padding:6px 9px;border-radius:8px;border:1px solid #c9b98f;background:#fff;color:#2a2418;-webkit-text-fill-color:#2a2418;caret-color:var(--accent);width:150px;color-scheme:light}
+.prow input[type=text]::placeholder{color:#a3926e;-webkit-text-fill-color:#a3926e;font-weight:600}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{border:1px solid #c9b98f;background:#f6efdc;border-radius:20px;padding:5px 12px;font-weight:800;color:#2a2418}
+.tabs button.on{background:#2a2418;color:#fff}
+.toast{position:fixed;left:50%;top:100px;transform:translateX(-50%);background:#1b1b1f;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 10px 30px #000a;z-index:70;font-weight:700;animation:toast 2.6s forwards;pointer-events:none;max-width:90vw;text-align:center}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.bannerx{position:fixed;inset:0;display:grid;place-items:center;z-index:65;pointer-events:none}
+.bannerx div{font-family:var(--title,Georgia,serif);font-weight:800;font-size:clamp(30px,6vw,64px);color:#fff;background:var(--bc,var(--accent));padding:10px 36px;border-radius:14px;box-shadow:0 20px 50px #000a;animation:ban 2.3s forwards;text-align:center}
+.bannerx small{display:block;font-family:var(--ui);font-size:.34em;font-weight:700}
+@keyframes ban{0%{transform:scale(2);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:0;transform:scale(.92)}}
+#cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);text-align:center;padding:20px}
+#cover[hidden]{display:none}
+#cover h2{font-family:var(--title,Georgia,serif);font-size:36px;margin:0 0 8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
+
+body{background:radial-gradient(ellipse at 50% -10%,#5a3f22 0%,#231a12 55%,#140e09 100%) fixed,#140e09}
+.sm{display:flex;flex-direction:column;gap:10px;padding:10px max(10px,env(safe-area-inset-right,0px)) 120px max(10px,env(safe-area-inset-left,0px));max-width:1300px;margin:0 auto}
+.row3{display:grid;grid-template-columns:1fr 1.7fr 1fr;gap:10px}
+.pan{background:linear-gradient(#3a2a19,#2a1e12);border:1px solid #6b4f2a;border-radius:14px;padding:9px 11px;min-width:0}
+.pan h3{font-family:"Cinzel",Georgia,serif;font-size:15px;margin:0 0 6px;color:#f3d58a;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pan h3 small{font-family:var(--ui);font-size:12px;color:#d8c49a;font-weight:700}
+.stat{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:800;align-items:center}
+.stat span{display:inline-flex;align-items:center;gap:3px}
+.prod{display:flex;gap:3px;flex-wrap:wrap;margin:5px 0}
+.ri{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;font-size:11px;font-weight:900;color:#fff;border:1px solid #0006;vertical-align:middle}
+.ri.W{background:#7a4a1e}.ri.S{background:#8f979e}.ri.C{background:#b5502b}.ri.O{background:#3d3d46}.ri.G{background:#2eb3c4}.ri.T{background:#8e5aa8}.ri.P{background:#d8c48c;color:#3a2a10}
+.ri.multi{width:auto;padding:0 3px;background:#5a4a35}
+.sci{display:inline-block;width:20px;height:20px;vertical-align:middle}
+.wonder{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.stg{flex:1;min-width:90px;border-radius:9px;border:2px dashed #8a6a3a;padding:5px 6px;font-size:12px;background:#00000025}
+.stg.done{border-style:solid;border-color:#f3d58a;background:linear-gradient(#6b4f2a,#4a3519);box-shadow:0 0 12px #f3d58a44}
+.stg .cst{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:3px}
+.built{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+.bc{font-size:11px;font-weight:800;padding:2px 6px;border-radius:6px;color:#fff;white-space:nowrap}
+.bc.brown{background:var(--brown)}.bc.grey{background:var(--grey)}.bc.blue{background:var(--blue)}.bc.yellow{background:var(--yellow);color:#2a1f14}.bc.red{background:var(--red)}.bc.green{background:var(--green)}.bc.purple{background:var(--purple)}.bc.black{background:var(--black)}.bc.leader{background:var(--leader);color:#2a1f14}
+.bc.new{animation:bcin .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bcin{from{transform:scale(0)}}
+.colcount{display:flex;gap:3px;flex-wrap:wrap}.colcount i{display:inline-grid;place-items:center;min-width:20px;height:18px;border-radius:5px;font-style:normal;font-size:11px;font-weight:900;color:#fff}
+.opps{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.opp{flex:0 0 auto;min-width:170px;background:#00000030;border:1px solid #6b4f2a;border-radius:10px;padding:6px 8px;font-size:12px}
+.opp.me{border-color:#f3d58a}.opp b{font-size:13px}
+/* main */
+.hand{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.cd{width:150px;min-height:150px;border-radius:12px;background:var(--parch);color:var(--ink);border:2px solid #fff6;box-shadow:0 5px 12px #0008;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .15s,box-shadow .2s;position:relative;text-align:left;padding:0}
+.cd:hover{transform:translateY(-4px)}
+.cd.sel{box-shadow:0 0 0 3px #fff,0 0 20px #f3d58a88;transform:translateY(-6px)}
+.cd .hd{padding:6px 8px;color:#fff;font-family:"Cinzel",Georgia,serif;font-weight:700;font-size:13.5px;line-height:1.15;min-height:38px;display:flex;align-items:center}
+.cd.yellow .hd,.cd.leader .hd{color:#2a1f14}
+.cd .bd{padding:6px 8px;display:flex;flex-direction:column;gap:5px;font-size:12px;flex:1}
+.cd .cs{display:flex;gap:2px;flex-wrap:wrap;align-items:center;min-height:20px}
+.cd .ef{font-weight:800}
+.cd .ch{font-size:11px;color:#6b5a3a}
+.cd .tag{position:absolute;right:6px;bottom:6px;font-size:10.5px;font-weight:900;border-radius:7px;padding:1px 6px}
+.cd .tag.ok{background:#2e8b57;color:#fff}.cd .tag.buy{background:#d9a520;color:#2a1f14}.cd .tag.no{background:#0003;color:#5a4a35}.cd .tag.free{background:#2f6fb8;color:#fff}
+.cd.in{animation:cdin .45s cubic-bezier(.3,1.4,.5,1) backwards}
+@keyframes cdin{from{transform:translateY(40px) rotate(-6deg);opacity:0}}
+.h-brown{background:var(--brown)}.h-grey{background:var(--grey)}.h-blue{background:var(--blue)}.h-yellow{background:var(--yellow)}.h-red{background:var(--red)}.h-green{background:var(--green)}.h-purple{background:var(--purple)}.h-black{background:var(--black)}.h-leader{background:var(--leader)}
+.act{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(#3a2a19f4,#1c140c);border-top:1px solid #6b4f2a;padding:10px max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));box-shadow:0 -8px 24px #0009}
+.act .in2{max-width:1300px;margin:0 auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.act .msg2{flex:1;min-width:200px;font-size:14px;color:#e8d8b8}.act .msg2 b{color:#fff}
+.act label{font-size:13px;display:inline-flex;gap:5px;align-items:center;font-weight:700}
+.act label input{width:18px;height:18px}
+.scl{width:100%;border-collapse:collapse;margin:8px 0;font-size:14px}.scl td,.scl th{padding:4px 6px;border-bottom:1px solid #e2d6b8;text-align:right;font-variant-numeric:tabular-nums}.scl td:first-child,.scl th:first-child{text-align:left}.scl tr.w td{font-weight:900;color:#1d6f3e}
+.scl th i{display:inline-block;width:12px;height:12px;border-radius:3px}
+.seatrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0}.seatrow input[type=text]{width:140px;background:#fffaf0!important;color:#2a1f14!important;-webkit-text-fill-color:#2a1f14!important;font-size:16px;border:1px solid #b9a37a;border-radius:8px;padding:6px 8px}.seatrow input::placeholder{color:#8c8170!important;-webkit-text-fill-color:#8c8170!important}
+.opt{display:flex;align-items:flex-start;gap:8px;margin:6px 0;line-height:1.35}.opt input{width:20px;height:20px;flex:none;margin-top:1px}
+.war{display:flex;flex-direction:column;gap:6px;margin:8px 0}.war div{display:flex;gap:8px;align-items:center;font-weight:700}
+.dpick{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.dpick .cd{width:130px;min-height:120px}
+.fleet{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:6px;font-size:11px}.fleet div{border-radius:6px;padding:3px 5px;color:#fff;font-weight:800}
+@media (max-width:900px){.handpan{order:-1}.row3{grid-template-columns:1fr 1fr}.row3 .mine{grid-column:1/-1;order:-1}.cd{width:calc(50% - 6px);min-height:140px}}
+@media (max-width:420px){.sm{padding-inline:8px}.cd .hd{font-size:12.5px}}
+</style></head><body>
+<header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Sept Merveilles<small>dans l’esprit de 7 Wonders</small></h1>
+<div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
+<div class="status" id="status"></div>
+<main class="sm" id="tbl"></main>
+<section class="act" id="act"><div class="in2" id="actin"></div></section>
+<div id="cover" hidden></div>
+<div id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SVGNS='http://www.w3.org/2000/svg';
+function sel(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
+function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
+function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
+function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
+function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
+function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
+  c.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${(Math.random()-.5)*220}px,${innerHeight+40}px) rotate(${Math.random()*720}deg)`}],{duration:2200+Math.random()*1800,delay:Math.random()*700,easing:'ease-in'}).finished.then(()=>c.remove()); } }
+function store(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+/* sons */
+let MUTED=!!load('salle-mute'), AC=null, NOISE=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;} } if(AC.state==='suspended') AC.resume().catch(()=>{}); return AC; }
+function tn(a,t,f,d,type,v,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);}
+function nz(a,t,d,v,type,f){ if(!NOISE){NOISE=a.createBuffer(1,a.sampleRate,a.sampleRate);const c=NOISE.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;} const s=a.createBufferSource();s.buffer=NOISE;const fl=a.createBiquadFilter();fl.type=type;fl.frequency.value=f;const g=a.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl).connect(g).connect(a.destination);s.start(t);s.stop(t+d+.02); }
+function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') return; const t=a.currentTime+.01;
+  switch(n){
+    case 'click': tn(a,t,900,.06,'triangle',.06); break;
+    case 'move': nz(a,t,.08,.25,'bandpass',900); tn(a,t,220,.08,'sine',.08); break;
+    case 'capture': nz(a,t,.12,.35,'bandpass',1400); tn(a,t,520,.12,'triangle',.1,260); break;
+    case 'card': nz(a,t,.1,.22,'bandpass',2800); break;
+    case 'flip': nz(a,t,.06,.25,'highpass',3000); tn(a,t,1200,.05,'triangle',.04); break;
+    case 'dice': for(let k=0;k<6;k++) nz(a,t+k*.07+Math.random()*.03,.05,.3,'bandpass',1800+Math.random()*1200); break;
+    case 'ding': tn(a,t,1320,.5,'sine',.1); tn(a,t+.07,1760,.4,'sine',.06); break;
+    case 'error': tn(a,t,220,.25,'square',.05,160); break;
+    case 'win': [523,659,784,1046].forEach((f,k)=>tn(a,t+k*.12,f,.4,'triangle',.11)); break;
+    case 'lose': [392,330,262].forEach((f,k)=>tn(a,t+k*.16,f,.45,'triangle',.1)); break;
+    case 'splash': nz(a,t,.5,.3,'lowpass',800); break;
+    case 'boom': nz(a,t,.7,.6,'lowpass',300); tn(a,t,90,.6,'sawtooth',.15,40); break;
+    case 'pop': tn(a,t,600,.08,'sine',.1,900); break;
+  } }
+function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
+document.addEventListener('click',e=>{
+  if(!MUTED) ac();
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
+  const t=e.target.closest('[data-c]'); if(!t) return;
+  switch(t.dataset.c){
+    case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
+    case 'help': GAME.help(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
+  }
+});
+addEventListener('DOMContentLoaded',updSnd);
+
+
+/* Sept Merveilles : données (dans l'esprit de 7 Wonders) — noms originaux, répartition par nombre de joueurs fidèle au jeu de base.
+   Ressources : W bois, S pierre, C brique, O minerai, G verre, T tissu, P papyrus. Coût en pièces : chiffre. */
+const RES={W:'Bois',S:'Pierre',C:'Brique',O:'Minerai',G:'Verre',T:'Tissu',P:'Papyrus'};
+const RAW='WSCO', MANU='GTP';
+// [nom, âge, couleur, coût, effet, joueurs minimums, chaîne depuis]
+const CARDS_SRC=[
+ // ÂGE I
+ ['Chantier de bois',1,'brown','','p:W',[3,4]],['Carrière',1,'brown','','p:S',[3,5]],['Glaisière',1,'brown','','p:C',[3,5]],['Filon de fer',1,'brown','','p:O',[3,4]],
+ ['Lisière',1,'brown','1','p:W/C',[6]],['Fouille',1,'brown','1','p:S/C',[4]],['Ardoisière',1,'brown','1','p:C/O',[3]],['Taillis',1,'brown','1','p:S/W',[3]],['Grotte forestière',1,'brown','1','p:W/O',[5]],['Mine profonde',1,'brown','1','p:S/O',[6]],
+ ['Métier à tisser',1,'grey','','p:T',[3,6]],['Verrerie',1,'grey','','p:G',[3,6]],['Presse à papyrus',1,'grey','','p:P',[3,6]],
+ ['Mont-de-piété',1,'blue','','v:3',[4,7]],['Thermes',1,'blue','S','v:3',[3,7]],['Autel',1,'blue','','v:2',[3,5]],['Amphithéâtre',1,'blue','','v:2',[3,6]],
+ ['Auberge',1,'yellow','','c:5',[4,5,7]],['Comptoir de l’Est',1,'yellow','','tr:R',[3,7]],['Comptoir de l’Ouest',1,'yellow','','tr:L',[3,7]],['Marché',1,'yellow','','tg:LR',[3,6]],
+ ['Palissade',1,'red','W','m:1',[3,7]],['Caserne',1,'red','O','m:1',[3,5]],['Tour de guet',1,'red','C','m:1',[3,4]],
+ ['Herboristerie',1,'green','T','s:c',[3,5]],['Atelier',1,'green','G','s:g',[3,7]],['Scriptorium',1,'green','P','s:t',[3,4]],
+ // ÂGE II
+ ['Scierie',2,'brown','1','p:WW',[3,4]],['Taille de pierre',2,'brown','1','p:SS',[3,4]],['Briqueterie',2,'brown','1','p:CC',[3,4]],['Fonderie',2,'brown','1','p:OO',[3,4]],
+ ['Métier à tisser',2,'grey','','p:T',[3,5]],['Verrerie',2,'grey','','p:G',[3,5]],['Presse à papyrus',2,'grey','','p:P',[3,5]],
+ ['Aqueduc',2,'blue','SSS','v:5',[3,7],'Thermes'],['Temple',2,'blue','WCG','v:3',[3,6],'Autel'],['Statue',2,'blue','OOW','v:4',[3,7],'Amphithéâtre'],['Tribunal',2,'blue','CCT','v:4',[3,5],'Scriptorium'],
+ ['Forum',2,'yellow','CC','ag',[3,6,7],'Comptoir de l’Est|Comptoir de l’Ouest'],['Caravansérail',2,'yellow','WW','ar',[3,5,6],'Marché'],['Vignoble',2,'yellow','','cp:brown:LRS:1',[3,6]],['Bazar',2,'yellow','','cp:grey:LRS:2',[4,7]],
+ ['Remparts',2,'red','SSS','m:2',[3,7]],['Terrain d’entraînement',2,'red','OOW','m:2',[4,6,7]],['Écuries',2,'red','OCW','m:2',[3,5],'Herboristerie'],['Champ de tir',2,'red','WWO','m:2',[3,6],'Atelier'],
+ ['Dispensaire',2,'green','OOG','s:c',[3,4],'Herboristerie'],['Laboratoire',2,'green','CCP','s:g',[3,5],'Atelier'],['Bibliothèque',2,'green','SST','s:t',[3,6],'Scriptorium'],['École',2,'green','WP','s:t',[3,7]],
+ // ÂGE III
+ ['Panthéon',3,'blue','CCOGPT','v:7',[3,6],'Temple'],['Jardins',3,'blue','CCW','v:5',[3,4],'Statue'],['Hôtel de ville',3,'blue','SSOG','v:6',[3,5,6]],['Palais',3,'blue','WSCOGPT','v:8',[3,7]],['Sénat',3,'blue','WWSO','v:6',[3,5],'Bibliothèque'],
+ ['Port',3,'yellow','WOT','cv:brown:1:1',[3,4]],['Phare',3,'yellow','SG','cv:yellow:1:1',[3,6]],['Chambre de commerce',3,'yellow','CCP','cv:grey:2:2',[4,6]],['Arène',3,'yellow','SSO','cv:stage:3:1',[3,5,7],'Dispensaire'],
+ ['Fortifications',3,'red','OOOS','m:3',[3,7],'Remparts'],['Cirque',3,'red','SSSO','m:3',[4,5,6],'Terrain d’entraînement'],['Arsenal',3,'red','WWOT','m:3',[3,4,7]],['Atelier de siège',3,'red','CCCW','m:3',[3,5],'Laboratoire'],
+ ['Loge',3,'green','CCPT','s:c',[3,6],'Dispensaire'],['Observatoire',3,'green','OOGT','s:g',[3,7],'Laboratoire'],['Université',3,'green','WWGP','s:t',[3,4],'Bibliothèque'],['Académie',3,'green','SSSG','s:c',[3,7],'École'],['Cabinet d’étude',3,'green','WPT','s:g',[3,5],'École']];
+const GUILDS=[['Guilde des ouvriers','OOCSW','g:brown:LR:1'],['Guilde des artisans','OOSS','g:grey:LR:2'],['Guilde des négociants','GTP','g:yellow:LR:1'],['Guilde des philosophes','CCCTP','g:green:LR:1'],['Guilde des espions','CCCG','g:red:LR:1'],
+ ['Guilde des stratèges','OOST','g:defeat:LR:1'],['Guilde des armateurs','WWWGP','g:bgp:S:1'],['Guilde des savants','WWOOP','s:*'],['Guilde des magistrats','WWWST','g:blue:LR:1'],['Guilde des bâtisseurs','SSCCG','g:stage:LRS:1']];
+/* Merveilles : ressource de base, face A et B (étapes : coût, effets) */
+const WONDERS=[
+ {id:'rhodes',name:'Colosse de Rhodes',res:'O',A:[['WW','v:3'],['CCC','m:2'],['OOOO','v:7']],B:[['SSS','m:1,c:3,v:3'],['OOOO','m:1,c:4,v:4']]},
+ {id:'alex',name:'Phare d’Alexandrie',res:'G',A:[['SS','v:3'],['OO','ar'],['GG','v:7']],B:[['CC','ar'],['WW','ag'],['SSS','v:7']]},
+ {id:'ephese',name:'Temple d’Éphèse',res:'P',A:[['SS','v:3'],['WW','c:9'],['PP','v:7']],B:[['SS','v:2,c:4'],['WW','v:3,c:4'],['PTG','v:5,c:4']]},
+ {id:'babylone',name:'Jardins de Babylone',res:'C',A:[['CC','v:3'],['WWW','s:*'],['CCCC','v:7']],B:[['CT','v:3'],['WWG','last'],['CCCP','s:*']]},
+ {id:'olympie',name:'Zeus d’Olympie',res:'W',A:[['WW','v:3'],['SS','free'],['OO','v:7']],B:[['WW','tr:LR'],['SS','v:5'],['TOO','copy']]},
+ {id:'halicarnasse',name:'Mausolée d’Halicarnasse',res:'T',A:[['CC','v:3'],['OOO','disc'],['TT','v:7']],B:[['OO','v:2,disc'],['CCC','v:1,disc'],['GPT','disc']]},
+ {id:'gizeh',name:'Pyramides de Gizeh',res:'S',A:[['SS','v:3'],['WWW','v:5'],['SSSS','v:7']],B:[['WW','v:3'],['SSS','v:5'],['CCC','v:5'],['SSSSP','v:7']]}];
+/* Extension Meneurs : chefs à recruter (coût en pièces) */
+const LEADERS=[['Stratège',3,'m:2'],['Trésorière',3,'cn:3'],['Philosophe',5,'s:*'],['Architecte',4,'ws:2'],['Banquier',2,'c:7'],['Gouverneure',4,'pc:blue:1'],['Ingénieur',3,'pc:brown:1'],['Navigatrice',3,'pc:yellow:1'],
+ ['Générale',4,'pc:red:1,m:1'],['Astronome',4,'s:c'],['Mécanicien',4,'s:g'],['Scribe',4,'s:t'],['Tacticienne',4,'vt'],['Sage',3,'pc:green:1'],['Mécène',3,'pc:purple:2'],['Tribun',4,'v:5'],
+ ['Négociante',3,'tr:LR'],['Maître verrier',2,'tg:LR'],['Bâtisseuse',3,'wall'],['Chef de guerre',5,'m:1,v:3'],
+ ['Consul',3,'v:4'],['Amirale',4,'m:1,v:2'],['Alchimiste',5,'s:*'],['Prêtresse',4,'pc:blue:1'],['Marchande',2,'c:6'],['Ingénieure',3,'ws:1,v:2'],['Capitaine',3,'m:2'],['Diplomate',4,'v:3,c:3']];
+/* Extension Cités : cartes noires (dettes, diplomatie, espionnage) */
+const CITY_CARDS=[
+ ['Repaire de brigands',1,'C','v:2,debt:1'],['Ambassade',1,'','dip'],['Maison de jeu',1,'','c:4,debt:1'],['Officine secrète',1,'P','s:*1'],['Taverne des espions',1,'W','v:3'],['Milice',1,'O','m:1,v:1'],['Prêteur sur gages',1,'','c:3,v:1'],['Gardes',1,'S','m:2'],
+ ['Cabinet noir',2,'GO','s:*1'],['Consulat',2,'SC','dip,v:2'],['Percepteur',2,'WT','debt:2,v:2'],['Mercenaires',2,'OO','m:2,v:1'],['Banque',2,'SO','c:6'],['Tour de garde',2,'CCW','m:3'],['Bureau des impôts',2,'PS','debt:2'],['Marché noir',2,'WG','ar,v:1'],
+ ['Chancellerie',3,'SSOG','dip,v:4'],['Grande loge',3,'CCPT','s:*1,v:2'],['Trésor public',3,'OOS','c:8,v:2'],['Légion',3,'OOWW','m:4'],['Cour des comptes',3,'WWSG','debt:3,v:3'],['Palais des doges',3,'SSCCG','v:8'],['Arsenal secret',3,'OOOT','m:3,v:2'],['Bourse',3,'GPT','cv:yellow:2:1']];
+/* Extension Édifices : un projet commun par âge */
+const EDIFICES={1:[{name:'Grand Phare',cost:2,need:.5,rew:'v:3',pen:'v:-2'},{name:'Thermes publics',cost:2,need:.5,rew:'c:5',pen:'c:-3'}],
+ 2:[{name:'Bibliothèque royale',cost:3,need:.5,rew:'v:5',pen:'v:-3'},{name:'Remparts de la cité',cost:3,need:.5,rew:'m:2',pen:'m:-1'}],
+ 3:[{name:'Grand Colisée',cost:4,need:.5,rew:'v:7',pen:'v:-4'},{name:'Cathédrale',cost:4,need:.5,rew:'v:6',pen:'v:-3'}]};
+/* Extension Armada : flottes à quatre couleurs */
+const FLEET={red:{n:'Flotte de guerre',r:'Puissance navale +1'},yellow:{n:'Flotte marchande',r:'+2 pièces'},blue:{n:'Flotte civile',r:'+1 point'},green:{n:'Flotte d’exploration',r:'+1 point, symbole de science au niveau 3'}};
+
+/* ===== moteur ===== */
+const IS_NODE=typeof window==='undefined';
+/* Sept Merveilles : moteur pur (dans l'esprit de 7 Wonders et de ses extensions) */
+if(IS_NODE){ const d=require('./sm-data-node.js'); Object.assign(globalThis,d); }
+function shuffle(a,rng){ rng=rng||Math.random; for(let i=a.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function parseCost(s){ const c={coins:0}; for(const ch of s||''){ if(/\d/.test(ch)) c.coins+=+ch; else c[ch]=(c[ch]||0)+1; } return c; }
+function effs(str){ return (str||'').split(',').filter(Boolean); }
+let UID=0;
+function mk(src,age){ const [name,a,color,cost,eff,,chain]=src; return {id:'k'+(UID++),name,age:a||age,color,cost:parseCost(cost),eff,chain:chain?chain.split('|'):[]}; }
+function deck(age,n,o,rng){ const out=[]; CARDS_SRC.filter(c=>c[1]===age).forEach(c=>c[5].forEach(m=>{ if(m<=n) out.push(mk(c)); }));
+  if(age===3) shuffle(GUILDS.slice(),rng).slice(0,n+2).forEach(g=>out.push(mk([g[0],3,'purple',g[1],g[2]])));
+  if(o.cities) shuffle(CITY_CARDS.filter(c=>c[1]===age),rng).slice(0,n).forEach(c=>out.push(mk([c[0],age,'black',c[2],c[3]])));
+  return shuffle(out,rng); }
+function newGame(o,rng){ rng=rng||Math.random; UID=0; const n=o.players.length;
+  const ws=shuffle(WONDERS.slice(),rng);
+  const G={n,opts:{leaders:!!o.leaders,cities:!!o.cities,armada:!!o.armada,edifice:!!o.edifice,side:o.side||'A'},age:0,turn:0,discard:[],hands:[],phase:'start',choices:{},over:null,log:[],edif:null,
+    players:o.players.map((p,i)=>{ const w=ws[i], side=o.side==='mix'?(rng()<.5?'A':'B'):(o.side||'A'); return {name:p.name,ai:!!p.ai,level:p.level||'normal',w:w.id,side,stages:0,built:[],coins:o.leaders?6:3,mil:[],debt:0,leaders:[],lhand:[],fleet:{red:0,yellow:0,blue:0,green:0},edif:[],dip:false,freeAge:0,pending:null}; })};
+  if(G.opts.leaders){ const ls=shuffle(LEADERS.map((l,i)=>({id:'l'+i,name:l[0],cost:l[1],eff:l[2],color:'leader'})),rng); G.hands=G.players.map((_,i)=>ls.slice(i*4,i*4+4)); G.phase='ldraft'; G.turn=1; return G; }
+  startAge(G,1,rng); return G; }
+const W=G=>id=>WONDERS.find(w=>w.id===id);
+function wonderOf(P){ return WONDERS.find(w=>w.id===P.w); }
+function stagesOf(P){ return wonderOf(P)[P.side]; }
+function startAge(G,age,rng){ rng=rng||Math.random; G.age=age; G.turn=1; const per=G.opts.cities?8:7; const d=deck(age,G.n,G.opts,rng); G.hands=G.players.map((_,i)=>d.slice(i*per,i*per+per)); G.discard.push(...d.slice(G.n*per));
+  G.players.forEach(P=>{ P.freeAge=0; });
+  if(G.opts.edifice){ const list=EDIFICES[age]; G.edif=Object.assign({by:[]},list[Math.floor(rng()*list.length)]); }
+  G.phase=G.opts.leaders&&G.players.some(P=>P.lhand.length)?'recruit':'play'; G.choices={}; }
+const L=(G,i)=>(i+G.n-1)%G.n, R=(G,i)=>(i+1)%G.n;
+/* ---------- propriétés calculées ---------- */
+function allEffects(P){ const out=[]; P.built.forEach(c=>effs(c.eff).forEach(e=>out.push({e,src:c}))); const st=stagesOf(P); for(let k=0;k<P.stages;k++) effs(st[k][1]).forEach(e=>out.push({e,src:'stage'})); P.leaders.forEach(l=>effs(l.eff).forEach(e=>out.push({e,src:l}))); return out; }
+function prodUnits(P,sellable){ const u=[wonderOf(P).res]; P.built.forEach(c=>{ if(c.color!=='brown'&&c.color!=='grey') return; effs(c.eff).forEach(e=>{ if(!e.startsWith('p:')) return; const v=e.slice(2); if(v.includes('/')) u.push(v.replace('/','')); else for(const ch of v) u.push(ch); }); });
+  if(!sellable) allEffects(P).forEach(({e,src})=>{ if(e==='ar'&&!(src&&src.color==='brown')) u.push(RAW); if(e==='ag') u.push(MANU); });
+  return u; }
+function discounts(P){ const d={rawL:0,rawR:0,grey:0}; allEffects(P).forEach(({e})=>{ if(e==='tr:L') d.rawL=1; if(e==='tr:R') d.rawR=1; if(e==='tr:LR'){ d.rawL=1; d.rawR=1; } if(e==='tg:LR') d.grey=1; }); return d; }
+function shields(P){ return allEffects(P).reduce((s,{e})=>s+(e.startsWith('m:')?+e.slice(2):0),0)+P.edif.reduce((s,x)=>s+x.m,0); }
+function sciCounts(P){ const s={c:0,g:0,t:0,w:0}; allEffects(P).forEach(({e})=>{ if(e==='s:c'||e==='s:g'||e==='s:t') s[e[2]]++; if(e==='s:*'||e==='s:*1') s.w++; }); if(P.fleet.green>=3) s.w++; return s; }
+function sciScore(s){ let best=0; const go=(c,g,t,w)=>{ if(!w){ best=Math.max(best,c*c+g*g+t*t+7*Math.min(c,g,t)); return; } go(c+1,g,t,w-1); go(c,g+1,t,w-1); go(c,g,t+1,w-1); }; go(s.c,s.g,s.t,s.w); return best; }
+/* ---------- paiement ---------- */
+function payPlan(G,p,cost){ const P=G.players[p]; const need=[]; for(const k of RAW+MANU) for(let i=0;i<(cost[k]||0);i++) need.push(k);
+  const coinNeed=cost.coins||0; if(P.coins<coinNeed) return null; if(!need.length) return {coins:coinNeed,toL:0,toR:0};
+  const own=prodUnits(P,false), dsc=discounts(P), Lp=G.players[L(G,p)], Rp=G.players[R(G,p)];
+  const lU=prodUnits(Lp,true), rU=prodUnits(Rp,true);
+  // tri : ressources les plus rares d'abord
+  need.sort((a,b)=>own.filter(u=>u.includes(a)).length-own.filter(u=>u.includes(b)).length);
+  let best=null; const usedO=new Array(own.length).fill(false), usedL=new Array(lU.length).fill(false), usedR=new Array(rU.length).fill(false);
+  const price=(side,r)=>RAW.includes(r)?(side==='L'?(dsc.rawL?1:2):(dsc.rawR?1:2)):(dsc.grey?1:2);
+  (function dfs(i,toL,toR){ if(best&&toL+toR>=best.toL+best.toR) return; if(toL+toR+coinNeed>P.coins) return;
+    if(i===need.length){ best={coins:coinNeed+toL+toR,toL,toR}; return; } const r=need[i]; let tried=new Set();
+    for(let k=0;k<own.length;k++){ if(usedO[k]||!own[k].includes(r)||tried.has(own[k])) continue; tried.add(own[k]); usedO[k]=true; dfs(i+1,toL,toR); usedO[k]=false; if(best&&best.toL+best.toR===toL+toR) return; }
+    tried=new Set(); for(let k=0;k<lU.length;k++){ if(usedL[k]||!lU[k].includes(r)||tried.has(lU[k])) continue; tried.add(lU[k]); usedL[k]=true; dfs(i+1,toL+price('L',r),toR); usedL[k]=false; }
+    tried=new Set(); for(let k=0;k<rU.length;k++){ if(usedR[k]||!rU[k].includes(r)||tried.has(rU[k])) continue; tried.add(rU[k]); usedR[k]=true; dfs(i+1,toL,toR+price('R',r)); usedR[k]=false; }
+  })(0,0,0);
+  return best; }
+const hasName=(P,n)=>P.built.some(c=>c.name===n);
+function buildOptions(G,p,card){ const P=G.players[p]; if(card.color==='leader') return null; if(hasName(P,card.name)) return {ok:false,why:'Déjà construit'};
+  if(card.chain.some(n=>hasName(P,n))) return {ok:true,plan:{coins:0,toL:0,toR:0},chain:true};
+  const plan=payPlan(G,p,card.cost); const free=hasEff(P,'free')&&P.freeAge<G.age;
+  if(plan) return {ok:true,plan,free}; return {ok:false,free,why:'Ressources insuffisantes'}; }
+function hasEff(P,e){ return allEffects(P).some(x=>x.e===e); }
+function stageOptions(G,p){ const P=G.players[p], st=stagesOf(P); if(P.stages>=st.length) return null; const plan=payPlan(G,p,parseCost(st[P.stages][0])); return plan?{ok:true,plan}:{ok:false}; }
+/* ---------- choix et résolution ---------- */
+function choose(G,p,ch){ if(G.phase==='ldraft'){ const h=G.hands[p]; if(!h.some(l=>l.id===ch.id)) return false; G.choices[p]={type:'keep',id:ch.id}; return true; }
+  if(G.phase==='recruit'){ const P=G.players[p]; const l=P.lhand.find(x=>x.id===ch.id); if(!l) return false; if(ch.type==='recruit'&&P.coins<l.cost) return false; G.choices[p]={type:ch.type,id:ch.id}; return true; }
+  if(G.phase!=='play'&&G.phase!=='last') return false; const card=G.hands[p].find(c=>c.id===ch.id); if(!card) return false; const P=G.players[p];
+  if(ch.type==='build'){ const o=buildOptions(G,p,card); if(!o) return false; if(ch.free){ if(!o.free||hasName(P,card.name)) return false; ch.plan={coins:0,toL:0,toR:0}; } else { if(!o.ok) return false; ch.plan=o.plan; } }
+  else if(ch.type==='wonder'){ const o=stageOptions(G,p); if(!o||!o.ok) return false; ch.plan=o.plan; if(ch.edif&&(!G.edif||P.coins<ch.plan.coins+G.edif.cost)) ch.edif=false; }
+  else if(ch.type!=='discard') return false;
+  if(ch.fleet&&!(ch.type==='build'&&['red','yellow','blue','green'].includes(card.color)&&P.coins>=(ch.plan?ch.plan.coins:0)+1&&G.opts.armada)) ch.fleet=false;
+  G.choices[p]=ch; return true; }
+function allChosen(G){ return G.players.every((P,i)=>G.choices[i]); }
+function resolveTurn(G,rng){ rng=rng||Math.random; const ev=[];
+  if(G.phase==='ldraft'){ G.players.forEach((P,i)=>{ const ch=G.choices[i]; const k=G.hands[i].findIndex(l=>l.id===ch.id); P.lhand.push(G.hands[i].splice(k,1)[0]); }); ev.push({t:'ldraft'}); G.choices={};
+    if(G.hands[0].length){ const h=G.hands; G.hands=h.map((_,i)=>h[L(G,i)]); G.turn++; return ev; } startAge(G,1,rng); ev.push({t:'age',age:1}); return ev; }
+  if(G.phase==='recruit'){ G.players.forEach((P,i)=>{ const ch=G.choices[i]; const k=P.lhand.findIndex(l=>l.id===ch.id), l=P.lhand.splice(k,1)[0];
+      if(ch.type==='recruit'){ P.coins-=l.cost; P.leaders.push(l); immediate(G,i,l.eff,ev); ev.push({t:'leader',p:i,l}); } else { P.coins+=3; ev.push({t:'ldisc',p:i}); } }); G.choices={}; G.phase='play'; return ev; }
+  const gain=new Array(G.n).fill(0); const acts=[];
+  G.players.forEach((P,i)=>{ const ch=G.choices[i], card=G.hands[i].find(c=>c.id===ch.id); G.hands[i]=G.hands[i].filter(c=>c!==card); acts.push({i,ch,card});
+    if(ch.type==='discard'){ P.coins+=3; G.discard.push(card); ev.push({t:'discard',p:i,card}); return; }
+    const pl=ch.plan; P.coins-=pl.coins; gain[L(G,i)]+=pl.toL; gain[R(G,i)]+=pl.toR;
+    if(ch.type==='build'){ if(ch.free) P.freeAge=G.age; P.built.push(card); ev.push({t:'build',p:i,card,plan:pl,free:!!ch.free}); if(ch.fleet){ P.coins--; P.fleet[card.color]++; ev.push({t:'fleet',p:i,c:card.color}); if(card.color==='yellow') P.coins+=2; } }
+    else { P.stages++; P.wcards=(P.wcards||0)+1; ev.push({t:'stage',p:i,n:P.stages,plan:pl}); if(ch.edif&&G.edif){ P.coins-=G.edif.cost; G.edif.by.push(i); ev.push({t:'edifJoin',p:i}); } } });
+  gain.forEach((g,i)=>{ G.players[i].coins+=g; });
+  // effets immédiats après paiements
+  acts.forEach(({i,ch,card})=>{ if(ch.type==='build') immediate(G,i,card.eff,ev); if(ch.type==='wonder') immediate(G,i,stagesOf(G.players[i])[G.players[i].stages-1][1],ev); });
+  G.choices={};
+  // Halicarnasse : construire depuis la défausse
+  const disc=acts.filter(({i,ch})=>ch.type==='wonder'&&effs(stagesOf(G.players[i])[G.players[i].stages-1][1]).includes('disc')).map(a=>a.i);
+  G.pendingDisc=disc.filter(i=>G.discard.some(c=>!hasName(G.players[i],c.name)));
+  if(G.pendingDisc.length){ G.phase='disc'; return ev; }
+  return ev.concat(advance(G,rng)); }
+function chooseDisc(G,p,id,rng){ rng=rng||Math.random; if(G.phase!=='disc'||G.pendingDisc[0]!==p) return null; const k=G.discard.findIndex(c=>c.id===id), P=G.players[p], ev=[];
+  if(k>=0&&!hasName(P,G.discard[k].name)){ const c=G.discard.splice(k,1)[0]; P.built.push(c); ev.push({t:'build',p,card:c,plan:{coins:0,toL:0,toR:0},fromDisc:true}); immediate(G,p,c.eff,ev); }
+  G.pendingDisc.shift(); if(G.pendingDisc.length) return ev; G.phase='play'; return ev.concat(advance(G,rng)); }
+function immediate(G,i,eff,ev){ const P=G.players[i];
+  effs(eff).forEach(e=>{ const [k,a,b,c]=e.split(':');
+    if(k==='c'){ P.coins+=+a; if(+a) ev.push({t:'coins',p:i,n:+a}); }
+    if(k==='cp'){ const who=b; let n=0; if(who.includes('S')) n+=count(P,a); if(who.includes('L')) n+=count(G.players[L(G,i)],a); if(who.includes('R')) n+=count(G.players[R(G,i)],a); P.coins+=n*+c; if(n) ev.push({t:'coins',p:i,n:n*+c}); }
+    if(k==='cv'){ const n=a==='stage'?P.stages:count(P,a); P.coins+=n*+b; if(n) ev.push({t:'coins',p:i,n:n*+b}); }
+    if(k==='debt'){ G.players.forEach((Q,j)=>{ if(j===i) return; const pay=Math.min(Q.coins,+a); Q.coins-=pay; Q.debt+=(+a-pay); }); ev.push({t:'debt',p:i,n:+a}); }
+    if(k==='dip'){ P.dip=true; ev.push({t:'dip',p:i}); } }); }
+function count(P,col){ if(col==='bgp') return P.built.filter(c=>['brown','grey','purple'].includes(c.color)).length; return P.built.filter(c=>c.color===col).length; }
+function advance(G,rng){ rng=rng||Math.random; const ev=[]; const left=G.hands[0].length;
+  if(left<=1){ // dernière carte : défaussée, sauf pouvoir « jouer la dernière carte »
+    const lastPlayers=G.players.map((P,i)=>i).filter(i=>G.hands[i].length===1&&hasEff(G.players[i],'last'));
+    if(lastPlayers.length&&!G.lastDone){ G.lastDone=true; G.phase='last'; G.lastWho=lastPlayers; G.choices={}; G.players.forEach((P,i)=>{ if(!lastPlayers.includes(i)) G.choices[i]={type:'skip'}; }); return ev; }
+    G.lastDone=false; G.hands.forEach(h=>{ G.discard.push(...h); }); G.hands=G.hands.map(()=>[]); return ev.concat(endAge(G,rng)); }
+  const h=G.hands; G.hands=G.age===2?h.map((_,i)=>h[R(G,i)]):h.map((_,i)=>h[L(G,i)]); G.turn++; ev.push({t:'pass',dir:G.age===2?'R':'L'}); return ev; }
+function resolveLast(G,rng){ rng=rng||Math.random; const ev=[]; G.players.forEach((P,i)=>{ const ch=G.choices[i]; if(!ch||ch.type==='skip') return; const card=G.hands[i].find(c=>c.id===ch.id); G.hands[i]=[];
+    if(ch.type==='discard'){ P.coins+=3; G.discard.push(card); return; } P.coins-=ch.plan.coins; G.players[L(G,i)].coins+=ch.plan.toL; G.players[R(G,i)].coins+=ch.plan.toR;
+    if(ch.type==='build'){ P.built.push(card); ev.push({t:'build',p:i,card,plan:ch.plan}); immediate(G,i,card.eff,ev); } else { P.stages++; ev.push({t:'stage',p:i,n:P.stages,plan:ch.plan}); immediate(G,i,stagesOf(P)[P.stages-1][1],ev); } });
+  G.choices={}; G.phase='play'; return ev.concat(advance(G,rng)); }
+function endAge(G,rng){ rng=rng||Math.random; const ev=[{t:'endAge',age:G.age}]; const val={1:1,2:3,3:5}[G.age];
+  // conflits militaires (la diplomatie retire un joueur de ce conflit)
+  const act=G.players.map((P,i)=>i).filter(i=>!G.players[i].dip); const res=[];
+  act.forEach((i,k)=>{ const j=act[(k+1)%act.length]; if(i===j||act.length<2) return; const a=shields(G.players[i]), b=shields(G.players[j]);
+    if(a>b){ G.players[i].mil.push(val); G.players[j].mil.push(-1); res.push({w:i,l:j}); } else if(b>a){ G.players[j].mil.push(val); G.players[i].mil.push(-1); res.push({w:j,l:i}); } else res.push({tie:[i,j]}); });
+  if(act.length===2) res.splice(1); ev.push({t:'war',age:G.age,res}); G.players.forEach(P=>P.dip=false);
+  if(G.opts.armada){ const nav=[]; G.players.forEach((P,i)=>{ const j=R(G,i), a=P.fleet.red, b=G.players[j].fleet.red; if(a>b){ P.navy=(P.navy||0)+G.age+1; nav.push(i); } else if(b>a){ G.players[j].navy=(G.players[j].navy||0)+G.age+1; } }); ev.push({t:'navy',age:G.age}); }
+  if(G.opts.edifice&&G.edif){ const E=G.edif, ok=E.by.length>=Math.ceil(G.n*E.need); G.players.forEach((P,i)=>{ const part=E.by.includes(i); const e=ok?(part?E.rew:E.pen):null; if(!e||(!part&&!ok)) return; const [k,v]=e.split(':'); P.edif.push({v:k==='v'?+v:0,m:k==='m'?+v:0}); if(k==='c') P.coins=Math.max(0,P.coins+ +v); }); ev.push({t:'edif',ok,name:E.name,by:E.by.slice()}); }
+  if(G.age<3){ startAge(G,G.age+1,rng); ev.push({t:'age',age:G.age}); } else { G.phase='over'; G.over=scores(G); ev.push({t:'over'}); }
+  return ev; }
+/* ---------- décompte ---------- */
+function guildPts(G,i,e){ const [,col,who,n]=e.split(':'), P=G.players[i]; let c=0;
+  const cnt=Q=>col==='defeat'?Q.mil.filter(x=>x<0).length:col==='stage'?Q.stages:count(Q,col);
+  if(who.includes('S')) c+=cnt(P); if(who.includes('L')) c+=cnt(G.players[L(G,i)]); if(who.includes('R')) c+=cnt(G.players[R(G,i)]); return c*+n; }
+function scoreOf(G,i){ const P=G.players[i], s={mil:0,coin:0,wonder:0,civ:0,com:0,guild:0,sci:0,lead:0,other:0};
+  s.mil=P.mil.reduce((a,b)=>a+b,0)+(P.navy||0); if(P.leaders.some(l=>l.eff==='vt')) s.mil+=P.mil.filter(x=>x>0).length;
+  s.coin=Math.floor(P.coins/3)-P.debt;
+  const st=stagesOf(P); for(let k=0;k<P.stages;k++) effs(st[k][1]).forEach(e=>{ if(e.startsWith('v:')) s.wonder+=+e.slice(2); });
+  P.built.forEach(c=>effs(c.eff).forEach(e=>{ const [k,a,b,cc]=e.split(':');
+    if(k==='v'){ if(c.color==='blue') s.civ+=+a; else s.other+=+a; }
+    if(k==='cv'){ const n=a==='stage'?P.stages:count(P,a); s.com+=n*+cc; }
+    if(k==='g') s.guild+=guildPts(G,i,e); }));
+  if(st.some((x,k)=>k<P.stages&&effs(x[1]).includes('copy'))){ let b=0; [L(G,i),R(G,i)].forEach(j=>G.players[j].built.filter(c=>c.color==='purple').forEach(c=>{ const v=c.eff.startsWith('g:')?guildPts(G,i,c.eff):0; b=Math.max(b,v); })); s.guild+=b; }
+  s.sci=sciScore(sciCounts(P));
+  P.leaders.forEach(l=>effs(l.eff).forEach(e=>{ const [k,a,b]=e.split(':'); if(k==='v') s.lead+=+a; if(k==='pc') s.lead+=count(P,a)*+b; if(k==='ws') s.lead+=P.stages*+a; if(k==='cn') s.lead+=Math.floor(P.coins/+a); if(k==='wall'&&P.stages===st.length) s.lead+=3; }));
+  s.other+=P.edif.reduce((a,x)=>a+x.v,0)+P.fleet.blue+P.fleet.green;
+  s.total=Object.values(s).reduce((a,b)=>a+b,0); return s; }
+function scores(G){ const sc=G.players.map((P,i)=>scoreOf(G,i)); const best=Math.max(...sc.map(s=>s.total)); let w=sc.map((s,i)=>i).filter(i=>sc[i].total===best);
+  if(w.length>1){ const bc=Math.max(...w.map(i=>G.players[i].coins)); w=w.filter(i=>G.players[i].coins===bc); } return {sc,winners:w}; }
+/* ===== IA ===== */
+function aiChoice(G,p,rng){ rng=rng||Math.random; const P=G.players[p], lv=P.level, noise=lv==='facile'?6:lv==='normal'?1.5:.3;
+  if(G.phase==='ldraft'){ const h=G.hands[p]; return {type:'keep',id:h.slice().sort((a,b)=>leaderVal(G,p,b)-leaderVal(G,p,a)+(rng()-.5)*noise)[0].id}; }
+  if(G.phase==='recruit'){ const ok=P.lhand.filter(l=>l.cost<=P.coins).sort((a,b)=>leaderVal(G,p,b)-leaderVal(G,p,a)); if(ok.length&&leaderVal(G,p,ok[0])>ok[0].cost/3) return {type:'recruit',id:ok[0].id}; return {type:'ldisc',id:P.lhand[0].id}; }
+  const hand=G.hands[p]; const base=scoreOf(G,p).total; let best=null;
+  for(const c of hand){ const o=buildOptions(G,p,c); if(o&&(o.ok||o.free)){ const free=!o.ok&&o.free; const v=cardVal(G,p,c,base)-(free?0:o.plan.coins/3)-(free?2:0)+(rng()-.5)*noise; const ch={type:'build',id:c.id,free};
+      if(G.opts.armada&&['red','yellow','blue','green'].includes(c.color)&&P.coins>=(free?0:o.plan.coins)+3) ch.fleet=lv!=='facile'; if(!best||v>best.v) best={v,ch}; }
+    const so=stageOptions(G,p); if(so&&so.ok){ const st=stagesOf(P)[P.stages]; const v=stageVal(G,p,st[1])-so.plan.coins/3-cardVal(G,p,c,base)*.25+(rng()-.5)*noise; const ch={type:'wonder',id:c.id,edif:!!(G.edif&&P.coins>=so.plan.coins+G.edif.cost+2&&lv!=='facile')}; if(!best||v>best.v) best={v,ch}; }
+    const dv=1+(P.coins<3?1:0)-cardVal(G,p,c,base)*.15+(rng()-.5)*noise*.3; if(!best||dv>best.v) best={v:dv,ch:{type:'discard',id:c.id}}; }
+  return best.ch; }
+function leaderVal(G,p,l){ let v=0; effs(l.eff).forEach(e=>{ const [k,a]=e.split(':'); if(k==='v') v+=+a; else if(k==='m') v+=+a*2; else if(k==='s') v+=3.5; else if(k==='c') v+=+a/3; else v+=3; }); return v; }
+function stageVal(G,p,eff){ let v=0; effs(eff).forEach(e=>{ const [k,a]=e.split(':'); if(k==='v') v+=+a; else if(k==='m') v+=+a*1.8; else if(k==='c') v+=+a/3; else if(k==='s') v+=4; else v+=3.5; }); return v; }
+function cardVal(G,p,c,base){ const P=G.players[p], age=G.age; let v=0;
+  effs(c.eff).forEach(e=>{ const [k,a,b,cc]=e.split(':');
+    if(k==='p'){ const have=prodUnits(P,false).join(''); const missing=[...a.replace('/','')].filter(r=>!have.includes(r)).length; v+=(age===1?2.2:age===2?1.4:.3)*(1+missing*.8); }
+    if(k==='v') v+=+a; if(k==='c') v+=+a/3; if(k==='tr'||k==='tg') v+=age===1?2:1; if(k==='ar'||k==='ag') v+=age<3?2.5:.5;
+    if(k==='m'){ const my=shields(P), l=shields(G.players[L(G,p)]), r=shields(G.players[R(G,p)]), w={1:1,2:3,3:5}[age]; v+=((my<=l&&my+ +a>l)?w+1:.5)+((my<=r&&my+ +a>r)?w+1:.5); }
+    if(k==='s'){ const s=sciCounts(P); const before=sciScore(s); if(a==='*'||a==='*1') s.w++; else s[a]++; v+=(sciScore(s)-before)*(age===3?1:1.4)+(age<3?1:0); }
+    if(k==='cp'){ v+=2; } if(k==='cv'){ v+=3; } if(k==='g') v+=4.5; if(k==='debt') v+=+a*.8; if(k==='dip') v+=1.5; });
+  if(G.opts.armada&&['red','yellow','blue','green'].includes(c.color)) v+=.3;
+  return v; }
+function aiDisc(G,p){ const P=G.players[p]; const c=G.discard.filter(x=>!hasName(P,x.name)).sort((a,b)=>cardVal(G,p,b,0)-cardVal(G,p,a,0))[0]; return c?c.id:null; }
+function aiLast(G,p){ const P=G.players[p], c=G.hands[p][0]; const o=buildOptions(G,p,c); if(o&&o.ok) return {type:'build',id:c.id,plan:o.plan}; const so=stageOptions(G,p); if(so&&so.ok) return {type:'wonder',id:c.id,plan:so.plan}; return {type:'discard',id:c.id}; }
+if(IS_NODE) module.exports={newGame,choose,allChosen,resolveTurn,chooseDisc,resolveLast,aiChoice,aiDisc,aiLast,scoreOf,scores,buildOptions,stageOptions,payPlan,shields,sciCounts,prodUnits,stagesOf,wonderOf,L,R};
+
+else {
+/* ===== interface ===== */
+let G=null, BUSY=false, GEN=0, VIEW=null, SEL=null, FLEETO=false, EDIFO=false, LASTBUILT=new Set();
+const GAME=window.GAME={help,menu};
+const KEY='sm';
+const NAMES=['Camille','Lucas','Inès','Hugo','Léa','Nathan','Chloé'];
+const CC={brown:'#8a5a2b',grey:'#8a8f96',blue:'#2f6fb8',yellow:'#d9a520',red:'#c0392b',green:'#2e8b57',purple:'#7d3c98',black:'#2b2b2b',leader:'#e6dcc0'};
+const CN={brown:'matières premières',grey:'produits manufacturés',blue:'bâtiments civils',yellow:'commerce',red:'militaire',green:'science',purple:'guildes',black:'cités',leader:'meneurs'};
+const isH=p=>G&&!G.players[p].ai;
+const humans=()=>G.players.map((P,i)=>i).filter(i=>!G.players[i].ai);
+const SCI={c:'<svg class="sci" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#2e8b57"/><path d="M10 3v14M4 14l6-11 6 11" stroke="#fff" stroke-width="1.8" fill="none"/></svg>',g:'<svg class="sci" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#2e8b57"/><circle cx="10" cy="10" r="4" fill="none" stroke="#fff" stroke-width="2"/><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.3 4.3l2 2M13.7 13.7l2 2M4.3 15.7l2-2M13.7 6.3l2-2" stroke="#fff" stroke-width="1.8"/></svg>',t:'<svg class="sci" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#2e8b57"/><rect x="6" y="4" width="8" height="12" rx="1" fill="none" stroke="#fff" stroke-width="1.6"/><path d="M8 8h4M8 11h4" stroke="#fff" stroke-width="1.4"/></svg>',w:'<svg class="sci" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#2e8b57"/><text x="10" y="14" text-anchor="middle" font-size="11" font-weight="900" fill="#fff" font-family="Arial">?</text></svg>'};
+const ri=r=>r.length>1?`<span class="ri multi">${[...r].map(x=>`<span class="ri ${x}" style="width:14px;height:14px;font-size:8px;border:none">${x}</span>`).join('/')}</span>`:`<span class="ri ${r}" title="${RES[r]}">${r}</span>`;
+function costHTML(c){ let h=''; if(c.coins) h+=`<span class="ri" style="background:#d9a520;color:#2a1f14">${c.coins}●</span>`; for(const r of RAW+MANU) for(let i=0;i<(c[r]||0);i++) h+=ri(r); return h||'<span style="font-size:11px;color:#6b5a3a">gratuit</span>'; }
+const WHO={L:'voisin de gauche',R:'voisin de droite',S:'toi',LR:'tes deux voisins',LRS:'toi et tes voisins'};
+function effTxt(eff){ return effs(eff).map(e=>{ const [k,a,b,c]=e.split(':');
+  switch(k){ case 'p': return a.includes('/')?a.split('/').map(ri).join(' ou '):[...a].map(ri).join('');
+   case 'v': return `<b>${a} pt${+a>1?'s':''}</b>`; case 'c': return `+${a} pièces`; case 'm': return `⚔ ${a}`; case 's': return a==='*'||a==='*1'?SCI.w+' science au choix':SCI[a];
+   case 'tr': return `matières premières à 1 pièce (${a==='L'?'gauche':a==='R'?'droite':'deux côtés'})`; case 'tg': return 'produits manufacturés à 1 pièce'; case 'ag': return 'un produit manufacturé au choix'; case 'ar': return 'une matière première au choix';
+   case 'cp': return `+${c} pièce${+c>1?'s':''} par carte ${CN[a]} (${WHO[b]})`; case 'cv': return a==='stage'?`+${b} pièces et ${c} pt par étape de merveille`:`+${b} pièce${+b>1?'s':''} et ${c} pt par carte ${CN[a]} à toi`;
+   case 'g': return a==='defeat'?`1 pt par défaite de tes voisins`:a==='stage'?'1 pt par étape de merveille (toi et voisins)':a==='bgp'?'1 pt par carte marron, grise et violette à toi':`${c} pt par carte ${CN[a]} de ${WHO[b]}`;
+   case 'free': return 'construire gratuitement une carte par âge'; case 'disc': return 'construire une carte de la défausse'; case 'last': return 'jouer aussi la 7ᵉ carte de l’âge'; case 'copy': return 'copier une guilde voisine en fin de partie';
+   case 'debt': return `chaque adversaire perd ${a} pièce${+a>1?'s':''} (sinon dette)`; case 'dip': return 'diplomatie : évite le prochain conflit'; case 'cn': return '1 pt par 3 pièces en fin de partie'; case 'ws': return `${a} pt par étape de merveille`;
+   case 'pc': return `${b} pt par carte ${CN[a]} à toi`; case 'vt': return '+1 pt par victoire militaire'; case 'wall': return '+3 pts si la merveille est terminée'; }
+  return e; }).join(' · '); }
+function cardHTML(c,o){ o=o||{}; return `<button class="cd ${c.color} ${o.cls||''}" data-card="${c.id}" style="${o.delay?'animation-delay:'+o.delay+'ms':''}"><div class="hd h-${c.color}">${esc(c.name)}</div><div class="bd"><div class="cs">${c.color==='leader'?`<span class="ri" style="background:#d9a520;color:#2a1f14">${c.cost}●</span>`:costHTML(c.cost)}</div><div class="ef">${effTxt(c.eff)}</div>${c.chain&&c.chain.length?`<div class="ch">Gratuit si tu as : ${c.chain.map(esc).join(' ou ')}</div>`:''}</div>${o.tag||''}</button>`; }
+/* ---------- rendu ---------- */
+function me(){ if(VIEW!=null) return VIEW; const h=humans(); return h.length?h[0]:0; }
+function cityHTML(i,big){ const P=G.players[i], st=stagesOf(P), sc=sciCounts(P), dsc=discounts(P);
+  const prod=prodUnits(P,false); const counts={}; P.built.forEach(c=>counts[c.color]=(counts[c.color]||0)+1);
+  return `<div class="pan ${big?'mine':''}" id="city-${i}"><h3>${esc(P.name)} <small>${esc(wonderOf(P).name)} · face ${P.side}</small></h3>
+   <div class="stat"><span>● ${P.coins}</span><span>⚔ ${shields(P)}</span><span>🏆 ${P.mil.reduce((a,b)=>a+b,0)}</span>${['c','g','t','w'].filter(k=>sc[k]).map(k=>`<span>${SCI[k]}×${sc[k]}</span>`).join('')}${P.debt?`<span>dette ${P.debt}</span>`:''}</div>
+   <div class="prod">${prod.map(ri).join('')}${dsc.rawL||dsc.rawR||dsc.grey?`<span style="font-size:11px;color:#d8c49a">commerce à 1 : ${[dsc.rawL?'brut gauche':'',dsc.rawR?'brut droite':'',dsc.grey?'manufacturé':''].filter(Boolean).join(', ')}</span>`:''}</div>
+   ${big?`<div class="wonder">${st.map((s,k)=>`<div class="stg ${k<P.stages?'done':''}"><div class="cst">${costHTML(parseCost(s[0]))}</div>${effTxt(s[1])}</div>`).join('')}</div><div class="built">${P.built.map(c=>`<span class="bc ${c.color} ${LASTBUILT.has(c.id)?'new':''}">${esc(c.name)}</span>`).join('')}${P.leaders.map(l=>`<span class="bc leader">${esc(l.name)}</span>`).join('')}</div>`
+     :`<div class="colcount">${Object.keys(CC).filter(k=>counts[k]).map(k=>`<i style="background:${CC[k]}">${counts[k]}</i>`).join('')} <span style="font-size:12px">étapes ${P.stages}/${st.length}</span></div><div class="built">${P.built.slice(-4).map(c=>`<span class="bc ${c.color} ${LASTBUILT.has(c.id)?'new':''}">${esc(c.name)}</span>`).join('')}</div>`}
+   ${big&&G.opts.armada?`<div class="fleet">${['red','yellow','blue','green'].map(k=>`<div style="background:${CC[k]}">${FLEET[k].n} : ${P.fleet[k]}</div>`).join('')}</div>`:''}</div>`; }
+function render(){ if(!G){ $('#tbl').innerHTML=''; $('#actin').innerHTML=''; renderStatus(); return; } const m=me(), l=L(G,m), r=R(G,m);
+  const hand=G.phase==='recruit'?G.players[m].lhand:(G.hands[m]||[]);
+  const tag=c=>{ if(G.phase==='ldraft'||G.phase==='recruit') return ''; const o=buildOptions(G,m,c); if(!o) return ''; if(o.chain) return '<span class="tag free">chaîne</span>'; if(!o.ok) return o.free?'<span class="tag free">pouvoir</span>':'<span class="tag no">impossible</span>'; return o.plan.coins?`<span class="tag buy">${o.plan.coins} ●</span>`:'<span class="tag ok">prête</span>'; };
+  const canSee=!(humans().length>1&&VIEW==null);
+  const hd=G.phase==='ldraft'?'Choisis un meneur à garder':G.phase==='recruit'?'Recrute un meneur pour cet âge':G.phase==='disc'?'':`Âge ${['','I','II','III'][G.age]} · tour ${G.turn} · ta main`;
+  const opps=G.players.map((P,i)=>`<div class="opp ${i===m?'me':''}"><b>${esc(P.name)}</b> · ${esc(wonderOf(P).name)}<br>● ${P.coins} · ⚔ ${shields(P)} · étapes ${P.stages}/${stagesOf(P).length}${G.choices[i]?' · ✓ a choisi':''}</div>`).join('');
+  const ed=G.opts.edifice&&G.edif?`<div class="pan"><h3>Édifice de l’âge : ${esc(G.edif.name)}</h3><div style="font-size:13px">Participation en construisant une étape de merveille : ${G.edif.cost} pièces. Réussi si au moins ${Math.ceil(G.n*G.edif.need)} joueurs participent : récompense ${effTxt(G.edif.rew)} pour les participants, pénalité ${effTxt(G.edif.pen)} pour les autres. Participants : ${G.edif.by.map(i=>esc(G.players[i].name)).join(', ')||'aucun'}.</div></div>`:'';
+  $('#tbl').innerHTML=`<div class="row3">${cityHTML(l,false)}${cityHTML(m,true)}${cityHTML(r,false)}</div>${ed}<div class="pan handpan"><h3>${hd}</h3><div class="hand">${canSee?hand.map((c,k)=>cardHTML(c,{cls:(SEL===c.id?'sel ':'')+'in',delay:k*40,tag:tag(c)})).join(''):''}</div></div><div class="opps">${opps}</div>`;
+  LASTBUILT.clear(); renderAct(); renderStatus(); }
+function renderAct(){ const a=$('#actin'); if(G.phase==='over'){ a.innerHTML=`<span class="msg2">Partie terminée.</span><button class="btn pri" data-c="new">Nouvelle partie</button>`; return; }
+  const m=me(); if(BUSY){ a.innerHTML='<span class="msg2">Les cités construisent…</span>'; return; }
+  if(G.phase==='disc'){ a.innerHTML='<span class="msg2">Choix dans la défausse…</span>'; return; }
+  if(G.choices[m]&&G.choices[m].type!=='skip'){ a.innerHTML=`<span class="msg2">Choix enregistré. En attente des autres cités…</span><button class="btn" data-a="undo">Changer</button>`; return; }
+  if(G.phase==='ldraft'){ a.innerHTML=`<span class="msg2">Choisis le meneur à garder, les autres passent à ton voisin.</span><button class="btn pri" data-a="keep" ${SEL?'':'disabled'}>Garder</button>`; return; }
+  if(G.phase==='recruit'){ const P=G.players[m], l=P.lhand.find(x=>x.id===SEL); a.innerHTML=`<span class="msg2">${l?`${esc(l.name)} : ${effTxt(l.eff)}`:'Choisis un meneur.'}</span><button class="btn" data-a="ldisc" ${l?'':'disabled'}>Renvoyer (+3 ●)</button><button class="btn pri" data-a="recruit" ${l&&P.coins>=l.cost?'':'disabled'}>Recruter (${l?l.cost:0} ●)</button>`; return; }
+  if(G.phase==='last'&&!G.lastWho.includes(m)){ a.innerHTML='<span class="msg2">En attente…</span>'; return; }
+  const c=(G.hands[m]||[]).find(x=>x.id===SEL); if(!c){ a.innerHTML=`<span class="msg2">Choisis une carte : la construire, l’utiliser pour une étape de ta merveille, ou la défausser contre 3 pièces.</span>`; return; }
+  const o=buildOptions(G,m,c), so=stageOptions(G,m), P=G.players[m];
+  const bTxt=o&&o.chain?'Construire (gratuit, chaîne)':o&&o.ok?`Construire${o.plan.coins?` (${o.plan.coins} ●${o.plan.toL||o.plan.toR?`, dont ${o.plan.toL} à gauche et ${o.plan.toR} à droite`:''})`:''}`:'Construire';
+  const fl=G.opts.armada&&['red','yellow','blue','green'].includes(c.color)?`<label><input type="checkbox" id="fleet" ${FLEETO?'checked':''}> Avancer la flotte (+1 ●)</label>`:'';
+  const ed=G.opts.edifice&&G.edif&&so&&so.ok?`<label><input type="checkbox" id="edif" ${EDIFO?'checked':''}> Participer à l’édifice (+${G.edif.cost} ●)</label>`:'';
+  a.innerHTML=`<span class="msg2"><b>${esc(c.name)}</b>${o&&!o.ok&&!o.free?' : '+esc(o.why||''):''}</span>${fl}${ed}<button class="btn" data-a="discard">Défausser (+3 ●)</button>${so?`<button class="btn" data-a="wonder" ${so.ok?'':'disabled'}>Étape de merveille${so.ok&&so.plan.coins?` (${so.plan.coins} ●)`:''}</button>`:''}${o&&o.free&&!o.ok?`<button class="btn" data-a="free">Construire gratuitement (pouvoir)</button>`:''}<button class="btn pri" data-a="build" ${o&&o.ok?'':'disabled'}>${bTxt}</button>`; }
+function renderStatus(){ const st=$('#status'); if(!G){ st.innerHTML=''; return; } st.style.setProperty('--pc',G.phase==='over'?'#1d6f3e':['','#7a4a1e','#2f6fb8','#7d3c98'][G.age]||'#7a4a1e');
+  st.innerHTML=G.phase==='over'?`<span class="who">Fin</span><span class="msg">${G.over.winners.map(i=>esc(G.players[i].name)).join(' et ')} l’emporte.</span>`:`<span class="who">Âge ${['','I','II','III'][G.age]||'—'}</span><span class="msg">${G.phase==='ldraft'?'Sélection des meneurs':G.phase==='recruit'?'Recrutement des meneurs':'Tour '+G.turn+(G.age===2?' · on passe à droite':' · on passe à gauche')}</span><span class="right">${G.n} cités</span>`; }
+/* ---------- déroulement ---------- */
+function save(){ store(KEY,G&&G.phase!=='over'?{G,UID}:null); }
+function nextHuman(){ return humans().find(i=>!G.choices[i]&&(G.phase!=='last'||G.lastWho.includes(i))); }
+function step(){ if(!G) return; const my=GEN; save();
+  if(G.phase==='over'){ render(); setTimeout(()=>{ if(my===GEN) gameEnd(); },500); return; }
+  if(G.phase==='disc'){ const p=G.pendingDisc[0]; if(G.players[p].ai){ setTimeout(()=>{ if(my!==GEN) return; const ev=chooseDisc(G,p,aiDisc(G,p)); after(ev,my); },700); } else discModal(p); render(); return; }
+  // les ordinateurs choisissent
+  G.players.forEach((P,i)=>{ if(P.ai&&!G.choices[i]){ if(G.phase==='last'){ if(G.lastWho.includes(i)){ const c=aiLast(G,i); if(!choose(G,i,c)) choose(G,i,{type:'discard',id:c.id}); } } else { const c=aiChoice(G,i); if(!choose(G,i,c)) choose(G,i,{type:'discard',id:G.hands[i][0].id}); } } });
+  if(allChosen(G)){ resolve(); return; }
+  const h=nextHuman(); if(h==null){ render(); return; }
+  if(humans().length>1&&VIEW!==h){ VIEW=null; render(); cover(h); return; }
+  VIEW=h; render(); }
+async function resolve(){ const my=GEN; BUSY=true; render(); await wait(350); if(my!==GEN) return; const ev=G.phase==='last'?resolveLast(G):resolveTurn(G); after(ev,my); }
+async function after(ev,my){ BUSY=true; await show(ev,my); if(my!==GEN) return; BUSY=false; SEL=null; FLEETO=false; EDIFO=false; if(humans().length>1) VIEW=null; step(); }
+async function show(ev,my){ const builds=ev.filter(e=>e.t==='build'||e.t==='stage');
+  builds.forEach(e=>{ if(e.card) LASTBUILT.add(e.card.id); });
+  const m=me(); const mine=ev.filter(e=>(e.t==='build'||e.t==='stage'||e.t==='discard')&&e.p!==m);
+  if(builds.length||ev.some(e=>e.t==='discard')){ render(); sfx('card'); const sum=mine.slice(0,3).map(e=>`${G.players[e.p].name} ${e.t==='build'?'construit '+e.card.name:e.t==='stage'?'bâtit une étape de merveille':'défausse une carte'}`).join(' · '); if(sum) toast(sum); await wait(900); }
+  for(const e of ev){ if(my!==GEN) return;
+   if(e.t==='stage'&&isH(e.p)){ sfx('ding'); }
+   if(e.t==='debt'){ toast(`${G.players[e.p].name} lève un impôt : chacun perd ${e.n} pièce${e.n>1?'s':''}`); sfx('error'); await wait(500); }
+   if(e.t==='leader'&&!isH(e.p)) toast(`${G.players[e.p].name} recrute ${e.l.name}`);
+   if(e.t==='war'){ await warShow(e,my); }
+   if(e.t==='edif'){ toast(`Édifice « ${e.name} » ${e.ok?'achevé':'abandonné'}`); await wait(700); }
+   if(e.t==='age'){ banner(`Âge ${['','I','II','III'][e.age]}`,e.age===2?'Les cartes passent à droite':'Les cartes passent à gauche',['','#7a4a1e','#2f6fb8','#7d3c98'][e.age]); sfx('ding'); await wait(1500); }
+   if(e.t==='pass'){ sfx('flip'); } } }
+async function warShow(e,my){ const val={1:1,2:3,3:5}[e.age]; banner('Conflits militaires',`Fin de l’âge ${['','I','II','III'][e.age]} · victoire +${val}, défaite −1`,'#c0392b'); sfx('boom'); await wait(1500); if(my!==GEN) return;
+  const lines=e.res.map(r=>r.tie?`<div>⚔ ${esc(G.players[r.tie[0]].name)} et ${esc(G.players[r.tie[1]].name)} : égalité</div>`:`<div>⚔ <span style="color:#1d6f3e">${esc(G.players[r.w].name)} +${val}</span> contre <span style="color:#a12a1d">${esc(G.players[r.l].name)} −1</span></div>`).join('');
+  await new Promise(res=>{ window.MODAL_CLOSABLE=false; openModal(`<h2>Conflits de l’âge ${['','I','II','III'][e.age]}</h2><div class="war">${lines}</div><div class="acts"><button class="btn pri" data-w="1">Continuer</button></div>`,ev=>{ if(!ev.target.closest('[data-w]')) return; closeModal(); window.MODAL_CLOSABLE=true; res(); }); }); }
+function discModal(p){ const P=G.players[p], cs=G.discard.filter(c=>!P.built.some(b=>b.name===c.name)); window.MODAL_CLOSABLE=false;
+  openModal(`<h2>Mausolée : construire depuis la défausse</h2><p>Choisis une carte de la défausse à construire gratuitement.</p><div class="dpick">${cs.map(c=>cardHTML(c)).join('')}</div>`,e=>{ const b=e.target.closest('[data-card]'); if(!b) return; closeModal(); window.MODAL_CLOSABLE=true; after(chooseDisc(G,p,b.dataset.card),GEN); }); }
+function cover(p){ const c=$('#cover'); c.innerHTML=`<div><span style="font-family:Cinzel,Georgia;letter-spacing:.15em;color:#f3d58a">À TOI DE CHOISIR</span><h2 style="font-family:Cinzel,Georgia">${esc(G.players[p].name)}</h2><p>Les autres détournent les yeux : ta main est secrète.</p><button class="btn pri" style="font-size:17px;padding:12px 20px" data-a="reveal" data-p="${p}">Voir ma main</button></div>`; c.style.background='radial-gradient(circle at 50% 35%,#5a3f22,#140e09)'; c.hidden=false; }
+function gameEnd(){ store(KEY,null); const w=G.over.winners, hw=w.some(i=>isH(i)); banner(hw?'Victoire !':'Fin de partie',w.map(i=>G.players[i].name).join(' et '),'#b8862b'); sfx(hw?'win':'lose'); if(hw) confetti(Object.values(CC));
+  const cat=[['mil','⚔ Militaire','#c0392b'],['coin','● Trésor','#d9a520'],['wonder','Merveille','#b8862b'],['civ','Civil','#2f6fb8'],['com','Commerce','#d9a520'],['guild','Guildes','#7d3c98'],['sci','Science','#2e8b57'],['lead','Meneurs','#e6dcc0'],['other','Autres','#888']];
+  setTimeout(()=>{ window.MODAL_CLOSABLE=true; openModal(`<h2>${w.map(i=>esc(G.players[i].name)).join(' et ')} l’emporte</h2><div style="overflow-x:auto"><table class="scl"><tr><th>Cité</th>${cat.map(c=>`<th title="${c[1]}"><i style="background:${c[2]}"></i></th>`).join('')}<th>Total</th></tr>${G.players.map((P,i)=>({P,i,s:G.over.sc[i]})).sort((a,b)=>b.s.total-a.s.total).map(({P,i,s})=>`<tr class="${w.includes(i)?'w':''}"><td>${esc(P.name)}</td>${cat.map(c=>`<td>${s[c[0]]}</td>`).join('')}<td><b>${s.total}</b></td></tr>`).join('')}</table></div><p style="font-size:13px">${cat.map(c=>`<span style="white-space:nowrap"><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${c[2]}"></i> ${c[1]}</span>`).join(' · ')}</p><div class="acts"><button class="btn" data-c="new">Changer les réglages</button><button class="btn pri" data-a="again">Rejouer</button></div>`); },1700); }
+/* ---------- clics ---------- */
+document.addEventListener('change',e=>{ if(e.target.id==='fleet') FLEETO=e.target.checked; if(e.target.id==='edif') EDIFO=e.target.checked; });
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-card],[data-a]'); if(!t||!G) return;
+  if(t.dataset.a==='again'){ closeModal(); startGame(); return; }
+  if(t.dataset.a==='reveal'){ $('#cover').hidden=true; VIEW=+t.dataset.p; SEL=null; render(); sfx('flip'); return; }
+  if(BUSY||G.phase==='over'||!$('#modal').hidden) return; const m=me();
+  if(t.dataset.card&&t.closest('.hand')){ if(G.choices[m]) return; SEL=SEL===t.dataset.card?null:t.dataset.card; FLEETO=false; EDIFO=false; sfx('click'); render(); return; }
+  const a=t.dataset.a; let ok=false;
+  if(a==='undo'){ delete G.choices[m]; render(); return; }
+  if(!SEL) return;
+  if(a==='keep') ok=choose(G,m,{type:'keep',id:SEL});
+  else if(a==='recruit') ok=choose(G,m,{type:'recruit',id:SEL}); else if(a==='ldisc') ok=choose(G,m,{type:'ldisc',id:SEL});
+  else if(a==='build') ok=choose(G,m,{type:'build',id:SEL,fleet:FLEETO}); else if(a==='free') ok=choose(G,m,{type:'build',id:SEL,free:true});
+  else if(a==='wonder') ok=choose(G,m,{type:'wonder',id:SEL,edif:EDIFO}); else if(a==='discard') ok=choose(G,m,{type:'discard',id:SEL});
+  else return;
+  if(!ok){ sfx('error'); toast('Action impossible'); return; } sfx('pop'); SEL=null; save(); step(); });
+/* ---------- menu ---------- */
+let M={n:4,seats:Array.from({length:7},(_,i)=>({h:i===0?1:0,name:''})),level:'normal',side:'A',leaders:false,cities:false,armada:false,edifice:false};
+function startGame(){ GEN++; $('#cover').hidden=true; const hs=M.seats.slice(0,M.n).filter(s=>s.h).length;
+  G=newGame({players:M.seats.slice(0,M.n).map((s,i)=>({name:(s.name||'').trim()||(s.h?(hs===1?'Toi':NAMES[i]):NAMES[(i+1)%7]),ai:!s.h,level:M.level})),leaders:M.leaders,cities:M.cities,armada:M.armada,edifice:M.edifice,side:M.side});
+  VIEW=null; SEL=null; banner(G.phase==='ldraft'?'Les meneurs':'Âge I',G.phase==='ldraft'?'Choisis 4 meneurs, un par un':'Les cartes passent à gauche','#7a4a1e'); setTimeout(step,900); render(); }
+function menu(){ window.MODAL_CLOSABLE=true;
+  const draw=()=>{ const hs=M.seats.slice(0,M.n).filter(s=>s.h).length; paintModal(`<h2>Nouvelle partie</h2>
+   <h4>Cités</h4><div class="seg">${[3,4,5,6,7].map(n=>`<button class="${M.n===n?'on':''}" data-m="n:${n}">${n}</button>`).join('')}</div>
+   ${M.seats.slice(0,M.n).map((s,i)=>`<div class="seatrow"><input type="text" data-nm="${i}" value="${esc(s.name)}" placeholder="${s.h?(i===0?'Toi':NAMES[i]):NAMES[(i+1)%7]}" maxlength="14"><div class="seg"><button class="${s.h?'on':''}" data-m="h:${i}:1">Humain</button><button class="${s.h?'':'on'}" data-m="h:${i}:0">Ordinateur</button></div></div>`).join('')}
+   ${hs<M.n?`<h4>Niveau de l’ordinateur</h4><div class="seg">${['facile','normal','difficile'].map(l=>`<button class="${M.level===l?'on':''}" data-m="level:${l}">${l}</button>`).join('')}</div>`:''}
+   <h4>Face des merveilles</h4><div class="seg">${[['A','Face A (conseillée)'],['B','Face B'],['mix','Au hasard']].map(([v,l])=>`<button class="${M.side===v?'on':''}" data-m="side:${v}">${l}</button>`).join('')}</div>
+   <h4>Extensions</h4>
+   <label class="opt"><input type="checkbox" data-o="leaders" ${M.leaders?'checked':''}><span><b>Meneurs</b> : 4 meneurs à sélectionner au début, un recruté à chaque âge. On commence avec 6 pièces.</span></label>
+   <label class="opt"><input type="checkbox" data-o="cities" ${M.cities?'checked':''}><span><b>Cités</b> : cartes noires (impôts, diplomatie, espionnage). 8 cartes par âge.</span></label>
+   <label class="opt"><input type="checkbox" data-o="armada" ${M.armada?'checked':''}><span><b>Armada</b> : quatre flottes à faire avancer et des batailles navales.</span></label>
+   <label class="opt"><input type="checkbox" data-o="edifice" ${M.edifice?'checked':''}><span><b>Édifices</b> : un grand projet commun par âge.</span></label>
+   <div class="acts">${G&&G.phase!=='over'?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="go" ${hs?'':'disabled'}>Fonder les cités</button></div>`); };
+  draw(); $('#mbox').onclick=e=>{ $$('#mbox [data-nm]').forEach(i=>{ M.seats[+i.dataset.nm].name=i.value; }); $$('#mbox [data-o]').forEach(i=>{ M[i.dataset.o]=i.checked; }); const x=e.target.closest('[data-m]'); if(!x) return; const [k,v,w]=x.dataset.m.split(':'); sfx('click');
+    if(k==='go'){ closeModal(); store('smp',M); startGame(); return; } if(k==='h') M.seats[+v].h=+w; else if(k==='n') M.n=+v; else M[k]=v; draw(); }; }
+function help(){ helpTabs('Sept Merveilles',[
+ ['But du jeu',`<p>Chaque joueur dirige une cité antique et sa merveille pendant trois âges. Le plus grand total de points de victoire l’emporte (égalité : le plus riche).</p><p>À chaque âge, chacun reçoit 7 cartes. Tout le monde choisit <b>en même temps</b> une carte, la joue, puis passe le reste de sa main à son voisin (à gauche aux âges I et III, à droite à l’âge II). On joue 6 cartes, la septième est défaussée.</p>`],
+ ['Jouer une carte',`<ul><li><b>Construire</b> le bâtiment en payant son coût avec tes ressources. Il te manque une ressource ? Achète-la à un voisin direct qui la produit : 2 pièces (1 avec un comptoir ou un marché). Les ventes ne coûtent rien au voisin.</li><li><b>Chaîne</b> : certains bâtiments sont gratuits si tu possèdes déjà leur prédécesseur (indiqué sur la carte).</li><li><b>Étape de merveille</b> : utilise la carte, face cachée, pour bâtir l’étape suivante de ta merveille en payant son coût.</li><li><b>Défausser</b> la carte pour gagner 3 pièces.</li></ul><p>On ne peut pas construire deux bâtiments identiques.</p>`],
+ ['Les cartes',`<ul><li><b>Marron</b> et <b>grises</b> : produisent des ressources chaque tour.</li><li><b>Bleues</b> : points de victoire.</li><li><b>Jaunes</b> : pièces, commerce moins cher, ressources au choix, points à l’âge III.</li><li><b>Rouges</b> : boucliers pour les conflits.</li><li><b>Vertes</b> : symboles de science (compas, engrenage, tablette).</li><li><b>Violettes</b> (âge III) : guildes, points selon tes voisins ou toi.</li></ul>`],
+ ['Conflits et points',`<p>À la fin de chaque âge, chaque cité compare ses boucliers avec ses deux voisins : victoire +1, +3 puis +5 points selon l’âge, défaite −1, égalité rien.</p><ul><li>Pièces : 1 point pour 3.</li><li>Science : pour chaque symbole, le nombre d’exemplaires au carré, plus 7 points par série complète des trois symboles.</li></ul><p class="ex">Exemple : 3 compas, 2 engrenages, 1 tablette → 9 + 4 + 1 + 7 = 21 points.</p>`],
+ ['Extensions',`<ul><li><b>Meneurs</b> : avant l’âge I, chacun garde 4 meneurs (on se passe les mains). Au début de chaque âge, on en recrute un (en payant son coût) ou on le renvoie pour 3 pièces. Effets : points, boucliers, science, commerce…</li><li><b>Cités</b> : cartes noires ajoutées à chaque âge. L’impôt fait perdre des pièces aux adversaires (dette de −1 point par pièce manquante), la diplomatie permet d’éviter le prochain conflit.</li><li><b>Armada</b> : en construisant une carte rouge, jaune, bleue ou verte, tu peux payer 1 pièce de plus pour avancer la flotte de cette couleur : puissance navale (batailles avec le voisin de droite à chaque âge), pièces, points ou science.</li><li><b>Édifices</b> : un projet commun par âge. En bâtissant une étape de merveille, tu peux payer pour y participer. S’il y a assez de participants, ils sont récompensés et les autres pénalisés.</li></ul><p>Ces extensions reprennent l’esprit et les grandes mécaniques des originales, sous une forme simplifiée.</p>`],
+ ['Jouer ici',`<ul><li>Touche une carte de ta main : l’étiquette indique si elle est prête, ce qu’elle coûte en commerce, ou si elle est gratuite par chaîne.</li><li>Tes voisins sont affichés de part et d’autre de ta cité, avec leurs productions pour le commerce.</li><li>De 3 à 7 cités, humains ou ordinateurs. À plusieurs humains, un écran de passage cache les mains. La partie est sauvegardée automatiquement.</li></ul>`]]); }
+window.SM={get G(){return G;},get BUSY(){return BUSY;}};
+(function boot(){ const p=load('smp'); if(p) Object.assign(M,p); const s=load(KEY); if(s&&s.G&&s.G.phase!=='over'){ G=s.G; UID=s.UID||999; step(); } else { G=null; render(); menu(); } })();
+}
+
+</script>
+<script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>
