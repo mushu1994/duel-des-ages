@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Remparts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800;6..12,900&display=swap" rel="stylesheet">
+<style>
+/* Table de cartographe : plateau de tuiles sur parchemin à gauche, pupitre du joueur (tuile en main, partisans, scores) à droite ou en bas */
+:root{--bg:#2a2216;--fg:#f6ecd6;--accent:#b5452b;--title:"Cinzel",Georgia,serif;--ui:"Nunito Sans",system-ui,sans-serif;--titlec:#f6e3b0;--parch:#efe2c2;--parch2:#e2d1a8;--ink:#3b2a17;--field:#8fbf55;--city:#c99a5b;color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui,"Nunito Sans",system-ui,sans-serif);min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bar,#0006);border-bottom:1px solid #fff2;flex-wrap:wrap}
+.top h1{font-family:var(--title,Georgia,serif);font-weight:800;font-size:24px;margin:0;color:var(--titlec,#fff);letter-spacing:.5px}
+.top h1 small{font-family:var(--ui);font-weight:600;font-size:13px;opacity:.75;margin-left:8px;letter-spacing:0}
+.back{color:inherit;opacity:.9;text-decoration:none;font-size:14px;border:1px solid #fff4;padding:5px 10px;border-radius:8px}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#ffffff1c;color:inherit;border:1px solid #ffffff40;border-radius:9px;padding:7px 12px;font-size:14px;font-weight:700}
+.btn:hover{background:#ffffff2e}.btn:disabled{opacity:.4;cursor:default}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.on{background:#fff;color:#222}
+.status{display:flex;align-items:center;gap:12px;padding:9px 16px;background:var(--pc,var(--accent));color:#fff;font-weight:800;min-height:44px;box-shadow:0 4px 14px #0005;transition:background .35s;flex-wrap:wrap}
+.status .who{font-family:var(--title,Georgia,serif);font-size:19px}
+.status .msg{font-weight:600}
+.status .right{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:14px}
+#modal{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:12px}
+#modal[hidden]{display:none}
+.mbox{background:#fbf6ea;color:#2a2418;border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;animation:pop .3s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.mbox h2{font-family:var(--title,Georgia,serif);font-size:26px;margin:0 0 6px}
+.mbox h4{font-family:var(--title,Georgia,serif);font-size:16px;margin:14px 0 6px}
+.mbox p,.mbox li{line-height:1.5}
+.mbox .btn{background:#ece3cf;color:#2a2418;border-color:#c9b98f}
+.mbox .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mbox .btn.on{background:#2a2418;color:#fff}
+.seg{display:inline-flex;border:1px solid #c9b98f;border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:#f6efdc;padding:7px 11px;font-weight:700;color:#2a2418;font-size:13.5px}
+.seg button.on{background:#2a2418;color:#fff}
+.prow{display:flex;gap:8px;align-items:center;margin:7px 0;flex-wrap:wrap}
+.prow .dot{width:16px;height:16px;border-radius:50%;background:var(--pc);border:2px solid #0004}
+.prow input[type=text]{font-family:inherit;font-weight:700;font-size:16px;padding:6px 9px;border-radius:8px;border:1px solid #c9b98f;background:#fff;color:#2a2418;-webkit-text-fill-color:#2a2418;caret-color:var(--accent);width:150px;color-scheme:light}
+.prow input[type=text]::placeholder{color:#a3926e;-webkit-text-fill-color:#a3926e;font-weight:600}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{border:1px solid #c9b98f;background:#f6efdc;border-radius:20px;padding:5px 12px;font-weight:800;color:#2a2418}
+.tabs button.on{background:#2a2418;color:#fff}
+.toast{position:fixed;left:50%;top:100px;transform:translateX(-50%);background:#1b1b1f;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 10px 30px #000a;z-index:70;font-weight:700;animation:toast 2.6s forwards;pointer-events:none;max-width:90vw;text-align:center}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.bannerx{position:fixed;inset:0;display:grid;place-items:center;z-index:65;pointer-events:none}
+.bannerx div{font-family:var(--title,Georgia,serif);font-weight:800;font-size:clamp(30px,6vw,64px);color:#fff;background:var(--bc,var(--accent));padding:10px 36px;border-radius:14px;box-shadow:0 20px 50px #000a;animation:ban 2.3s forwards;text-align:center}
+.bannerx small{display:block;font-family:var(--ui);font-size:.34em;font-weight:700}
+@keyframes ban{0%{transform:scale(2);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:0;transform:scale(.92)}}
+#cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);text-align:center;padding:20px}
+#cover[hidden]{display:none}
+#cover h2{font-family:var(--title,Georgia,serif);font-size:36px;margin:0 0 8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
+
+body{background:#2a2216}
+.rp{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:10px;padding:10px max(10px,env(safe-area-inset-right,0px)) 10px max(10px,env(safe-area-inset-left,0px));height:calc(100vh - 110px);height:calc(100dvh - 110px);min-height:460px}
+.bdw{position:relative;border-radius:14px;overflow:hidden;background:radial-gradient(circle at 50% 45%,#f3e8cc,#d9c59a);box-shadow:inset 0 0 60px #8a6a3a77,0 10px 30px #0008;touch-action:none;min-height:0}
+#bd{width:100%;height:100%;display:block;cursor:grab;user-select:none}
+#bd.drag{cursor:grabbing}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:3}
+.zoom button{width:38px;height:38px;border-radius:10px;border:1px solid #7a5a2a;background:#f6ecd6e8;color:var(--ink);font-size:20px;font-weight:900}
+.hint{position:absolute;left:10px;bottom:10px;right:60px;background:#2a2216d8;color:#f6ecd6;border-radius:10px;padding:7px 11px;font-size:13.5px;z-index:3;pointer-events:none}
+.hint b{color:#ffd98a}
+.side{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+.card2{background:linear-gradient(#3a2e1d,#2e2416);border:1px solid #5a4528;border-radius:14px;padding:10px 12px}
+.card2 h3{font-family:var(--title);font-size:14px;letter-spacing:.08em;margin:0 0 8px;color:#e8cf95;text-transform:uppercase}
+.hand{display:flex;align-items:center;gap:12px}
+.hand svg{width:104px;height:104px;border-radius:6px;box-shadow:0 6px 14px #000a;flex:none;transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+.hand .ctl{display:flex;flex-direction:column;gap:6px;flex:1}
+.hand .ctl .btn{width:100%}
+.pl{display:grid;grid-template-columns:auto 1fr auto;gap:4px 8px;align-items:center;padding:6px 8px;border-radius:10px;margin:2px 0}
+.pl.on{background:#ffffff14;box-shadow:inset 3px 0 0 var(--pc)}
+.pl .nm3{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl .sc{font-family:var(--title);font-size:20px;color:#ffd98a;font-variant-numeric:tabular-nums}
+.pl .mps{grid-column:2/4;display:flex;gap:2px}
+.pl .mps svg{width:14px;height:16px}
+.left{font-size:13px;color:#d8c49a}
+.btn.ok{background:#3d7a2f;border-color:#3d7a2f;color:#fff}
+.mspot{cursor:pointer}
+.mspot circle{transition:r .2s}
+.mspot:hover circle{r:15}
+.spot{cursor:pointer}
+.spot rect{fill:#3d7a2f22;stroke:#3d7a2f;stroke-width:3;stroke-dasharray:8 6;transition:fill .2s}
+.spot:hover rect{fill:#3d7a2f44}
+.ghost{opacity:.82}
+.ghost.bad{opacity:.45}
+.newt{animation:drop .45s cubic-bezier(.3,1.4,.5,1)}
+@keyframes drop{from{transform:scale(1.25);opacity:.2}}
+.mdrop{animation:mdrop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes mdrop{from{transform:translateY(-40px);opacity:0}}
+.flash{animation:flash 1.2s forwards}
+@keyframes flash{0%{opacity:0}25%{opacity:.6}100%{opacity:0}}
+.pop{font-family:Cinzel,Georgia,serif;font-weight:800;font-size:34px;paint-order:stroke;stroke:#2a2216;stroke-width:5px;animation:popup 1.6s forwards}
+@keyframes popup{0%{opacity:0;transform:translateY(10px)}20%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateY(-30px)}}
+.seatrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0}
+.seatrow input[type=text]{width:130px}
+.scl{width:100%;border-collapse:collapse;margin:8px 0}.scl td,.scl th{padding:5px 8px;border-bottom:1px solid #e2d6b8;text-align:left}.scl td:not(:first-child),.scl th:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}.scl tr.w td{font-weight:900;color:#1d6f3e}
+.legend2{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:#d8c49a}
+.legend2 i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+@media (max-width:820px){.rp{grid-template-columns:1fr;grid-template-rows:minmax(300px,1fr) auto;height:auto;min-height:0}.bdw{height:58vh;height:58dvh}.side{overflow:visible}.hand svg{width:86px;height:86px}}
+</style></head><body>
+<header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Remparts<small>dans l’esprit de Carcassonne</small></h1>
+<div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
+<div class="status" id="status"></div>
+<main class="rp"><div class="bdw" id="bdw"><svg id="bd" xmlns="http://www.w3.org/2000/svg"><defs id="defs"></defs><g id="world"><g id="tiles"></g><g id="over"></g></g></svg>
+<div class="zoom"><button data-z="in" aria-label="Zoomer">+</button><button data-z="out" aria-label="Dézoomer">−</button><button data-z="fit" aria-label="Recentrer" style="font-size:15px">⤢</button></div><div class="hint" id="hint"></div></div>
+<aside class="side" id="side"></aside></main>
+<div id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SVGNS='http://www.w3.org/2000/svg';
+function sel(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
+function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
+function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
+function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
+function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
+function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
+  c.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${(Math.random()-.5)*220}px,${innerHeight+40}px) rotate(${Math.random()*720}deg)`}],{duration:2200+Math.random()*1800,delay:Math.random()*700,easing:'ease-in'}).finished.then(()=>c.remove()); } }
+function store(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+/* sons */
+let MUTED=!!load('salle-mute'), AC=null, NOISE=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;} } if(AC.state==='suspended') AC.resume().catch(()=>{}); return AC; }
+function tn(a,t,f,d,type,v,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);}
+function nz(a,t,d,v,type,f){ if(!NOISE){NOISE=a.createBuffer(1,a.sampleRate,a.sampleRate);const c=NOISE.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;} const s=a.createBufferSource();s.buffer=NOISE;const fl=a.createBiquadFilter();fl.type=type;fl.frequency.value=f;const g=a.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl).connect(g).connect(a.destination);s.start(t);s.stop(t+d+.02); }
+function sfx(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') return; const t=a.currentTime+.01;
+  switch(n){
+    case 'click': tn(a,t,900,.06,'triangle',.06); break;
+    case 'move': nz(a,t,.08,.25,'bandpass',900); tn(a,t,220,.08,'sine',.08); break;
+    case 'capture': nz(a,t,.12,.35,'bandpass',1400); tn(a,t,520,.12,'triangle',.1,260); break;
+    case 'card': nz(a,t,.1,.22,'bandpass',2800); break;
+    case 'flip': nz(a,t,.06,.25,'highpass',3000); tn(a,t,1200,.05,'triangle',.04); break;
+    case 'dice': for(let k=0;k<6;k++) nz(a,t+k*.07+Math.random()*.03,.05,.3,'bandpass',1800+Math.random()*1200); break;
+    case 'ding': tn(a,t,1320,.5,'sine',.1); tn(a,t+.07,1760,.4,'sine',.06); break;
+    case 'error': tn(a,t,220,.25,'square',.05,160); break;
+    case 'win': [523,659,784,1046].forEach((f,k)=>tn(a,t+k*.12,f,.4,'triangle',.11)); break;
+    case 'lose': [392,330,262].forEach((f,k)=>tn(a,t+k*.16,f,.45,'triangle',.1)); break;
+    case 'splash': nz(a,t,.5,.3,'lowpass',800); break;
+    case 'boom': nz(a,t,.7,.6,'lowpass',300); tn(a,t,90,.6,'sawtooth',.15,40); break;
+    case 'pop': tn(a,t,600,.08,'sine',.1,900); break;
+  } }
+function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
+document.addEventListener('click',e=>{
+  if(!MUTED) ac();
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
+  const t=e.target.closest('[data-c]'); if(!t) return;
+  switch(t.dataset.c){
+    case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
+    case 'help': GAME.help(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
+  }
+});
+addEventListener('DOMContentLoaded',updSnd);
+
+
+/* ===== moteur ===== */
+const IS_NODE=typeof window==='undefined';
+/* Remparts : moteur pur (dans l'esprit de Carcassonne, jeu de base)
+   Points de bord : N 0,1,2 · E 3,4,5 · S 6,7,8 · O 9,10,11 (sens horaire). Le point k du côté s touche le point 2-k du côté opposé voisin. */
+const ALL=[0,1,2,3,4,5,6,7,8,9,10,11];
+const TILES={
+ A:{n:2,reg:[{t:'M',a:[.5,.42]},{t:'R',p:[7],a:[.5,.86]},{t:'F',p:[0,1,2,3,4,5,6,8,9,10,11],a:[.18,.18]}]},
+ B:{n:4,reg:[{t:'M',a:[.5,.5]},{t:'F',p:ALL,a:[.15,.15]}]},
+ C:{n:1,reg:[{t:'C',p:ALL,sh:1,a:[.5,.5]}]},
+ D:{n:4,reg:[{t:'C',p:[0,1,2],a:[.5,.14]},{t:'R',p:[4,10],a:[.5,.5]},{t:'F',p:[3,11],a:[.18,.36],fc:[0]},{t:'F',p:[5,6,7,8,9],a:[.5,.8]}]},
+ E:{n:5,reg:[{t:'C',p:[0,1,2],a:[.5,.14]},{t:'F',p:[3,4,5,6,7,8,9,10,11],a:[.5,.66],fc:[0]}]},
+ F:{n:2,reg:[{t:'C',p:[3,4,5,9,10,11],sh:1,a:[.5,.5]},{t:'F',p:[0,1,2],a:[.5,.1],fc:[0]},{t:'F',p:[6,7,8],a:[.5,.9],fc:[0]}]},
+ G:{n:1,reg:[{t:'C',p:[0,1,2,6,7,8],a:[.5,.5]},{t:'F',p:[3,4,5],a:[.9,.5],fc:[0]},{t:'F',p:[9,10,11],a:[.1,.5],fc:[0]}]},
+ H:{n:3,reg:[{t:'C',p:[0,1,2],a:[.5,.12]},{t:'C',p:[6,7,8],a:[.5,.88]},{t:'F',p:[3,4,5,9,10,11],a:[.5,.5],fc:[0,1]}]},
+ I:{n:2,reg:[{t:'C',p:[0,1,2],a:[.5,.12]},{t:'C',p:[9,10,11],a:[.12,.5]},{t:'F',p:[3,4,5,6,7,8],a:[.64,.64],fc:[0,1]}]},
+ J:{n:3,reg:[{t:'C',p:[0,1,2],a:[.5,.14]},{t:'R',p:[4,7],a:[.64,.64]},{t:'F',p:[5,6],a:[.88,.88]},{t:'F',p:[3,8,9,10,11],a:[.3,.58],fc:[0]}]},
+ K:{n:3,reg:[{t:'C',p:[0,1,2],a:[.5,.14]},{t:'R',p:[10,7],a:[.36,.64]},{t:'F',p:[8,9],a:[.12,.88]},{t:'F',p:[3,4,5,6,11],a:[.7,.58],fc:[0]}]},
+ L:{n:3,reg:[{t:'C',p:[0,1,2],a:[.5,.12]},{t:'R',p:[4],a:[.82,.5]},{t:'R',p:[7],a:[.5,.82]},{t:'R',p:[10],a:[.18,.5]},{t:'F',p:[3,11],a:[.5,.36],fc:[0]},{t:'F',p:[5,6],a:[.86,.86]},{t:'F',p:[8,9],a:[.14,.86]}]},
+ M:{n:2,reg:[{t:'C',p:[0,1,2,9,10,11],sh:1,a:[.27,.27]},{t:'F',p:[3,4,5,6,7,8],a:[.72,.72],fc:[0]}]},
+ N:{n:3,reg:[{t:'C',p:[0,1,2,9,10,11],a:[.27,.27]},{t:'F',p:[3,4,5,6,7,8],a:[.72,.72],fc:[0]}]},
+ O:{n:2,reg:[{t:'C',p:[0,1,2,9,10,11],sh:1,a:[.25,.25]},{t:'R',p:[4,7],a:[.64,.64]},{t:'F',p:[5,6],a:[.88,.88]},{t:'F',p:[3,8],a:[.86,.3],fc:[0]}]},
+ P:{n:3,reg:[{t:'C',p:[0,1,2,9,10,11],a:[.25,.25]},{t:'R',p:[4,7],a:[.64,.64]},{t:'F',p:[5,6],a:[.88,.88]},{t:'F',p:[3,8],a:[.86,.3],fc:[0]}]},
+ Q:{n:1,reg:[{t:'C',p:[0,1,2,3,4,5,9,10,11],sh:1,a:[.5,.38]},{t:'F',p:[6,7,8],a:[.5,.9],fc:[0]}]},
+ R:{n:3,reg:[{t:'C',p:[0,1,2,3,4,5,9,10,11],a:[.5,.38]},{t:'F',p:[6,7,8],a:[.5,.9],fc:[0]}]},
+ S:{n:2,reg:[{t:'C',p:[0,1,2,3,4,5,9,10,11],sh:1,a:[.5,.35]},{t:'R',p:[7],a:[.5,.86]},{t:'F',p:[6],a:[.82,.9],fc:[0]},{t:'F',p:[8],a:[.18,.9],fc:[0]}]},
+ T:{n:1,reg:[{t:'C',p:[0,1,2,3,4,5,9,10,11],a:[.5,.35]},{t:'R',p:[7],a:[.5,.86]},{t:'F',p:[6],a:[.82,.9],fc:[0]},{t:'F',p:[8],a:[.18,.9],fc:[0]}]},
+ U:{n:8,reg:[{t:'R',p:[1,7],a:[.5,.5]},{t:'F',p:[8,9,10,11,0],a:[.2,.5]},{t:'F',p:[2,3,4,5,6],a:[.8,.5]}]},
+ V:{n:9,reg:[{t:'R',p:[10,7],a:[.36,.64]},{t:'F',p:[8,9],a:[.12,.88]},{t:'F',p:[11,0,1,2,3,4,5,6],a:[.68,.32]}]},
+ W:{n:4,reg:[{t:'R',p:[4],a:[.82,.5]},{t:'R',p:[7],a:[.5,.82]},{t:'R',p:[10],a:[.18,.5]},{t:'F',p:[11,0,1,2,3],a:[.5,.22]},{t:'F',p:[5,6],a:[.86,.86]},{t:'F',p:[8,9],a:[.14,.86]}]},
+ X:{n:1,reg:[{t:'R',p:[1],a:[.5,.2]},{t:'R',p:[4],a:[.8,.5]},{t:'R',p:[7],a:[.5,.8]},{t:'R',p:[10],a:[.2,.5]},{t:'F',p:[2,3],a:[.86,.14]},{t:'F',p:[5,6],a:[.86,.86]},{t:'F',p:[8,9],a:[.14,.86]},{t:'F',p:[11,0],a:[.14,.14]}]}
+};
+const DIRS=[[0,-1],[1,0],[0,1],[-1,0]];
+const K=(x,y)=>x+','+y;
+const rotP=(p,r)=>(p+3*r)%12;
+function rotA(a,r){ let [x,y]=a; for(let i=0;i<r;i++){ [x,y]=[1-y,x]; } return [x,y]; }
+function regOf(t,r){ return TILES[t].reg.map(g=>Object.assign({},g,{p:g.p?g.p.map(p=>rotP(p,r)):null,a:rotA(g.a,r)})); }
+const CACHE={}; function regs(t,r){ const k=t+r; return CACHE[k]||(CACHE[k]=regOf(t,r)); }
+function edgeType(t,r,s){ const g=regs(t,r).find(g=>g.p&&g.p.includes(3*s+1)); return g?g.t:'F'; }
+function regAt(t,r,pt){ return regs(t,r).findIndex(g=>g.p&&g.p.includes(pt)); }
+function shuffle(a,rng){ rng=rng||Math.random; for(let i=a.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function newGame(o,rng){ const deck=[]; for(const t in TILES){ for(let k=0;k<TILES[t].n-(t==='D'?1:0);k++) deck.push(t); }
+  const G={board:{},deck:shuffle(deck,rng),players:o.players.map(p=>({name:p.name,ai:!!p.ai,level:p.level||'normal',score:0,meeples:7})),cur:0,tile:null,phase:'place',last:null,farm:o.farm!==false,over:null,turn:0,discarded:[]};
+  G.board[K(0,0)]={t:'D',r:0,m:null}; return G; }
+function canPlace(G,t,x,y,r){ if(G.board[K(x,y)]) return false; let n=0;
+  for(let s=0;s<4;s++){ const nb=G.board[K(x+DIRS[s][0],y+DIRS[s][1])]; if(!nb) continue; n++; if(edgeType(t,r,s)!==edgeType(nb.t,nb.r,(s+2)%4)) return false; }
+  return n>0; }
+function frontier(G){ const f=new Set(); for(const k in G.board){ const [x,y]=k.split(',').map(Number); DIRS.forEach(([dx,dy])=>{ const kk=K(x+dx,y+dy); if(!G.board[kk]) f.add(kk); }); } return [...f].map(k=>k.split(',').map(Number)); }
+function placements(G,t){ const out=[]; for(const [x,y] of frontier(G)) for(let r=0;r<4;r++) if(canPlace(G,t,x,y,r)) out.push({x,y,r}); return out; }
+/* parcours d'une zone (ville, route ou pré) à partir d'une région d'une tuile */
+function feature(G,x,y,ri,board){ board=board||G.board; const start=board[K(x,y)], g0=regs(start.t,start.r)[ri];
+  if(g0.t==='M'){ let c=0; for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++) if(board[K(x+dx,y+dy)]) c++; return {t:'M',tiles:new Set([K(x,y)]),n:c,open:9-c,complete:c===9,sh:0,mp:start.m&&start.m.ri===ri?[start.m.p]:[],nodes:[[x,y,ri]],key:K(x,y)+':'+ri}; }
+  const seen=new Set(), st=[[x,y,ri]], nodes=[]; let open=0, sh=0; const mp=[], tiles=new Set();
+  while(st.length){ const [cx,cy,cr]=st.pop(), id=cx+','+cy+':'+cr; if(seen.has(id)) continue; seen.add(id); nodes.push([cx,cy,cr]);
+    const tl=board[K(cx,cy)], g=regs(tl.t,tl.r)[cr]; if(!tiles.has(K(cx,cy))) tiles.add(K(cx,cy)); if(g.sh) sh++; if(tl.m&&tl.m.ri===cr) mp.push(tl.m.p);
+    for(const pt of g.p){ const s=Math.floor(pt/3), k=pt%3, nx=cx+DIRS[s][0], ny=cy+DIRS[s][1], nb=board[K(nx,ny)];
+      if(!nb){ if(g.t!=='F'||k===1) open++; continue; } const op=((s+2)%4)*3+(2-k), nr=regAt(nb.t,nb.r,op); if(nr>=0) st.push([nx,ny,nr]); } }
+  // une ville qui touche un même bord deux fois n'est pas double comptée : on compte les tuiles distinctes
+  const key=nodes.map(n=>n[0]+','+n[1]+':'+n[2]).sort()[0];
+  return {t:g0.t,tiles,n:tiles.size,open,complete:open===0,sh,mp,nodes,key}; }
+function owners(mp){ if(!mp.length) return []; const c={}; mp.forEach(p=>c[p]=(c[p]||0)+1); const m=Math.max(...Object.values(c)); return Object.keys(c).filter(k=>c[k]===m).map(Number); }
+function featPts(f,final){ if(f.t==='C') return final&&!f.complete?f.n+f.sh:2*f.n+2*f.sh; if(f.t==='R') return f.n; if(f.t==='M') return f.n; return 0; }
+function meepleOpts(G,x,y){ const tl=G.board[K(x,y)], out=[]; if(G.players[G.cur].meeples<1) return out;
+  regs(tl.t,tl.r).forEach((g,ri)=>{ if(g.t==='F'&&!G.farm) return; const f=feature(G,x,y,ri); if(!f.mp.length) out.push(ri); }); return out; }
+function drawTile(G,rng){ const ev=[]; while(G.deck.length){ const t=G.deck.pop(); if(placements(G,t).length){ G.tile=t; G.phase='place'; ev.push({t:'draw',tile:t,p:G.cur}); return ev; } G.discarded.push(t); ev.push({t:'discard',tile:t}); }
+  G.tile=null; return ev.concat(finalScoring(G)); }
+function start(G,rng){ return drawTile(G,rng); }
+function place(G,x,y,r){ if(G.phase!=='place'||!canPlace(G,G.tile,x,y,r)) return null; G.board[K(x,y)]={t:G.tile,r,m:null}; G.last={x,y}; G.phase='meeple'; return [{t:'place',x,y,r,tile:G.tile,p:G.cur}]; }
+function scoreAround(G,x,y,ev){ // zones terminées par la tuile posée
+  const tl=G.board[K(x,y)], done=new Set();
+  regs(tl.t,tl.r).forEach((g,ri)=>{ if(g.t!=='C'&&g.t!=='R') return; const f=feature(G,x,y,ri); if(done.has(f.key)||!f.complete) return; done.add(f.key); award(G,f,ev,false); });
+  for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++){ const k=K(x+dx,y+dy), t=G.board[k]; if(!t) continue; regs(t.t,t.r).forEach((g,ri)=>{ if(g.t!=='M') return; const f=feature(G,x+dx,y+dy,ri); if(f.complete&&f.mp.length) award(G,f,ev,false); }); } }
+function award(G,f,ev,final){ const win=owners(f.mp), pts=featPts(f,final); win.forEach(p=>G.players[p].score+=pts);
+  // les partisans reviennent (sauf décompte final des prés)
+  const back=[]; f.nodes.forEach(([nx,ny,nr])=>{ const t=G.board[K(nx,ny)]; if(t.m&&t.m.ri===nr){ back.push({x:nx,y:ny,p:t.m.p}); if(!final){ G.players[t.m.p].meeples++; t.m=null; } } });
+  ev.push({t:'score',f:f.t,pts,win,tiles:[...f.tiles],back,final,complete:f.complete}); }
+function meeple(G,ri){ if(G.phase!=='meeple') return null; const {x,y}=G.last, ev=[];
+  if(ri!=null){ if(!meepleOpts(G,x,y).includes(ri)) return null; G.board[K(x,y)].m={p:G.cur,ri}; G.players[G.cur].meeples--; ev.push({t:'meeple',x,y,ri,p:G.cur}); }
+  scoreAround(G,x,y,ev); G.turn++; G.cur=(G.cur+1)%G.players.length; return ev.concat(drawTile(G)); }
+function finalScoring(G){ const ev=[{t:'final'}]; const seen=new Set();
+  for(const k in G.board){ const [x,y]=k.split(',').map(Number), t=G.board[k]; if(!t.m) continue; const f=feature(G,x,y,t.m.ri); if(seen.has(f.key)) continue; seen.add(f.key);
+    if(f.t==='F') continue; award(G,f,ev,true); }
+  if(G.farm){ const cityDone={}; const cityKey=(x,y,ri)=>{ const f=feature(G,x,y,ri); cityDone[f.key]=f.complete; return f.key; };
+    for(const k in G.board){ const [x,y]=k.split(',').map(Number), t=G.board[k]; if(!t.m||regs(t.t,t.r)[t.m.ri].t!=='F') continue; const f=feature(G,x,y,t.m.ri); if(seen.has(f.key)) continue; seen.add(f.key);
+      const cs=new Set(); f.nodes.forEach(([nx,ny,nr])=>{ const tt=G.board[K(nx,ny)], g=regs(tt.t,tt.r)[nr]; (g.fc||[]).forEach(ci=>{ const ck=cityKey(nx,ny,ci); if(cityDone[ck]) cs.add(ck); }); });
+      const win=owners(f.mp), pts=3*cs.size; win.forEach(p=>G.players[p].score+=pts); ev.push({t:'score',f:'F',pts,win,tiles:[...f.tiles],back:[],final:true,cities:cs.size}); } }
+  G.phase='over'; const best=Math.max(...G.players.map(p=>p.score)); G.over={winners:G.players.map((p,i)=>i).filter(i=>G.players[i].score===best)}; ev.push({t:'over'}); return ev; }
+/* ===== IA ===== */
+function cloneBoard(b){ const o={}; for(const k in b) o[k]=b[k]; return o; }
+function potential(f,left){ const pc=f.complete?1:Math.max(.05,Math.min(.95,(left/(left+8))*(1/(1+.55*f.open)))*1.4);
+  if(f.t==='C') return f.complete?2*f.n+2*f.sh:pc*(2*f.n+2*f.sh)+(1-pc)*(f.n+f.sh);
+  if(f.t==='R') return f.n*(f.complete?1:.85);
+  if(f.t==='M') return f.n+(9-f.n)*Math.min(1,left/40)*.75;
+  return 0; }
+function shareVal(mp,p){ const w=owners(mp); if(!w.length) return 0; return (w.includes(p)?1:0)-(w.some(q=>q!==p)?1:0)*.85; }
+function evalMove(G,p,x,y,r,ri){ const t=G.tile, before=G.board, left=G.deck.length; const b=cloneBoard(before); b[K(x,y)]={t,r,m:ri!=null?{p,ri}:null};
+  let v=0; const seenA=new Set(), seenB=new Set();
+  // zones touchées après la pose
+  regs(t,r).forEach((g,i)=>{ if(g.t==='F'){ if(ri===i) v+=farmVal(G,b,x,y,i,left); return; } const f=feature(G,x,y,i,b); if(seenA.has(f.key)) return; seenA.add(f.key); v+=potential(f,left)*shareVal(f.mp,p); if(f.complete&&f.mp.some(q=>q===p)) v+=2.5; });
+  // zones voisines avant (pour ne compter que le gain)
+  for(let s=0;s<4;s++){ const nx=x+DIRS[s][0], ny=y+DIRS[s][1], nb=before[K(nx,ny)]; if(!nb) continue; regs(nb.t,nb.r).forEach((g,i)=>{ if(g.t==='F'||g.t==='M') return; if(!g.p.some(pt=>Math.floor(pt/3)===(s+2)%4)) return; const f=feature(G,nx,ny,i,before); if(seenB.has(f.key)) return; seenB.add(f.key); v-=potential(f,left)*shareVal(f.mp,p); }); }
+  // abbayes autour
+  for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++){ if(!dx&&!dy) continue; const tt=before[K(x+dx,y+dy)]; if(!tt||!tt.m) continue; const g=regs(tt.t,tt.r)[tt.m.ri]; if(g.t!=='M') continue; const sg=tt.m.p===p?1:-.85; v+=sg*1; }
+  if(ri!=null){ const m=G.players[p].meeples, g=regs(t,r)[ri]; let cost=1.6+(7-m)*.75; if(g.t!=='F'&&g.t!=='M'){ const f=feature(G,x,y,ri,b); if(!f.complete) cost+=f.open*.45*Math.min(1,left/30); } v-=cost*(left>8?1:.35); }
+  return v; }
+function farmVal(G,b,x,y,i,left){ if(left>34) return -2; const f=feature(G,x,y,i,b); if(f.mp.some(q=>q!==G.cur)&&!f.mp.length) return 0; const cs=new Set();
+  f.nodes.forEach(([nx,ny,nr])=>{ const tt=b[K(nx,ny)], g=regs(tt.t,tt.r)[nr]; (g.fc||[]).forEach(ci=>{ const cf=feature(G,nx,ny,ci,b); if(!cs.has(cf.key)) cs.add(cf.key+(cf.complete?'!':cf.open<=2?'?':'')); }); });
+  let s=0; cs.forEach(k=>{ s+=k.endsWith('!')?3:k.endsWith('?')?1.6:.6; }); return s*(1-left/90)-1; }
+function aiMove(G,rng){ rng=rng||Math.random; const p=G.cur, lv=G.players[p].level, ps=placements(G,G.tile); let best=null;
+  for(const m of ps){ const b=cloneBoard(G.board); b[K(m.x,m.y)]={t:G.tile,r:m.r,m:null};
+    const opts=[null]; if(G.players[p].meeples>0) regs(G.tile,m.r).forEach((g,ri)=>{ if(g.t==='F'&&(!G.farm||lv==='facile')) return; const f=feature(G,m.x,m.y,ri,b); if(!f.mp.length) opts.push(ri); });
+    for(const ri of opts){ let v=lv==='facile'?rng()*4+(ri!=null&&regs(G.tile,m.r)[ri].t!=='F'?1:0):evalMove(G,p,m.x,m.y,m.r,ri)+(lv==='normal'?(rng()-.5)*1.6:(rng()-.5)*.2);
+      if(!best||v>best.v) best={x:m.x,y:m.y,r:m.r,ri,v}; } }
+  return best; }
+if(IS_NODE) module.exports={TILES,newGame,start,place,meeple,placements,canPlace,meepleOpts,feature,aiMove,regs,K,DIRS,finalScoring};
+
+else {
+/* ===== interface ===== */
+let G=null, BUSY=false, GEN=0, SEL=null, HR=0, V={cx:50,cy:50,s:1}, LASTNEW=null;
+const GAME=window.GAME={help,menu};
+const KEY='rp';
+const PC=['#c0392b','#2f6fd6','#e6b822','#2e9b4f','#8e44ad'];
+const PCN=['rouge','bleu','jaune','vert','violet'];
+const NAMES=['Camille','Lucas','Inès','Hugo','Léa'];
+const TN={C:'ville',R:'route',F:'pré',M:'abbaye'};
+const MID=[[50,0],[100,50],[50,100],[0,50]];
+const CITY={cap:'M0 0H100C80 34 20 34 0 0Z',band:'M0 0H100C68 32 68 68 100 100H0C32 68 32 32 0 0Z',corner:'M0 0H100C62 26 26 62 0 100Z',three:'M0 0H100V100C72 66 28 66 0 100Z',full:'M0 0H100V100H0Z'};
+/* ---------- dessin des tuiles ---------- */
+function rnd(seed){ let s=seed; return ()=>{ s=(s*9301+49297)%233280; return s/233280; }; }
+function cityPath(sides){ const n=sides.length;
+  if(n===4) return [CITY.full,0]; if(n===1) return [CITY.cap,sides[0]*90];
+  if(n===3){ const m=[0,1,2,3].find(s=>!sides.includes(s)); return [CITY.three,((m-2+4)%4)*90]; }
+  const [a,b]=sides; if((a+2)%4===b) return [CITY.band,a%2?90:0];
+  const f=(a+1)%4===b?a:b; return [CITY.corner,((f+1)%4)*90]; }
+function house(x,y,s,c){ return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-6 0h12v7h-12Z" fill="#e9d3a6" stroke="#6b4a24" stroke-width=".8"/><path d="M-7.5 0.5L0-6.5L7.5 0.5Z" fill="${c}" stroke="#6b4a24" stroke-width=".8"/></g>`; }
+function tileInner(t){ const T=TILES[t], R=rnd(t.charCodeAt(0)*7+3); let s=`<rect width="100" height="100" fill="#8fbf55"/>`;
+  for(let i=0;i<9;i++){ const x=8+R()*84, y=8+R()*84; s+=`<path d="M${x} ${y}l2-5l2 5" stroke="#6f9e3d" stroke-width="1.4" fill="none" stroke-linecap="round"/>`; }
+  // routes
+  let roads='', nR=0; T.reg.forEach(g=>{ if(g.t!=='R') return; nR++; const m=g.p.map(p=>MID[Math.floor(p/3)]); let d;
+    if(m.length===2){ const [a,b]=m; if(a[0]===b[0]||a[1]===b[1]) d=`M${a[0]} ${a[1]}L${b[0]} ${b[1]}`; else d=`M${a[0]} ${a[1]}Q50 50 ${b[0]} ${b[1]}`; }
+    else d=`M${m[0][0]} ${m[0][1]}L50 50`;
+    roads+=`<path d="${d}" stroke="#8a7650" stroke-width="13" fill="none" stroke-linecap="butt"/><path d="${d}" stroke="#efe0b8" stroke-width="9" fill="none"/><path d="${d}" stroke="#d8c493" stroke-width="1.2" stroke-dasharray="3 5" fill="none"/>`; });
+  s+=roads;
+  if(nR>=3) s+=`<rect x="41" y="41" width="18" height="18" rx="2" fill="#e9d3a6" stroke="#6b4a24" stroke-width="1.2"/><path d="M39 42L50 33L61 42Z" fill="#a0522d" stroke="#6b4a24"/>`;
+  // villes
+  T.reg.forEach(g=>{ if(g.t!=='C') return; const sides=[0,1,2,3].filter(k=>g.p.includes(3*k+1)); const [d,rot]=cityPath(sides);
+    s+=`<path d="${d}" transform="rotate(${rot} 50 50)" fill="url(#stone)" stroke="#6b4a24" stroke-width="2.4"/>`;
+    const [ax,ay]=g.a; const n=sides.length>2?4:sides.length===2?3:2; for(let i=0;i<n;i++){ const hx=ax*100+(R()-.5)*(sides.length>2?44:22), hy=ay*100+(R()-.5)*(sides.length>1?30:10); s+=house(Math.max(10,Math.min(90,hx)),Math.max(8,Math.min(92,hy)),.9+R()*.4,R()<.5?'#a0522d':'#8b3a2b'); }
+    if(g.sh){ const sx=Math.min(84,ax*100+16), sy=Math.max(14,ay*100-8); s+=`<g transform="translate(${sx} ${sy})"><path d="M-7-8h14v7c0 6-4 9-7 10c-3-1-7-4-7-10Z" fill="#2f5fb3" stroke="#f6ecd6" stroke-width="1.6"/><path d="M0-5l1.6 3.3 3.4.4-2.5 2.3.7 3.4L0 2.7-3.2 4.4l.7-3.4-2.5-2.3 3.4-.4Z" fill="#ffd34d"/></g>`; } });
+  // abbaye
+  if(T.reg.some(g=>g.t==='M')){ const [ax,ay]=T.reg.find(g=>g.t==='M').a.map(v=>v*100); s+=`<g transform="translate(${ax} ${ay})"><ellipse cx="0" cy="13" rx="20" ry="5" fill="#0002"/><rect x="-15" y="-4" width="30" height="17" fill="#efe0c0" stroke="#6b4a24" stroke-width="1.3"/><path d="M-18-3L0-15L18-3Z" fill="#b5452b" stroke="#6b4a24" stroke-width="1.3"/><rect x="-4" y="-25" width="8" height="14" fill="#efe0c0" stroke="#6b4a24" stroke-width="1.2"/><path d="M-6-24L0-31L6-24Z" fill="#b5452b" stroke="#6b4a24"/><path d="M-3 13v-7a3 3 0 0 1 6 0v7" fill="#6b4a24"/></g>`; }
+  s+=`<rect width="100" height="100" fill="none" stroke="#4d3a1c" stroke-opacity=".35" stroke-width="1"/>`;
+  return s; }
+function buildDefs(){ let d=`<pattern id="stone" width="14" height="10" patternUnits="userSpaceOnUse"><rect width="14" height="10" fill="#cfa266"/><path d="M0 5h14M7 0v5M0 10h14M3.5 5v5M10.5 5v5" stroke="#b58848" stroke-width=".9"/></pattern>`;
+  for(const t in TILES) d+=`<g id="t-${t}">${tileInner(t)}</g>`; $('#defs').innerHTML=d; }
+function tileSVG(t,r,size){ return `<svg viewBox="0 0 100 100" width="${size||100}" height="${size||100}" style="transform:rotate(${r*90}deg)"><use href="#t-${t}"/></svg>`; }
+const MEEPLE='<path d="M-8 11Q-8-1-3-3L-9-2Q-11-6-6-8H6Q11-6 9-2L3-3Q8-1 8 11Z"/><circle cy="-12" r="5.5"/>';
+function meepleSVG(x,y,c,lying,cls){ return `<g class="${cls||''}" transform="translate(${x} ${y})"><g transform="rotate(${lying?-90:0})" fill="${c}" stroke="#1d150a" stroke-width="1.6">${MEEPLE}</g></g>`; }
+/* ---------- vue du plateau ---------- */
+function wpos(x,y,a){ return [x*100+a[0]*100,y*100+a[1]*100]; }
+function applyView(){ const r=$('#bd').getBoundingClientRect(); $('#world').setAttribute('transform',`translate(${r.width/2-V.cx*V.s} ${r.height/2-V.cy*V.s}) scale(${V.s})`); }
+function fit(){ if(!G) return; const ks=Object.keys(G.board).map(k=>k.split(',').map(Number)); let x0=Math.min(...ks.map(k=>k[0]))-1,x1=Math.max(...ks.map(k=>k[0]))+2,y0=Math.min(...ks.map(k=>k[1]))-1,y1=Math.max(...ks.map(k=>k[1]))+2;
+  const r=$('#bd').getBoundingClientRect(); V.cx=(x0+x1)*50; V.cy=(y0+y1)*50; V.s=Math.max(.25,Math.min(1.3,Math.min(r.width/((x1-x0)*100),r.height/((y1-y0)*100)))); applyView(); }
+function zoomAt(f,px,py){ const r=$('#bd').getBoundingClientRect(); px=px??r.width/2; py=py??r.height/2; const wx=V.cx+(px-r.width/2)/V.s, wy=V.cy+(py-r.height/2)/V.s; V.s=Math.max(.2,Math.min(2.2,V.s*f)); V.cx=wx-(px-r.width/2)/V.s; V.cy=wy-(py-r.height/2)/V.s; applyView(); }
+/* ---------- rendu ---------- */
+let FIT=new Map();
+function computeFit(){ FIT=new Map(); if(!G||!G.tile||G.phase!=='place') return; placements(G,G.tile).forEach(m=>{ const k=K(m.x,m.y); if(!FIT.has(k)) FIT.set(k,[]); FIT.get(k).push(m.r); }); }
+const myTurn=()=>G&&G.phase!=='over'&&!G.players[G.cur].ai&&!BUSY;
+function render(){ if(!G){ $('#tiles').innerHTML=''; $('#over').innerHTML=''; $('#side').innerHTML=''; $('#hint').textContent=''; renderStatus(); return; }
+  let s='';
+  for(const k in G.board){ const [x,y]=k.split(',').map(Number), t=G.board[k]; s+=`<g transform="translate(${x*100} ${y*100})" class="${LASTNEW===k?'newt':''}"><use href="#t-${t.t}" transform="rotate(${t.r*90} 50 50)"/></g>`; }
+  for(const k in G.board){ const [x,y]=k.split(',').map(Number), t=G.board[k]; if(!t.m) continue; const g=regs(t.t,t.r)[t.m.ri], [wx,wy]=wpos(x,y,g.a); s+=meepleSVG(wx,wy,PC[t.m.p],g.t==='F',LASTNEW===k?'mdrop':''); }
+  if(G.last){ const {x,y}=G.last; s+=`<rect x="${x*100+2}" y="${y*100+2}" width="96" height="96" fill="none" stroke="${PC[(G.phase==='meeple'?G.cur:(G.cur+G.players.length-1)%G.players.length)]}" stroke-width="4" rx="4" opacity=".9"/>`; }
+  $('#tiles').innerHTML=s; LASTNEW=null;
+  let o='';
+  if(G.phase==='place'&&myTurn()){ computeFit(); FIT.forEach((rs,k)=>{ const [x,y]=k.split(',').map(Number); if(SEL&&SEL.x===x&&SEL.y===y) return; o+=`<g class="spot" data-spot="${k}"><rect x="${x*100+6}" y="${y*100+6}" width="88" height="88" rx="8"/></g>`; });
+    if(SEL) o+=`<g class="ghost" data-spot="${K(SEL.x,SEL.y)}" transform="translate(${SEL.x*100} ${SEL.y*100})"><use href="#t-${G.tile}" transform="rotate(${SEL.r*90} 50 50)"/><rect width="100" height="100" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="10 6"/></g>`; }
+  if(G.phase==='meeple'&&myTurn()){ const {x,y}=G.last, t=G.board[K(x,y)]; meepleOpts(G,x,y).forEach(ri=>{ const g=regs(t.t,t.r)[ri], [wx,wy]=wpos(x,y,g.a); o+=`<g class="mspot" data-ms="${ri}"><circle cx="${wx}" cy="${wy}" r="12" fill="${PC[G.cur]}" fill-opacity=".85" stroke="#fff" stroke-width="3"/><text x="${wx}" y="${wy+5}" text-anchor="middle" font-size="15" font-weight="900" fill="#fff" font-family="Arial">+</text></g>`; }); }
+  $('#over').innerHTML=o; renderSide(); renderStatus(); renderHint(); }
+function renderSide(){ const P=G.players[G.cur];
+  const hand=G.phase==='over'?'':`<div class="card2"><h3>${G.players[G.cur].ai?'Tuile de '+esc(P.name):'Ta tuile'}</h3><div class="hand"><div id="handt">${G.tile?tileSVG(G.tile,SEL?SEL.r:HR,104):''}</div><div class="ctl">${myTurn()&&G.phase==='place'?`<button class="btn" data-a="rot">↻ Tourner</button><button class="btn ok" data-a="confirm" ${SEL?'':'disabled'}>Poser ici</button>`:myTurn()&&G.phase==='meeple'?`<button class="btn" data-a="nomeeple">Sans partisan</button><button class="btn" data-a="undo">Reprendre la tuile</button>`:`<span class="left">${P.ai?'L’ordinateur réfléchit…':''}</span>`}</div></div></div>`;
+  const pls=G.players.map((p,i)=>`<div class="pl ${i===G.cur&&G.phase!=='over'?'on':''}" style="--pc:${PC[i]}">${meepleSVGsmall(PC[i])}<span class="nm3">${esc(p.name)}</span><span class="sc">${p.score}</span><span class="mps">${Array.from({length:7},(_,k)=>`<svg viewBox="-12 -19 24 31" style="opacity:${k<p.meeples?1:.18}"><g fill="${PC[i]}" stroke="#1d150a" stroke-width="1.6">${MEEPLE}</g></svg>`).join('')}</span></div>`).join('');
+  $('#side').innerHTML=hand+`<div class="card2"><h3>Seigneurs</h3>${pls}</div><div class="card2"><h3>Pioche</h3><p class="left" style="margin:0 0 6px">${G.deck.length} tuile${G.deck.length>1?'s':''} restante${G.deck.length>1?'s':''}${G.discarded.length?' · '+G.discarded.length+' défaussée(s)':''}</p><button class="btn" data-a="left">Voir les tuiles restantes</button></div>
+   <div class="card2 legend2"><span><i style="background:#c99a5b"></i>ville : 2 par tuile et blason</span><span><i style="background:#efe0b8"></i>route : 1 par tuile</span><span><i style="background:#b5452b"></i>abbaye : 9</span><span><i style="background:#8fbf55"></i>pré : 3 par ville finie</span></div>`; }
+function meepleSVGsmall(c){ return `<svg viewBox="-12 -19 24 31" width="18" height="22"><g fill="${c}" stroke="#1d150a" stroke-width="1.6">${MEEPLE}</g></svg>`; }
+function renderHint(){ const h=$('#hint'); if(G.phase==='over'){ h.innerHTML='Partie terminée.'; return; } const P=G.players[G.cur];
+  if(P.ai){ h.innerHTML=`<b>${esc(P.name)}</b> joue…`; return; }
+  if(G.phase==='place') h.innerHTML=SEL?`Touche la tuile pour la <b>tourner</b>, puis <b>Poser ici</b>.`:`Touche une case en pointillés pour placer ta tuile. Glisse pour déplacer le plateau.`;
+  else h.innerHTML=P.meeples?`Pose un partisan sur un <b>+</b> (ville, route, abbaye ou pré) ou choisis <b>Sans partisan</b>.`:`Plus de partisan disponible : <b>Sans partisan</b>.`; }
+function renderStatus(){ const st=$('#status'); if(!G){ st.innerHTML=''; return; } const P=G.players[G.cur];
+  st.style.setProperty('--pc',G.phase==='over'?'#3d7a2f':PC[G.cur]); st.innerHTML=G.phase==='over'?`<span class="who">Fin de partie</span><span class="msg">${G.over.winners.map(i=>esc(G.players[i].name)).join(' et ')} l’emporte${G.over.winners.length>1?'nt':''}.</span>`:`<span class="who">${esc(P.name)}</span><span class="msg">${G.phase==='place'?'pose une tuile':'peut poser un partisan'}</span><span class="right">${G.deck.length} tuiles</span>`; }
+/* ---------- animations ---------- */
+function popAt(wx,wy,txt,c){ const g=document.createElementNS('http://www.w3.org/2000/svg','text'); g.setAttribute('x',wx); g.setAttribute('y',wy); g.setAttribute('text-anchor','middle'); g.setAttribute('class','pop'); g.setAttribute('fill',c); g.textContent=txt; $('#over').appendChild(g); setTimeout(()=>g.remove(),1650); }
+function flashTiles(ks,c){ ks.forEach(k=>{ const [x,y]=k.split(',').map(Number); const r=document.createElementNS('http://www.w3.org/2000/svg','rect'); r.setAttribute('x',x*100); r.setAttribute('y',y*100); r.setAttribute('width',100); r.setAttribute('height',100); r.setAttribute('fill',c); r.setAttribute('class','flash'); $('#over').appendChild(r); setTimeout(()=>r.remove(),1250); }); }
+async function show(ev,my){ for(const e of ev||[]){ if(my!==GEN) return;
+  switch(e.t){
+   case 'draw': render(); { const h=$('#handt svg'); if(h) h.animate([{transform:`rotate(${HR*90}deg) scale(.5)`,opacity:0},{transform:`rotate(${HR*90}deg) scale(1)`,opacity:1}],{duration:350,easing:'ease-out'}); } sfx('card'); break;
+   case 'discard': toast(`Tuile impossible à poser, défaussée`); await wait(500); break;
+   case 'place': LASTNEW=K(e.x,e.y); render(); sfx('move'); await wait(260); break;
+   case 'meeple': LASTNEW=K(e.x,e.y); render(); sfx('pop'); await wait(320); break;
+   case 'score': { const c=e.win.length?PC[e.win[0]]:'#888'; const cx=e.tiles.reduce((a,k)=>a+ +k.split(',')[0],0)/e.tiles.length*100+50, cy=e.tiles.reduce((a,k)=>a+ +k.split(',')[1],0)/e.tiles.length*100+50;
+     render(); flashTiles(e.tiles,c); if(e.win.length&&e.pts) popAt(cx,cy,'+'+e.pts,c);
+     const lab={C:'Ville',R:'Route',M:'Abbaye',F:'Pré'}[e.f]; if(e.win.length) toast(`${lab} ${e.complete?'terminée':'en cours'} : ${e.pts} pts pour ${e.win.map(i=>G.players[i].name).join(' et ')}`); sfx(e.win.length?'ding':'click'); await wait(e.final?700:1000); break; }
+   case 'final': banner('Décompte final','Routes, villes et abbayes inachevées, puis les prés','#6b4a24'); render(); await wait(1600); break;
+   case 'over': render(); break;
+  } } }
+/* ---------- déroulement ---------- */
+function save(){ store(KEY,G&&G.phase!=='over'?G:null); }
+async function apply(ev,my){ if(!ev) return; BUSY=true; await show(ev,my); if(my!==GEN) return; BUSY=false; SEL=null; step(); }
+function step(){ if(!G) return; render(); save(); const my=GEN;
+  if(G.phase==='over'){ setTimeout(()=>{ if(my===GEN) gameEnd(); },500); return; }
+  if(G.players[G.cur].ai) setTimeout(()=>{ if(my===GEN&&!BUSY) aiTurn(); },600); }
+async function aiTurn(){ const my=GEN, m=aiMove(G); if(!m) return; BUSY=true;
+  SEL={x:m.x,y:m.y,r:m.r}; render(); centerOn(m.x,m.y); await wait(550); if(my!==GEN) return;
+  const e1=place(G,m.x,m.y,m.r); SEL=null; await show(e1,my); if(my!==GEN) return; await wait(250);
+  const e2=meeple(G,m.ri); await show(e2,my); if(my!==GEN) return; BUSY=false; step(); }
+function centerOn(x,y){ const r=$('#bd').getBoundingClientRect(); const px=V.cx+(-r.width/2)/V.s, py=V.cy+(-r.height/2)/V.s, wx=x*100+50, wy=y*100+50; const m=60/V.s;
+  if(wx<px+m||wx>px+r.width/V.s-m||wy<py+m||wy>py+r.height/V.s-m){ V.cx=wx; V.cy=wy; applyView(); } }
+function gameEnd(){ store(KEY,null); const w=G.over.winners; const hw=w.some(i=>!G.players[i].ai); banner(hw?'Victoire !':'Fin de partie',w.map(i=>G.players[i].name).join(' et '),PC[w[0]]); sfx(hw?'win':'lose'); if(hw) confetti(PC);
+  setTimeout(()=>{ window.MODAL_CLOSABLE=true; openModal(`<h2>${w.map(i=>esc(G.players[i].name)).join(' et ')} l’emporte${w.length>1?'nt':''}</h2><table class="scl"><tr><th>Seigneur</th><th>Points</th></tr>${G.players.map((p,i)=>({p,i})).sort((a,b)=>b.p.score-a.p.score).map(({p,i})=>`<tr class="${w.includes(i)?'w':''}"><td><span style="color:${PC[i]}">●</span> ${esc(p.name)}</td><td>${p.score}</td></tr>`).join('')}</table><div class="acts"><button class="btn" data-c="new">Changer les réglages</button><button class="btn pri" data-a="again">Rejouer</button></div>`); },1700); }
+function tilesLeft(){ const c={}; G.deck.forEach(t=>c[t]=(c[t]||0)+1); window.MODAL_CLOSABLE=true;
+  openModal(`<h2>Tuiles restantes (${G.deck.length})</h2><p>L’ordre de la pioche reste secret, mais tu peux compter ce qui reste.</p><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px">${Object.keys(TILES).map(t=>`<div style="text-align:center;opacity:${c[t]?1:.3}">${tileSVG(t,0,62)}<div style="font-weight:900">×${c[t]||0}</div></div>`).join('')}</div><div class="acts"><button class="btn pri" data-c="close">Fermer</button></div>`); }
+/* ---------- interactions plateau ---------- */
+(function(){ const svg=$('#bd'); const pts=new Map(); let start=null, moved=false, pinch=null;
+  svg.addEventListener('pointerdown',e=>{ svg.setPointerCapture(e.pointerId); pts.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(pts.size===1){ start={x:e.clientX,y:e.clientY,cx:V.cx,cy:V.cy,t:e.target}; moved=false; } else if(pts.size===2){ const [a,b]=[...pts.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y),s:V.s}; moved=true; } });
+  svg.addEventListener('pointermove',e=>{ if(!pts.has(e.pointerId)) return; pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===2&&pinch){ const [a,b]=[...pts.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const r=svg.getBoundingClientRect(); const f=(pinch.s*d/pinch.d)/V.s; zoomAt(f,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top); return; }
+    if(!start) return; const dx=e.clientX-start.x, dy=e.clientY-start.y; if(!moved&&Math.hypot(dx,dy)>8){ moved=true; svg.classList.add('drag'); } if(moved&&pts.size===1){ V.cx=start.cx-dx/V.s; V.cy=start.cy-dy/V.s; applyView(); } });
+  const up=e=>{ pts.delete(e.pointerId); if(pts.size<2) pinch=null; if(pts.size) return; svg.classList.remove('drag'); if(start&&!moved) tap(start.t); start=null; };
+  svg.addEventListener('pointerup',up); svg.addEventListener('pointercancel',e=>{ pts.delete(e.pointerId); start=null; svg.classList.remove('drag'); });
+  svg.addEventListener('wheel',e=>{ e.preventDefault(); const r=svg.getBoundingClientRect(); zoomAt(e.deltaY<0?1.12:1/1.12,e.clientX-r.left,e.clientY-r.top); },{passive:false});
+  addEventListener('resize',()=>applyView()); })();
+function tap(t){ if(!G||!myTurn()) return; const sp=t.closest&&t.closest('[data-spot]'), ms=t.closest&&t.closest('[data-ms]');
+  if(G.phase==='place'&&sp){ const [x,y]=sp.dataset.spot.split(',').map(Number), rs=FIT.get(sp.dataset.spot); if(!rs) return;
+    if(SEL&&SEL.x===x&&SEL.y===y){ const i=rs.indexOf(SEL.r); SEL.r=rs[(i+1)%rs.length]; } else SEL={x,y,r:rs.includes(HR)?HR:rs[0]}; HR=SEL.r; sfx('click'); render(); return; }
+  if(G.phase==='meeple'&&ms){ apply(meeple(G,+ms.dataset.ms),GEN); } }
+document.addEventListener('click',e=>{ const z=e.target.closest('[data-z]'); if(z){ if(z.dataset.z==='fit') fit(); else zoomAt(z.dataset.z==='in'?1.25:.8); return; }
+  const t=e.target.closest('[data-a]'); if(!t||!G) return; const a=t.dataset.a;
+  if(a==='again'){ closeModal(); startGame(); return; } if(a==='left'){ tilesLeft(); return; }
+  if(!myTurn()) return;
+  if(a==='rot'){ if(SEL){ const rs=FIT.get(K(SEL.x,SEL.y)); const i=rs.indexOf(SEL.r); SEL.r=rs[(i+1)%rs.length]; HR=SEL.r; } else HR=(HR+1)%4; sfx('click'); render(); return; }
+  if(a==='confirm'&&SEL){ const ev=place(G,SEL.x,SEL.y,SEL.r); SEL=null; if(ev){ BUSY=true; show(ev,GEN).then(()=>{ BUSY=false; render(); save(); if(!meepleOpts(G,G.last.x,G.last.y).length&&G.players[G.cur].meeples===0){ apply(meeple(G,null),GEN); } }); } return; }
+  if(a==='nomeeple'){ apply(meeple(G,null),GEN); return; }
+  if(a==='undo'&&G.phase==='meeple'){ const {x,y}=G.last; delete G.board[K(x,y)]; SEL={x,y,r:0}; G.phase='place'; G.last=null; computeFit(); const rs=FIT.get(K(x,y))||[0]; SEL.r=rs[0]; render(); } });
+/* ---------- menu ---------- */
+let M={n:2,seats:Array.from({length:5},(_,i)=>({h:i===0?1:0,name:''})),level:'normal',farm:true};
+function startGame(){ GEN++; const hs=M.seats.slice(0,M.n).filter(s=>s.h).length;
+  G=newGame({players:M.seats.slice(0,M.n).map((s,i)=>({name:(s.name||'').trim()||(s.h?(hs===1?'Toi':NAMES[i]):NAMES[(i+1)%5]),ai:!s.h,level:M.level})),farm:M.farm});
+  SEL=null; HR=0; render(); setTimeout(fit,30); const ev=start(G); apply(ev,GEN); }
+function menu(){ window.MODAL_CLOSABLE=true;
+  const draw=()=>{ const hs=M.seats.slice(0,M.n).filter(s=>s.h).length; paintModal(`<h2>Nouvelle partie</h2>
+   <h4>Seigneurs</h4><div class="seg">${[2,3,4,5].map(n=>`<button class="${M.n===n?'on':''}" data-m="n:${n}">${n}</button>`).join('')}</div>
+   ${M.seats.slice(0,M.n).map((s,i)=>`<div class="seatrow">${meepleSVGsmall(PC[i])}<input type="text" data-nm="${i}" value="${esc(s.name)}" placeholder="${s.h?(i===0?'Toi':NAMES[i]):NAMES[(i+1)%5]}" maxlength="14"><div class="seg"><button class="${s.h?'on':''}" data-m="h:${i}:1">Humain</button><button class="${s.h?'':'on'}" data-m="h:${i}:0">Ordinateur</button></div></div>`).join('')}
+   ${hs<M.n?`<h4>Niveau de l’ordinateur</h4><div class="seg">${['facile','normal','difficile'].map(l=>`<button class="${M.level===l?'on':''}" data-m="level:${l}">${l}</button>`).join('')}</div>`:''}
+   <h4>Prés et paysans</h4><div class="seg"><button class="${M.farm?'on':''}" data-m="farm:1">Avec les prés (règle complète)</button><button class="${M.farm?'':'on'}" data-m="farm:0">Sans les prés (plus simple)</button></div>
+   <p style="font-size:14px">Le plateau se déplace en glissant et se zoome avec les boutons, la molette ou en pinçant. Les tuiles en main ne sont pas secrètes : à plusieurs, passez-vous simplement l’appareil.</p>
+   <div class="acts">${G&&G.phase!=='over'?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="go" ${hs?'':'disabled'}>Bâtir</button></div>`); };
+  draw(); $('#mbox').onclick=e=>{ $$('#mbox [data-nm]').forEach(i=>{ M.seats[+i.dataset.nm].name=i.value; }); const x=e.target.closest('[data-m]'); if(!x) return; const [k,v,w]=x.dataset.m.split(':'); sfx('click');
+    if(k==='go'){ closeModal(); store('rpp',M); startGame(); return; }
+    if(k==='h') M.seats[+v].h=+w; else if(k==='n') M.n=+v; else if(k==='farm') M.farm=v==='1'; else M[k]=v; draw(); }; }
+function help(){ helpTabs('Remparts',[
+ ['But du jeu',`<p>Tuile après tuile, les joueurs construisent ensemble une région de villes, de routes, d’abbayes et de prés. Pose des <b>partisans</b> pour prendre le contrôle de ces zones et marquer des points. Le plus haut score à la fin gagne.</p><p>72 tuiles, 7 partisans par joueur. La partie s’arrête quand la pioche est vide.</p>`],
+ ['Ton tour',`<ol><li><b>Pose ta tuile</b> à côté d’une tuile déjà en jeu : chaque bord doit prolonger son voisin (ville contre ville, route contre route, pré contre pré). Tu peux la tourner.</li><li><b>Pose un partisan</b> (facultatif) sur cette tuile : dans une ville (chevalier), sur une route (voleur), dans une abbaye (moine) ou dans un pré (paysan, couché). Impossible si la zone reliée a déjà un partisan.</li><li><b>Compte les zones terminées</b> par ta tuile : leurs partisans reviennent à leur propriétaire.</li></ol><p class="ex">Deux zones occupées peuvent se rejoindre plus tard : c’est ainsi qu’on s’invite dans la ville d’un adversaire !</p>`],
+ ['Points',`<ul><li><b>Route terminée</b> (ses deux bouts arrêtés par un carrefour, une ville ou une abbaye) : 1 point par tuile.</li><li><b>Ville terminée</b> (entièrement entourée de murs) : 2 points par tuile et 2 par blason.</li><li><b>Abbaye entourée de 8 tuiles</b> : 9 points.</li><li>Le joueur qui a <b>le plus de partisans</b> dans la zone marque ; en cas d’égalité, tous les ex-æquo marquent les points en entier.</li></ul>`],
+ ['Fin de partie',`<ul><li>Routes inachevées : 1 point par tuile. Villes inachevées : 1 point par tuile et 1 par blason. Abbayes inachevées : 1 point plus 1 par tuile voisine.</li><li><b>Prés</b> : chaque pré rapporte 3 points par <b>ville terminée</b> qu’il touche, au joueur qui y a le plus de paysans. Les paysans restent couchés jusqu’à la fin : pose-les tard et bien.</li></ul>`],
+ ['Jouer ici',`<ul><li>Touche une case en pointillés pour présenter ta tuile, touche-la à nouveau (ou « Tourner ») pour changer son orientation parmi celles qui conviennent, puis « Poser ici ».</li><li>Ensuite, touche un <b>+</b> pour poser un partisan, ou « Sans partisan ». « Reprendre la tuile » annule la pose tant que tu n’as pas choisi.</li><li>Glisse pour déplacer le plateau, pince ou utilise + et − pour zoomer, ⤢ pour tout voir.</li><li>« Voir les tuiles restantes » aide à estimer tes chances de finir une ville.</li><li>De 2 à 5 joueurs, humains ou ordinateurs. La partie est sauvegardée automatiquement.</li></ul>`]]); }
+window.RP={get G(){return G;},get BUSY(){return BUSY;}};
+(function boot(){ buildDefs(); const p=load('rpp'); if(p) Object.assign(M,p); const s=load(KEY);
+  if(s&&s.board&&s.phase!=='over'){ G=s; render(); setTimeout(fit,30); step(); } else { G=null; render(); menu(); } })();
+}
+
+</script>
+<script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+</body></html>
