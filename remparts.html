@@ -248,7 +248,7 @@ const HALL=(()=>{
  const SB_URL='https://evepcodcppxpufbkuflq.supabase.co', SB_KEY='sb_publishable_iUC6966SeFt_05Iac1wGQw_yDo9zl7y';
  const LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
  const SITE='https://mushu1994.github.io/duel-des-ages/';
- const GAMES={"derniere-carte":"Dernière carte","quitte-ou-sept":"Quitte ou Sept","joyaux-renaissance":"Joyaux de la Renaissance","sept-merveilles":"Sept Merveilles","echecs":"Échecs","quatre-en-ligne":"Quatre en ligne","reversi":"Reversi","dames":"Dames","bataille-navale":"Bataille navale","code-secret":"Code Secret","bataille":"La Bataille","petits-chevaux":"Petits Chevaux","dominos":"Dominos","tetes-de-boeuf":"Têtes de Bœuf","plus-bas":"Plus Bas","petit-bac":"Petit Bac","poker":"Poker","president":"Président","tarot":"Tarot","rami":"Rami voleur","remparts":"Remparts","conquete":"Conquête","approche-finale":"Approche finale"};
+ const GAMES={"derniere-carte":"Dernière carte","quitte-ou-sept":"Quitte ou Sept","joyaux-renaissance":"Joyaux de la Renaissance","sept-merveilles":"Sept Merveilles","echecs":"Échecs","quatre-en-ligne":"Quatre en ligne","reversi":"Reversi","dames":"Dames","bataille-navale":"Bataille navale","code-secret":"Code Secret","bataille":"La Bataille","petits-chevaux":"Petits Chevaux","dominos":"Dominos","tetes-de-boeuf":"Têtes de Bœuf","plus-bas":"Plus Bas","petit-bac":"Petit Bac","poker":"Poker","president":"Président","tarot":"Tarot","rami":"Rami voleur","remparts":"Remparts","conquete":"Conquête","approche-finale":"Approche finale","duel-des-joyaux":"Duel des Joyaux"};
  const q=s=>document.querySelector(s), es=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const ld=k=>{ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }, sv=(k,v)=>{ try{ v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
  const note=s=>{ if(typeof toast==='function') return toast(s); const t=document.createElement('div'); t.className='hall-toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2800); };
@@ -365,8 +365,8 @@ const NET=(()=>{
    if(ch){ try{ await client.removeChannel(ch); }catch(e){} ch=null; }
    N.code=code; N.host=asHost; N.guest=!asHost; N.on=true; N.peers={}; N.known=new Set(); N.hs=Math.random().toString(36).slice(2,8); N.name=HALL.pseudo;
    ch=client.channel('salle:'+NG().id+':'+code,{config:{broadcast:{self:false},presence:{key:N.cid}}});
-   ch.on('broadcast',{event:'st'},({payload})=>{ if(N.guest) enqueue(payload); });
-   ch.on('broadcast',{event:'act'},({payload})=>{ if(N.host){ N.aq.push(payload); drain(); } });
+   ch.on('broadcast',{event:'st'},({payload})=>{ if(N.guest) enqueue(payload&&payload.j?JSON.parse(payload.j):payload); });
+   ch.on('broadcast',{event:'act'},({payload})=>{ if(N.host){ N.aq.push(payload&&payload.j?JSON.parse(payload.j):payload); drain(); } });
    ch.on('broadcast',{event:'hello'},()=>{ if(N.host){ if(N.started) pushFull(); else pushLobby(); } });
    ch.on('broadcast',{event:'lobby'},({payload})=>{ if(N.guest&&!N.started){ N.lobby=payload; if(N.ui==='lobby') lobbyUI(); } });
    ch.on('broadcast',{event:'close'},()=>{ if(N.guest){ nt('L’hôte a fermé la table'); leave(true); } });
@@ -390,7 +390,7 @@ const NET=(()=>{
  function lobbyOrder(){ return Object.keys(N.peers).sort((a,b)=>(N.peers[b].host-N.peers[a].host)||(N.peers[a].at-N.peers[b].at)); }
  let pushT=null;
  function push(ev,kind){ if(!N.host||!N.started) return; if(!ev&&!kind){ if(!pushT) pushT=setTimeout(()=>{ pushT=null; pushNow(null,null); },40); return; } if(pushT){ clearTimeout(pushT); pushT=null; } pushNow(ev,kind); }
- function pushNow(ev,kind){ if(!N.host||!N.started) return; N.v++; const G=NG().state(); if(!G) return; const p={hs:N.hs,v:N.v,G,ev:ev||null,kind:kind||null}; N.last=p; send('st',p); }
+ function pushNow(ev,kind){ if(!N.host||!N.started) return; N.v++; const G=NG().state(); if(!G) return; const p={hs:N.hs,v:N.v,G,ev:ev||null,kind:kind||null}; N.last=p; send('st',{j:JSON.stringify(p)}); }
  function pushFull(){ if(!N.host||!N.started) return; push(null,'full'); }
  function drain(){ if(!N.host||!N.started) return; while(N.aq.length&&!NG().busy()){ const m=N.aq.shift(); const G=NG().state(); const seat=G?PL(G).findIndex(P=>P.cid===m.cid):-1; if(seat<0||PL(G)[seat].ai) continue; NG().act(seat,m.fn,m.args||[]); } }
  /* ---------- invité ---------- */
@@ -402,7 +402,7 @@ const NET=(()=>{
      if(first){ HALL.closeBox(); gameClose(); N.ui=null; hallRoom(); if(N.seat==null) nt('Partie déjà commencée : tu regardes'); }
      try{ await NG().receive(Object.assign({},p,{kind:first&&p.kind!=='new'?'new':p.kind})); }catch(e){ console.error(e); } badge(); }
    N.pumping=false; }
- function act(fn,args){ if(!N.guest) return false; if(N.waitHost){ nt('En attente de l’hôte…'); return true; } send('act',{cid:N.cid,fn,args}); snd('click'); return true; }
+ function act(fn,args){ if(!N.guest) return false; if(N.waitHost){ nt('En attente de l’hôte…'); return true; } send('act',{j:JSON.stringify({cid:N.cid,fn,args})}); snd('click'); return true; }
  /* ---------- interface ---------- */
  function badge(){ const b=$q('#netBtn'); if(!b) return; if(!N.on){ const n=HALL.ok?HALL.count():0; b.innerHTML=`<i class="net-dot ${HALL.ok?'':'off'}"></i>En ligne${n?` · ${n}`:''}`; b.classList.remove('net-on'); return; }
    const n=Object.keys(N.peers).length; b.innerHTML=`<i class="net-dot ${N.waitHost?'off':''}"></i>Table ${N.code} · ${n}`; b.classList.add('net-on'); }
