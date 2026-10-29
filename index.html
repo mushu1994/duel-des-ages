@@ -39,6 +39,7 @@ section{margin-bottom:40px}
 .body p{margin:0;color:var(--mute);font-size:15px}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
 .tag{font-size:12px;font-weight:700;background:var(--cream2);border-radius:999px;padding:3px 9px;color:#4a3f2c}
+.tag.net{background:#1d8f5a;color:#fff}
 .tag.ext{background:#2a1c10;color:var(--gold)}
 .play{margin-top:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .btn{font-weight:800;background:var(--ink);color:var(--cream);border-radius:9px;padding:9px 16px;font-size:15px}
@@ -93,7 +94,7 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
     <div class="frow" aria-label="Type de jeu"><span class="flab">Type</span>
       <button class="chip on" data-f="type" data-v="">Tous</button><button class="chip" data-f="type" data-v="cartes">Cartes</button><button class="chip" data-f="type" data-v="plateau">Plateau</button><button class="chip" data-f="type" data-v="des">Dés et dominos</button><button class="chip" data-f="type" data-v="lettres">Lettres et logique</button></div>
     <div class="frow" aria-label="Joueurs"><span class="flab">Joueurs</span>
-      <button class="chip on" data-f="who" data-v="">Peu importe</button><button class="chip" data-f="who" data-v="solo">Seul, sans adversaire</button><button class="chip" data-f="who" data-v="ia">Contre l’ordinateur</button><button class="chip" data-f="who" data-v="2">À 2 sur un écran</button><button class="chip" data-f="who" data-v="3">À 3 ou plus</button></div>
+      <button class="chip on" data-f="who" data-v="">Peu importe</button><button class="chip" data-f="who" data-v="solo">Seul, sans adversaire</button><button class="chip" data-f="who" data-v="ia">Contre l’ordinateur</button><button class="chip" data-f="who" data-v="2">À 2 sur un écran</button><button class="chip" data-f="who" data-v="3">À 3 ou plus</button><button class="chip" data-f="who" data-v="net">En ligne, chacun son écran</button></div>
     <p class="fres" id="fres" aria-live="polite"></p>
   </div>
   <div class="empty" id="empty" hidden><p>Aucun jeu ne correspond à ces critères.</p><button class="chip on" id="reset">Effacer les filtres</button></div>
@@ -184,7 +185,7 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
           <div class="play"><span class="btn">Jouer</span><span class="saved" data-save="tetes-de-boeuf-save" hidden>Partie en cours</span></div>
         </div>
       </a>
-      <a class="game" href="joyaux-renaissance.html" data-type="cartes" data-humans="4" data-solo="0" data-ia="1" data-kw="splendor cites de splendor orients comptoirs forteresses jetons gemmes nobles mines">
+      <a class="game" href="joyaux-renaissance.html" data-type="cartes" data-humans="4" data-solo="0" data-ia="1" data-net="1" data-kw="en ligne multijoueur salle code amis splendor cites de splendor orients comptoirs forteresses jetons gemmes nobles mines">
         <div class="art" style="background:linear-gradient(160deg,#1d4a3b,#0b201a)" aria-hidden="true">
           <svg viewBox="0 0 120 110">
             <g transform="translate(26 18)"><rect width="34" height="48" rx="5" fill="#f6ecd4" stroke="#c9a13b" stroke-width="1.5"/><rect width="34" height="15" rx="5" fill="#d6363c"/><text x="5" y="13" font-family="Georgia" font-size="12" fill="#fff">3</text><circle cx="8" cy="36" r="4.5" fill="#2f6fd6"/><circle cx="8" cy="44" r="0" /><circle cx="19" cy="36" r="4.5" fill="#1f9d55"/></g>
@@ -195,11 +196,11 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
         <div class="body">
           <h3>Joyaux de la Renaissance</h3>
           <p>Jetons de pierres, mines et ateliers : bâtis ton moteur de bonus et attire les nobles. Dans l’esprit de Splendor.</p>
-          <div class="tags"><span class="tag">2 à 4 joueurs</span><span class="tag">Contre l’IA</span><span class="tag ext">Orients</span><span class="tag ext">Cités</span><span class="tag ext">Comptoirs</span><span class="tag ext">Forteresses</span></div>
+          <div class="tags"><span class="tag net">En ligne</span><span class="tag">2 à 4 joueurs</span><span class="tag">Contre l’IA</span><span class="tag ext">Orients</span><span class="tag ext">Cités</span><span class="tag ext">Comptoirs</span><span class="tag ext">Forteresses</span></div>
           <div class="play"><span class="btn">Jouer</span><span class="saved" data-save="jr" hidden>Partie en cours</span></div>
         </div>
       </a>
-      <a class="game" href="sept-merveilles.html" data-type="cartes" data-humans="7" data-solo="0" data-ia="1" data-kw="7 wonders seven wonders sept merveilles civilisation draft antiquite leaders meneurs cities cites armada edifice edifices">
+      <a class="game" href="sept-merveilles.html" data-type="cartes" data-humans="7" data-solo="0" data-ia="1" data-net="1" data-kw="en ligne multijoueur salle code amis 7 wonders seven wonders sept merveilles civilisation draft antiquite leaders meneurs cities cites armada edifice edifices">
         <div class="art" style="background:linear-gradient(160deg,#6b4520,#1f140a)" aria-hidden="true">
           <svg viewBox="0 0 120 110">
             <path d="M14 92h92v8H14z" fill="#b8862b"/><path d="M28 84h64v8H28z" fill="#cfa266"/><path d="M40 76h40v8H40z" fill="#e2bf7c"/>
@@ -213,7 +214,7 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
         <div class="body">
           <h3>Sept Merveilles</h3>
           <p>Trois âges pour bâtir ta cité et ta merveille : on choisit une carte, on passe le reste à son voisin. Dans l’esprit de 7 Wonders.</p>
-          <div class="tags"><span class="tag">3 à 7 joueurs</span><span class="tag">Contre l’IA</span><span class="tag ext">Meneurs</span><span class="tag ext">Cités</span><span class="tag ext">Armada</span><span class="tag ext">Édifices</span></div>
+          <div class="tags"><span class="tag net">En ligne</span><span class="tag">3 à 7 joueurs</span><span class="tag">Contre l’IA</span><span class="tag ext">Meneurs</span><span class="tag ext">Cités</span><span class="tag ext">Armada</span><span class="tag ext">Édifices</span></div>
           <div class="play"><span class="btn">Jouer</span><span class="saved" data-save="sm" hidden>Partie en cours</span></div>
         </div>
       </a>
@@ -243,13 +244,13 @@ footer{color:var(--chalk-mute);font-size:13px;max-width:62ch}
         <div class="art" style="background:linear-gradient(160deg,#2f7f4c,#11391f)" aria-hidden="true"><svg viewBox="0 0 120 80"><circle cx="40" cy="42" r="34" fill="#8a5228"/><circle cx="40" cy="18" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="40" cy="30" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="28" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="52" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="40" cy="54" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="40" cy="66" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="16" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><circle cx="64" cy="42" r="5" fill="#2f7ee0" stroke="#0a2f5a"/><rect x="78" y="14" width="30" height="42" rx="4" fill="#fff" stroke="#999"/><text x="84" y="28" font-size="12" font-weight="800" fill="#c8203a">A</text><text x="93" y="47" font-size="18" fill="#c8203a">♥</text></svg></div>
         <div class="body"><h3>Solitaire</h3><p>Le solitaire à billes (anglais ou européen) et le solitaire aux cartes.</p><div class="tags"><span class="tag">Solo</span><span class="tag">Billes & cartes</span></div></div>
       </a>
-      <a class="cl" href="derniere-carte.html" data-type="cartes" data-humans="10" data-solo="0" data-ia="1" data-kw="uno couleurs +2 +4 joker inversion famille ambiance">
+      <a class="cl" href="derniere-carte.html" data-type="cartes" data-humans="10" data-solo="0" data-ia="1" data-net="1" data-kw="en ligne multijoueur salle code amis uno couleurs +2 +4 joker inversion famille ambiance">
         <div class="art" style="background:linear-gradient(160deg,#3a3280,#100d26)" aria-hidden="true"><svg viewBox="0 0 120 80"><g transform="rotate(-14 44 44)"><rect x="26" y="14" width="34" height="50" rx="6" fill="#fff"/><rect x="29" y="17" width="28" height="44" rx="4" fill="#e5383b"/><text x="43" y="47" font-size="22" font-weight="900" text-anchor="middle" fill="#fff" font-family="Arial">7</text></g><g><rect x="44" y="12" width="34" height="50" rx="6" fill="#fff"/><rect x="47" y="15" width="28" height="44" rx="4" fill="#2f78dc"/><text x="61" y="45" font-size="17" font-weight="900" text-anchor="middle" fill="#fff" font-family="Arial">+2</text></g><g transform="rotate(14 78 44)"><rect x="62" y="14" width="34" height="50" rx="6" fill="#fff"/><rect x="65" y="17" width="28" height="44" rx="4" fill="#1d1b26"/><path d="M79 39V29a10 10 0 0 1 10 10Z" fill="#e5383b"/><path d="M79 39h10a10 10 0 0 1-10 10Z" fill="#2f78dc"/><path d="M79 39v10a10 10 0 0 1-10-10Z" fill="#f5bd1f"/><path d="M79 39H69a10 10 0 0 1 10-10Z" fill="#22a96b"/></g></svg></div>
-        <div class="body"><h3>Dernière carte</h3><p>Couleur ou chiffre : vide ta main le premier et n’oublie pas d’annoncer ta dernière carte. Dans l’esprit du Uno.</p><div class="tags"><span class="tag">2 à 10 joueurs</span><span class="tag">Contre l’IA</span><span class="tag">Face à face</span></div><span class="saved" data-save="dc" hidden>Partie en cours</span></div>
+        <div class="body"><h3>Dernière carte</h3><p>Couleur ou chiffre : vide ta main le premier et n’oublie pas d’annoncer ta dernière carte. Dans l’esprit du Uno.</p><div class="tags"><span class="tag net">En ligne</span><span class="tag">2 à 10 joueurs</span><span class="tag">Contre l’IA</span><span class="tag">Face à face</span></div><span class="saved" data-save="dc" hidden>Partie en cours</span></div>
       </a>
-      <a class="cl" href="quitte-ou-sept.html" data-type="cartes" data-humans="8" data-solo="0" data-ia="1" data-kw="flip 7 flip seven stop ou encore hasard risque ambiance famille">
+      <a class="cl" href="quitte-ou-sept.html" data-type="cartes" data-humans="8" data-solo="0" data-ia="1" data-net="1" data-kw="en ligne multijoueur salle code amis flip 7 flip seven stop ou encore hasard risque ambiance famille">
         <div class="art" style="background:linear-gradient(160deg,#1f5761,#0a1c22)" aria-hidden="true"><svg viewBox="0 0 120 80"><g font-family="Arial Black,Arial" font-weight="900" text-anchor="middle"><g transform="rotate(-12 34 42)"><rect x="18" y="18" width="30" height="44" rx="5" fill="#fff7ea"/><text x="33" y="48" font-size="20" fill="#d6336c">5</text></g><g transform="rotate(-4 52 40)"><rect x="38" y="14" width="30" height="44" rx="5" fill="#fff7ea"/><text x="53" y="44" font-size="20" fill="#1c7ed6">8</text></g><g transform="rotate(6 72 40)"><rect x="58" y="14" width="30" height="44" rx="5" fill="#ffc23d"/><text x="73" y="44" font-size="16" fill="#7a4b00">×2</text></g><g transform="rotate(15 92 44)"><rect x="78" y="20" width="30" height="44" rx="5" fill="#fff7ea" stroke="#ff5d73" stroke-width="3"/><text x="93" y="50" font-size="20" fill="#d6336c">5</text></g></g></svg></div>
-        <div class="body"><h3>Quitte ou Sept</h3><p>Retourne des cartes et arrête-toi avant le doublon : sept chiffres différents et c’est le jackpot. Dans l’esprit de Flip 7.</p><div class="tags"><span class="tag">2 à 8 joueurs</span><span class="tag">Contre l’IA</span><span class="tag">Aide au risque</span></div><span class="saved" data-save="qs" hidden>Partie en cours</span></div>
+        <div class="body"><h3>Quitte ou Sept</h3><p>Retourne des cartes et arrête-toi avant le doublon : sept chiffres différents et c’est le jackpot. Dans l’esprit de Flip 7.</p><div class="tags"><span class="tag net">En ligne</span><span class="tag">2 à 8 joueurs</span><span class="tag">Contre l’IA</span><span class="tag">Aide au risque</span></div><span class="saved" data-save="qs" hidden>Partie en cours</span></div>
       </a>
     </div>
   </section>
@@ -459,6 +460,7 @@ document.querySelectorAll('[data-save]').forEach(el=>{
     if(F.who==='ia'&&d.ia!=='1') return false;
     if(F.who==='2'&&h<2) return false;
     if(F.who==='3'&&h<3) return false;
+    if(F.who==='net'&&d.net!=='1') return false;
     if(F.q){ var ws=norm(F.q).split(/\s+/).filter(Boolean); for(var i=0;i<ws.length;i++) if(a._t.indexOf(ws[i])<0) return false; }
     return true; }
   function apply(){ var n=0;

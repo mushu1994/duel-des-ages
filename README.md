@@ -11,4 +11,10 @@ Le portail classe les jeux par type, avec une recherche et des filtres (type de 
 - **Dés et dominos** : Approche finale (coopératif à deux ou avec l'IA, dans l'esprit de Sky Team), Dominos.
 - **Lettres, chiffres et logique** : Sudoku, Mots croisés, Petit Bac, Code Secret.
 
+## Jouer en ligne
+
+Dernière carte, Quitte ou Sept, Joyaux de la Renaissance et Sept Merveilles se jouent aussi à plusieurs appareils : bouton « En ligne », création d'une salle avec un code de 4 lettres (ou un lien à partager), puis l'hôte lance la partie et peut compléter la table avec l'ordinateur. Pas de compte à créer.
+
+Technique : salons Supabase Realtime (diffusion + présence, aucune base de données). Le navigateur de l'hôte fait tourner la partie et envoie l'état aux autres ; les invités envoient leurs actions. Reconnexion automatique après un rechargement, et l'hôte peut confier la place d'un absent à l'ordinateur. Code commun : `net.js` intégré dans chaque jeu compatible.
+
 Les jeux sont des créations originales inspirées de mécaniques de jeux connus ; noms, cartes et illustrations sont propres à la salle.

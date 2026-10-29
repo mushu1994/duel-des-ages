@@ -57,6 +57,33 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation}
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
 
+/* salle en ligne */
+#netBtn{display:inline-flex;align-items:center;gap:6px}
+#netBtn.net-on{background:#1d8f5a;border-color:#1d8f5a;color:#fff}
+.net-dot{width:9px;height:9px;border-radius:50%;background:#7dffb5;box-shadow:0 0 0 2px #fff6;animation:netp 1.8s infinite}
+.net-dot.off{background:#ffb347;animation:none}
+@keyframes netp{50%{box-shadow:0 0 0 5px #7dffb500}}
+.mbox .net-in{font-family:inherit;font-weight:800;font-size:16px;padding:9px 11px;border-radius:9px;border:1px solid #c9b98f;background:#fff!important;color:#2a2418!important;-webkit-text-fill-color:#2a2418!important;caret-color:#2a2418;width:100%;max-width:280px}
+.mbox .net-in::placeholder{color:#a3926e!important;-webkit-text-fill-color:#a3926e!important;font-weight:600}
+.mbox .net-code{letter-spacing:.35em;text-transform:uppercase;font-size:22px;text-align:center;max-width:170px}
+.net-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.net-box{border:1px solid #d9caa4;border-radius:12px;padding:10px 12px;background:#f6efdc;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.net-box h4{margin:0!important}.net-box p{margin:0;font-size:14px}
+.net-note{font-size:13.5px;color:#6b5d40}
+.net-code-big{display:flex;gap:8px;justify-content:center;margin:10px 0}
+.net-code-big b{font-family:var(--title,Georgia,serif);font-size:40px;width:58px;height:66px;display:grid;place-items:center;border-radius:12px;background:#2a2418;color:#fff;box-shadow:0 6px 0 #0003}
+.net-share{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.net-list{list-style:none;padding:0;margin:6px 0;display:flex;flex-direction:column;gap:5px}
+.net-list li{display:flex;align-items:center;gap:8px;font-weight:800;background:#f6efdc;border-radius:10px;padding:6px 9px;flex-wrap:wrap}
+.net-list li small{font-weight:600;color:#6b5d40}.net-list li.ai{opacity:.8}
+.net-av{width:26px;height:26px;border-radius:50%;background:#2a2418;color:#fff;display:grid;place-items:center;font-size:13px;flex:none}
+.net-ok{color:#1d7a46;font-weight:800}.net-ko{color:#b0412e;font-weight:800}
+.net-wait{display:flex;align-items:center;gap:10px;font-weight:700}
+.net-spin{width:18px;height:18px;border-radius:50%;border:3px solid #c9b98f;border-top-color:#2a2418;animation:netr 1s linear infinite;flex:none}
+@keyframes netr{to{transform:rotate(360deg)}}
+.net-rules{margin-top:6px}
+@media (max-width:560px){.net-two{grid-template-columns:1fr}.net-code-big b{font-size:32px;width:50px;height:58px}}
+
 body{background:radial-gradient(ellipse at 50% -10%,#5a3f22 0%,#231a12 55%,#140e09 100%) fixed,#140e09}
 .sm{display:flex;flex-direction:column;gap:10px;padding:10px max(10px,env(safe-area-inset-right,0px)) 120px max(10px,env(safe-area-inset-left,0px));max-width:1300px;margin:0 auto}
 .row3{display:grid;grid-template-columns:1fr 1.7fr 1fr;gap:10px}
@@ -173,6 +200,141 @@ document.addEventListener('click',e=>{
 });
 addEventListener('DOMContentLoaded',updSnd);
 
+
+/* ===== Salle en ligne : salons à code (Supabase Realtime, l'hôte fait tourner la partie) =====
+   Le jeu déclare window.NETGAME = { id, title, min, max, rules():html, rulesClick(e):bool,
+     start(list), state():G, receive(msg):Promise, act(seat,fn,args):bool, busy():bool, resume(), leave() } */
+const NET=(()=>{
+ const SB_URL='https://evepcodcppxpufbkuflq.supabase.co', SB_KEY='sb_publishable_iUC6966SeFt_05Iac1wGQw_yDo9zl7y';
+ const LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+ const SITE='https://mushu1994.github.io/duel-des-ages/';
+ const LET='ABCDEFGHJKLMNPQRSTUVWXYZ';
+ const N={on:false,host:false,guest:false,started:false,code:null,name:'',seat:null,peers:{},v:0,hs:null,lastV:-1,lastHs:null,q:[],aq:[],ai:{n:0,level:'normal'},ui:null,known:new Set(),waitHost:false};
+ let cid=load('net-cid'); if(!cid){ cid=Math.random().toString(36).slice(2,10); store('net-cid',cid); } N.cid=cid;
+ let client=null, ch=null, libP=null;
+ const NG=()=>window.NETGAME;
+ function lib(){ if(window.supabase) return Promise.resolve(); if(libP) return libP;
+   libP=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=LIB; s.onload=res; s.onerror=()=>{ libP=null; rej(new Error('lib')); }; document.head.appendChild(s); }); return libP; }
+ function newCode(){ let c=''; for(let i=0;i<4;i++) c+=LET[Math.floor(Math.random()*LET.length)]; return c; }
+ const link=()=>{ const base=/github\.io$/.test(location.hostname)?location.origin+location.pathname:SITE+NG().id+'.html'; return base+'?salle='+N.code; };
+ const sess=()=>load('net-sess'), setSess=v=>store('net-sess',v);
+ /* ---------- connexion ---------- */
+ async function connect(code,asHost){ await lib(); if(!client) client=window.supabase.createClient(SB_URL,SB_KEY,{realtime:{params:{eventsPerSecond:20}}});
+   if(ch){ try{ await client.removeChannel(ch); }catch(e){} ch=null; }
+   N.code=code; N.host=asHost; N.guest=!asHost; N.on=true; N.peers={}; N.known=new Set(); N.hs=Math.random().toString(36).slice(2,8);
+   ch=client.channel('salle:'+NG().id+':'+code,{config:{broadcast:{self:false},presence:{key:N.cid}}});
+   ch.on('broadcast',{event:'st'},({payload})=>{ if(N.guest) enqueue(payload); });
+   ch.on('broadcast',{event:'act'},({payload})=>{ if(N.host){ N.aq.push(payload); drain(); } });
+   ch.on('broadcast',{event:'hello'},()=>{ if(N.host) pushFull(); });
+   ch.on('broadcast',{event:'lobby'},({payload})=>{ if(N.guest&&!N.started){ N.lobby=payload; if(N.ui==='lobby') lobbyUI(); } });
+   ch.on('broadcast',{event:'close'},()=>{ if(N.guest){ toast('L’hôte a fermé la salle'); leave(true); } });
+   ch.on('presence',{event:'sync'},onSync);
+   return new Promise((res,rej)=>{ let done=false; const to=setTimeout(()=>{ if(!done){ done=true; rej(new Error('timeout')); } },9000);
+     ch.subscribe(async st=>{ if(st==='SUBSCRIBED'){ await ch.track({name:N.name,host:asHost,at:Date.now()}); if(!done){ done=true; clearTimeout(to); res(); } if(N.guest) send('hello',{}); }
+       else if((st==='CHANNEL_ERROR'||st==='TIMED_OUT')&&!done){ done=true; clearTimeout(to); rej(new Error(st)); } }); }); }
+ function send(ev,payload){ if(ch) ch.send({type:'broadcast',event:ev,payload}).catch(()=>{}); }
+ function onSync(){ const st=ch.presenceState(); const peers={}; for(const k in st){ const m=st[k][st[k].length-1]; peers[k]=m; } const before=N.peers; N.peers=peers;
+   const names=k=>(peers[k]||before[k]||{}).name||'Un joueur';
+   for(const k in peers) if(!before[k]&&k!==N.cid&&N.known.has(k)) toast(`${names(k)} est de retour`);
+   for(const k in before) if(!peers[k]&&k!==N.cid) toast(`${names(k)} a quitté la salle`);
+   Object.keys(peers).forEach(k=>N.known.add(k));
+   if(N.guest){ const hostHere=Object.values(peers).some(m=>m.host); if(!hostHere&&N.started){ N.waitHost=true; } else N.waitHost=false; }
+   if(N.host){ if(N.started){ const G=NG().state(); let ch2=false; if(G) G.players.forEach(P=>{ if(P.cid&&P.away&&peers[P.cid]){ P.ai=false; P.away=false; ch2=true; } }); if(ch2) NG().resume(); pushFull(); } else pushLobby(); }
+   badge(); if(N.ui==='lobby') lobbyUI(); else if(N.ui==='panel') panelUI(); }
+ /* ---------- hôte ---------- */
+ function pushLobby(){ if(!N.host||N.started) return; send('lobby',{order:lobbyOrder().map(k=>({cid:k,name:N.peers[k].name})),ai:N.ai}); }
+ function lobbyOrder(){ return Object.keys(N.peers).sort((a,b)=>(N.peers[b].host-N.peers[a].host)||(N.peers[a].at-N.peers[b].at)); }
+ function push(ev,kind){ if(!N.host||!N.started) return; N.v++; const G=NG().state(); if(!G) return; const p={hs:N.hs,v:N.v,G,ev:ev||null,kind:kind||null}; N.last=p; send('st',p); }
+ function pushFull(){ if(!N.host||!N.started) return; push(null,'full'); }
+ function drain(){ if(!N.host||!N.started) return; while(N.aq.length&&!NG().busy()){ const m=N.aq.shift(); const G=NG().state(); const seat=G?G.players.findIndex(P=>P.cid===m.cid):-1; if(seat<0||G.players[seat].ai) continue; NG().act(seat,m.fn,m.args||[]); } }
+ /* ---------- invité ---------- */
+ function enqueue(p){ if(p.hs!==N.lastHs){ N.lastHs=p.hs; N.lastV=-1; } if(p.v<=N.lastV) return; N.lastV=p.v; N.q.push(p); pump(); }
+ async function pump(){ if(N.pumping) return; N.pumping=true;
+   while(N.q.length){ let p=N.q.shift(); if(p.kind==='full'||!p.ev){ while(N.q.length&&(N.q[0].kind==='full'||!N.q[0].ev)&&N.q[0].kind!=='lobby'&&N.q[0].kind!=='new') p=N.q.shift(); }
+     if(p.kind==='lobby'||!p.G){ N.started=false; N.seat=null; try{ NG().receive({kind:'lobby'}); }catch(e){} lobbyUI(); continue; }
+     const first=!N.started; N.started=true; N.waitHost=false; const s=p.G.players.findIndex(P=>P.cid===N.cid); N.seat=s>=0?s:null;
+     if(first){ closeModal(); window.MODAL_CLOSABLE=true; N.ui=null; if(N.seat==null) toast('Partie déjà commencée : tu regardes'); }
+     try{ await NG().receive(Object.assign({},p,{kind:first&&p.kind!=='new'?'new':p.kind})); }catch(e){ console.error(e); } badge(); }
+   N.pumping=false; }
+ function act(fn,args){ if(!N.guest) return false; if(N.waitHost){ toast('En attente de l’hôte…'); return true; } send('act',{cid:N.cid,fn,args}); sfx('click'); return true; }
+ /* ---------- interface ---------- */
+ function badge(){ const b=$('#netBtn'); if(!b) return; if(!N.on){ b.textContent='En ligne'; b.classList.remove('net-on'); return; } const n=Object.keys(N.peers).length; b.innerHTML=`<i class="net-dot ${N.waitHost?'off':''}"></i>Salle ${N.code} · ${n}`; b.classList.add('net-on'); }
+ function nameInput(){ return `<input type="text" class="net-in" id="netName" maxlength="14" value="${esc(N.name||load('net-name')||'')}" placeholder="Ton prénom">`; }
+ function startUI(prefill){ N.ui='start'; window.MODAL_CLOSABLE=true; const art=!/github\.io$/.test(location.hostname)&&/claude|artifact/.test(location.hostname+location.href);
+   paintModal(`<h2>Jouer en ligne</h2><p>Chacun joue sur son téléphone ou son ordinateur. Crée une salle et partage son code, ou rejoins celle d’un ami.</p>
+    <h4>Ton prénom</h4>${nameInput()}
+    <div class="net-two"><div class="net-box"><h4>Créer une salle</h4><p>Tu choisis les règles et lances la partie.</p><button class="btn pri" data-net="create">Créer une salle</button></div>
+    <div class="net-box"><h4>Rejoindre une salle</h4><input type="text" class="net-in net-code" id="netCode" maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="CODE" value="${esc(prefill||'')}"><button class="btn pri" data-net="join">Rejoindre</button></div></div>
+    ${art?`<p class="net-note">Si la connexion échoue ici, ouvre le jeu sur le site : <a href="${SITE}${NG().id}.html" target="_blank" rel="noopener">${SITE.replace('https://','')}</a></p>`:''}
+    <p class="net-note">Pas de compte à créer. La salle disparaît quand tout le monde est parti.</p>
+    <div class="acts"><button class="btn" data-c="close">Fermer</button></div>`);
+   $('#mbox').onclick=onClick; const c=$('#netCode'); if(c) c.oninput=()=>{ c.value=c.value.toUpperCase().replace(/[^A-Z]/g,''); }; }
+ function readName(){ const i=$('#netName'); const v=(i?i.value:N.name||'').trim(); if(!v){ toast('Indique ton prénom'); if(i) i.focus(); return null; } N.name=v.slice(0,14); store('net-name',N.name); return N.name; }
+ function busyUI(msg){ paintModal(`<h2>Jouer en ligne</h2><p class="net-wait"><span class="net-spin"></span>${msg}</p>`); }
+ async function create(){ if(!readName()) return; busyUI('Ouverture de la salle…');
+   try{ for(let t=0;t<4;t++){ const code=newCode(); await connect(code,true); await wait(900); const other=Object.entries(N.peers).some(([k,m])=>k!==N.cid&&m.host); if(!other) break; } }
+   catch(e){ failUI(); return; }
+   N.started=false; setSess({game:NG().id,code:N.code,host:true}); lobbyUI(); badge(); }
+ async function join(code,silent){ if(!readName()&&!silent) return; if(!/^[A-Z]{4}$/.test(code||'')){ toast('Le code fait 4 lettres'); return; } busyUI('Connexion à la salle '+code+'…');
+   try{ await connect(code,false); }catch(e){ failUI(); return; }
+   N.started=false; setSess({game:NG().id,code,host:false}); await wait(1200);
+   if(!N.started){ const hostHere=Object.values(N.peers).some(m=>m.host); if(!hostHere){ N.ui='lobby'; lobbyUI('Aucun hôte dans cette salle pour l’instant. Vérifie le code ; tu peux attendre ici.'); } else lobbyUI(); } badge(); }
+ function failUI(){ N.on=false; paintModal(`<h2>Connexion impossible</h2><p>Le serveur de jeu n’a pas répondu. Vérifie ta connexion internet${/github\.io$/.test(location.hostname)?'':', ou ouvre le jeu directement sur le site'}.</p>${/github\.io$/.test(location.hostname)?'':`<p><a href="${SITE}${NG().id}.html" target="_blank" rel="noopener">Ouvrir ${esc(NG().title)} sur le site</a></p>`}<div class="acts"><button class="btn" data-c="close">Fermer</button><button class="btn pri" data-net="start">Réessayer</button></div>`); $('#mbox').onclick=onClick; badge(); }
+ function lobbyUI(note){ N.ui='lobby'; window.MODAL_CLOSABLE=false; const g=NG();
+   const order=N.host?lobbyOrder():((N.lobby&&N.lobby.order)||[]).map(x=>x.cid); const names=N.host?order.map(k=>N.peers[k].name):((N.lobby&&N.lobby.order)||[]).map(x=>x.name);
+   const hs=order.length, maxAI=Math.max(0,g.max-hs); if(N.ai.n>maxAI) N.ai.n=maxAI; const ai=N.host?N.ai:((N.lobby&&N.lobby.ai)||{n:0,level:'normal'}); const total=hs+ai.n;
+   const list=names.map((n,i)=>`<li><span class="net-av">${esc((n||'?')[0])}</span>${esc(n)}${order[i]===N.cid?' <small>(toi)</small>':''}${i===0&&N.host||(!N.host&&N.lobby&&i===0)?' <small>· hôte</small>':''}</li>`).join('')+Array.from({length:ai.n},(_,i)=>`<li class="ai"><span class="net-av">🤖</span>Ordinateur ${i+1} <small>· ${ai.level}</small></li>`).join('');
+   paintModal(`<h2>Salle ${N.code}</h2>${note?`<p class="net-note">${note}</p>`:''}
+    <div class="net-code-big" aria-label="Code de la salle">${[...N.code].map(c=>`<b>${c}</b>`).join('')}</div>
+    <div class="net-share"><button class="btn" data-net="copy">Copier le lien</button>${navigator.share?'<button class="btn" data-net="share">Partager</button>':''}</div>
+    <h4>Joueurs (${total} / ${g.min} à ${g.max})</h4><ul class="net-list">${list||'<li>…</li>'}</ul>
+    ${N.host?`<h4>Ordinateurs en plus</h4><div class="seg">${Array.from({length:maxAI+1},(_,n)=>`<button class="${ai.n===n?'on':''}" data-net="ai:${n}">${n}</button>`).join('')}</div>
+     ${ai.n?`<div class="seg" style="margin-left:6px">${['facile','normal','difficile'].map(l=>`<button class="${ai.level===l?'on':''}" data-net="lv:${l}">${l}</button>`).join('')}</div>`:''}
+     ${g.rules?`<div class="net-rules">${g.rules()}</div>`:''}
+     <div class="acts"><button class="btn" data-net="quit">Fermer la salle</button><button class="btn pri" data-net="go" ${total>=g.min&&total<=g.max?'':'disabled'}>${total<g.min?`Encore ${g.min-total} joueur${g.min-total>1?'s':''}`:'Lancer la partie'}</button></div>`
+    :`<p class="net-wait"><span class="net-spin"></span>En attente que l’hôte lance la partie…</p><div class="acts"><button class="btn" data-net="quit">Quitter la salle</button></div>`}`);
+   $('#mbox').onclick=onClick; }
+ function panelUI(){ N.ui='panel'; window.MODAL_CLOSABLE=true; const G=NG().state();
+   const rows=(G?G.players:[]).map((P,i)=>{ const here=P.cid?!!N.peers[P.cid]:false; return `<li><span class="net-av">${P.cid?esc((P.name||'?')[0]):'🤖'}</span>${esc(P.name)}${P.cid===N.cid?' <small>(toi)</small>':''} <small>· ${P.cid?(P.ai?'remplacé par l’ordinateur':here?'<span class="net-ok">connecté</span>':'<span class="net-ko">absent</span>'):'ordinateur'}</small></li>`; }).join('');
+   const away=N.host&&G&&G.players.some(P=>P.cid&&!P.ai&&!N.peers[P.cid]);
+   const watchers=Object.keys(N.peers).filter(k=>!(G&&G.players.some(P=>P.cid===k))).map(k=>N.peers[k].name);
+   paintModal(`<h2>Salle ${N.code}</h2><div class="net-share"><button class="btn" data-net="copy">Copier le lien</button>${navigator.share?'<button class="btn" data-net="share">Partager</button>':''}</div>
+    <ul class="net-list">${rows}</ul>${watchers.length?`<p class="net-note">Spectateurs : ${watchers.map(esc).join(', ')}</p>`:''}
+    ${N.waitHost?'<p class="net-wait"><span class="net-spin"></span>L’hôte s’est déconnecté. La partie reprend dès son retour.</p>':''}
+    ${away?'<p class="net-note">Un joueur absent bloque la partie quand c’est son tour. Tu peux confier sa place à l’ordinateur ; il la récupère s’il revient.</p>':''}
+    <div class="acts">${away?'<button class="btn" data-net="replace">Remplacer les absents</button>':''}${N.host?'<button class="btn" data-net="lobby">Revenir au salon</button>':''}<button class="btn" data-net="quit">${N.host?'Fermer la salle':'Quitter la salle'}</button><button class="btn pri" data-c="close">Continuer</button></div>`);
+   $('#mbox').onclick=onClick; }
+ function onClick(e){ const b=e.target.closest('[data-net]'); if(!b){ if(N.ui==='lobby'&&N.host&&NG().rulesClick&&NG().rulesClick(e)) lobbyUI(); return; } const [k,v]=b.dataset.net.split(':'); sfx('click');
+   if(k==='create') create(); else if(k==='join') join(($('#netCode').value||'').toUpperCase());
+   else if(k==='start') startUI(); else if(k==='copy'){ const l=link(); (navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).then(()=>toast('Lien copié : envoie-le à tes amis'),()=>{ prompt('Lien de la salle',l); }); }
+   else if(k==='share'){ navigator.share({title:NG().title+' en ligne',text:`Rejoins ma salle ${N.code} pour jouer à ${NG().title}`,url:link()}).catch(()=>{}); }
+   else if(k==='ai'){ N.ai.n=+v; lobbyUI(); pushLobby(); } else if(k==='lv'){ N.ai.level=v; lobbyUI(); pushLobby(); }
+   else if(k==='go') launch(); else if(k==='quit') leave(); else if(k==='replace') replace();
+   else if(k==='lobby'){ N.started=false; N.aq=[]; send('lobby',{order:lobbyOrder().map(k=>({cid:k,name:N.peers[k].name})),ai:N.ai,back:1}); send('st',{hs:N.hs,v:++N.v,G:null,kind:'lobby'}); lobbyUI(); } }
+ function launch(){ const order=lobbyOrder(); const list=order.map(k=>({name:N.peers[k].name,cid:k})); for(let i=0;i<N.ai.n;i++) list.push({ai:true,level:N.ai.level});
+   closeModal(); window.MODAL_CLOSABLE=true; N.ui=null; N.started=true; N.aq=[]; N.seat=0; NG().start(list); }
+ function restart(){ const G=NG().state(); if(!G||!N.host) return; const list=G.players.map(P=>P.cid&&!P.ai?{name:P.name,cid:P.cid}:{ai:true,level:P.level||'normal',name:P.cid?null:P.name}); closeModal(); window.MODAL_CLOSABLE=true; N.started=true; N.aq=[]; NG().start(list); }
+ function replace(){ const G=NG().state(); if(!G) return; G.players.forEach(P=>{ if(P.cid&&!P.ai&&!N.peers[P.cid]){ P.ai=true; P.away=true; P.level=P.level||'normal'; } }); closeModal(); NG().resume(); pushFull(); }
+ async function leave(silent){ if(N.host&&!silent) send('close',{}); const was=N.on; N.on=false; N.host=false; N.guest=false; N.started=false; N.seat=null; N.code=null; N.q=[]; N.aq=[]; N.ui=null; setSess(null);
+   if(ch&&client){ try{ await client.removeChannel(ch); }catch(e){} } ch=null; badge(); closeModal(); window.MODAL_CLOSABLE=true; if(was) NG().leave(); }
+ /* menu « Nouvelle partie » pendant une partie en ligne */
+ function netMenu(){ window.MODAL_CLOSABLE=true; if(N.host) paintModal(`<h2>Partie en ligne</h2><p>Tu es l’hôte de la salle ${N.code}.</p><div class="acts" style="justify-content:flex-start"><button class="btn pri" data-net="again">Relancer avec les mêmes joueurs</button><button class="btn" data-net="lobby">Revenir au salon (joueurs, règles)</button><button class="btn" data-net="quitlocal">Fermer la salle et jouer en local</button></div><div class="acts"><button class="btn" data-c="close">Annuler</button></div>`);
+   else paintModal(`<h2>Partie en ligne</h2><p>Seul l’hôte peut relancer une partie.</p><div class="acts"><button class="btn" data-c="close">Continuer</button><button class="btn pri" data-net="quitlocal">Quitter la salle et jouer en local</button></div>`);
+   $('#mbox').onclick=async e=>{ const b=e.target.closest('[data-net]'); if(!b) return; if(b.dataset.net==='again') restart(); else if(b.dataset.net==='quitlocal'){ await leave(); NG().menuLocal(); } else onClick(e); }; }
+ /* bouton d'en-tête et reprise */
+ function init(){ const g=NG(); if(!g) return; const tools=$('.top .tools'); if(tools&&!$('#netBtn')){ const b=document.createElement('button'); b.className='btn'; b.id='netBtn'; b.textContent='En ligne'; const nb=tools.querySelector('[data-c="new"]'); tools.insertBefore(b,nb||null);
+     b.onclick=()=>{ if(N.on){ if(N.started) panelUI(); else lobbyUI(); } else startUI(); }; }
+   const menu0=GAME.menu; g.menuLocal=menu0; GAME.menu=function(){ if(N.on&&N.started) return netMenu(); if(N.on) return lobbyUI(); return menu0.apply(this,arguments); };
+   N.name=load('net-name')||'';
+   const qs=new URLSearchParams(location.search).get('salle'); const s=sess();
+   if(qs&&/^[A-Za-z]{4}$/.test(qs)){ const code=qs.toUpperCase(); history.replaceState(null,'',location.pathname); if(s&&s.game===g.id&&s.code===code&&s.host) resumeHost(s); else if(N.name&&s&&s.code===code) join(code,true); else setTimeout(()=>startUI(code),50); return; }
+   if(s&&s.game===g.id){ if(s.host) resumeHost(s); else if(N.name){ N.ui='lobby'; join(s.code,true); } } }
+ async function resumeHost(s){ const G=NG().state(); if(!G||!G.net){ setSess(null); return; } try{ await connect(s.code,true); }catch(e){ toast('Salle en ligne indisponible'); return; } N.started=true; N.seat=G.players.findIndex(P=>P.cid===N.cid); badge(); pushFull(); toast('Salle '+s.code+' rouverte'); }
+ N.init=init; N.push=push; N.drain=drain; N.act=act; N.leave=leave; N.restart=restart; N.startUI=startUI; N.panel=()=>panelUI();
+ N.mine=p=>N.on&&N.started?p===N.seat:null;
+ N.waitHTML='<p class="net-wait">L’hôte peut relancer une partie ou revenir au salon.</p><div class="acts"><button class="btn" data-c="close">Fermer</button></div>';
+ return N; })();
+addEventListener('load',()=>setTimeout(()=>NET.init(),0));
 
 /* Sept Merveilles : données (dans l'esprit de 7 Wonders) — noms originaux, répartition par nombre de joueurs fidèle au jeu de base.
    Ressources : W bois, S pierre, C brique, O minerai, G verre, T tissu, P papyrus. Coût en pièces : chiffre. */
@@ -418,7 +580,9 @@ function effTxt(eff){ return effs(eff).map(e=>{ const [k,a,b,c]=e.split(':');
   return e; }).join(' · '); }
 function cardHTML(c,o){ o=o||{}; return `<button class="cd ${c.color} ${o.cls||''}" data-card="${c.id}" style="${o.delay?'animation-delay:'+o.delay+'ms':''}"><div class="hd h-${c.color}">${esc(c.name)}</div><div class="bd"><div class="cs">${c.color==='leader'?`<span class="ri" style="background:#d9a520;color:#2a1f14">${c.cost}●</span>`:costHTML(c.cost)}</div><div class="ef">${effTxt(c.eff)}</div>${c.chain&&c.chain.length?`<div class="ch">Gratuit si tu as : ${c.chain.map(esc).join(' ou ')}</div>`:''}</div>${o.tag||''}</button>`; }
 /* ---------- rendu ---------- */
-function me(){ if(VIEW!=null) return VIEW; const h=humans(); return h.length?h[0]:0; }
+const ONLINE=()=>NET.on&&NET.started;
+let ENDKEY=null;
+function me(){ if(ONLINE()) return NET.seat!=null?NET.seat:0; if(VIEW!=null) return VIEW; const h=humans(); return h.length?h[0]:0; }
 function cityHTML(i,big){ const P=G.players[i], st=stagesOf(P), sc=sciCounts(P), dsc=discounts(P);
   const prod=prodUnits(P,false); const counts={}; P.built.forEach(c=>counts[c.color]=(counts[c.color]||0)+1);
   return `<div class="pan ${big?'mine':''}" id="city-${i}"><h3>${esc(P.name)} <small>${esc(wonderOf(P).name)} · face ${P.side}</small></h3>
@@ -430,7 +594,7 @@ function cityHTML(i,big){ const P=G.players[i], st=stagesOf(P), sc=sciCounts(P),
 function render(){ if(!G){ $('#tbl').innerHTML=''; $('#actin').innerHTML=''; renderStatus(); return; } const m=me(), l=L(G,m), r=R(G,m);
   const hand=G.phase==='recruit'?G.players[m].lhand:(G.hands[m]||[]);
   const tag=c=>{ if(G.phase==='ldraft'||G.phase==='recruit') return ''; const o=buildOptions(G,m,c); if(!o) return ''; if(o.chain) return '<span class="tag free">chaîne</span>'; if(!o.ok) return o.free?'<span class="tag free">pouvoir</span>':'<span class="tag no">impossible</span>'; return o.plan.coins?`<span class="tag buy">${o.plan.coins} ●</span>`:'<span class="tag ok">prête</span>'; };
-  const canSee=!(humans().length>1&&VIEW==null);
+  const canSee=ONLINE()?NET.seat!=null:!(humans().length>1&&VIEW==null);
   const hd=G.phase==='ldraft'?'Choisis un meneur à garder':G.phase==='recruit'?'Recrute un meneur pour cet âge':G.phase==='disc'?'':`Âge ${['','I','II','III'][G.age]} · tour ${G.turn} · ta main`;
   const opps=G.players.map((P,i)=>`<div class="opp ${i===m?'me':''}"><b>${esc(P.name)}</b> · ${esc(wonderOf(P).name)}<br>● ${P.coins} · ⚔ ${shields(P)} · étapes ${P.stages}/${stagesOf(P).length}${G.choices[i]?' · ✓ a choisi':''}</div>`).join('');
   const ed=G.opts.edifice&&G.edif?`<div class="pan"><h3>Édifice de l’âge : ${esc(G.edif.name)}</h3><div style="font-size:13px">Participation en construisant une étape de merveille : ${G.edif.cost} pièces. Réussi si au moins ${Math.ceil(G.n*G.edif.need)} joueurs participent : récompense ${effTxt(G.edif.rew)} pour les participants, pénalité ${effTxt(G.edif.pen)} pour les autres. Participants : ${G.edif.by.map(i=>esc(G.players[i].name)).join(', ')||'aucun'}.</div></div>`:'';
@@ -452,10 +616,15 @@ function renderAct(){ const a=$('#actin'); if(G.phase==='over'){ a.innerHTML=`<s
 function renderStatus(){ const st=$('#status'); if(!G){ st.innerHTML=''; return; } st.style.setProperty('--pc',G.phase==='over'?'#1d6f3e':['','#7a4a1e','#2f6fb8','#7d3c98'][G.age]||'#7a4a1e');
   st.innerHTML=G.phase==='over'?`<span class="who">Fin</span><span class="msg">${G.over.winners.map(i=>esc(G.players[i].name)).join(' et ')} l’emporte.</span>`:`<span class="who">Âge ${['','I','II','III'][G.age]||'—'}</span><span class="msg">${G.phase==='ldraft'?'Sélection des meneurs':G.phase==='recruit'?'Recrutement des meneurs':'Tour '+G.turn+(G.age===2?' · on passe à droite':' · on passe à gauche')}</span><span class="right">${G.n} cités</span>`; }
 /* ---------- déroulement ---------- */
-function save(){ store(KEY,G&&G.phase!=='over'?{G,UID}:null); }
+function save(){ if(NET.guest) return; store(KEY,G&&G.phase!=='over'?{G,UID}:null); }
 function nextHuman(){ return humans().find(i=>!G.choices[i]&&(G.phase!=='last'||G.lastWho.includes(i))); }
 function step(){ if(!G) return; const my=GEN; save();
-  if(G.phase==='over'){ render(); setTimeout(()=>{ if(my===GEN) gameEnd(); },500); return; }
+  if(G.phase==='over'){ render(); NET.push(); if(ENDKEY==='over') return; ENDKEY='over'; setTimeout(()=>{ if(my===GEN) gameEnd(); },500); return; }
+  ENDKEY=null;
+  if(ONLINE()){ if(G.phase==='disc'){ const p=G.pendingDisc[0]; render(); NET.push(); if(p===NET.seat){ if(!$('#mbox .dpick')) discModal(p); } else if(G.players[p].ai&&NET.host){ setTimeout(()=>{ if(my!==GEN) return; after(chooseDisc(G,p,aiDisc(G,p)),my); },700); } return; }
+    if(NET.host){ G.players.forEach((P,i)=>{ if(P.ai&&!G.choices[i]){ if(G.phase==='last'){ if(G.lastWho.includes(i)){ const c=aiLast(G,i); if(!choose(G,i,c)) choose(G,i,{type:'discard',id:c.id}); } } else { const c=aiChoice(G,i); if(!choose(G,i,c)) choose(G,i,{type:'discard',id:G.hands[i][0].id}); } } });
+      save(); NET.push(); if(allChosen(G)){ resolve(); return; } }
+    render(); NET.drain(); return; }
   if(G.phase==='disc'){ const p=G.pendingDisc[0]; if(G.players[p].ai){ setTimeout(()=>{ if(my!==GEN) return; const ev=chooseDisc(G,p,aiDisc(G,p)); after(ev,my); },700); } else discModal(p); render(); return; }
   // les ordinateurs choisissent
   G.players.forEach((P,i)=>{ if(P.ai&&!G.choices[i]){ if(G.phase==='last'){ if(G.lastWho.includes(i)){ const c=aiLast(G,i); if(!choose(G,i,c)) choose(G,i,{type:'discard',id:c.id}); } } else { const c=aiChoice(G,i); if(!choose(G,i,c)) choose(G,i,{type:'discard',id:G.hands[i][0].id}); } } });
@@ -464,7 +633,7 @@ function step(){ if(!G) return; const my=GEN; save();
   if(humans().length>1&&VIEW!==h){ VIEW=null; render(); cover(h); return; }
   VIEW=h; render(); }
 async function resolve(){ const my=GEN; BUSY=true; render(); await wait(350); if(my!==GEN) return; const ev=G.phase==='last'?resolveLast(G):resolveTurn(G); after(ev,my); }
-async function after(ev,my){ BUSY=true; await show(ev,my); if(my!==GEN) return; BUSY=false; SEL=null; FLEETO=false; EDIFO=false; if(humans().length>1) VIEW=null; step(); }
+async function after(ev,my){ if(!ev) return; NET.push(ev); BUSY=true; await show(ev,my); if(my!==GEN) return; BUSY=false; SEL=null; FLEETO=false; EDIFO=false; if(humans().length>1&&!ONLINE()) VIEW=null; step(); }
 async function show(ev,my){ const builds=ev.filter(e=>e.t==='build'||e.t==='stage');
   builds.forEach(e=>{ if(e.card) LASTBUILT.add(e.card.id); });
   const m=me(); const mine=ev.filter(e=>(e.t==='build'||e.t==='stage'||e.t==='discard')&&e.p!==m);
@@ -479,45 +648,47 @@ async function show(ev,my){ const builds=ev.filter(e=>e.t==='build'||e.t==='stag
    if(e.t==='pass'){ sfx('flip'); } } }
 async function warShow(e,my){ const val={1:1,2:3,3:5}[e.age]; banner('Conflits militaires',`Fin de l’âge ${['','I','II','III'][e.age]} · victoire +${val}, défaite −1`,'#c0392b'); sfx('boom'); await wait(1500); if(my!==GEN) return;
   const lines=e.res.map(r=>r.tie?`<div>⚔ ${esc(G.players[r.tie[0]].name)} et ${esc(G.players[r.tie[1]].name)} : égalité</div>`:`<div>⚔ <span style="color:#1d6f3e">${esc(G.players[r.w].name)} +${val}</span> contre <span style="color:#a12a1d">${esc(G.players[r.l].name)} −1</span></div>`).join('');
-  await new Promise(res=>{ window.MODAL_CLOSABLE=false; openModal(`<h2>Conflits de l’âge ${['','I','II','III'][e.age]}</h2><div class="war">${lines}</div><div class="acts"><button class="btn pri" data-w="1">Continuer</button></div>`,ev=>{ if(!ev.target.closest('[data-w]')) return; closeModal(); window.MODAL_CLOSABLE=true; res(); }); }); }
+  await new Promise(res=>{ window.MODAL_CLOSABLE=false; let done=false; const fin=()=>{ if(done) return; done=true; closeModal(); window.MODAL_CLOSABLE=true; res(); }; if(ONLINE()) setTimeout(()=>{ if(!done&&$('#mbox .war')) fin(); },5000); openModal(`<h2>Conflits de l’âge ${['','I','II','III'][e.age]}</h2><div class="war">${lines}</div><div class="acts"><button class="btn pri" data-w="1">Continuer</button></div>`,ev=>{ if(!ev.target.closest('[data-w]')) return; fin(); }); }); }
 function discModal(p){ const P=G.players[p], cs=G.discard.filter(c=>!P.built.some(b=>b.name===c.name)); window.MODAL_CLOSABLE=false;
-  openModal(`<h2>Mausolée : construire depuis la défausse</h2><p>Choisis une carte de la défausse à construire gratuitement.</p><div class="dpick">${cs.map(c=>cardHTML(c)).join('')}</div>`,e=>{ const b=e.target.closest('[data-card]'); if(!b) return; closeModal(); window.MODAL_CLOSABLE=true; after(chooseDisc(G,p,b.dataset.card),GEN); }); }
+  openModal(`<h2>Mausolée : construire depuis la défausse</h2><p>Choisis une carte de la défausse à construire gratuitement.</p><div class="dpick">${cs.map(c=>cardHTML(c)).join('')}</div>`,e=>{ const b=e.target.closest('[data-card]'); if(!b) return; closeModal(); window.MODAL_CLOSABLE=true; if(NET.guest){ NET.act('disc',[p,b.dataset.card]); return; } after(chooseDisc(G,p,b.dataset.card),GEN); }); }
 function cover(p){ const c=$('#cover'); c.innerHTML=`<div><span style="font-family:Cinzel,Georgia;letter-spacing:.15em;color:#f3d58a">À TOI DE CHOISIR</span><h2 style="font-family:Cinzel,Georgia">${esc(G.players[p].name)}</h2><p>Les autres détournent les yeux : ta main est secrète.</p><button class="btn pri" style="font-size:17px;padding:12px 20px" data-a="reveal" data-p="${p}">Voir ma main</button></div>`; c.style.background='radial-gradient(circle at 50% 35%,#5a3f22,#140e09)'; c.hidden=false; }
 function gameEnd(){ store(KEY,null); const w=G.over.winners, hw=w.some(i=>isH(i)); banner(hw?'Victoire !':'Fin de partie',w.map(i=>G.players[i].name).join(' et '),'#b8862b'); sfx(hw?'win':'lose'); if(hw) confetti(Object.values(CC));
   const cat=[['mil','⚔ Militaire','#c0392b'],['coin','● Trésor','#d9a520'],['wonder','Merveille','#b8862b'],['civ','Civil','#2f6fb8'],['com','Commerce','#d9a520'],['guild','Guildes','#7d3c98'],['sci','Science','#2e8b57'],['lead','Meneurs','#e6dcc0'],['other','Autres','#888']];
-  setTimeout(()=>{ window.MODAL_CLOSABLE=true; openModal(`<h2>${w.map(i=>esc(G.players[i].name)).join(' et ')} l’emporte</h2><div style="overflow-x:auto"><table class="scl"><tr><th>Cité</th>${cat.map(c=>`<th title="${c[1]}"><i style="background:${c[2]}"></i></th>`).join('')}<th>Total</th></tr>${G.players.map((P,i)=>({P,i,s:G.over.sc[i]})).sort((a,b)=>b.s.total-a.s.total).map(({P,i,s})=>`<tr class="${w.includes(i)?'w':''}"><td>${esc(P.name)}</td>${cat.map(c=>`<td>${s[c[0]]}</td>`).join('')}<td><b>${s.total}</b></td></tr>`).join('')}</table></div><p style="font-size:13px">${cat.map(c=>`<span style="white-space:nowrap"><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${c[2]}"></i> ${c[1]}</span>`).join(' · ')}</p><div class="acts"><button class="btn" data-c="new">Changer les réglages</button><button class="btn pri" data-a="again">Rejouer</button></div>`); },1700); }
+  setTimeout(()=>{ window.MODAL_CLOSABLE=true; openModal(`<h2>${w.map(i=>esc(G.players[i].name)).join(' et ')} l’emporte</h2><div style="overflow-x:auto"><table class="scl"><tr><th>Cité</th>${cat.map(c=>`<th title="${c[1]}"><i style="background:${c[2]}"></i></th>`).join('')}<th>Total</th></tr>${G.players.map((P,i)=>({P,i,s:G.over.sc[i]})).sort((a,b)=>b.s.total-a.s.total).map(({P,i,s})=>`<tr class="${w.includes(i)?'w':''}"><td>${esc(P.name)}</td>${cat.map(c=>`<td>${s[c[0]]}</td>`).join('')}<td><b>${s.total}</b></td></tr>`).join('')}</table></div><p style="font-size:13px">${cat.map(c=>`<span style="white-space:nowrap"><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${c[2]}"></i> ${c[1]}</span>`).join(' · ')}</p>${NET.guest?NET.waitHTML:'<div class="acts"><button class="btn" data-c="new">Changer les réglages</button><button class="btn pri" data-a="again">Rejouer</button></div>'}`); },1700); }
 /* ---------- clics ---------- */
 document.addEventListener('change',e=>{ if(e.target.id==='fleet') FLEETO=e.target.checked; if(e.target.id==='edif') EDIFO=e.target.checked; });
 document.addEventListener('click',e=>{ const t=e.target.closest('[data-card],[data-a]'); if(!t||!G) return;
-  if(t.dataset.a==='again'){ closeModal(); startGame(); return; }
+  if(t.dataset.a==='again'){ closeModal(); if(NET.host) NET.restart(); else startGame(); return; }
   if(t.dataset.a==='reveal'){ $('#cover').hidden=true; VIEW=+t.dataset.p; SEL=null; render(); sfx('flip'); return; }
   if(BUSY||G.phase==='over'||!$('#modal').hidden) return; const m=me();
   if(t.dataset.card&&t.closest('.hand')){ if(G.choices[m]) return; SEL=SEL===t.dataset.card?null:t.dataset.card; FLEETO=false; EDIFO=false; sfx('click'); render(); return; }
   const a=t.dataset.a; let ok=false;
-  if(a==='undo'){ delete G.choices[m]; render(); return; }
+  if(a==='undo'){ if(NET.guest){ NET.act('undo',[m]); return; } delete G.choices[m]; render(); NET.push(); return; }
   if(!SEL) return;
   if(a==='keep') ok=choose(G,m,{type:'keep',id:SEL});
   else if(a==='recruit') ok=choose(G,m,{type:'recruit',id:SEL}); else if(a==='ldisc') ok=choose(G,m,{type:'ldisc',id:SEL});
   else if(a==='build') ok=choose(G,m,{type:'build',id:SEL,fleet:FLEETO}); else if(a==='free') ok=choose(G,m,{type:'build',id:SEL,free:true});
   else if(a==='wonder') ok=choose(G,m,{type:'wonder',id:SEL,edif:EDIFO}); else if(a==='discard') ok=choose(G,m,{type:'discard',id:SEL});
   else return;
+  if(ok&&NET.guest){ const ch=G.choices[m]; delete G.choices[m]; NET.act('choose',[m,{type:ch.type,id:ch.id,fleet:ch.fleet,edif:ch.edif,free:ch.free}]); SEL=null; G.choices[m]={type:'sent'}; render(); return; }
   if(!ok){ sfx('error'); toast('Action impossible'); return; } sfx('pop'); SEL=null; save(); step(); });
 /* ---------- menu ---------- */
 let M={n:4,seats:Array.from({length:7},(_,i)=>({h:i===0?1:0,name:''})),level:'normal',side:'A',leaders:false,cities:false,armada:false,edifice:false};
 function startGame(){ GEN++; $('#cover').hidden=true; const hs=M.seats.slice(0,M.n).filter(s=>s.h).length;
   G=newGame({players:M.seats.slice(0,M.n).map((s,i)=>({name:(s.name||'').trim()||(s.h?(hs===1?'Toi':NAMES[i]):NAMES[(i+1)%7]),ai:!s.h,level:M.level})),leaders:M.leaders,cities:M.cities,armada:M.armada,edifice:M.edifice,side:M.side});
   VIEW=null; SEL=null; banner(G.phase==='ldraft'?'Les meneurs':'Âge I',G.phase==='ldraft'?'Choisis 4 meneurs, un par un':'Les cartes passent à gauche','#7a4a1e'); setTimeout(step,900); render(); }
+function rulesHTML(){ return `<h4>Face des merveilles</h4><div class="seg">${[['A','Face A (conseillée)'],['B','Face B'],['mix','Au hasard']].map(([v,l])=>`<button class="${M.side===v?'on':''}" data-m="side:${v}">${l}</button>`).join('')}</div>
+   <h4>Extensions</h4>
+   <label class="opt"><input type="checkbox" data-o="leaders" ${M.leaders?'checked':''}><span><b>Meneurs</b> : 4 meneurs à sélectionner au début, un recruté à chaque âge. On commence avec 6 pièces.</span></label>
+   <label class="opt"><input type="checkbox" data-o="cities" ${M.cities?'checked':''}><span><b>Cités</b> : cartes noires (impôts, diplomatie, espionnage). 8 cartes par âge.</span></label>
+   <label class="opt"><input type="checkbox" data-o="armada" ${M.armada?'checked':''}><span><b>Armada</b> : quatre flottes à faire avancer et des batailles navales.</span></label>
+   <label class="opt"><input type="checkbox" data-o="edifice" ${M.edifice?'checked':''}><span><b>Édifices</b> : un grand projet commun par âge.</span></label>`; }
 function menu(){ window.MODAL_CLOSABLE=true;
   const draw=()=>{ const hs=M.seats.slice(0,M.n).filter(s=>s.h).length; paintModal(`<h2>Nouvelle partie</h2>
    <h4>Cités</h4><div class="seg">${[3,4,5,6,7].map(n=>`<button class="${M.n===n?'on':''}" data-m="n:${n}">${n}</button>`).join('')}</div>
    ${M.seats.slice(0,M.n).map((s,i)=>`<div class="seatrow"><input type="text" data-nm="${i}" value="${esc(s.name)}" placeholder="${s.h?(i===0?'Toi':NAMES[i]):NAMES[(i+1)%7]}" maxlength="14"><div class="seg"><button class="${s.h?'on':''}" data-m="h:${i}:1">Humain</button><button class="${s.h?'':'on'}" data-m="h:${i}:0">Ordinateur</button></div></div>`).join('')}
    ${hs<M.n?`<h4>Niveau de l’ordinateur</h4><div class="seg">${['facile','normal','difficile'].map(l=>`<button class="${M.level===l?'on':''}" data-m="level:${l}">${l}</button>`).join('')}</div>`:''}
-   <h4>Face des merveilles</h4><div class="seg">${[['A','Face A (conseillée)'],['B','Face B'],['mix','Au hasard']].map(([v,l])=>`<button class="${M.side===v?'on':''}" data-m="side:${v}">${l}</button>`).join('')}</div>
-   <h4>Extensions</h4>
-   <label class="opt"><input type="checkbox" data-o="leaders" ${M.leaders?'checked':''}><span><b>Meneurs</b> : 4 meneurs à sélectionner au début, un recruté à chaque âge. On commence avec 6 pièces.</span></label>
-   <label class="opt"><input type="checkbox" data-o="cities" ${M.cities?'checked':''}><span><b>Cités</b> : cartes noires (impôts, diplomatie, espionnage). 8 cartes par âge.</span></label>
-   <label class="opt"><input type="checkbox" data-o="armada" ${M.armada?'checked':''}><span><b>Armada</b> : quatre flottes à faire avancer et des batailles navales.</span></label>
-   <label class="opt"><input type="checkbox" data-o="edifice" ${M.edifice?'checked':''}><span><b>Édifices</b> : un grand projet commun par âge.</span></label>
+   ${rulesHTML()}
    <div class="acts">${G&&G.phase!=='over'?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="go" ${hs?'':'disabled'}>Fonder les cités</button></div>`); };
   draw(); $('#mbox').onclick=e=>{ $$('#mbox [data-nm]').forEach(i=>{ M.seats[+i.dataset.nm].name=i.value; }); $$('#mbox [data-o]').forEach(i=>{ M[i.dataset.o]=i.checked; }); const x=e.target.closest('[data-m]'); if(!x) return; const [k,v,w]=x.dataset.m.split(':'); sfx('click');
     if(k==='go'){ closeModal(); store('smp',M); startGame(); return; } if(k==='h') M.seats[+v].h=+w; else if(k==='n') M.n=+v; else M[k]=v; draw(); }; }
@@ -527,8 +698,26 @@ function help(){ helpTabs('Sept Merveilles',[
  ['Les cartes',`<ul><li><b>Marron</b> et <b>grises</b> : produisent des ressources chaque tour.</li><li><b>Bleues</b> : points de victoire.</li><li><b>Jaunes</b> : pièces, commerce moins cher, ressources au choix, points à l’âge III.</li><li><b>Rouges</b> : boucliers pour les conflits.</li><li><b>Vertes</b> : symboles de science (compas, engrenage, tablette).</li><li><b>Violettes</b> (âge III) : guildes, points selon tes voisins ou toi.</li></ul>`],
  ['Conflits et points',`<p>À la fin de chaque âge, chaque cité compare ses boucliers avec ses deux voisins : victoire +1, +3 puis +5 points selon l’âge, défaite −1, égalité rien.</p><ul><li>Pièces : 1 point pour 3.</li><li>Science : pour chaque symbole, le nombre d’exemplaires au carré, plus 7 points par série complète des trois symboles.</li></ul><p class="ex">Exemple : 3 compas, 2 engrenages, 1 tablette → 9 + 4 + 1 + 7 = 21 points.</p>`],
  ['Extensions',`<ul><li><b>Meneurs</b> : avant l’âge I, chacun garde 4 meneurs (on se passe les mains). Au début de chaque âge, on en recrute un (en payant son coût) ou on le renvoie pour 3 pièces. Effets : points, boucliers, science, commerce…</li><li><b>Cités</b> : cartes noires ajoutées à chaque âge. L’impôt fait perdre des pièces aux adversaires (dette de −1 point par pièce manquante), la diplomatie permet d’éviter le prochain conflit.</li><li><b>Armada</b> : en construisant une carte rouge, jaune, bleue ou verte, tu peux payer 1 pièce de plus pour avancer la flotte de cette couleur : puissance navale (batailles avec le voisin de droite à chaque âge), pièces, points ou science.</li><li><b>Édifices</b> : un projet commun par âge. En bâtissant une étape de merveille, tu peux payer pour y participer. S’il y a assez de participants, ils sont récompensés et les autres pénalisés.</li></ul><p>Ces extensions reprennent l’esprit et les grandes mécaniques des originales, sous une forme simplifiée.</p>`],
- ['Jouer ici',`<ul><li>Touche une carte de ta main : l’étiquette indique si elle est prête, ce qu’elle coûte en commerce, ou si elle est gratuite par chaîne.</li><li>Tes voisins sont affichés de part et d’autre de ta cité, avec leurs productions pour le commerce.</li><li>De 3 à 7 cités, humains ou ordinateurs. À plusieurs humains, un écran de passage cache les mains. La partie est sauvegardée automatiquement.</li></ul>`]]); }
+ ['Jouer ici',`<ul><li>Touche une carte de ta main : l’étiquette indique si elle est prête, ce qu’elle coûte en commerce, ou si elle est gratuite par chaîne.</li><li>Tes voisins sont affichés de part et d’autre de ta cité, avec leurs productions pour le commerce.</li><li>De 3 à 7 cités, humains ou ordinateurs. À plusieurs humains, un écran de passage cache les mains. La partie est sauvegardée automatiquement.</li><li><b>En ligne</b> : touche « En ligne » en haut, crée une salle et envoie son code de 4 lettres (ou le lien) à tes amis. Chacun joue sur son téléphone ou son ordinateur, l’ordinateur peut compléter la table. L’hôte garde la partie : s’il recharge la page, la salle reprend.</li></ul>`]]); }
 window.SM={get G(){return G;},get BUSY(){return BUSY;}};
+window.NETGAME={id:'sept-merveilles',title:'Sept Merveilles',min:3,max:7,rules:rulesHTML,
+  rulesClick(e){ const x=e.target.closest('[data-m^="side:"],[data-o]'); if(!x) return false; if(x.dataset.m) M.side=x.dataset.m.split(':')[1]; $$('#mbox [data-o]').forEach(i=>{ M[i.dataset.o]=i.checked; }); store('smp',M); return true; },
+  start(list){ GEN++; ENDKEY=null; $('#cover').hidden=true; let k=0;
+    G=newGame({players:list.map(x=>x.ai?{name:x.name||NAMES[(k++ +2)%7],ai:true,level:x.level}:{name:x.name,ai:false}),leaders:M.leaders,cities:M.cities,armada:M.armada,edifice:M.edifice,side:M.side});
+    list.forEach((x,i)=>{ if(x.cid) G.players[i].cid=x.cid; }); G.net=true; VIEW=null; SEL=null; NET.push(null,'new');
+    banner(G.phase==='ldraft'?'Les meneurs':'Âge I',G.phase==='ldraft'?'Choisis 4 meneurs, un par un':'Les cartes passent à gauche','#7a4a1e'); render(); const my=GEN; setTimeout(()=>{ if(my===GEN) step(); },900); },
+  state:()=>G, busy:()=>BUSY, resume(){ if(!BUSY) step(); },
+  act(seat,fn,args){ if(!G||args[0]!==seat) return false;
+    if(fn==='choose'){ if(G.choices[seat]) return false; const ok=choose(G,seat,Object.assign({},args[1])); if(ok) step(); else NET.push(); return ok; }
+    if(fn==='undo'){ if(G.choices[seat]&&G.choices[seat].type!=='skip'){ delete G.choices[seat]; save(); NET.push(); render(); } return true; }
+    if(fn==='disc'){ if(G.phase!=='disc'||G.pendingDisc[0]!==seat) return false; const ev=chooseDisc(G,seat,args[1]); if(!ev) return false; after(ev,GEN); return true; }
+    return false; },
+  async receive(m){ if(m.kind==='lobby'){ GEN++; G=null; BUSY=false; render(); return; }
+    if(m.kind==='new'){ GEN++; ENDKEY=null; SEL=null; $('#cover').hidden=true; if(!$('#modal').hidden&&!$('#mbox [data-net]')&&!$('#netName')) closeModal(); const first=!G; G=m.G; if(G.age<=1&&G.turn<=1) banner(G.phase==='ldraft'?'Les meneurs':'Âge I',G.phase==='ldraft'?'Choisis 4 meneurs, un par un':'Les cartes passent à gauche','#7a4a1e'); }
+    G=m.G; const my=GEN; if(SEL&&!(G.phase==='recruit'?(G.players[me()].lhand||[]):(G.hands[me()]||[])).some(c=>c.id===SEL)) SEL=null;
+    if(m.ev){ BUSY=true; await show(m.ev,my); SEL=null; FLEETO=false; EDIFO=false; }
+    BUSY=false; if(my===GEN) step(); },
+  leave(){ GEN++; G=null; BUSY=false; ENDKEY=null; render(); GAME.menu(); } };
 (function boot(){ const p=load('smp'); if(p) Object.assign(M,p); const s=load(KEY); if(s&&s.G&&s.G.phase!=='over'){ G=s.G; UID=s.UID||999; step(); } else { G=null; render(); menu(); } })();
 }
 

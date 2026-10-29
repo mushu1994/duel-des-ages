@@ -57,6 +57,33 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation}
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
 
+/* salle en ligne */
+#netBtn{display:inline-flex;align-items:center;gap:6px}
+#netBtn.net-on{background:#1d8f5a;border-color:#1d8f5a;color:#fff}
+.net-dot{width:9px;height:9px;border-radius:50%;background:#7dffb5;box-shadow:0 0 0 2px #fff6;animation:netp 1.8s infinite}
+.net-dot.off{background:#ffb347;animation:none}
+@keyframes netp{50%{box-shadow:0 0 0 5px #7dffb500}}
+.mbox .net-in{font-family:inherit;font-weight:800;font-size:16px;padding:9px 11px;border-radius:9px;border:1px solid #c9b98f;background:#fff!important;color:#2a2418!important;-webkit-text-fill-color:#2a2418!important;caret-color:#2a2418;width:100%;max-width:280px}
+.mbox .net-in::placeholder{color:#a3926e!important;-webkit-text-fill-color:#a3926e!important;font-weight:600}
+.mbox .net-code{letter-spacing:.35em;text-transform:uppercase;font-size:22px;text-align:center;max-width:170px}
+.net-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.net-box{border:1px solid #d9caa4;border-radius:12px;padding:10px 12px;background:#f6efdc;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.net-box h4{margin:0!important}.net-box p{margin:0;font-size:14px}
+.net-note{font-size:13.5px;color:#6b5d40}
+.net-code-big{display:flex;gap:8px;justify-content:center;margin:10px 0}
+.net-code-big b{font-family:var(--title,Georgia,serif);font-size:40px;width:58px;height:66px;display:grid;place-items:center;border-radius:12px;background:#2a2418;color:#fff;box-shadow:0 6px 0 #0003}
+.net-share{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.net-list{list-style:none;padding:0;margin:6px 0;display:flex;flex-direction:column;gap:5px}
+.net-list li{display:flex;align-items:center;gap:8px;font-weight:800;background:#f6efdc;border-radius:10px;padding:6px 9px;flex-wrap:wrap}
+.net-list li small{font-weight:600;color:#6b5d40}.net-list li.ai{opacity:.8}
+.net-av{width:26px;height:26px;border-radius:50%;background:#2a2418;color:#fff;display:grid;place-items:center;font-size:13px;flex:none}
+.net-ok{color:#1d7a46;font-weight:800}.net-ko{color:#b0412e;font-weight:800}
+.net-wait{display:flex;align-items:center;gap:10px;font-weight:700}
+.net-spin{width:18px;height:18px;border-radius:50%;border:3px solid #c9b98f;border-top-color:#2a2418;animation:netr 1s linear infinite;flex:none}
+@keyframes netr{to{transform:rotate(360deg)}}
+.net-rules{margin-top:6px}
+@media (max-width:560px){.net-two{grid-template-columns:1fr}.net-code-big b{font-size:32px;width:50px;height:58px}}
+
 body{background:radial-gradient(ellipse at 50% -10%,#1f5761 0%,#0f2b33 55%,#0a1c22 100%) fixed,#0a1c22}
 .qs{display:flex;flex-direction:column;gap:10px;padding:10px max(10px,env(safe-area-inset-right,0px)) 120px max(10px,env(safe-area-inset-left,0px));max-width:1100px;margin:0 auto;--cw:clamp(46px,6.2vw,64px)}
 .qs-top{display:flex;align-items:center;justify-content:center;gap:clamp(14px,4vw,40px);padding:10px;position:relative}
@@ -180,6 +207,141 @@ document.addEventListener('click',e=>{
 addEventListener('DOMContentLoaded',updSnd);
 
 
+/* ===== Salle en ligne : salons à code (Supabase Realtime, l'hôte fait tourner la partie) =====
+   Le jeu déclare window.NETGAME = { id, title, min, max, rules():html, rulesClick(e):bool,
+     start(list), state():G, receive(msg):Promise, act(seat,fn,args):bool, busy():bool, resume(), leave() } */
+const NET=(()=>{
+ const SB_URL='https://evepcodcppxpufbkuflq.supabase.co', SB_KEY='sb_publishable_iUC6966SeFt_05Iac1wGQw_yDo9zl7y';
+ const LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+ const SITE='https://mushu1994.github.io/duel-des-ages/';
+ const LET='ABCDEFGHJKLMNPQRSTUVWXYZ';
+ const N={on:false,host:false,guest:false,started:false,code:null,name:'',seat:null,peers:{},v:0,hs:null,lastV:-1,lastHs:null,q:[],aq:[],ai:{n:0,level:'normal'},ui:null,known:new Set(),waitHost:false};
+ let cid=load('net-cid'); if(!cid){ cid=Math.random().toString(36).slice(2,10); store('net-cid',cid); } N.cid=cid;
+ let client=null, ch=null, libP=null;
+ const NG=()=>window.NETGAME;
+ function lib(){ if(window.supabase) return Promise.resolve(); if(libP) return libP;
+   libP=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=LIB; s.onload=res; s.onerror=()=>{ libP=null; rej(new Error('lib')); }; document.head.appendChild(s); }); return libP; }
+ function newCode(){ let c=''; for(let i=0;i<4;i++) c+=LET[Math.floor(Math.random()*LET.length)]; return c; }
+ const link=()=>{ const base=/github\.io$/.test(location.hostname)?location.origin+location.pathname:SITE+NG().id+'.html'; return base+'?salle='+N.code; };
+ const sess=()=>load('net-sess'), setSess=v=>store('net-sess',v);
+ /* ---------- connexion ---------- */
+ async function connect(code,asHost){ await lib(); if(!client) client=window.supabase.createClient(SB_URL,SB_KEY,{realtime:{params:{eventsPerSecond:20}}});
+   if(ch){ try{ await client.removeChannel(ch); }catch(e){} ch=null; }
+   N.code=code; N.host=asHost; N.guest=!asHost; N.on=true; N.peers={}; N.known=new Set(); N.hs=Math.random().toString(36).slice(2,8);
+   ch=client.channel('salle:'+NG().id+':'+code,{config:{broadcast:{self:false},presence:{key:N.cid}}});
+   ch.on('broadcast',{event:'st'},({payload})=>{ if(N.guest) enqueue(payload); });
+   ch.on('broadcast',{event:'act'},({payload})=>{ if(N.host){ N.aq.push(payload); drain(); } });
+   ch.on('broadcast',{event:'hello'},()=>{ if(N.host) pushFull(); });
+   ch.on('broadcast',{event:'lobby'},({payload})=>{ if(N.guest&&!N.started){ N.lobby=payload; if(N.ui==='lobby') lobbyUI(); } });
+   ch.on('broadcast',{event:'close'},()=>{ if(N.guest){ toast('L’hôte a fermé la salle'); leave(true); } });
+   ch.on('presence',{event:'sync'},onSync);
+   return new Promise((res,rej)=>{ let done=false; const to=setTimeout(()=>{ if(!done){ done=true; rej(new Error('timeout')); } },9000);
+     ch.subscribe(async st=>{ if(st==='SUBSCRIBED'){ await ch.track({name:N.name,host:asHost,at:Date.now()}); if(!done){ done=true; clearTimeout(to); res(); } if(N.guest) send('hello',{}); }
+       else if((st==='CHANNEL_ERROR'||st==='TIMED_OUT')&&!done){ done=true; clearTimeout(to); rej(new Error(st)); } }); }); }
+ function send(ev,payload){ if(ch) ch.send({type:'broadcast',event:ev,payload}).catch(()=>{}); }
+ function onSync(){ const st=ch.presenceState(); const peers={}; for(const k in st){ const m=st[k][st[k].length-1]; peers[k]=m; } const before=N.peers; N.peers=peers;
+   const names=k=>(peers[k]||before[k]||{}).name||'Un joueur';
+   for(const k in peers) if(!before[k]&&k!==N.cid&&N.known.has(k)) toast(`${names(k)} est de retour`);
+   for(const k in before) if(!peers[k]&&k!==N.cid) toast(`${names(k)} a quitté la salle`);
+   Object.keys(peers).forEach(k=>N.known.add(k));
+   if(N.guest){ const hostHere=Object.values(peers).some(m=>m.host); if(!hostHere&&N.started){ N.waitHost=true; } else N.waitHost=false; }
+   if(N.host){ if(N.started){ const G=NG().state(); let ch2=false; if(G) G.players.forEach(P=>{ if(P.cid&&P.away&&peers[P.cid]){ P.ai=false; P.away=false; ch2=true; } }); if(ch2) NG().resume(); pushFull(); } else pushLobby(); }
+   badge(); if(N.ui==='lobby') lobbyUI(); else if(N.ui==='panel') panelUI(); }
+ /* ---------- hôte ---------- */
+ function pushLobby(){ if(!N.host||N.started) return; send('lobby',{order:lobbyOrder().map(k=>({cid:k,name:N.peers[k].name})),ai:N.ai}); }
+ function lobbyOrder(){ return Object.keys(N.peers).sort((a,b)=>(N.peers[b].host-N.peers[a].host)||(N.peers[a].at-N.peers[b].at)); }
+ function push(ev,kind){ if(!N.host||!N.started) return; N.v++; const G=NG().state(); if(!G) return; const p={hs:N.hs,v:N.v,G,ev:ev||null,kind:kind||null}; N.last=p; send('st',p); }
+ function pushFull(){ if(!N.host||!N.started) return; push(null,'full'); }
+ function drain(){ if(!N.host||!N.started) return; while(N.aq.length&&!NG().busy()){ const m=N.aq.shift(); const G=NG().state(); const seat=G?G.players.findIndex(P=>P.cid===m.cid):-1; if(seat<0||G.players[seat].ai) continue; NG().act(seat,m.fn,m.args||[]); } }
+ /* ---------- invité ---------- */
+ function enqueue(p){ if(p.hs!==N.lastHs){ N.lastHs=p.hs; N.lastV=-1; } if(p.v<=N.lastV) return; N.lastV=p.v; N.q.push(p); pump(); }
+ async function pump(){ if(N.pumping) return; N.pumping=true;
+   while(N.q.length){ let p=N.q.shift(); if(p.kind==='full'||!p.ev){ while(N.q.length&&(N.q[0].kind==='full'||!N.q[0].ev)&&N.q[0].kind!=='lobby'&&N.q[0].kind!=='new') p=N.q.shift(); }
+     if(p.kind==='lobby'||!p.G){ N.started=false; N.seat=null; try{ NG().receive({kind:'lobby'}); }catch(e){} lobbyUI(); continue; }
+     const first=!N.started; N.started=true; N.waitHost=false; const s=p.G.players.findIndex(P=>P.cid===N.cid); N.seat=s>=0?s:null;
+     if(first){ closeModal(); window.MODAL_CLOSABLE=true; N.ui=null; if(N.seat==null) toast('Partie déjà commencée : tu regardes'); }
+     try{ await NG().receive(Object.assign({},p,{kind:first&&p.kind!=='new'?'new':p.kind})); }catch(e){ console.error(e); } badge(); }
+   N.pumping=false; }
+ function act(fn,args){ if(!N.guest) return false; if(N.waitHost){ toast('En attente de l’hôte…'); return true; } send('act',{cid:N.cid,fn,args}); sfx('click'); return true; }
+ /* ---------- interface ---------- */
+ function badge(){ const b=$('#netBtn'); if(!b) return; if(!N.on){ b.textContent='En ligne'; b.classList.remove('net-on'); return; } const n=Object.keys(N.peers).length; b.innerHTML=`<i class="net-dot ${N.waitHost?'off':''}"></i>Salle ${N.code} · ${n}`; b.classList.add('net-on'); }
+ function nameInput(){ return `<input type="text" class="net-in" id="netName" maxlength="14" value="${esc(N.name||load('net-name')||'')}" placeholder="Ton prénom">`; }
+ function startUI(prefill){ N.ui='start'; window.MODAL_CLOSABLE=true; const art=!/github\.io$/.test(location.hostname)&&/claude|artifact/.test(location.hostname+location.href);
+   paintModal(`<h2>Jouer en ligne</h2><p>Chacun joue sur son téléphone ou son ordinateur. Crée une salle et partage son code, ou rejoins celle d’un ami.</p>
+    <h4>Ton prénom</h4>${nameInput()}
+    <div class="net-two"><div class="net-box"><h4>Créer une salle</h4><p>Tu choisis les règles et lances la partie.</p><button class="btn pri" data-net="create">Créer une salle</button></div>
+    <div class="net-box"><h4>Rejoindre une salle</h4><input type="text" class="net-in net-code" id="netCode" maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="CODE" value="${esc(prefill||'')}"><button class="btn pri" data-net="join">Rejoindre</button></div></div>
+    ${art?`<p class="net-note">Si la connexion échoue ici, ouvre le jeu sur le site : <a href="${SITE}${NG().id}.html" target="_blank" rel="noopener">${SITE.replace('https://','')}</a></p>`:''}
+    <p class="net-note">Pas de compte à créer. La salle disparaît quand tout le monde est parti.</p>
+    <div class="acts"><button class="btn" data-c="close">Fermer</button></div>`);
+   $('#mbox').onclick=onClick; const c=$('#netCode'); if(c) c.oninput=()=>{ c.value=c.value.toUpperCase().replace(/[^A-Z]/g,''); }; }
+ function readName(){ const i=$('#netName'); const v=(i?i.value:N.name||'').trim(); if(!v){ toast('Indique ton prénom'); if(i) i.focus(); return null; } N.name=v.slice(0,14); store('net-name',N.name); return N.name; }
+ function busyUI(msg){ paintModal(`<h2>Jouer en ligne</h2><p class="net-wait"><span class="net-spin"></span>${msg}</p>`); }
+ async function create(){ if(!readName()) return; busyUI('Ouverture de la salle…');
+   try{ for(let t=0;t<4;t++){ const code=newCode(); await connect(code,true); await wait(900); const other=Object.entries(N.peers).some(([k,m])=>k!==N.cid&&m.host); if(!other) break; } }
+   catch(e){ failUI(); return; }
+   N.started=false; setSess({game:NG().id,code:N.code,host:true}); lobbyUI(); badge(); }
+ async function join(code,silent){ if(!readName()&&!silent) return; if(!/^[A-Z]{4}$/.test(code||'')){ toast('Le code fait 4 lettres'); return; } busyUI('Connexion à la salle '+code+'…');
+   try{ await connect(code,false); }catch(e){ failUI(); return; }
+   N.started=false; setSess({game:NG().id,code,host:false}); await wait(1200);
+   if(!N.started){ const hostHere=Object.values(N.peers).some(m=>m.host); if(!hostHere){ N.ui='lobby'; lobbyUI('Aucun hôte dans cette salle pour l’instant. Vérifie le code ; tu peux attendre ici.'); } else lobbyUI(); } badge(); }
+ function failUI(){ N.on=false; paintModal(`<h2>Connexion impossible</h2><p>Le serveur de jeu n’a pas répondu. Vérifie ta connexion internet${/github\.io$/.test(location.hostname)?'':', ou ouvre le jeu directement sur le site'}.</p>${/github\.io$/.test(location.hostname)?'':`<p><a href="${SITE}${NG().id}.html" target="_blank" rel="noopener">Ouvrir ${esc(NG().title)} sur le site</a></p>`}<div class="acts"><button class="btn" data-c="close">Fermer</button><button class="btn pri" data-net="start">Réessayer</button></div>`); $('#mbox').onclick=onClick; badge(); }
+ function lobbyUI(note){ N.ui='lobby'; window.MODAL_CLOSABLE=false; const g=NG();
+   const order=N.host?lobbyOrder():((N.lobby&&N.lobby.order)||[]).map(x=>x.cid); const names=N.host?order.map(k=>N.peers[k].name):((N.lobby&&N.lobby.order)||[]).map(x=>x.name);
+   const hs=order.length, maxAI=Math.max(0,g.max-hs); if(N.ai.n>maxAI) N.ai.n=maxAI; const ai=N.host?N.ai:((N.lobby&&N.lobby.ai)||{n:0,level:'normal'}); const total=hs+ai.n;
+   const list=names.map((n,i)=>`<li><span class="net-av">${esc((n||'?')[0])}</span>${esc(n)}${order[i]===N.cid?' <small>(toi)</small>':''}${i===0&&N.host||(!N.host&&N.lobby&&i===0)?' <small>· hôte</small>':''}</li>`).join('')+Array.from({length:ai.n},(_,i)=>`<li class="ai"><span class="net-av">🤖</span>Ordinateur ${i+1} <small>· ${ai.level}</small></li>`).join('');
+   paintModal(`<h2>Salle ${N.code}</h2>${note?`<p class="net-note">${note}</p>`:''}
+    <div class="net-code-big" aria-label="Code de la salle">${[...N.code].map(c=>`<b>${c}</b>`).join('')}</div>
+    <div class="net-share"><button class="btn" data-net="copy">Copier le lien</button>${navigator.share?'<button class="btn" data-net="share">Partager</button>':''}</div>
+    <h4>Joueurs (${total} / ${g.min} à ${g.max})</h4><ul class="net-list">${list||'<li>…</li>'}</ul>
+    ${N.host?`<h4>Ordinateurs en plus</h4><div class="seg">${Array.from({length:maxAI+1},(_,n)=>`<button class="${ai.n===n?'on':''}" data-net="ai:${n}">${n}</button>`).join('')}</div>
+     ${ai.n?`<div class="seg" style="margin-left:6px">${['facile','normal','difficile'].map(l=>`<button class="${ai.level===l?'on':''}" data-net="lv:${l}">${l}</button>`).join('')}</div>`:''}
+     ${g.rules?`<div class="net-rules">${g.rules()}</div>`:''}
+     <div class="acts"><button class="btn" data-net="quit">Fermer la salle</button><button class="btn pri" data-net="go" ${total>=g.min&&total<=g.max?'':'disabled'}>${total<g.min?`Encore ${g.min-total} joueur${g.min-total>1?'s':''}`:'Lancer la partie'}</button></div>`
+    :`<p class="net-wait"><span class="net-spin"></span>En attente que l’hôte lance la partie…</p><div class="acts"><button class="btn" data-net="quit">Quitter la salle</button></div>`}`);
+   $('#mbox').onclick=onClick; }
+ function panelUI(){ N.ui='panel'; window.MODAL_CLOSABLE=true; const G=NG().state();
+   const rows=(G?G.players:[]).map((P,i)=>{ const here=P.cid?!!N.peers[P.cid]:false; return `<li><span class="net-av">${P.cid?esc((P.name||'?')[0]):'🤖'}</span>${esc(P.name)}${P.cid===N.cid?' <small>(toi)</small>':''} <small>· ${P.cid?(P.ai?'remplacé par l’ordinateur':here?'<span class="net-ok">connecté</span>':'<span class="net-ko">absent</span>'):'ordinateur'}</small></li>`; }).join('');
+   const away=N.host&&G&&G.players.some(P=>P.cid&&!P.ai&&!N.peers[P.cid]);
+   const watchers=Object.keys(N.peers).filter(k=>!(G&&G.players.some(P=>P.cid===k))).map(k=>N.peers[k].name);
+   paintModal(`<h2>Salle ${N.code}</h2><div class="net-share"><button class="btn" data-net="copy">Copier le lien</button>${navigator.share?'<button class="btn" data-net="share">Partager</button>':''}</div>
+    <ul class="net-list">${rows}</ul>${watchers.length?`<p class="net-note">Spectateurs : ${watchers.map(esc).join(', ')}</p>`:''}
+    ${N.waitHost?'<p class="net-wait"><span class="net-spin"></span>L’hôte s’est déconnecté. La partie reprend dès son retour.</p>':''}
+    ${away?'<p class="net-note">Un joueur absent bloque la partie quand c’est son tour. Tu peux confier sa place à l’ordinateur ; il la récupère s’il revient.</p>':''}
+    <div class="acts">${away?'<button class="btn" data-net="replace">Remplacer les absents</button>':''}${N.host?'<button class="btn" data-net="lobby">Revenir au salon</button>':''}<button class="btn" data-net="quit">${N.host?'Fermer la salle':'Quitter la salle'}</button><button class="btn pri" data-c="close">Continuer</button></div>`);
+   $('#mbox').onclick=onClick; }
+ function onClick(e){ const b=e.target.closest('[data-net]'); if(!b){ if(N.ui==='lobby'&&N.host&&NG().rulesClick&&NG().rulesClick(e)) lobbyUI(); return; } const [k,v]=b.dataset.net.split(':'); sfx('click');
+   if(k==='create') create(); else if(k==='join') join(($('#netCode').value||'').toUpperCase());
+   else if(k==='start') startUI(); else if(k==='copy'){ const l=link(); (navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).then(()=>toast('Lien copié : envoie-le à tes amis'),()=>{ prompt('Lien de la salle',l); }); }
+   else if(k==='share'){ navigator.share({title:NG().title+' en ligne',text:`Rejoins ma salle ${N.code} pour jouer à ${NG().title}`,url:link()}).catch(()=>{}); }
+   else if(k==='ai'){ N.ai.n=+v; lobbyUI(); pushLobby(); } else if(k==='lv'){ N.ai.level=v; lobbyUI(); pushLobby(); }
+   else if(k==='go') launch(); else if(k==='quit') leave(); else if(k==='replace') replace();
+   else if(k==='lobby'){ N.started=false; N.aq=[]; send('lobby',{order:lobbyOrder().map(k=>({cid:k,name:N.peers[k].name})),ai:N.ai,back:1}); send('st',{hs:N.hs,v:++N.v,G:null,kind:'lobby'}); lobbyUI(); } }
+ function launch(){ const order=lobbyOrder(); const list=order.map(k=>({name:N.peers[k].name,cid:k})); for(let i=0;i<N.ai.n;i++) list.push({ai:true,level:N.ai.level});
+   closeModal(); window.MODAL_CLOSABLE=true; N.ui=null; N.started=true; N.aq=[]; N.seat=0; NG().start(list); }
+ function restart(){ const G=NG().state(); if(!G||!N.host) return; const list=G.players.map(P=>P.cid&&!P.ai?{name:P.name,cid:P.cid}:{ai:true,level:P.level||'normal',name:P.cid?null:P.name}); closeModal(); window.MODAL_CLOSABLE=true; N.started=true; N.aq=[]; NG().start(list); }
+ function replace(){ const G=NG().state(); if(!G) return; G.players.forEach(P=>{ if(P.cid&&!P.ai&&!N.peers[P.cid]){ P.ai=true; P.away=true; P.level=P.level||'normal'; } }); closeModal(); NG().resume(); pushFull(); }
+ async function leave(silent){ if(N.host&&!silent) send('close',{}); const was=N.on; N.on=false; N.host=false; N.guest=false; N.started=false; N.seat=null; N.code=null; N.q=[]; N.aq=[]; N.ui=null; setSess(null);
+   if(ch&&client){ try{ await client.removeChannel(ch); }catch(e){} } ch=null; badge(); closeModal(); window.MODAL_CLOSABLE=true; if(was) NG().leave(); }
+ /* menu « Nouvelle partie » pendant une partie en ligne */
+ function netMenu(){ window.MODAL_CLOSABLE=true; if(N.host) paintModal(`<h2>Partie en ligne</h2><p>Tu es l’hôte de la salle ${N.code}.</p><div class="acts" style="justify-content:flex-start"><button class="btn pri" data-net="again">Relancer avec les mêmes joueurs</button><button class="btn" data-net="lobby">Revenir au salon (joueurs, règles)</button><button class="btn" data-net="quitlocal">Fermer la salle et jouer en local</button></div><div class="acts"><button class="btn" data-c="close">Annuler</button></div>`);
+   else paintModal(`<h2>Partie en ligne</h2><p>Seul l’hôte peut relancer une partie.</p><div class="acts"><button class="btn" data-c="close">Continuer</button><button class="btn pri" data-net="quitlocal">Quitter la salle et jouer en local</button></div>`);
+   $('#mbox').onclick=async e=>{ const b=e.target.closest('[data-net]'); if(!b) return; if(b.dataset.net==='again') restart(); else if(b.dataset.net==='quitlocal'){ await leave(); NG().menuLocal(); } else onClick(e); }; }
+ /* bouton d'en-tête et reprise */
+ function init(){ const g=NG(); if(!g) return; const tools=$('.top .tools'); if(tools&&!$('#netBtn')){ const b=document.createElement('button'); b.className='btn'; b.id='netBtn'; b.textContent='En ligne'; const nb=tools.querySelector('[data-c="new"]'); tools.insertBefore(b,nb||null);
+     b.onclick=()=>{ if(N.on){ if(N.started) panelUI(); else lobbyUI(); } else startUI(); }; }
+   const menu0=GAME.menu; g.menuLocal=menu0; GAME.menu=function(){ if(N.on&&N.started) return netMenu(); if(N.on) return lobbyUI(); return menu0.apply(this,arguments); };
+   N.name=load('net-name')||'';
+   const qs=new URLSearchParams(location.search).get('salle'); const s=sess();
+   if(qs&&/^[A-Za-z]{4}$/.test(qs)){ const code=qs.toUpperCase(); history.replaceState(null,'',location.pathname); if(s&&s.game===g.id&&s.code===code&&s.host) resumeHost(s); else if(N.name&&s&&s.code===code) join(code,true); else setTimeout(()=>startUI(code),50); return; }
+   if(s&&s.game===g.id){ if(s.host) resumeHost(s); else if(N.name){ N.ui='lobby'; join(s.code,true); } } }
+ async function resumeHost(s){ const G=NG().state(); if(!G||!G.net){ setSess(null); return; } try{ await connect(s.code,true); }catch(e){ toast('Salle en ligne indisponible'); return; } N.started=true; N.seat=G.players.findIndex(P=>P.cid===N.cid); badge(); pushFull(); toast('Salle '+s.code+' rouverte'); }
+ N.init=init; N.push=push; N.drain=drain; N.act=act; N.leave=leave; N.restart=restart; N.startUI=startUI; N.panel=()=>panelUI();
+ N.mine=p=>N.on&&N.started?p===N.seat:null;
+ N.waitHTML='<p class="net-wait">L’hôte peut relancer une partie ou revenir au salon.</p><div class="acts"><button class="btn" data-c="close">Fermer</button></div>';
+ return N; })();
+addEventListener('load',()=>setTimeout(()=>NET.init(),0));
+
 /* ===== moteur ===== */
 const IS_NODE=typeof window==='undefined';
 /* Quitte ou Sept : moteur pur (dans l'esprit de Flip 7) */
@@ -285,15 +447,19 @@ function cardHTML(c,cls){ if(!c) return `<div class="qc back ${cls||''}"><span c
   if(c.k==='m') return `<div class="qc m ${cls||''}"><span class="v" style="font-size:calc(var(--cw)*${c.v.length>2?.36:.42})">${c.v.replace('x','×')}</span></div>`;
   return `<div class="qc a ${c.v} ${cls||''}">${ASVG[c.v]}<span class="lbl">${ANAME[c.v]}</span></div>`; }
 const isH=p=>G&&!G.players[p].ai;
+const can=p=>{ const m=NET.mine(p); return m==null?isH(p):m; };
+let ENDKEY=null;
+const ENG={decide:(G,p,h)=>decide(G,p,!!h),target:(G,p,t)=>target(G,p,+t)};
+function doAct(fn,args){ if(NET.guest){ NET.act(fn,args); return; } apply(ENG[fn](G,...args),GEN); }
 function stateChip(P){ if(P.flip7) return '<span class="chip2 f7">SEPT !</span>'; return P.state==='bust'?'<span class="chip2 bust">Éliminé</span>':P.state==='stay'?'<span class="chip2 stay">Arrêté</span>':P.state==='frozen'?'<span class="chip2 frozen">Gelé</span>':'<span class="chip2">En jeu</span>'; }
 function render(){ if(!G){ $('#tbl').innerHTML=''; $('#act').hidden=true; renderStatus(); return; }
-  const n=G.need, tg=n&&n.type==='target'&&isH(n.p)&&!BUSY?n.opts:[];
+  const n=G.need, tg=n&&n.type==='target'&&can(n.p)&&!BUSY?n.opts:[];
   const top=`<div class="qs-top"><div class="qs-pile qs-deck" id="deck">${cardHTML(null)}<small>Pioche · ${G.deck.length}</small></div><div class="qs-pile" id="disc">${G.discard.length?cardHTML(G.discard[G.discard.length-1]):'<div class="qc" style="opacity:.25"></div>'}<small>Défausse · ${G.discard.length}</small></div><div class="qs-info"><span>Manche <b>${G.round}</b> · objectif <b>${G.target}</b> points</span><span>Sept chiffres différents : la manche s’arrête et <b>+15</b>.</span></div></div>`;
   const lanes=G.players.map((P,i)=>{ const nums=P.cards.slice().sort((a,b)=>a.v-b.v), on=n&&n.p===i&&G.phase==='play', d=new Set(P.cards.map(c=>c.v)).size;
     return `<div class="lane ${P.state} ${on?'on':''} ${tg.includes(i)?'tgt':''}" id="lane-${i}" data-lane="${i}"><div class="who2"><span class="av" style="background:${AVC[i%8]}">${esc(P.name[0]||'?')}</span><div style="min-width:0"><div class="nm2">${esc(P.name)}</div><small>${P.score} pts au total</small>${stateChip(P)}<div class="bar7">${Array.from({length:7},(_,k)=>`<i class="${k<d?'on':''}"></i>`).join('')}</div></div></div>
      <div class="cards">${nums.map(c=>cardHTML(c,NEWC.has(c.id)?'in':'')).join('')}${P.mods.length||P.sc?'<span class="sep"></span>':''}${P.mods.map(c=>cardHTML(c,NEWC.has(c.id)?'in':'')).join('')}${P.sc?cardHTML(P.sc,NEWC.has(P.sc.id)?'in':''):''}<span class="rp">${P.state==='bust'?'0':roundPts(P)}</span></div></div>`; }).join('');
   $('#tbl').innerHTML=top+`<div class="lanes">${lanes}</div>`; NEWC.clear(); renderAct(); renderStatus(); }
-function renderAct(){ const a=$('#act'), n=G&&G.need; if(!n||BUSY||!isH(n.p)||G.phase!=='play'){ a.hidden=true; return; } a.hidden=false; const P=G.players[n.p];
+function renderAct(){ const a=$('#act'), n=G&&G.need; if(!n||BUSY||!can(n.p)||G.phase!=='play'){ a.hidden=true; return; } a.hidden=false; const P=G.players[n.p];
   if(n.type==='hit'){ const r=bustRisk(G,n.p,false).p*(P.sc?0:1), pc=Math.round(r*100), col=pc<20?'#22a96b':pc<35?'#ffc23d':'#ff5d73';
     $('#actin').innerHTML=`<span class="msg2"><b>${esc(P.name)}</b>, ${roundPts(P)} points en jeu.${P.sc?' Ta seconde chance te protège d’un doublon.':''}${RISK?` <span class="risk">Risque de doublon ${pc} % <i><b style="width:${pc}%;background:${col}"></b></i></span>`:''}</span><button class="btn big stay2" data-a="stay">Je m’arrête (${roundPts(P)})</button><button class="btn big hit" data-a="hit">Encore une carte</button>`; }
   else { $('#actin').innerHTML=`<span class="msg2"><b>${esc(P.name)}</b> : ${n.give?'tu as déjà une seconde chance, donne celle-ci à un joueur en jeu.':`à qui donner la carte <b>${ANAME[n.c.v]}</b> ? ${n.c.v==='freeze'?'Le joueur gelé encaisse ses points et sort de la manche.':'Le joueur retourne trois cartes d’affilée.'}`} Touche une piste en surbrillance.</span>${n.opts.map(i=>`<button class="btn" data-tg="${i}">${esc(G.players[i].name)}${i===n.p?' (moi)':''}</button>`).join('')}`; } }
@@ -321,25 +487,24 @@ async function show(ev,my){ for(const e of ev||[]){ if(my!==GEN) return;
    case 'roundEnd': render(); await wait(500); break;
   } } }
 /* ---------- déroulement ---------- */
-function save(){ store(KEY,G&&G.phase!=='over'?G:null); }
-async function apply(ev,my){ if(!ev) return; BUSY=true; render(); await show(ev,my); if(my!==GEN) return; BUSY=false; step(); }
-function step(){ if(!G) return; render(); save(); const my=GEN;
-  if(G.phase==='roundOver'){ setTimeout(()=>{ if(my===GEN) roundEnd(); },600); return; }
-  if(G.phase==='over'){ setTimeout(()=>{ if(my===GEN) gameEnd(); },600); return; }
-  const n=G.need; if(!n) return;
-  if(G.players[n.p].ai){ setTimeout(()=>{ if(my!==GEN||BUSY) return; const d=aiDecide(G); apply(n.type==='hit'?decide(G,n.p,d):target(G,n.p,d),my); },n.type==='hit'?750:900); } }
+function save(){ if(NET.guest) return; store(KEY,G&&G.phase!=='over'?G:null); }
+async function apply(ev,my){ if(!ev) return; NET.push(ev); BUSY=true; render(); await show(ev,my); if(my!==GEN) return; BUSY=false; step(); }
+function step(){ if(!G) return; render(); save(); NET.push(); const my=GEN;
+  if(G.phase==='roundOver'||G.phase==='over'){ const k=G.phase+G.round; if(ENDKEY===k) return; ENDKEY=k; setTimeout(()=>{ if(my===GEN) (G.phase==='over'?gameEnd:roundEnd)(); },600); return; }
+  ENDKEY=null; const n=G.need; if(!n){ NET.drain(); return; }
+  if(G.players[n.p].ai&&!NET.guest){ setTimeout(()=>{ if(my!==GEN||BUSY) return; const d=aiDecide(G); apply(n.type==='hit'?decide(G,n.p,d):target(G,n.p,d),my); },n.type==='hit'?750:900); return; } NET.drain(); }
 function roundEnd(){ const rows=G.players.map((p,i)=>({p,i})).sort((a,b)=>b.p.score-a.p.score);
-  window.MODAL_CLOSABLE=false; openModal(`<h2>Fin de la manche ${G.round}</h2><table class="scl"><tr><th>Joueur</th><th>Manche</th><th>Total</th></tr>${rows.map(({p,i})=>`<tr><td>${esc(p.name)}${p.flip7?' · SEPT !':p.state==='bust'?' · éliminé':''}</td><td>+${p.last}</td><td>${p.score}</td></tr>`).join('')}</table><p>Objectif : ${G.target} points. ${rows[0].p.score>=G.target?'Égalité en tête : on joue une manche de plus.':''}</p><div class="acts"><button class="btn pri" data-r="1">Manche suivante</button></div>`,e=>{ if(!e.target.closest('[data-r]')) return; closeModal(); window.MODAL_CLOSABLE=true; newRound(); }); }
+  window.MODAL_CLOSABLE=false; openModal(`<h2>Fin de la manche ${G.round}</h2><table class="scl"><tr><th>Joueur</th><th>Manche</th><th>Total</th></tr>${rows.map(({p,i})=>`<tr><td>${esc(p.name)}${p.flip7?' · SEPT !':p.state==='bust'?' · éliminé':''}</td><td>+${p.last}</td><td>${p.score}</td></tr>`).join('')}</table><p>Objectif : ${G.target} points. ${rows[0].p.score>=G.target?'Égalité en tête : on joue une manche de plus.':''}</p>${NET.guest?'<p class="net-wait"><span class="net-spin"></span>L’hôte lance la manche suivante…</p>':'<div class="acts"><button class="btn pri" data-r="1">Manche suivante</button></div>'}`,e=>{ if(!e.target.closest('[data-r]')) return; closeModal(); window.MODAL_CLOSABLE=true; newRound(); }); }
 function gameEnd(){ const w=G.over.winner; store(KEY,null); banner('Victoire !',G.players[w].name,AVC[w%8]); sfx(isH(w)?'win':'lose'); confetti();
-  setTimeout(()=>{ window.MODAL_CLOSABLE=true; openModal(`<h2>${esc(G.players[w].name)} gagne avec ${G.players[w].score} points</h2><table class="scl"><tr><th>Joueur</th><th>Total</th></tr>${G.players.map((p,i)=>({p,i})).sort((a,b)=>b.p.score-a.p.score).map(({p,i})=>`<tr class="${i===w?'w':''}"><td>${esc(p.name)}</td><td>${p.score}</td></tr>`).join('')}</table><div class="acts"><button class="btn" data-c="new">Changer les réglages</button><button class="btn pri" data-a="again">Rejouer</button></div>`); },1500); }
-async function newRound(){ const my=++GEN; BUSY=true; const ev=startRound(G); render(); banner(`Manche ${G.round}`,`${G.players[G.dealer].name} distribue`,'#1aa6a6'); await wait(900); if(my!==GEN) return; await show(ev,my); if(my!==GEN) return; BUSY=false; step(); }
+  setTimeout(()=>{ window.MODAL_CLOSABLE=true; openModal(`<h2>${esc(G.players[w].name)} gagne avec ${G.players[w].score} points</h2><table class="scl"><tr><th>Joueur</th><th>Total</th></tr>${G.players.map((p,i)=>({p,i})).sort((a,b)=>b.p.score-a.p.score).map(({p,i})=>`<tr class="${i===w?'w':''}"><td>${esc(p.name)}</td><td>${p.score}</td></tr>`).join('')}</table>${NET.guest?NET.waitHTML:'<div class="acts"><button class="btn" data-c="new">Changer les réglages</button><button class="btn pri" data-a="again">Rejouer</button></div>'}`); },1500); }
+async function newRound(){ const my=++GEN; BUSY=true; const ev=startRound(G); NET.push(ev,'round'); render(); banner(`Manche ${G.round}`,`${G.players[G.dealer].name} distribue`,'#1aa6a6'); await wait(900); if(my!==GEN) return; await show(ev,my); if(my!==GEN) return; BUSY=false; step(); }
 /* ---------- clics ---------- */
 document.addEventListener('click',e=>{ const t=e.target.closest('[data-a],[data-tg],[data-lane]'); if(!t) return;
   if(t.dataset.a==='risk'){ RISK=!RISK; store('qs-risk',RISK); updRisk(); if(G) renderAct(); return; }
-  if(t.dataset.a==='again'){ closeModal(); startGame(); return; }
-  if(!G||BUSY||!G.need||!isH(G.need.p)) return; const n=G.need;
-  if(n.type==='hit'&&(t.dataset.a==='hit'||t.dataset.a==='stay')){ sfx('click'); apply(decide(G,n.p,t.dataset.a==='hit'),GEN); return; }
-  if(n.type==='target'){ const v=t.dataset.tg!=null?+t.dataset.tg:t.dataset.lane!=null?+t.dataset.lane:null; if(v==null||!n.opts.includes(v)) return; apply(target(G,n.p,v),GEN); } });
+  if(t.dataset.a==='again'){ closeModal(); if(NET.host) NET.restart(); else startGame(); return; }
+  if(!G||BUSY||!G.need||!can(G.need.p)) return; const n=G.need;
+  if(n.type==='hit'&&(t.dataset.a==='hit'||t.dataset.a==='stay')){ sfx('click'); doAct('decide',[n.p,t.dataset.a==='hit'?1:0]); return; }
+  if(n.type==='target'){ const v=t.dataset.tg!=null?+t.dataset.tg:t.dataset.lane!=null?+t.dataset.lane:null; if(v==null||!n.opts.includes(v)) return; doAct('target',[n.p,v]); } });
 function updRisk(){ const b=$('#riskBtn'); if(b) b.textContent=RISK?'Aide au risque ✓':'Aide au risque'; }
 /* ---------- menu ---------- */
 let M={n:4,seats:Array.from({length:8},(_,i)=>({h:i===0?1:0,name:''})),level:'normal',target:200};
@@ -360,8 +525,22 @@ function help(){ helpTabs('Quitte ou Sept',[
  ['But du jeu',`<p>Être le premier à atteindre <b>200 points</b> (le plus haut score gagne si plusieurs les dépassent dans la même manche ; en cas d’égalité, on rejoue une manche).</p><p>À chaque manche, tu retournes des cartes une à une pour accumuler des points… mais un <b>chiffre en double</b> et tu perds tout ce que tu avais posé dans la manche.</p>`],
  ['Une manche',`<ol><li>Chacun reçoit une carte face visible.</li><li>À tour de rôle, chaque joueur encore en jeu choisit : <b>Encore une carte</b> ou <b>Je m’arrête</b> (il encaisse ses points et sort de la manche).</li><li>Une carte chiffre déjà présente devant toi : tu es <b>éliminé</b> pour la manche (0 point).</li><li>La manche se termine quand plus personne n’est en jeu, ou dès qu’un joueur aligne <b>sept chiffres différents</b> : il gagne 15 points de bonus et tous ceux qui ne sont pas éliminés marquent leurs points.</li></ol>`],
  ['Les cartes',`<ul><li><b>Chiffres de 0 à 12</b> : il y a autant d’exemplaires que la valeur (douze 12, onze 11… un seul 1 et un 0). Les gros chiffres rapportent plus mais tombent plus souvent en double.</li><li><b>Bonus +2 à +10</b> et <b>×2</b> : le ×2 double la somme des chiffres, puis on ajoute les bonus.</li><li><b>Gel</b> : donne-le à un joueur en jeu (toi compris) : il encaisse ses points et sort de la manche.</li><li><b>Encore trois</b> : le joueur visé retourne trois cartes d’affilée. Les Gel et Encore trois tirés pendant ce temps se jouent après.</li><li><b>Seconde chance</b> : garde-la ; elle annule un doublon (les deux cartes sont défaussées). On n’en garde qu’une : la deuxième se donne à un autre joueur en jeu.</li></ul><p class="ex">Exemple : 3, 7, 11, ×2 et +4 → (3 + 7 + 11) × 2 + 4 = 46 points.</p>`],
- ['Jouer ici',`<ul><li>De 2 à 8 joueurs, humains ou ordinateurs. Les cartes sont visibles de tous : pas d’écran de passage.</li><li><b>Aide au risque</b> (en haut) affiche la probabilité de tirer un doublon, calculée sur les cartes visibles.</li><li>Pour donner une carte action, touche la piste du joueur choisi.</li><li>La partie est sauvegardée automatiquement.</li></ul>`]]); }
+ ['Jouer ici',`<ul><li>De 2 à 8 joueurs, humains ou ordinateurs. Les cartes sont visibles de tous : pas d’écran de passage.</li><li><b>Aide au risque</b> (en haut) affiche la probabilité de tirer un doublon, calculée sur les cartes visibles.</li><li>Pour donner une carte action, touche la piste du joueur choisi.</li><li>La partie est sauvegardée automatiquement.</li><li><b>En ligne</b> : touche « En ligne » en haut, crée une salle et envoie son code de 4 lettres (ou le lien) à tes amis. Chacun joue sur son téléphone ou son ordinateur, l’ordinateur peut compléter la table. L’hôte garde la partie : s’il recharge la page, la salle reprend.</li></ul>`]]); }
 window.QS={get G(){return G;},get BUSY(){return BUSY;}};
+function rulesHTML(){ return `<h4>Objectif</h4><div class="seg">${[[100,'100 points'],[200,'200 points (officiel)']].map(([v,l])=>`<button class="${M.target===v?'on':''}" data-m="target:${v}">${l}</button>`).join('')}</div>`; }
+window.NETGAME={id:'quitte-ou-sept',title:'Quitte ou Sept',min:2,max:8,rules:rulesHTML,
+  rulesClick(e){ const x=e.target.closest('[data-m^="target:"]'); if(!x) return false; M.target=+x.dataset.m.split(':')[1]; store('qsp',M); return true; },
+  start(list){ GEN++; ENDKEY=null; let k=0; G=newGame({players:list.map(x=>x.ai?{name:x.name||NAMES[(k++ +3)%8],ai:true,level:x.level}:{name:x.name,ai:false}),target:M.target}); list.forEach((x,i)=>{ if(x.cid) G.players[i].cid=x.cid; }); G.net=true; newRound(); },
+  state:()=>G, busy:()=>BUSY, resume(){ if(!BUSY) step(); },
+  act(seat,fn,args){ const n=G&&G.need; if(!n||G.phase!=='play'||n.p!==seat||args[0]!==seat||!ENG[fn]) return false; if((fn==='decide')!==(n.type==='hit')) return false; if(fn==='target'&&!n.opts.includes(+args[1])) return false; apply(ENG[fn](G,...args),GEN); return true; },
+  async receive(m){ if(m.kind==='lobby'){ GEN++; G=null; BUSY=false; render(); return; }
+    if(m.kind==='new'||m.kind==='round'){ GEN++; ENDKEY=null; if(!$('#modal').hidden&&N_MODAL()) closeModal(); }
+    G=m.G; const my=GEN;
+    if(m.kind==='round'){ BUSY=true; render(); banner(`Manche ${G.round}`,`${G.players[G.dealer].name} distribue`,'#1aa6a6'); await wait(900); }
+    if(m.ev){ BUSY=true; render(); await show(m.ev,my); }
+    BUSY=false; if(my===GEN) step(); },
+  leave(){ GEN++; G=null; BUSY=false; ENDKEY=null; render(); GAME.menu(); } };
+function N_MODAL(){ return !$('#mbox [data-net]')&&!$('#netName'); }
 (function boot(){ updRisk(); const p=load('qsp'); if(p) Object.assign(M,p); const s=load(KEY);
   if(s&&s.players&&s.phase!=='over'){ G=s; render(); if(G.phase==='roundOver') roundEnd(); else step(); } else { G=null; render(); menu(); } })();
 }
