@@ -520,7 +520,7 @@ const HALL=(()=>{
  const SB_URL='https://evepcodcppxpufbkuflq.supabase.co', SB_KEY='sb_publishable_iUC6966SeFt_05Iac1wGQw_yDo9zl7y';
  const LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
  const SITE='https://mushu1994.github.io/duel-des-ages/';
- const GAMES={"derniere-carte":"Dernière carte","quitte-ou-sept":"Quitte ou Sept","joyaux-renaissance":"Joyaux de la Renaissance","sept-merveilles":"Sept Merveilles"};
+ const GAMES={"derniere-carte":"Dernière carte","quitte-ou-sept":"Quitte ou Sept","joyaux-renaissance":"Joyaux de la Renaissance","sept-merveilles":"Sept Merveilles","echecs":"Échecs","quatre-en-ligne":"Quatre en ligne","reversi":"Reversi","dames":"Dames","bataille-navale":"Bataille navale","code-secret":"Code Secret","bataille":"La Bataille"};
  const q=s=>document.querySelector(s), es=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const ld=k=>{ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }, sv=(k,v)=>{ try{ v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
  const note=s=>{ if(typeof toast==='function') return toast(s); const t=document.createElement('div'); t.className='hall-toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2800); };
@@ -564,9 +564,9 @@ const HALL=(()=>{
  H.ensure=()=>H.pseudo?Promise.resolve(H.pseudo):new Promise(res=>H.askPseudo(res));
  H.askPseudo=(cb)=>{ openBox(`<h2>Ton pseudo</h2><p>Il s’affiche pour les autres joueurs connectés. Deux personnes en ligne ne peuvent pas avoir le même.</p>
    <input class="hall-in" id="hallPseudo" maxlength="16" placeholder="Ex. : Mushu" value="${es(H.pseudo||ld('net-last')||'')}"><p class="hall-err" id="hallErr"></p>
-   <div class="hall-acts"><button class="hall-btn" data-h="close">Annuler</button><button class="hall-btn pri" data-h="ok">Valider</button></div>`,async e=>{ const b=e.target.closest('[data-h]'); if(!b) return; if(b.dataset.h==='close'){ closeBox(); return; }
+   <div class="hall-acts"><button class="hall-btn" data-hl="close">Annuler</button><button class="hall-btn pri" data-hl="ok">Valider</button></div>`,async e=>{ const b=e.target.closest('[data-hl]'); if(!b) return; if(b.dataset.hl==='close'){ closeBox(); return; }
      const v=q('#hallPseudo').value; b.disabled=true; const err=await H.setPseudo(v); b.disabled=false; if(err){ q('#hallErr').textContent=err; return; } sv('net-last',H.pseudo); closeBox(); if(cb) cb(H.pseudo); });
-   const i=q('#hallPseudo'); if(i){ i.focus(); i.onkeydown=e=>{ if(e.key==='Enter') q('[data-h=ok]').click(); }; } };
+   const i=q('#hallPseudo'); if(i){ i.focus(); i.onkeydown=e=>{ if(e.key==='Enter') q('[data-hl=ok]').click(); }; } };
  /* ---------- invitations ---------- */
  H.invite=(to,room)=>{ if(!ch) return; ch.send({type:'broadcast',event:'inv',payload:{to,from:H.cid,fromP:H.pseudo,g:room.g,gt:room.gt,code:room.code}}); note(`Invitation envoyée à ${(H.peers[to]||{}).p||'ce joueur'}`); };
  function invited(p){ const id='inv-'+p.code; if(q('#'+id)) return; if(typeof sfx==='function') sfx('ding');
@@ -579,8 +579,8 @@ const HALL=(()=>{
  H.inviteFlow=to=>{ const P=H.peers[to]; if(!P) return; const r=H.me.r;
    if(r&&r.host&&!r.started){ H.invite(to,r); return; }
    const opts=Object.entries(GAMES).sort((a,b)=>a[1].localeCompare(b[1],'fr'));
-   openBox(`<h2>Inviter ${es(P.p)}</h2><p>Choisis le jeu : une table s’ouvre et l’invitation part tout de suite.</p><div class="hall-games">${opts.map(([g,t])=>`<button class="hall-btn" data-g="${g}">${es(t)}</button>`).join('')}</div><div class="hall-acts"><button class="hall-btn" data-h="close">Annuler</button></div>`,e=>{
-     const b=e.target.closest('[data-g],[data-h]'); if(!b) return; if(b.dataset.h){ closeBox(); return; } const g=b.dataset.g; sessionStorage.setItem('hall-invite',JSON.stringify({to,g})); closeBox();
+   openBox(`<h2>Inviter ${es(P.p)}</h2><p>Choisis le jeu : une table s’ouvre et l’invitation part tout de suite.</p><div class="hall-games">${opts.map(([g,t])=>`<button class="hall-btn" data-g="${g}">${es(t)}</button>`).join('')}</div><div class="hall-acts"><button class="hall-btn" data-hl="close">Annuler</button></div>`,e=>{
+     const b=e.target.closest('[data-g],[data-hl]'); if(!b) return; if(b.dataset.hl){ closeBox(); return; } const g=b.dataset.g; sessionStorage.setItem('hall-invite',JSON.stringify({to,g})); closeBox();
      if(window.NETGAME&&window.NETGAME.id===g&&typeof NET!=='undefined') NET.createFor(); else location.href=g+'.html?creer=1'; }); };
  H.pendingInvite=g=>{ try{ const v=JSON.parse(sessionStorage.getItem('hall-invite')||'null'); if(v&&v.g===g){ sessionStorage.removeItem('hall-invite'); return v.to; } }catch(e){} return null; };
  /* ---------- interface ---------- */
@@ -589,11 +589,11 @@ const HALL=(()=>{
  H.panelHTML=(g)=>{ if(H.ok===false) return `<p class="hall-note">Le salon en ligne n’est pas joignable d’ici.${/github\.io$/.test(location.hostname)?' Vérifie ta connexion.':` Ouvre la salle sur <a href="${SITE}" target="_blank" rel="noopener">le site</a>.`}</p>`;
    if(H.ok==null) return '<p class="hall-note"><span class="hall-spin"></span>Connexion au salon…</p>';
    const tabs=H.tables(g), ppl=H.list();
-   return `<div class="hall-me">${H.pseudo?`Ton pseudo : <b>${es(H.pseudo)}</b> <button class="hall-link" data-h="pseudo">changer</button>`:`<button class="hall-btn pri" data-h="pseudo">Choisir un pseudo</button> <span class="hall-note">pour apparaître et être invité</span>`}</div>
+   return `<div class="hall-me">${H.pseudo?`Ton pseudo : <b>${es(H.pseudo)}</b> <button class="hall-link" data-hl="pseudo">changer</button>`:`<button class="hall-btn pri" data-hl="pseudo">Choisir un pseudo</button> <span class="hall-note">pour apparaître et être invité</span>`}</div>
     <h4>Tables ouvertes${g?'':' (tous les jeux)'}</h4>${tabs.length?`<ul class="hall-list">${tabs.map(t=>`<li><span class="hall-av">${es(t.p[0])}</span><span class="hall-tx"><b>${es(t.gt)}</b><small>table de ${es(t.p)} · ${t.n}/${t.max} joueurs</small></span>${t.cid===H.cid?'<small>ta table</small>':`<button class="hall-btn pri" data-join="${es(t.g)}:${es(t.code)}">Rejoindre</button>`}</li>`).join('')}</ul>`:`<p class="hall-note">Aucune table ouverte${g?' pour ce jeu':''} pour l’instant.</p>`}
     <h4>Joueurs en ligne (${ppl.length})</h4>${H.anon()?`<p class="hall-note">+ ${H.anon()} visiteur${H.anon()>1?'s':''} sans pseudo</p>`:''}${ppl.length?`<ul class="hall-list">${ppl.map(m=>`<li><span class="hall-av">${es(m.p[0])}</span><span class="hall-tx"><b>${es(m.p)}</b><small>${where(m)}</small></span>${H.pseudo&&!busy(m)?`<button class="hall-btn" data-inv="${m.cid}">Inviter</button>`:''}</li>`).join('')}</ul>`:'<p class="hall-note">Personne d’autre pour le moment. Partage le lien du site à tes amis !</p>'}`; };
- H.panelClick=e=>{ const b=e.target.closest('[data-h],[data-join],[data-inv]'); if(!b) return false;
-   if(b.dataset.h==='pseudo'){ H.askPseudo(); return true; }
+ H.panelClick=e=>{ const b=e.target.closest('[data-hl],[data-join],[data-inv]'); if(!b) return false;
+   if(b.dataset.hl==='pseudo'){ H.askPseudo(); return true; }
    if(b.dataset.join){ const [g,c]=b.dataset.join.split(':'); closeBox(); H.ensure().then(()=>H.goTable(g,c)); return true; }
    if(b.dataset.inv){ H.inviteFlow(b.dataset.inv); return true; } return false; };
  let boxCb=null;
@@ -601,11 +601,11 @@ const HALL=(()=>{
    q('#hall-box').innerHTML=h; boxCb=cb; m.hidden=false; }
  function closeBox(){ const m=q('#hall-modal'); if(m) m.hidden=true; boxCb=null; if(H.onBoxClose){ const f=H.onBoxClose; H.onBoxClose=null; f(); } }
  H.openBox=openBox; H.closeBox=closeBox;
- H.openPanel=g=>{ const draw=()=>openBox(`<h2>Le salon</h2>${H.panelHTML(g)}<div class="hall-acts"><button class="hall-btn" data-h="close">Fermer</button></div>`,e=>{ const b=e.target.closest('[data-h=close]'); if(b){ closeBox(); return; } H.panelClick(e); });
+ H.openPanel=g=>{ const draw=()=>openBox(`<h2>Le salon</h2>${H.panelHTML(g)}<div class="hall-acts"><button class="hall-btn" data-hl="close">Fermer</button></div>`,e=>{ const b=e.target.closest('[data-hl=close]'); if(b){ closeBox(); return; } H.panelClick(e); });
    draw(); H.redraw=()=>{ const m=q('#hall-modal'); if(m&&!m.hidden&&q('#hall-box h2')&&q('#hall-box h2').textContent==='Le salon') draw(); }; };
  function paint(){ const bar=q('#hall-bar'); if(bar){ const n=H.count();
-     bar.innerHTML=H.ok===false?'':`<button class="hall-pill" data-h="open"><i class="hall-dot ${H.ok?'':'off'}"></i><b>${H.ok?n:'…'}</b> en ligne${H.pseudo?` · <span>${es(H.pseudo)}</span>`:''}</button>${H.ok?`<span class="hall-sub">${H.tables().length?`${H.tables().length} table${H.tables().length>1?'s':''} ouverte${H.tables().length>1?'s':''} · `:''}<button class="hall-link" data-h="open">Voir qui joue</button>${H.pseudo?'':' · <button class="hall-link" data-h="pseudo">choisir un pseudo</button>'}</span>`:''}`;
-     bar.onclick=e=>{ const b=e.target.closest('[data-h]'); if(!b) return; if(b.dataset.h==='open') H.openPanel(''); else H.askPseudo(); }; }
+     bar.innerHTML=H.ok===false?'':`<button class="hall-pill" data-hl="open"><i class="hall-dot ${H.ok?'':'off'}"></i><b>${H.ok?n:'…'}</b> en ligne${H.pseudo?` · <span>${es(H.pseudo)}</span>`:''}</button>${H.ok?`<span class="hall-sub">${H.tables().length?`${H.tables().length} table${H.tables().length>1?'s':''} ouverte${H.tables().length>1?'s':''} · `:''}<button class="hall-link" data-hl="open">Voir qui joue</button>${H.pseudo?'':' · <button class="hall-link" data-hl="pseudo">choisir un pseudo</button>'}</span>`:''}`;
+     bar.onclick=e=>{ const b=e.target.closest('[data-hl]'); if(!b) return; if(b.dataset.hl==='open') H.openPanel(''); else H.askPseudo(); }; }
    if(H.redraw) H.redraw(); if(typeof NET!=='undefined'&&NET.hallChanged) NET.hallChanged(); }
  H.paint=paint;
  return H; })();
