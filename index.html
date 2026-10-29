@@ -520,11 +520,11 @@ const HALL=(()=>{
  const SB_URL='https://evepcodcppxpufbkuflq.supabase.co', SB_KEY='sb_publishable_iUC6966SeFt_05Iac1wGQw_yDo9zl7y';
  const LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
  const SITE='https://mushu1994.github.io/duel-des-ages/';
- const GAMES={"derniere-carte":"Dernière carte","quitte-ou-sept":"Quitte ou Sept","joyaux-renaissance":"Joyaux de la Renaissance","sept-merveilles":"Sept Merveilles","echecs":"Échecs","quatre-en-ligne":"Quatre en ligne","reversi":"Reversi","dames":"Dames","bataille-navale":"Bataille navale","code-secret":"Code Secret","bataille":"La Bataille","petits-chevaux":"Petits Chevaux","dominos":"Dominos"};
+ const GAMES={"derniere-carte":"Dernière carte","quitte-ou-sept":"Quitte ou Sept","joyaux-renaissance":"Joyaux de la Renaissance","sept-merveilles":"Sept Merveilles","echecs":"Échecs","quatre-en-ligne":"Quatre en ligne","reversi":"Reversi","dames":"Dames","bataille-navale":"Bataille navale","code-secret":"Code Secret","bataille":"La Bataille","petits-chevaux":"Petits Chevaux","dominos":"Dominos","tetes-de-boeuf":"Têtes de Bœuf","plus-bas":"Plus Bas"};
  const q=s=>document.querySelector(s), es=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const ld=k=>{ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }, sv=(k,v)=>{ try{ v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
  const note=s=>{ if(typeof toast==='function') return toast(s); const t=document.createElement('div'); t.className='hall-toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2800); };
- const H={ready:false,ok:null,pseudo:ld('net-name')||'',peers:{},me:{},listeners:[],page:'',title:''};
+ const H={note,ready:false,ok:null,pseudo:ld('net-name')||'',peers:{},me:{},listeners:[],page:'',title:''};
  let cid=ld('net-cid'); if(!cid){ cid=Math.random().toString(36).slice(2,10); sv('net-cid',cid); } H.cid=cid;
  const key=p=>String(p||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/œ/g,'oe').replace(/æ/g,'ae').replace(/[^a-z0-9]/g,'');
  H.key=key;
@@ -597,8 +597,8 @@ const HALL=(()=>{
    if(b.dataset.join){ const [g,c]=b.dataset.join.split(':'); closeBox(); H.ensure().then(()=>H.goTable(g,c)); return true; }
    if(b.dataset.inv){ H.inviteFlow(b.dataset.inv); return true; } return false; };
  let boxCb=null;
- function openBox(h,cb){ let m=q('#hall-modal'); if(!m){ m=document.createElement('div'); m.id='hall-modal'; m.innerHTML='<div class="hall-box" id="hall-box"></div>'; document.body.appendChild(m); m.addEventListener('click',e=>{ if(e.target===m){ closeBox(); return; } if(boxCb) boxCb(e); }); }
-   q('#hall-box').innerHTML=h; boxCb=cb; m.hidden=false; }
+ function openBox(h,cb,locked){ let m=q('#hall-modal'); if(!m){ m=document.createElement('div'); m.id='hall-modal'; m.innerHTML='<div class="hall-box" id="hall-box"></div>'; document.body.appendChild(m); m.addEventListener('click',e=>{ if(e.target===m){ if(!m.dataset.locked) closeBox(); return; } if(boxCb) boxCb(e); }); }
+   q('#hall-box').innerHTML=h; boxCb=cb; m.dataset.locked=locked?'1':''; m.hidden=false; }
  function closeBox(){ const m=q('#hall-modal'); if(m) m.hidden=true; boxCb=null; if(H.onBoxClose){ const f=H.onBoxClose; H.onBoxClose=null; f(); } }
  H.openBox=openBox; H.closeBox=closeBox;
  H.openPanel=g=>{ const draw=()=>openBox(`<h2>Le salon</h2>${H.panelHTML(g)}<div class="hall-acts"><button class="hall-btn" data-hl="close">Fermer</button></div>`,e=>{ const b=e.target.closest('[data-hl=close]'); if(b){ closeBox(); return; } H.panelClick(e); });
