@@ -13,8 +13,13 @@ Le portail classe les jeux par type, avec une recherche et des filtres (type de 
 
 ## Jouer en ligne
 
-Dernière carte, Quitte ou Sept, Joyaux de la Renaissance et Sept Merveilles se jouent aussi à plusieurs appareils : bouton « En ligne », création d'une salle avec un code de 4 lettres (ou un lien à partager), puis l'hôte lance la partie et peut compléter la table avec l'ordinateur. Pas de compte à créer.
+Tous les jeux à plusieurs se jouent aussi en ligne, chacun sur son appareil (28 jeux, tag « En ligne » et filtre dédié sur l'accueil). Seuls les jeux solo (Sudoku, Mots croisés, Solitaire…) restent hors ligne.
 
-Technique : salons Supabase Realtime (diffusion + présence, aucune base de données). Le navigateur de l'hôte fait tourner la partie et envoie l'état aux autres ; les invités envoient leurs actions. Reconnexion automatique après un rechargement, et l'hôte peut confier la place d'un absent à l'ordinateur. Code commun : `net.js` intégré dans chaque jeu compatible.
+- **Le salon** : sur l'accueil et dans chaque jeu, on choisit un pseudo et on voit qui est connecté, où il joue et les tables ouvertes. Un pseudo ne peut pas être pris par deux personnes connectées en même temps (pas de compte ni de base de données : l'unicité est vérifiée parmi les présents).
+- **Les tables** : bouton « Table » dans un jeu → créer une table (ouverte à tous ou privée), rejoindre une table ouverte en un clic, ou entrer un code de 4 lettres / suivre un lien.
+- **Les invitations** : depuis le salon ou la table, « Inviter » envoie une invitation au joueur connecté ; il l'accepte d'un clic et arrive directement à la table.
+- L'hôte règle les options, complète avec l'ordinateur (3 niveaux) et lance ; il peut confier la place d'un absent à l'ordinateur ou revenir au salon.
+
+Technique : Supabase Realtime (diffusion + présence, aucune table). Le navigateur de l'hôte fait tourner la partie et envoie l'état ; les invités envoient leurs actions, validées par l'hôte. Reconnexion automatique après un rechargement. Code commun : `hall.js` (salon) et `net.js` (tables) intégrés dans chaque jeu. Limite connue : l'état complet transite par le navigateur, donc les informations cachées (mains adverses) restent techniquement lisibles par quelqu'un qui inspecte le code.
 
 Les jeux sont des créations originales inspirées de mécaniques de jeux connus ; noms, cartes et illustrations sont propres à la salle.

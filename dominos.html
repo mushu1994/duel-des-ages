@@ -166,7 +166,7 @@ const HALL=(()=>{
  const SB_URL='https://evepcodcppxpufbkuflq.supabase.co', SB_KEY='sb_publishable_iUC6966SeFt_05Iac1wGQw_yDo9zl7y';
  const LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
  const SITE='https://mushu1994.github.io/duel-des-ages/';
- const GAMES={"derniere-carte":"Dernière carte","quitte-ou-sept":"Quitte ou Sept","joyaux-renaissance":"Joyaux de la Renaissance","sept-merveilles":"Sept Merveilles","echecs":"Échecs","quatre-en-ligne":"Quatre en ligne","reversi":"Reversi","dames":"Dames","bataille-navale":"Bataille navale","code-secret":"Code Secret","bataille":"La Bataille","petits-chevaux":"Petits Chevaux","dominos":"Dominos","tetes-de-boeuf":"Têtes de Bœuf","plus-bas":"Plus Bas","petit-bac":"Petit Bac","poker":"Poker","president":"Président","tarot":"Tarot","rami":"Rami voleur","remparts":"Remparts","conquete":"Conquête","approche-finale":"Approche finale","duel-des-joyaux":"Duel des Joyaux","duel-des-ages":"Duel des Âges"};
+ const GAMES={"derniere-carte":"Dernière carte","quitte-ou-sept":"Quitte ou Sept","joyaux-renaissance":"Joyaux de la Renaissance","sept-merveilles":"Sept Merveilles","echecs":"Échecs","quatre-en-ligne":"Quatre en ligne","reversi":"Reversi","dames":"Dames","bataille-navale":"Bataille navale","code-secret":"Code Secret","bataille":"La Bataille","petits-chevaux":"Petits Chevaux","dominos":"Dominos","tetes-de-boeuf":"Têtes de Bœuf","plus-bas":"Plus Bas","petit-bac":"Petit Bac","poker":"Poker","president":"Président","tarot":"Tarot","rami":"Rami voleur","remparts":"Remparts","conquete":"Conquête","approche-finale":"Approche finale","duel-des-joyaux":"Duel des Joyaux","duel-des-ages":"Duel des Âges","grand-proprietaire":"Grand Propriétaire","nouvelle-terre":"Nouvelle Terre","rails-d-europe":"Rails d’Europe"};
  const q=s=>document.querySelector(s), es=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const ld=k=>{ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }, sv=(k,v)=>{ try{ v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
  const note=s=>{ if(typeof toast==='function') return toast(s); const t=document.createElement('div'); t.className='hall-toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2800); };
@@ -262,7 +262,7 @@ addEventListener('load',()=>setTimeout(()=>{ if(!window.NETGAME) HALL.where('','
      start(list), state():G, receive(msg):Promise, act(seat,fn,args):bool, busy():bool, resume(), leave() } */
 const NET=(()=>{
  const $q=s=>document.querySelector(s), es=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
- const nt=s=>HALL.note(s), snd=n=>{ try{ if(typeof sfx==='function') snd(n); }catch(e){} }, sleep=ms=>new Promise(r=>setTimeout(r,ms));
+ const nt=s=>HALL.note(s), snd=n=>{ try{ if(typeof sfx==='function') sfx(n); }catch(e){} }, sleep=ms=>new Promise(r=>setTimeout(r,ms));
  const ld=k=>{ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }, svs=(k,v)=>{ try{ v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
  let BOXCB=null; const box=(h,locked)=>{ BOXCB=null; HALL.openBox(h,e=>{ if(e.target.closest('[data-hl=close]')){ HALL.closeBox(); return; } (BOXCB||onClick)(e); },locked); };
  const PL=G=>G?(G.players||G.P||[]):[];
