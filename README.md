@@ -1,6 +1,6 @@
 # Salle de jeux
 
-Une ludothèque de jeux de société à jouer dans le navigateur, contre l'ordinateur ou à plusieurs sur le même écran. Chaque partie se sauvegarde toute seule.
+Une ludothèque de jeux de société et de mini-jeux vidéo à jouer dans le navigateur, contre l'ordinateur ou à plusieurs sur le même écran. Chaque partie se sauvegarde toute seule.
 
 **Jouer :** https://mushu1994.github.io/duel-des-ages/
 
@@ -10,6 +10,7 @@ Le portail classe les jeux par type, avec une recherche et des filtres (type de 
 - **Jeux de plateau** : Nouvelle Terre, Rails d'Europe, Remparts (dans l'esprit de Carcassonne), Conquête (dans l'esprit de Risk), Grand Propriétaire (avec le dé de rapidité), Échecs, Dames, Reversi, Quatre en ligne, Bataille Navale, Petits Chevaux.
 - **Dés et dominos** : Approche finale (coopératif à deux ou avec l'IA, dans l'esprit de Sky Team), Dominos.
 - **Lettres, chiffres et logique** : Sudoku, Mots croisés, Petit Bac, Code Secret.
+- **Mini-jeux vidéo** (temps réel, en ligne de 1 à 8 joueurs, entraînement contre l'ordinateur) : Serpents (dans l'esprit de Snake, modes Survie et Chrono), Souricière (dans l'esprit de Pac-Man, modes Course aux miettes et Souris contre chats), Piaf (dans l'esprit de Flappy Bird, tous les oiseaux dans le même parcours).
 
 ## Jouer en ligne
 
@@ -19,6 +20,8 @@ Tous les jeux à plusieurs se jouent aussi en ligne, chacun sur son appareil (28
 - **Les tables** : bouton « Table » dans un jeu → créer une table (ouverte à tous ou privée), rejoindre une table ouverte en un clic, ou entrer un code de 4 lettres / suivre un lien.
 - **Les invitations** : depuis le salon ou la table, « Inviter » envoie une invitation au joueur connecté ; il l'accepte d'un clic et arrive directement à la table.
 - L'hôte règle les options, complète avec l'ordinateur (3 niveaux) et lance ; il peut confier la place d'un absent à l'ordinateur ou revenir au salon.
+
+Mini-jeux vidéo : l'hôte fait tourner la simulation (8 à 10 envois par seconde) et les invités l'affichent en lissant les mouvements ; dans Piaf, chaque joueur calcule son propre oiseau (aucun délai) et n'envoie que ses battements d'ailes. Le navigateur de l'hôte doit rester au premier plan pendant la partie.
 
 Technique : Supabase Realtime (diffusion + présence, aucune table). Le navigateur de l'hôte fait tourner la partie et envoie l'état ; les invités envoient leurs actions, validées par l'hôte. Reconnexion automatique après un rechargement. Code commun : `hall.js` (salon) et `net.js` (tables) intégrés dans chaque jeu. Limite connue : l'état complet transite par le navigateur, donc les informations cachées (mains adverses) restent techniquement lisibles par quelqu'un qui inspecte le code.
 
