@@ -12,6 +12,12 @@ Le portail classe les jeux par type, avec une recherche et des filtres (type de 
 - **Lettres, chiffres et logique** : Sudoku, Mots croisés, Petit Bac, Code Secret.
 - **Mini-jeux vidéo** (temps réel, en ligne de 1 à 8 joueurs, entraînement contre l'ordinateur) : Serpents (dans l'esprit de Snake, modes Survie et Chrono), Souricière (dans l'esprit de Pac-Man, modes Course aux miettes et Souris contre chats), Piaf (dans l'esprit de Flappy Bird, tous les oiseaux dans le même parcours).
 
+## Profils, succès et défis
+
+Page **Profil** (bouton en haut de l'accueil) : avatar, présentation, niveau et XP, statistiques (parties, victoires, en ligne, temps de jeu, jours d'affilée), top 3 des jeux, favoris (étoile sur chaque jeu de l'accueil), records des mini-jeux, 30 succès à débloquer, défis reçus et envoyés, lien de parrainage, classement des joueurs et code pour retrouver son profil sur un autre appareil. Un profil devient visible des autres joueurs après 4 parties jouées avec un pseudo ; un pseudo enregistré ne peut plus être pris par quelqu'un d'autre.
+
+Technique : tables `profils` et `defis` dans Supabase, sans accès direct (RLS) ; tout passe par des fonctions qui vérifient le code secret du profil. Les parties sont détectées automatiquement dans chaque jeu.
+
 ## Jouer en ligne
 
 Tous les jeux à plusieurs se jouent aussi en ligne, chacun sur son appareil (28 jeux, tag « En ligne » et filtre dédié sur l'accueil). Seuls les jeux solo (Sudoku, Mots croisés, Solitaire…) restent hors ligne.
