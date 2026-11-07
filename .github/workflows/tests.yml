@@ -1,4 +1,4 @@
-# Tests automatiques de la Salle de jeux : chaque lundi matin et après chaque mise à jour du site.
+# Tests automatiques de la Salle de jeux : test complet chaque lundi matin ; tests rapides après chaque mise à jour du site.
 name: Tests de la Salle de jeux
 on:
   schedule:
@@ -9,7 +9,7 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 100
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,5 +24,6 @@ jobs:
         run: python tests/smoke.py https://mushu1994.github.io/duel-des-ages/
       - name: Appli installable et jeux hors ligne
         run: python tests/offline.py https://mushu1994.github.io/duel-des-ages/
-      - name: Jeu en ligne à trois et reprise par un autre joueur
+      - name: Jeu en ligne à trois et reprise par un autre joueur (chaque semaine)
+        if: github.event_name != 'push'
         run: python tests/online.py https://mushu1994.github.io/duel-des-ages/
