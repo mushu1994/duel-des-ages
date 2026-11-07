@@ -18,6 +18,16 @@ Page **Profil** (bouton en haut de l'accueil) : avatar, présentation, niveau et
 
 Technique : tables `profils` et `defis` dans Supabase, sans accès direct (RLS) ; tout passe par des fonctions qui vérifient le code secret du profil. Les parties sont détectées automatiquement dans chaque jeu.
 
+## Performance, appli installable et fiabilité
+
+- **Code commun** dans `common/` (salon, tables en ligne, profil, styles), chargé une fois puis gardé en cache : le site pèse environ deux fois moins (4,4 Mo → 2,2 Mo). Les cartes de Rails d'Europe sont codées en chemins relatifs, sans perte (468 Ko → 342 Ko).
+- **Appli installable** (`manifest.webmanifest`, `icons/`, `sw.js`) : icône sur l'écran d'accueil, plein écran, tous les jeux jouables hors ligne. Bouton « Installer l'appli » sur l'accueil et dans le profil.
+- **Jeu en ligne** : si l'hôte quitte la partie ou passe sur une autre appli, un autre joueur la reprend automatiquement là où elle en était (mini-jeux, Puissance 4, Échecs, Dames, Bataille, Dominos, Petits Chevaux, Rami, Remparts, Conquête, Joyaux, Sept Merveilles, Dernière carte, Quitte ou Sept). Dans les autres jeux, la partie attend l'hôte 30 secondes, puis un autre joueur peut la relancer avec les mêmes joueurs. Messages des mini-jeux allégés (Souricière : 1,9 Ko → 0,7 Ko par envoi). Réactions rapides (emoji), demande de revanche, parties en cours visibles et ouvertes aux spectateurs.
+- **Mini-jeux** : réaction immédiate de son personnage, plein écran et mode paysage, tutoriel à la première partie, couleurs adaptées au daltonisme, vibrations, vitesse et taille d'arène réglables. Volume général des sons dans les réglages.
+- **Tests** dans `tests/` : `smoke.py` (chaque page), `offline.py` (appli et hors ligne), `online.py` (partie à trois et reprise par un autre joueur). Ils tournent chaque lundi et après chaque mise à jour (`.github/workflows/tests.yml`).
+
+Construction : `make.sh` (mini-jeux, profil, code commun, appli) dans l'espace de travail de Claude ; les pages publiées sont autonomes.
+
 ## Jouer en ligne
 
 Tous les jeux à plusieurs se jouent aussi en ligne, chacun sur son appareil (28 jeux, tag « En ligne » et filtre dédié sur l'accueil). Seuls les jeux solo (Sudoku, Mots croisés, Solitaire…) restent hors ligne.

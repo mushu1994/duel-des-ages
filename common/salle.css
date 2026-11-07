@@ -1,0 +1,92 @@
+/* hall (autonome : portail et jeux) */
+#hall-modal{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:80;padding:12px}
+#hall-modal[hidden]{display:none}
+.hall-box{background:#fbf6ea;color:#2a2418;border-radius:16px;max-width:560px;width:100%;max-height:calc(100dvh - 24px);overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;font-family:"Nunito Sans",Karla,system-ui,sans-serif;text-align:left}
+.hall-box h2{font-family:Georgia,serif;font-size:24px;margin:0 0 6px;color:#2a2418}
+.hall-box h4{font-family:Georgia,serif;font-size:16px;margin:14px 0 6px;color:#2a2418}
+.hall-box p{line-height:1.45;margin:6px 0}
+.hall-in{font-weight:800;font-size:16px;font-family:inherit;padding:9px 11px;border-radius:9px;border:1px solid #c9b98f;background:#fff!important;color:#2a2418!important;-webkit-text-fill-color:#2a2418!important;caret-color:#2a2418;width:100%;max-width:300px}
+.hall-in::placeholder{color:#a3926e!important;-webkit-text-fill-color:#a3926e!important;font-weight:600}
+.hall-err{color:#b0412e;font-weight:800;min-height:1.2em;font-size:14px}
+.hall-acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+.hall-btn{font-weight:800;font-size:14px;line-height:1;font-family:inherit;border-radius:9px;padding:8px 12px;border:1px solid #c9b98f;background:#ece3cf;color:#2a2418;cursor:pointer;touch-action:manipulation}
+.hall-btn.pri{background:#1d8f5a;border-color:#1d8f5a;color:#fff}
+.hall-btn:disabled{opacity:.5}
+.hall-link{background:none;border:0;padding:0;font:inherit;font-weight:800;color:inherit;text-decoration:underline;cursor:pointer}
+.hall-note{color:#6b5d40;font-size:14px}
+.hall-me{background:#f0e6cf;border-radius:10px;padding:8px 10px;margin:6px 0}
+.hall-list{list-style:none;margin:4px 0;padding:0;display:flex;flex-direction:column;gap:5px}
+.hall-list li{display:flex;align-items:center;gap:9px;background:#f6efdc;border-radius:10px;padding:6px 8px}
+.hall-tx{flex:1;min-width:0;display:flex;flex-direction:column}.hall-tx small{color:#6b5d40;font-size:12.5px}
+.hall-av{width:30px;height:30px;border-radius:50%;background:#2a2418;color:#fff;display:grid;place-items:center;font-weight:900;flex:none;text-transform:uppercase}
+.hall-games{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.hall-spin{display:inline-block;width:14px;height:14px;border-radius:50%;border:3px solid #c9b98f;border-top-color:#2a2418;animation:hallr 1s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes hallr{to{transform:rotate(360deg)}}
+.hall-invite{position:fixed;right:12px;bottom:12px;z-index:85;background:#fbf6ea;color:#2a2418;border-radius:14px;padding:12px 14px 14px;box-shadow:0 14px 40px #000b;max-width:min(360px,calc(100vw - 24px));font-family:"Nunito Sans",Karla,system-ui,sans-serif;animation:hallin .35s cubic-bezier(.2,1.3,.4,1);overflow:hidden;border:2px solid #1d8f5a}
+.hall-invite .hall-acts{margin-top:8px}
+.hall-invite .hall-bar{position:absolute;left:0;bottom:0;height:4px;background:#1d8f5a;width:100%;animation:hallt 30s linear forwards}
+@keyframes hallt{to{width:0}}
+@keyframes hallin{from{transform:translateY(30px);opacity:0}}
+.hall-toast{position:fixed;left:50%;top:90px;transform:translateX(-50%);background:#1b1b1f;color:#fff;padding:10px 16px;border-radius:12px;z-index:90;font-weight:700;font-family:system-ui,sans-serif}
+#hall-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 0}
+.hall-pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:7px 13px;border:1px solid rgba(255,255,255,.25);background:rgba(29,143,90,.25);color:#eef3ea;font-weight:700;font-size:14px;line-height:1;font-family:inherit;cursor:pointer}
+.hall-pill span{color:#d8b25a}
+.hall-sub{font-size:14px;color:#a9c2b3}.hall-sub .hall-link{color:#eef3ea}
+.hall-dot{width:9px;height:9px;border-radius:50%;background:#7dffb5;box-shadow:0 0 0 2px #fff4;animation:hallp 1.8s infinite}.hall-dot.off{background:#aaa;animation:none}
+@keyframes hallp{50%{box-shadow:0 0 0 5px #7dffb500}}
+
+/* salle en ligne */
+#netBtn{display:inline-flex;align-items:center;gap:6px}
+#netBtn.net-on{background:#1d8f5a;border-color:#1d8f5a;color:#fff}
+.net-dot{width:9px;height:9px;border-radius:50%;background:#7dffb5;box-shadow:0 0 0 2px #fff6;animation:netp 1.8s infinite}
+.net-dot.off{background:#ffb347;animation:none}
+@keyframes netp{50%{box-shadow:0 0 0 5px #7dffb500}}
+.hall-box .net-in,.mbox .net-in{font-family:inherit;font-weight:800;font-size:16px;padding:9px 11px;border-radius:9px;border:1px solid #c9b98f;background:#fff!important;color:#2a2418!important;-webkit-text-fill-color:#2a2418!important;caret-color:#2a2418;width:100%;max-width:280px}
+.hall-box .net-in::placeholder,.mbox .net-in::placeholder{color:#a3926e!important;-webkit-text-fill-color:#a3926e!important;font-weight:600}
+.hall-box .net-code,.mbox .net-code{letter-spacing:.35em;text-transform:uppercase;font-size:22px;text-align:center;max-width:170px}
+.net-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.net-box{border:1px solid #d9caa4;border-radius:12px;padding:10px 12px;background:#f6efdc;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.net-box h4{margin:0!important}.net-box p{margin:0;font-size:14px}
+.net-note{font-size:13.5px;color:#6b5d40}
+.net-code-big{display:flex;gap:8px;justify-content:center;margin:10px 0}
+.net-code-big b{font-family:var(--title,Georgia,serif);font-size:40px;width:58px;height:66px;display:grid;place-items:center;border-radius:12px;background:#2a2418;color:#fff;box-shadow:0 6px 0 #0003}
+.net-share{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.net-list{list-style:none;padding:0;margin:6px 0;display:flex;flex-direction:column;gap:5px}
+.net-list li{display:flex;align-items:center;gap:8px;font-weight:800;background:#f6efdc;border-radius:10px;padding:6px 9px;flex-wrap:wrap}
+.net-list li small{font-weight:600;color:#6b5d40}.net-list li.ai{opacity:.8}
+.net-av{width:26px;height:26px;border-radius:50%;background:#2a2418;color:#fff;display:grid;place-items:center;font-size:13px;flex:none}
+.net-ok{color:#1d7a46;font-weight:800}.net-ko{color:#b0412e;font-weight:800}
+.net-wait{display:flex;align-items:center;gap:10px;font-weight:700}
+.net-spin{width:18px;height:18px;border-radius:50%;border:3px solid #c9b98f;border-top-color:#2a2418;animation:netr 1s linear infinite;flex:none}
+@keyframes netr{to{transform:rotate(360deg)}}
+.net-rules{margin-top:6px}
+@media (max-width:560px){.net-two{grid-template-columns:1fr}.net-code-big b{font-size:32px;width:50px;height:58px}}
+.net-me{background:#f0e6cf;border-radius:10px;padding:8px 10px;margin:6px 0}
+.net-link{background:none;border:0;padding:0;font:inherit;font-weight:800;color:inherit;text-decoration:underline;cursor:pointer}
+.net-chk{display:flex;align-items:center;gap:7px;font-weight:700;font-size:14px;margin:6px 0}.net-chk input{width:18px;height:18px}
+.net-list li .net-r{margin-left:auto}
+/* contrôles dans la boîte du hall (indépendants du jeu) */
+.hall-box .btn{background:#ece3cf;color:#2a2418;border:1px solid #c9b98f;border-radius:9px;padding:8px 12px;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer;line-height:1.1}
+.hall-box .btn.pri{background:#1d8f5a;border-color:#1d8f5a;color:#fff}.hall-box .btn:disabled{opacity:.45;cursor:default}
+.hall-box .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+.hall-box .seg{display:inline-flex;border:1px solid #c9b98f;border-radius:9px;overflow:hidden;flex-wrap:wrap;margin:2px 0}
+.hall-box .seg button{border:0;background:#f6efdc;padding:7px 11px;font-weight:700;color:#2a2418;font-size:13.5px;font-family:inherit;cursor:pointer}
+.hall-box .seg button.on{background:#2a2418;color:#fff}
+.hall-box .opt{display:flex;align-items:flex-start;gap:8px;margin:6px 0;line-height:1.35}.hall-box .opt input{width:20px;height:20px;flex:none}
+.hall-box label{color:#2a2418}
+.net-fab{position:fixed;left:10px;bottom:10px;z-index:45;border-radius:999px!important;padding:8px 13px!important;background:#1b1b1f!important;color:#fff!important;border:1px solid #fff4!important;font-weight:800;box-shadow:0 6px 18px #0008;font-family:system-ui,sans-serif}
+#netBtn .net-dot{display:inline-block;margin-right:5px;vertical-align:1px}
+
+/* réactions rapides et demande de revanche (tables en ligne) */
+#netReact{position:fixed;left:max(10px,env(safe-area-inset-left));bottom:max(12px,env(safe-area-inset-bottom));z-index:70;display:flex;align-items:flex-end;gap:6px}
+.net-rbtn{width:46px;height:46px;border-radius:50%;border:1px solid #fff6;background:#000a;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 6px 16px #0006}
+.net-rpick{display:flex;flex-wrap:wrap;gap:4px;max-width:220px;background:#1b1b1fee;border-radius:14px;padding:6px;box-shadow:0 8px 24px #0008}
+.net-rpick[hidden]{display:none}
+.net-rpick button{width:44px;height:44px;border:0;border-radius:10px;background:#ffffff14;font-size:24px;cursor:pointer}
+.net-react{position:fixed;bottom:70px;z-index:75;display:flex;flex-direction:column;align-items:center;pointer-events:none;animation:netup 2.6s ease-out forwards}
+.net-react b{font-size:44px;line-height:1;filter:drop-shadow(0 3px 6px #0008)}
+.net-react small{font:800 12px system-ui,sans-serif;color:#fff;background:#000a;border-radius:99px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+@keyframes netup{0%{transform:translateY(20px) scale(.6);opacity:0}12%{transform:translateY(0) scale(1.1);opacity:1}80%{opacity:1}100%{transform:translateY(-220px) scale(1);opacity:0}}
+.net-rm{position:fixed;left:50%;top:max(10px,env(safe-area-inset-top));transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;background:#1b1b1f;color:#fff;border-radius:14px;padding:9px 12px;box-shadow:0 12px 34px #000a;font:700 15px system-ui,sans-serif;max-width:calc(100vw - 20px)}
+.net-rm button{font:800 14px system-ui,sans-serif;border:0;border-radius:9px;padding:7px 11px;background:#ffffff22;color:#fff;cursor:pointer}
+.net-rm button.pri{background:#1d8f5a}
