@@ -131,7 +131,7 @@ body.immersive .stage{padding-top:max(6px,env(safe-area-inset-top))}
 <div class="status" id="status"></div>
 <div class="stage" id="stage"><div class="cvwrap"><canvas id="cv"></canvas><div class="pad" id="pad" hidden></div></div><div class="board" id="board"></div></div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
-<!--NET--><script src="common/hall.js?v=13d5e0cb"></script><script src="common/net.js?v=02e3ddc5"></script><!--/NET--><script>
+<!--NET--><script src="common/hall.js?v=b7597285"></script><script src="common/net.js?v=01f46845"></script><!--/NET--><script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const SVGNS='http://www.w3.org/2000/svg';
@@ -517,5 +517,5 @@ const skip=/[?&](salle|creer)=/.test(location.search)||(()=>{ const s=load('net-
 </script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
-<!--PROF--><script src="common/profil.js?v=54ab8b12"></script><!--/PROF-->
+<!--PROF--><script src="common/profil.js?v=7c71d3ff"></script><!--/PROF-->
 </body></html>

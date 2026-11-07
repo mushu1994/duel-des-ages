@@ -24,6 +24,8 @@ jobs:
         run: python tests/smoke.py https://mushu1994.github.io/duel-des-ages/
       - name: Appli installable et jeux hors ligne
         run: python tests/offline.py https://mushu1994.github.io/duel-des-ages/
+      - name: L'ordinateur termine une partie dans chaque jeu au tour par tour
+        run: python tests/ia.py https://mushu1994.github.io/duel-des-ages/
       - name: Jeu en ligne à trois et reprise par un autre joueur (chaque semaine)
         if: github.event_name != 'push'
         run: python tests/online.py https://mushu1994.github.io/duel-des-ages/

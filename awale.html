@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Awalé</title>
+<meta name="theme-color" content="#111">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#eef3ff;--accent:#b5651d;--title:"Baloo 2",system-ui,sans-serif;--ui:"Nunito Sans",system-ui,sans-serif;--titlec:#ffd9a0}
+[hidden]{display:none!important}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui,"Nunito Sans",system-ui,sans-serif);min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bar,#0006);border-bottom:1px solid #fff2;flex-wrap:wrap}
+.top h1{font-family:var(--title,Georgia,serif);font-weight:800;font-size:24px;margin:0;color:var(--titlec,#fff);letter-spacing:.5px}
+.top h1 small{font-family:var(--ui);font-weight:600;font-size:13px;opacity:.75;margin-left:8px;letter-spacing:0}
+.back{color:inherit;opacity:.9;text-decoration:none;font-size:14px;border:1px solid #fff4;padding:5px 10px;border-radius:8px}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#ffffff1c;color:inherit;border:1px solid #ffffff40;border-radius:9px;padding:7px 12px;font-size:14px;font-weight:700}
+.btn:hover{background:#ffffff2e}.btn:disabled{opacity:.4;cursor:default}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.on{background:#fff;color:#222}
+.status{display:flex;align-items:center;gap:12px;padding:9px 16px;background:var(--pc,var(--accent));color:#fff;font-weight:800;min-height:44px;box-shadow:0 4px 14px #0005;transition:background .35s;flex-wrap:wrap}
+.status .who{font-family:var(--title,Georgia,serif);font-size:19px}
+.status .msg{font-weight:600}
+.status .right{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:14px}
+#modal{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:12px}
+#modal[hidden]{display:none}
+.mbox{background:#fbf6ea;color:#2a2418;border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;animation:pop .3s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.mbox h2{font-family:var(--title,Georgia,serif);font-size:26px;margin:0 0 6px}
+.mbox h4{font-family:var(--title,Georgia,serif);font-size:16px;margin:14px 0 6px}
+.mbox p,.mbox li{line-height:1.5}
+.mbox .btn{background:#ece3cf;color:#2a2418;border-color:#c9b98f}
+.mbox .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mbox .btn.on{background:#2a2418;color:#fff}
+.seg{display:inline-flex;border:1px solid #c9b98f;border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:#f6efdc;padding:7px 11px;font-weight:700;color:#2a2418;font-size:13.5px}
+.seg button.on{background:#2a2418;color:#fff}
+.prow{display:flex;gap:8px;align-items:center;margin:7px 0;flex-wrap:wrap}
+.prow .dot{width:16px;height:16px;border-radius:50%;background:var(--pc);border:2px solid #0004}
+.prow input[type=text]{font-family:inherit;font-weight:700;font-size:16px;padding:6px 9px;border-radius:8px;border:1px solid #c9b98f;background:#fff;color:#2a2418;-webkit-text-fill-color:#2a2418;caret-color:var(--accent);width:150px;color-scheme:light}
+.prow input[type=text]::placeholder{color:#a3926e;-webkit-text-fill-color:#a3926e;font-weight:600}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{border:1px solid #c9b98f;background:#f6efdc;border-radius:20px;padding:5px 12px;font-weight:800;color:#2a2418}
+.tabs button.on{background:#2a2418;color:#fff}
+.toast{position:fixed;left:50%;top:100px;transform:translateX(-50%);background:#1b1b1f;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 10px 30px #000a;z-index:70;font-weight:700;animation:toast 2.6s forwards;pointer-events:none;max-width:90vw;text-align:center}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.bannerx{position:fixed;inset:0;display:grid;place-items:center;z-index:65;pointer-events:none}
+.bannerx div{font-family:var(--title,Georgia,serif);font-weight:800;font-size:clamp(30px,6vw,64px);color:#fff;background:var(--bc,var(--accent));padding:10px 36px;border-radius:14px;box-shadow:0 20px 50px #000a;animation:ban 2.3s forwards;text-align:center}
+.bannerx small{display:block;font-family:var(--ui);font-size:.34em;font-weight:700}
+@keyframes ban{0%{transform:scale(2);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:0;transform:scale(.92)}}
+#cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);text-align:center;padding:20px}
+#cover[hidden]{display:none}
+#cover h2{font-family:var(--title,Georgia,serif);font-size:36px;margin:0 0 8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
+body{background:radial-gradient(ellipse at 50% 0%,#5a3a22,#24160c 75%) fixed,#24160c;--bg:#24160c}
+.wrap{max-width:1100px;margin:0 auto;padding:10px 10px 90px}
+.bigchoice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.bigchoice button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border:1px solid #c9b98f;background:#f6efdc;border-radius:12px;padding:12px;color:#2a2418;font-family:inherit}
+.bigchoice button b{font-family:var(--title);font-size:19px}
+.bigchoice button small{font-size:13px;color:#6b5d40;line-height:1.35}
+.bigchoice button.pri{background:#1d8f5a;border-color:#1d8f5a;color:#fff}.bigchoice button.pri small{color:#e3f5ea}
+@media (max-width:520px){.bigchoice{grid-template-columns:1fr}}
+.tk-desc{margin:0 0 4px;color:#4a3f2c}
+.tk-seats{display:flex;flex-direction:column;gap:7px}
+.tk-seat{display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:#f6efdc;border-radius:10px;padding:6px 8px}
+.tk-seat>i{width:14px;height:14px;border-radius:50%;flex:none}
+.tk-seat input{font:700 15px var(--ui);padding:5px 8px;border-radius:8px;border:1px solid #c9b98f;background:#fff;color:#2a2418;-webkit-text-fill-color:#2a2418;width:120px}
+.tk-seat input:disabled{background:#efe6cf;color:#6b5d40;-webkit-text-fill-color:#6b5d40}
+.tk-x{margin-left:auto;border:0;background:transparent;color:#8a6a4a;font-size:16px;padding:4px 8px}
+.opts h4{margin:12px 0 5px}.opts .seg{margin:0 6px 4px 0}
+.optnote{font-size:13px;color:#6b5d40;margin:4px 0 0}
+.tk-rank{list-style:none;padding:0;margin:10px 0;display:flex;flex-direction:column;gap:6px}
+.tk-rank li{display:flex;align-items:center;gap:9px;background:#f0e6cf;border-radius:10px;padding:7px 11px;font-weight:700}
+.tk-rank li.win{background:#ffe9a8}.tk-rank li.me{outline:2px solid var(--accent)}
+.tk-rank .pos{font-family:var(--title);font-weight:800;width:20px}
+.tk-rank i{width:14px;height:14px;border-radius:50%;flex:none}
+.tk-rank span:last-child{margin-left:auto;font-family:var(--title);font-weight:800;font-size:18px}
+#tkcover{position:fixed;inset:0;z-index:58;display:grid;place-items:center;background:var(--bg);text-align:center;padding:20px}
+#tkcover[hidden]{display:none}#tkcover h2{font-family:var(--title);font-size:32px;margin:0 0 6px}#tkcover p{opacity:.85;margin:0 0 14px}
+.hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+.hbody table{border-collapse:collapse;margin:6px 0}.hbody td,.hbody th{border:1px solid #d9caa4;padding:3px 8px;text-align:left}
+/* cartes à jouer */
+.cd{--cw:62px;position:relative;width:var(--cw);height:calc(var(--cw)*1.42);border-radius:calc(var(--cw)*.12);background:linear-gradient(160deg,#fff,#f1ece0);box-shadow:0 2px 5px #0006,inset 0 0 0 1px #0002;color:#1c1c24;font-family:Georgia,'Times New Roman',serif;flex:none;user-select:none}
+.cd.red{color:#c8203a}
+.cd .cr{position:absolute;left:5%;top:3%;font-size:calc(var(--cw)*.24);line-height:.95;font-weight:700;text-align:center}
+.cd .cr.b{left:auto;top:auto;right:5%;bottom:3%;transform:rotate(180deg)}
+.cd .cc{position:absolute;inset:0;display:grid;place-items:center;font-size:calc(var(--cw)*.5)}
+.cd .cc b{font-size:calc(var(--cw)*.62);font-weight:400}
+.cd.back{background:repeating-linear-gradient(45deg,#2f4a9a 0 6px,#26407f 6px 12px);box-shadow:0 2px 5px #0006,inset 0 0 0 3px #fff}
+.cd.play{cursor:pointer;transition:transform .15s}.cd.play:hover{transform:translateY(-8px)}
+.cd.dim{filter:brightness(.62) saturate(.6)}
+.cd.sel{transform:translateY(-12px);box-shadow:0 0 0 3px #ffd84a,0 4px 10px #0007}
+.hand{display:flex;justify-content:center;flex-wrap:nowrap;padding:14px 6px 6px}
+.hand .cd{margin-left:calc(var(--cw)*-.28)}.hand .cd:first-child{margin-left:0}
+@media (max-width:520px){.cd{--cw:48px}}
+.pchip{display:inline-flex;align-items:center;gap:6px;background:#0005;border:1px solid #fff3;border-radius:999px;padding:3px 10px;font-weight:800;font-size:14px;white-space:nowrap}
+.pchip i{width:11px;height:11px;border-radius:50%}.pchip.turn{background:#fff;color:#1c1c24;box-shadow:0 0 0 3px var(--pcol,#ffd84a)}
+
+.who{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0 4px}
+#ab{display:block;width:100%;max-width:980px;margin:0 auto;filter:drop-shadow(0 14px 24px #0009)}
+#ab .wood{fill:url(#none);fill:#8a5a2e;stroke:#5a3517;stroke-width:6}
+#ab .hole{fill:#4a2c14;stroke:#2e1a0a;stroke-width:3}
+#ab .store{fill:#4a2c14;stroke:#2e1a0a;stroke-width:3}
+#ab .stn{fill:#ffe3b0;font:800 44px "Baloo 2",sans-serif;text-anchor:middle}
+#ab .stl{fill:#e8c89a;font:700 14px "Nunito Sans",sans-serif;text-anchor:middle}
+#ab .cnt{fill:#ffe3b0;font:800 20px "Baloo 2",sans-serif;text-anchor:middle}
+#ab .sd{stroke:#0005;stroke-width:1}#ab .s0{fill:#e9dcc0}#ab .s1{fill:#c9b48a}#ab .s2{fill:#f4ead6}
+#ab .pit.can{cursor:pointer}#ab .pit.can .hole{stroke:#ffd27a;stroke-width:5}
+#ab .pit.can:hover .hole{fill:#5a3818}
+#ab .pit.from .hole{stroke:#7ad0ff;stroke-width:5}
+#ab .pit.cap .hole{fill:#7a2a1a}
+#ab .sd.new{animation:seed .5s ease-out}
+@keyframes seed{from{transform:scale(.2);opacity:.2}}
+
+/*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
+/*top-above*/header.top{position:relative;z-index:61!important}
+</style>
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=282c861b"><!--/NETCSS-->
+<!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
+</head><body>
+<header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Awalé</h1>
+<div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
+<div class="status" id="status"></div>
+<div class="wrap" id="app"><div class="who" id="who"></div><svg id="ab" viewBox="0 0 900 390" role="img" aria-label="Plateau d’awalé"></svg>
+</div>
+<div id="tkcover" hidden></div>
+<div id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<!--NET--><script src="common/hall.js?v=b7597285"></script><script src="common/net.js?v=01f46845"></script><!--/NET-->
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SVGNS='http://www.w3.org/2000/svg';
+function sel(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
+function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
+function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
+function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
+function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
+function confetti(cols){ if(REDUCED) return; cols=cols||['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#fff']; for(let i=0;i<80;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:-12px;left:${Math.random()*100}vw;width:8px;height:12px;background:${cols[i%cols.length]};z-index:90;pointer-events:none;border-radius:2px`; document.body.appendChild(c);
+  c.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${(Math.random()-.5)*220}px,${innerHeight+40}px) rotate(${Math.random()*720}deg)`}],{duration:2200+Math.random()*1800,delay:Math.random()*700,easing:'ease-in'}).finished.then(()=>c.remove()); } }
+function store(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+/* sons */
+let MUTED=!!load('salle-mute'), AC=null, NOISE=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;} } if(AC.state==='suspended') AC.resume().catch(()=>{}); return AC; }
+function tn(a,t,f,d,type,v,f1){const o=a.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);}
+function nz(a,t,d,v,type,f){ if(!NOISE){NOISE=a.createBuffer(1,a.sampleRate,a.sampleRate);const c=NOISE.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;} const s=a.createBufferSource();s.buffer=NOISE;const fl=a.createBiquadFilter();fl.type=type;fl.frequency.value=f;const g=a.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl).connect(g).connect(a.destination);s.start(t);s.stop(t+d+.02); }
+function sfx(n){ if(MUTED) return; if(n==='click'&&window.ARC_PLAYING) return; const a=ac(); if(!a||a.state!=='running') return; const t=a.currentTime+.01;
+  switch(n){
+    case 'click': tn(a,t,900,.06,'triangle',.06); break;
+    case 'move': nz(a,t,.08,.25,'bandpass',900); tn(a,t,220,.08,'sine',.08); break;
+    case 'capture': nz(a,t,.12,.35,'bandpass',1400); tn(a,t,520,.12,'triangle',.1,260); break;
+    case 'card': nz(a,t,.1,.22,'bandpass',2800); break;
+    case 'flip': nz(a,t,.06,.25,'highpass',3000); tn(a,t,1200,.05,'triangle',.04); break;
+    case 'dice': for(let k=0;k<6;k++) nz(a,t+k*.07+Math.random()*.03,.05,.3,'bandpass',1800+Math.random()*1200); break;
+    case 'ding': tn(a,t,1320,.5,'sine',.1); tn(a,t+.07,1760,.4,'sine',.06); break;
+    case 'error': tn(a,t,220,.25,'square',.05,160); break;
+    case 'win': [523,659,784,1046].forEach((f,k)=>tn(a,t+k*.12,f,.4,'triangle',.11)); break;
+    case 'lose': [392,330,262].forEach((f,k)=>tn(a,t+k*.16,f,.45,'triangle',.1)); break;
+    case 'splash': nz(a,t,.5,.3,'lowpass',800); break;
+    case 'boom': nz(a,t,.7,.6,'lowpass',300); tn(a,t,90,.6,'sawtooth',.15,40); break;
+    case 'eat': tn(a,t,780,.05,'square',.025,980); break;
+    case 'chomp': tn(a,t,330,.07,'square',.04,520); break;
+    case 'power': [440,554,659,880].forEach((f,k)=>tn(a,t+k*.06,f,.18,'square',.05)); break;
+    case 'die': tn(a,t,600,.6,'sawtooth',.07,90); break;
+    case 'flap': nz(a,t,.08,.18,'bandpass',1400); tn(a,t,420,.07,'sine',.05,620); break;
+    case 'point': tn(a,t,988,.09,'square',.04); tn(a,t+.08,1318,.16,'square',.04); break;
+    case 'go': tn(a,t,880,.25,'square',.06); break;
+    case 'beep': tn(a,t,520,.12,'square',.05); break;
+    case 'hit': nz(a,t,.25,.5,'lowpass',500); tn(a,t,160,.25,'square',.08,60); break;
+    case 'catch': [660,880,1100].forEach((f,k)=>tn(a,t+k*.05,f,.12,'triangle',.08)); break;
+    case 'pop': tn(a,t,600,.08,'sine',.1,900); break;
+  } }
+function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
+document.addEventListener('click',e=>{
+  if(!MUTED) ac();
+  if(e.target.id==='modal'&&window.MODAL_CLOSABLE!==false){ const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; return; }
+  const t=e.target.closest('[data-c]'); if(!t) return;
+  switch(t.dataset.c){
+    case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
+    case 'help': GAME.help(); break;
+    case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
+    case 'close': { const cv=window.COVER_HIDDEN; closeModal(); if(cv) cv.hidden=false; break; }
+  }
+});
+addEventListener('DOMContentLoaded',updSnd);
+
+
+/* ===== Kit « tour par tour » : partie locale, contre l'ordinateur ou en ligne, reprise, sauvegarde, fin de partie ===== */
+window.PROF_MANUAL=true;
+const TK=(()=>{
+ const T={}; let D=null, G=null, GEN=0, nextT=null, shown=null, endShown=null;
+ const FAST=(()=>{ try{ return localStorage.getItem('tk-fast')==='1'; }catch(e){ return false; } })(); T.FAST=FAST;
+ T.G=()=>G;
+ const net=()=>typeof NET!=='undefined'&&NET.on&&NET.started;
+ const guest=()=>net()&&NET.guest;
+ T.net=net; T.guest=guest;
+ const COLS=['#e8433a','#2f7fd6','#2fa65a','#e8b030','#9b59b6','#e67e22'];
+ T.COLS=COLS;
+ /* ---------- qui regarde l'écran ---------- */
+ const humans=()=>G?G.players.map((p,i)=>p.ai?-1:i).filter(i=>i>=0):[];
+ T.viewer=()=>{ if(!G) return null; if(net()) return NET.seat; const h=humans(); if(h.length===1) return h[0]; if(!h.length) return 0;
+   const a=D.actors(G).find(s=>!G.players[s].ai); if(a!=null&&(!D.hidden||shown===a)) return a; return D.hidden?shown:(a!=null?a:h[0]); };
+ T.mine=s=>!net()?!G.players[s].ai:s===NET.seat;
+ T.canPlay=()=>{ if(!G||G.over) return false; const v=T.viewer(); return v!=null&&D.actors(G).includes(v)&&!G.players[v].ai; };
+ /* ---------- actions ---------- */
+ T.input=a=>{ if(!G||G.over) return false; const v=T.viewer(); if(v==null||!D.actors(G).includes(v)) return false;
+   if(guest()){ NET.act('a',[v,a]); return true; } return doAct(v,a); };
+ function doAct(seat,a){ if(!G||G.over||!D.actors(G).includes(seat)) return false; let ev; try{ ev=D.apply(G,seat,a); }catch(e){ console.error(e); return false; }
+   if(ev===false) return false; G.v=(G.v||0)+1; after(ev||[]); return true; }
+ function after(ev){ save(); render(ev); if(net()) NET.push(ev.length?ev:null); if(G.over) end(); else schedule(); }
+ const timers={};
+ function clearTimers(){ for(const k in timers){ clearTimeout(timers[k]); delete timers[k]; } }
+ /* chaque place tenue par l'ordinateur a sa propre minuterie (indispensable quand tout le monde joue en même temps) */
+ function schedule(){ if(!G||G.over||guest()){ clearTimers(); return; } const ais=D.actors(G).filter(x=>G.players[x]&&G.players[x].ai);
+   if(!ais.length){ if(net()) NET.drain(); return; }
+   (D.simul?ais:[ais[0]]).forEach(s=>{ if(timers[s]) return; const my=GEN;
+     timers[s]=setTimeout(()=>{ delete timers[s]; if(my!==GEN||!G||G.over) return; if(!D.actors(G).includes(s)){ schedule(); return; }
+       let a; try{ a=D.ai(G,s,G.players[s].level||'normal'); }catch(e){ console.error(e); return; }
+       if(a==null){ schedule(); return; } if(!doAct(s,a)) console.warn('IA : coup refusé',a); }, FAST?15:(D.aiDelay?D.aiDelay(G,s):750)); }); }
+ T.schedule=schedule;
+ /* ---------- affichage ---------- */
+ function render(ev){ if(!G){ D.empty&&D.empty(); return; } const v=T.viewer();
+   if(!net()&&D.hidden&&humans().length>1){ const a=D.actors(G).find(s=>!G.players[s].ai); if(a!=null&&a!==shown&&!G.over){ cover(a); } }
+   try{ D.render(G,v,ev||[]); }catch(e){ console.error(e); } status(); if(ev&&ev.length&&D.sound) ev.forEach(e=>{ try{ D.sound(e,G,v); }catch(x){} }); }
+ T.render=render;
+ function cover(a){ const c=document.getElementById('tkcover'); if(!c) return; shown=null; c.hidden=false; c.innerHTML=`<div><h2>Au tour de ${esc(G.players[a].name)}</h2><p>Passe l’appareil à ${esc(G.players[a].name)}, sans regarder son jeu.</p><button class="btn pri" id="tkreveal">Voir mon jeu</button></div>`;
+   document.getElementById('tkreveal').onclick=()=>{ shown=a; c.hidden=true; render([]); }; }
+ function status(){ const st=$('#status'); if(!st||!G) return; const s=D.status(G,T.viewer())||{}; st.style.setProperty('--pc',s.col||'var(--accent)');
+   st.innerHTML=`<span class="who">${esc(s.who||'')}</span><span class="msg">${s.msg||''}</span>${s.right?`<span class="right">${s.right}</span>`:''}`; }
+ T.status=status;
+ /* ---------- fin de partie ---------- */
+ function end(){ if(!G||!G.over||endShown===G.gid+':'+G.v) return; endShown=G.gid+':'+G.v; const v=net()?NET.seat:(humans().length===1?humans()[0]:null);
+   const W=G.over.winners||[]; const win=v!=null&&W.includes(v);
+   if(window.PROFWIN&&v!=null) PROFWIN(win);
+   if(win){ sfx('win'); confetti(); } else if(v!=null&&W.length) sfx('lose');
+   const rows=(D.ranking?D.ranking(G):G.players.map((p,i)=>({seat:i,score:''})));
+   setTimeout(()=>{ if(!G||!G.over) return; const host=!guest();
+     openModal(`<h2>${esc(G.over.title||(W.length===1?G.players[W[0]].name+' gagne !':'Partie terminée'))}</h2>${G.over.text?`<p>${G.over.text}</p>`:''}
+      <ol class="tk-rank">${rows.map((r,i)=>`<li class="${W.includes(r.seat)?'win':''}${r.seat===v?' me':''}"><span class="pos">${i+1}</span><i style="background:${G.players[r.seat].col||COLS[r.seat%6]}"></i><b>${esc(G.players[r.seat].name)}</b><span>${r.score}</span></li>`).join('')}</ol>
+      <div class="acts">${net()?(host?'<button class="btn" data-k="lobby">Revenir au salon</button><button class="btn pri" data-k="again">Rejouer</button>':'<button class="btn" data-c="close">Fermer</button><button class="btn pri" data-k="rematch">🔁 Revanche</button>'):'<button class="btn" data-k="menu">Changer les réglages</button><button class="btn pri" data-k="again">Rejouer</button>'}</div>`,
+     e=>{ const b=e.target.closest('[data-k]'); if(!b) return; closeModal(); const k=b.dataset.k;
+       if(k==='again'){ if(net()) NET.restart(); else localNew(); } else if(k==='rematch') NET.rematch(); else if(k==='lobby'){ NET.panel(); setTimeout(()=>{ const l=document.querySelector('#hall-box [data-net="lobby"]'); if(l) l.click(); },30); } else menu(); }); }, D.endDelay||900); }
+ /* ---------- nouvelle partie ---------- */
+ let SEATS=null; const OPT=()=>D.opt;
+ function seatsDefault(){ const n=D.defaultPlayers||Math.max(2,D.min); return Array.from({length:n},(_,i)=>i===0?{name:(typeof HALL!=='undefined'&&HALL.pseudo)||'Toi',ai:false,level:'normal'}:{name:['Ada','Hal','Pixel','Nova','Atlas','Écho'][i-1],ai:true,level:'normal'}); }
+ function start(list,isNet){ GEN++; clearTimers(); endShown=null; shown=null;
+   const players=list.map((x,i)=>({name:String(x.name||'Joueur').slice(0,16),cid:x.cid||null,ai:!!x.ai,level:x.level||'normal',col:COLS[i%6]}));
+   G=D.init(players,Object.assign({},D.opt)); G.gid=Math.random().toString(36).slice(2,8); G.v=0; G.players=G.players||players; if(isNet) G.net=true;
+   if(window.PROF) PROF.played(D.id,!!isNet); closeModal(); render([]); save(); if(!isNet) schedule(); }
+ function localNew(){ const s=SEATS||seatsDefault(); start(s.map(x=>({name:x.name,ai:x.ai,level:x.level})),false); }
+ function save(){ if(!G||net()) return; try{ store('tk-'+D.id,G.over?null:G); }catch(e){} }
+ /* ---------- menu ---------- */
+ function menu(){ if(!SEATS) SEATS=load('tk-seats-'+D.id)||seatsDefault(); const lv=['facile','normal','difficile'];
+   const fix=()=>{ while(SEATS.length<D.min) SEATS.push({name:'Ordi '+(SEATS.length+1),ai:true,level:'normal'}); if(SEATS.length>D.maxLocal) SEATS.length=D.maxLocal; };
+   fix();
+   const draw=()=>{ openModal(`<h2>${esc(D.title)}</h2><p class="tk-desc">${D.desc}</p>
+     <div class="bigchoice"><button class="pri" data-k="online"><b>Jouer en ligne</b><small>Avec tes amis connectés, chacun sur son écran.</small></button><button data-k="local"><b>Jouer ici</b><small>Contre l’ordinateur${D.maxLocal>1?' ou à plusieurs sur cet appareil':''}.</small></button></div>
+     <h4>Joueurs sur cet appareil</h4><div class="tk-seats">${SEATS.map((s,i)=>`<div class="tk-seat"><i style="background:${COLS[i%6]}"></i><input type="text" data-n="${i}" value="${esc(s.name)}" maxlength="14"${s.ai?' disabled':''}>
+       <div class="seg"><button class="${!s.ai?'on':''}" data-s="${i}:h">Joueur</button><button class="${s.ai?'on':''}" data-s="${i}:a">Ordi</button></div>${s.ai?`<div class="seg">${lv.map(l=>`<button class="${s.level===l?'on':''}" data-s="${i}:${l}">${l}</button>`).join('')}</div>`:''}${SEATS.length>D.min?`<button class="tk-x" data-s="${i}:x" aria-label="Retirer">✕</button>`:''}</div>`).join('')}
+       ${SEATS.length<D.maxLocal?'<button class="btn" data-s="add">+ Ajouter un joueur</button>':''}</div>
+     ${D.optsHTML?`<div class="opts">${D.optsHTML()}</div>`:''}
+     <div class="acts">${G?'<button class="btn" data-c="close">Fermer</button>':''}<button class="btn pri" data-k="local">Lancer la partie</button></div>`,click); };
+   const grab=()=>{ document.querySelectorAll('#mbox [data-n]').forEach(x=>{ const s=SEATS[+x.dataset.n]; if(s&&!s.ai) s.name=x.value.trim()||s.name; }); };
+   const click=e=>{ grab(); const k=e.target.closest('[data-k]'), s=e.target.closest('[data-s]'), o=e.target.closest('[data-o]');
+     if(o&&D.optClick){ D.optClick(o); store('tk-opt-'+D.id,D.opt); draw(); return; }
+     if(s){ const v=s.dataset.s; if(v==='add'){ SEATS.push({name:['Ada','Hal','Pixel','Nova','Atlas','Écho'][SEATS.length-1]||'Ordi',ai:true,level:'normal'}); }
+       else { const [i,x]=v.split(':'); const st=SEATS[+i]; if(x==='h'){ st.ai=false; if(/^(Ada|Hal|Pixel|Nova|Atlas|Écho|Ordi.*)$/.test(st.name)) st.name='Joueur '+(+i+1); } else if(x==='a'){ st.ai=true; st.name=['Ada','Hal','Pixel','Nova','Atlas','Écho'][+i%6]; } else if(x==='x') SEATS.splice(+i,1); else st.level=x; }
+       fix(); draw(); return; }
+     if(!k) return; store('tk-seats-'+D.id,SEATS);
+     if(k.dataset.k==='online'){ closeModal(); NET.startUI(); } else if(k.dataset.k==='local') localNew(); };
+   draw(); }
+ T.menu=menu;
+ /* ---------- aide de première visite ---------- */
+ function firstHelp(){ let seen=false; try{ seen=!!localStorage.getItem('tuto-'+D.id); }catch(e){} if(seen) return; try{ localStorage.setItem('tuto-'+D.id,'1'); }catch(e){}
+   setTimeout(()=>{ if(window.PROF&&PROF.notice) PROF.notice(`Première partie de ${D.title} ? Les règles en une minute.`,false,['Voir les règles',()=>D.help()]); },1500); }
+ /* ---------- démarrage ---------- */
+ T.def=d=>{ D=d; D.maxLocal=D.maxLocal||D.max; D.opt=Object.assign({},D.opt||{},load('tk-opt-'+D.id)||{});
+   window.GAME={help:()=>D.help(),menu};
+   window.NETGAME={id:D.id,title:D.title,min:D.min,max:D.max,
+     rules:()=>D.optsHTML?`<div class="opts">${D.optsHTML()}</div>`:'', rulesClick(e){ const o=e.target.closest('[data-o]'); if(!o||!D.optClick) return false; D.optClick(o); store('tk-opt-'+D.id,D.opt); return true; },
+     start(list){ start(list,true); NET.push(null,'new'); schedule(); }, state:()=>G, busy:()=>false,
+     resume(){ render([]); schedule(); }, adopt(){ render([]); schedule(); },
+     act(seat,fn,args){ if(fn!=='a') return false; return doAct(seat,args[1]); },
+     async receive(m){ if(m.kind==='lobby'){ GEN++; G=null; render([]); return; } if(!m.G) return; const first=!G||G.gid!==m.G.gid; G=m.G; if(first){ endShown=null; closeModal(); if(window.PROF) PROF.played(D.id,true); } render(m.ev||[]); if(G.over) end(); },
+     leave(){ GEN++; clearTimers(); G=null; render([]); menu(); }, menuLocal:menu };
+   addEventListener('DOMContentLoaded',()=>{});
+   setTimeout(()=>{ const skip=/[?&](salle|creer)=/.test(location.search)||(()=>{ const s=load('net-sess'); return s&&s.game===D.id&&!s.host; })();
+     const sv=load('tk-'+D.id); if(!skip&&sv&&!sv.over&&!sv.net){ G=sv; render([]); schedule(); } else if(!skip){ render([]); menu(); } firstHelp(); },40); };
+ /* ---------- cartes à jouer ---------- */
+ const RED=s=>s==='♥'||s==='♦';
+ const FIG={V:'♞',D:'♛',R:'♚'};
+ T.card=(c,o)=>{ o=o||{}; if(!c||o.back) return `<div class="cd back${o.cls?' '+o.cls:''}"${o.attr||''}></div>`;
+   return `<div class="cd ${RED(c.s)?'red':'blk'}${o.cls?' '+o.cls:''}"${o.attr||''}><span class="cr">${c.r}<br>${c.s}</span><span class="cc">${FIG[c.r]?`<b>${FIG[c.r]}</b>`:c.s}</span><span class="cr b">${c.r}<br>${c.s}</span></div>`; };
+ T.shuffle=(a,rng)=>{ rng=rng||Math.random; for(let i=a.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+ T.rng=seed=>{ let a=seed>>>0; return ()=>{ a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; };
+ return T; })();
+
+
+/* ===== Awalé (abapa) ===== */
+(function(){
+/* plateau : cases 0 à 5 au joueur 1 (en bas, de gauche à droite), 6 à 11 au joueur 2 (en haut, de droite à gauche) ; on sème dans le sens des indices */
+const own=(s,p)=>s===0?p<6:p>=6;
+function sow(b,p){ const n=b[p]; b[p]=0; let i=p; const path=[]; for(let k=0;k<n;k++){ i=(i+1)%12; if(i===p) i=(i+1)%12; b[i]++; path.push(i); } return {last:i,path}; }
+function captures(b,s,last){ const cap=[]; let i=last; while(!own(s,i)&&(b[i]===2||b[i]===3)){ cap.push(i); i=(i+11)%12; } return cap; }
+function seedsOf(b,s){ let t=0; for(let i=s?6:0;i<(s?12:6);i++) t+=b[i]; return t; }
+/* coup simulé : renvoie le nouveau plateau, les prises (sans grand chelem) */
+function sim(b,s,p){ const nb=b.slice(); const {last,path}=sow(nb,p); let cap=captures(nb,s,last); let gain=0;
+  if(cap.length){ const tot=cap.reduce((a,i)=>a+nb[i],0); if(tot===seedsOf(nb,1-s)) cap=[]; else { gain=tot; cap.forEach(i=>nb[i]=0); } }
+  return {nb,path,cap,gain}; }
+function legal(G,s){ const b=G.b; const mine=[]; for(let i=s?6:0;i<(s?12:6);i++) if(b[i]) mine.push(i);
+  if(seedsOf(b,1-s)===0){ const feed=mine.filter(p=>seedsOf(sim(b,s,p).nb,1-s)>0); return feed; } return mine; }
+function finish(G,reason){ const s0=seedsOf(G.b,0), s1=seedsOf(G.b,1); G.st[0]+=s0; G.st[1]+=s1; G.b=G.b.map(()=>0);
+  const w=G.st[0]>G.st[1]?[0]:G.st[1]>G.st[0]?[1]:[0,1];
+  G.over={winners:w,title:w.length>1?'Égalité : 24 graines chacun':`${G.players[w[0]].name} gagne !`,text:reason}; }
+const D={id:'awale',title:'Awalé',min:2,max:2,maxLocal:2,
+  desc:'Le grand jeu de semailles d’Afrique de l’Ouest : sème tes graines et récolte celles de l’adversaire.',
+  opt:{},
+  init(players){ return {b:new Array(12).fill(4),st:[0,0],turn:Math.random()<.5?0:1,last:null,noCap:0,moves:0,players}; },
+  actors:G=>G.over?[]:[G.turn],
+  apply(G,s,a){ const p=a&&+a.p; if(!legal(G,s).includes(p)) return false;
+    const r=sim(G.b,s,p); G.b=r.nb; G.st[s]+=r.gain; G.last={p,path:r.path,cap:r.cap,s}; G.moves++; G.noCap=r.gain?0:G.noCap+1;
+    const ev=[{t:'sow',p,s,path:r.path,cap:r.cap,gain:r.gain}];
+    if(G.st[s]>=25){ finish(G,`${G.players[s].name} a récolté plus de la moitié des graines.`); return ev; }
+    G.turn=1-s;
+    if(!legal(G,G.turn).length){ finish(G,seedsOf(G.b,G.turn)?'Plus aucun coup ne peut nourrir l’adversaire : chacun garde les graines de son camp.':`${G.players[G.turn].name} n’a plus de graines et personne ne peut le nourrir.`); return ev; }
+    if(G.noCap>=60||G.moves>=300){ finish(G,'La partie tourne en rond : chacun garde les graines de son camp.'); return ev; }
+    return ev; },
+  ai(G,s,lv){ const depth={facile:1,normal:4,difficile:7}[lv]||4; const L=legal(G,s);
+    if(lv==='facile'&&Math.random()<.35) return {p:L[Math.floor(Math.random()*L.length)]};
+    const rec=(b,st,turn,d,a,bt)=>{ const ms=[]; for(let i=turn?6:0;i<(turn?12:6);i++) if(b[i]) ms.push(i); let mv=ms; if(seedsOf(b,1-turn)===0) mv=ms.filter(p=>seedsOf(sim(b,turn,p).nb,1-turn)>0);
+      if(!mv.length){ const f=st.slice(); f[0]+=seedsOf(b,0); f[1]+=seedsOf(b,1); return (f[s]-f[1-s])*100; }
+      if(st[s]>=25) return 1000+d; if(st[1-s]>=25) return -1000-d; if(d===0) return (st[s]-st[1-s])*10+(seedsOf(b,s)-seedsOf(b,1-s))*.5;
+      let best=turn===s?-Infinity:Infinity;
+      for(const p of mv){ const r=sim(b,turn,p); const ns=st.slice(); ns[turn]+=r.gain; const v=rec(r.nb,ns,1-turn,d-1,a,bt);
+        if(turn===s){ if(v>best) best=v; if(v>a) a=v; } else { if(v<best) best=v; if(v<bt) bt=v; } if(a>=bt) break; } return best; };
+    let best=L[0], bv=-Infinity; for(const p of L){ const r=sim(G.b,s,p); const ns=G.st.slice(); ns[s]+=r.gain; const v=rec(r.nb,ns,1-s,depth-1,-Infinity,Infinity)+Math.random()*.01; if(v>bv){ bv=v; best=p; } }
+    return {p:best}; },
+  aiDelay:()=>900,
+  status(G,v){ if(G.over) return {who:'Partie terminée',msg:'',col:'#5a3a22'}; const P=G.players[G.turn];
+    return {who:P.name,msg:TK.canPlay()?'choisis une case de ton camp.':(P.ai?'réfléchit…':'joue…'),col:P.col,right:`${G.players[0].name} ${G.st[0]} · ${G.players[1].name} ${G.st[1]}`}; },
+  ranking:G=>[0,1].sort((a,b)=>G.st[b]-G.st[a]).map(s=>({seat:s,score:G.st[s]+' graines'})),
+  sound(e){ if(e.t==='sow'){ sfx('move'); if(e.gain) setTimeout(()=>sfx('capture'),300); } },
+  render(G,v,ev){ const flip=TK.net()&&v===1; const bottom=flip?1:0, top=1-bottom;
+    const play=TK.canPlay()?legal(G,v):[]; const L=G.last||{};
+    const pit=(i)=>{ const n=G.b[i]; const seeds=Array.from({length:Math.min(n,30)},(_,k)=>{ const a=(k*137.5+i*31)%360*Math.PI/180, r=Math.min(30,5+Math.sqrt(k)*6.2); return `<circle cx="${(Math.cos(a)*r).toFixed(1)}" cy="${(Math.sin(a)*r).toFixed(1)}" r="5.2" class="sd s${(k+i)%3}"/>`; }).join('');
+      const cls=['pit',play.includes(i)?'can':'',L.p===i?'from':'',(L.path||[]).includes(i)?'got':'',(L.cap||[]).includes(i)?'cap':''].join(' ');
+      return `<g class="${cls}" data-p="${i}"><circle r="42" class="hole"/>${seeds}<text y="64" class="cnt">${n}</text></g>`; };
+    const rowB=Array.from({length:6},(_,k)=>bottom===0?k:6+k).map((i,k)=>`<g transform="translate(${150+k*100},270)">${pit(i)}</g>`).join('');
+    const rowT=Array.from({length:6},(_,k)=>top===1?11-k:5-k).map((i,k)=>`<g transform="translate(${150+k*100},120)">${pit(i)}</g>`).join('');
+    const store=(s,x)=>`<g transform="translate(${x},195)"><rect x="-38" y="-120" width="76" height="240" rx="38" class="store"/><text y="8" class="stn">${G.st[s]}</text><text y="40" class="stl">${esc(G.players[s].name.slice(0,8))}</text></g>`;
+    $('#ab').innerHTML=`<rect x="10" y="20" width="880" height="350" rx="60" class="wood"/>${store(top,58)}${store(bottom,842)}${rowT}${rowB}`;
+    $('#ab').querySelectorAll('.got .sd').forEach(x=>x.classList.add('new'));
+    $('#who').innerHTML=[top,bottom].map(s=>`<span class="pchip${G.turn===s&&!G.over?' turn':''}" style="--pcol:${G.players[s].col}"><i style="background:${G.players[s].col}"></i>${esc(G.players[s].name)} · ${G.st[s]}</span>`).join(''); },
+  help(){ helpTabs('Awalé',[['But du jeu','<p>Récolter plus de graines que l’adversaire : <b>25 graines</b> sur 48 suffisent pour gagner.</p><p>Chaque joueur possède la rangée de 6 cases de son côté. On commence avec 4 graines par case.</p>'],
+    ['Semer','<ul><li>À ton tour, prends toutes les graines d’une case de ton camp et sème-les une par une dans les cases suivantes, dans le sens inverse des aiguilles d’une montre.</li><li>Avec 12 graines ou plus, on fait le tour du plateau en sautant la case de départ.</li></ul>'],
+    ['Récolter','<ul><li>Si la dernière graine tombe chez l’adversaire et que la case contient alors <b>2 ou 3 graines</b>, tu les récoltes.</li><li>Tu récoltes aussi les cases précédentes de l’adversaire tant qu’elles contiennent 2 ou 3 graines.</li><li>Si une récolte prenait toutes les graines adverses (grand chelem), elle n’a pas lieu.</li></ul>'],
+    ['Nourrir et fin','<ul><li>Si l’adversaire n’a plus de graines, tu dois jouer un coup qui lui en donne. Si c’est impossible, la partie s’arrête et chacun garde les graines de son camp.</li><li>Si la partie tourne en rond (60 coups sans récolte), elle s’arrête de la même façon.</li></ul><p class="ex">Astuce : garder une case bien remplie permet un grand tour qui récolte plusieurs cases d’un coup.</p>']]); } };
+TK.def(D);
+$('#ab').addEventListener('click',e=>{ const g=e.target.closest('.pit.can'); if(g) TK.input({p:+g.dataset.p}); });
+})();
+
+</script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
+addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+
+<!--PROF--><script src="common/profil.js?v=7c71d3ff"></script><!--/PROF-->
+</body></html>

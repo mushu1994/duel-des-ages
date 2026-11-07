@@ -63,7 +63,7 @@ const NET=(()=>{
  let elT=null;
  /* jeux vérifiés : la partie reprend exactement où elle en était chez le nouvel hôte */
  const RESUME=new Set(['serpents','souriciere','piaf','quatre-en-ligne','echecs','dames','bataille','dominos','petits-chevaux','rami','remparts','conquete','joyaux-renaissance','sept-merveilles','derniere-carte','quitte-ou-sept']);
- const canAdopt=()=>RESUME.has(NG().id);
+ const canAdopt=()=>RESUME.has(NG().id)||!!NG().adopt;
  function scheduleElection(){ if(elT) return; elT=setTimeout(()=>{ elT=null; elect(); },canAdopt()?3000:30000); }
  function candidates(){ const G=NG().state(); const pl=PL(G); const here=Object.keys(N.peers);
    const seat=k=>{ const i=pl.findIndex(P=>P.cid===k&&!P.away); return i<0?999:i; };
