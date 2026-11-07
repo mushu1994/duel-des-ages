@@ -121,6 +121,15 @@ body{background:radial-gradient(ellipse at 50% 0%,#24543a,#0b1e14 75%) fixed,#0b
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
 </style>
+
+
+
+
+
+
+
+
+
 <!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=282c861b"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
@@ -134,7 +143,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#24543a,#0b1e14 75%) fixed,#0b
 </div>
 <div id="tkcover" hidden></div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
-<!--NET--><script src="common/hall.js?v=b7597285"></script><script src="common/net.js?v=01f46845"></script><!--/NET-->
+<!--NET--><script src="common/hall.js?v=acec1867"></script><script src="common/net.js?v=01f46845"></script><!--/NET-->
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -398,5 +407,14 @@ addEventListener('keydown',e=>{ if(document.querySelector('#modal:not([hidden])'
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
 
-<!--PROF--><script src="common/profil.js?v=7c71d3ff"></script><!--/PROF-->
+
+
+
+
+
+
+
+
+
+<!--PROF--><script src="common/profil.js?v=b366504c"></script><!--/PROF-->
 </body></html>

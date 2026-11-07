@@ -121,6 +121,7 @@ body.immersive .stage{padding-top:max(6px,env(safe-area-inset-top))}
 .optrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0}.optrow input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
 
 .hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
+
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
 </style><!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=282c861b"><!--/NETCSS-->
@@ -131,7 +132,7 @@ body.immersive .stage{padding-top:max(6px,env(safe-area-inset-top))}
 <div class="status" id="status"></div>
 <div class="stage" id="stage"><div class="cvwrap"><canvas id="cv"></canvas><div class="pad" id="pad" hidden></div></div><div class="board" id="board"></div></div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
-<!--NET--><script src="common/hall.js?v=b7597285"></script><script src="common/net.js?v=01f46845"></script><!--/NET--><script>
+<!--NET--><script src="common/hall.js?v=acec1867"></script><script src="common/net.js?v=01f46845"></script><!--/NET--><script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const SVGNS='http://www.w3.org/2000/svg';
@@ -178,6 +179,13 @@ function sfx(n){ if(MUTED) return; if(n==='click'&&window.ARC_PLAYING) return; c
     case 'hit': nz(a,t,.25,.5,'lowpass',500); tn(a,t,160,.25,'square',.08,60); break;
     case 'catch': [660,880,1100].forEach((f,k)=>tn(a,t+k*.05,f,.12,'triangle',.08)); break;
     case 'pop': tn(a,t,600,.08,'sine',.1,900); break;
+    case 'pong': tn(a,t,440,.06,'square',.06); break;
+    case 'ping': tn(a,t,880,.05,'square',.05); break;
+    case 'brick': tn(a,t,700+Math.random()*300,.06,'square',.04); nz(a,t,.04,.15,'highpass',2500); break;
+    case 'lines': [523,659,784].forEach((f,k)=>tn(a,t+k*.05,f,.14,'square',.05)); break;
+    case 'drop': nz(a,t,.06,.3,'lowpass',600); tn(a,t,140,.06,'sine',.08); break;
+    case 'rot': tn(a,t,660,.03,'triangle',.04); break;
+    case 'fuse': nz(a,t,.15,.12,'highpass',4000); break;
   } }
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
@@ -258,10 +266,10 @@ const ARC=(()=>{
  A.applyPad=()=>{ const b=document.getElementById('pad'); if(!b) return; const p=A.padPos(); b.hidden=p==='cachee'; b.dataset.pos=p; };
  A.padHTML=()=>`<h4>Croix tactile</h4><div class="seg">${[['gauche','À gauche'],['centre','Au centre'],['droite','À droite'],['cachee','Cachée']].map(([v,l])=>`<button class="${A.padPos()===v?'on':''}" data-pad="${v}">${l}</button>`).join('')}</div><p class="optnote">Elle s’affiche par-dessus le jeu ; tu peux aussi glisser le doigt n’importe où.</p>`;
  A.padClick=e=>{ const b=e.target.closest('[data-pad]'); if(!b) return false; store('arc-pad',b.dataset.pad); A.applyPad(); return true; };
- A.pad=(box,cb)=>{ box.innerHTML='<svg viewBox="-100 -100 200 200" aria-hidden="true"><circle r="98" class="pbg"/>'+[0,1,2,3].map(d=>`<g class="pw" data-d="${d}" transform="rotate(${d*90})"><path d="M0 -10 L-60 -70 A85 85 0 0 1 60 -70 Z"/><path class="pa" d="M0 -84 L-16 -60 L16 -60 Z"/></g>`).join('')+'<circle r="22" class="pc"/></svg>';
+ A.pad=(box,cb,rel)=>{ box.innerHTML='<svg viewBox="-100 -100 200 200" aria-hidden="true"><circle r="98" class="pbg"/>'+[0,1,2,3].map(d=>`<g class="pw" data-d="${d}" transform="rotate(${d*90})"><path d="M0 -10 L-60 -70 A85 85 0 0 1 60 -70 Z"/><path class="pa" d="M0 -84 L-16 -60 L16 -60 Z"/></g>`).join('')+'<circle r="22" class="pc"/></svg>';
    let id=null, cur=-1;
    const hit=e=>{ const r=box.getBoundingClientRect(), x=e.clientX-(r.left+r.width/2), y=e.clientY-(r.top+r.height/2); if(Math.hypot(x,y)<r.width*.08) return -1; const d=Math.abs(x)>Math.abs(y)?(x>0?1:3):(y>0?2:0); return d; };
-   const set=d=>{ if(d===cur) return; cur=d; box.querySelectorAll('.pw').forEach(g=>g.classList.toggle('on',+g.dataset.d===d)); if(d>=0) cb(d); };
+   const set=d=>{ if(d===cur) return; cur=d; box.querySelectorAll('.pw').forEach(g=>g.classList.toggle('on',+g.dataset.d===d)); if(d>=0) cb(d); else if(rel) rel(); };
    box.addEventListener('pointerdown',e=>{ if(blocked()) return; e.preventDefault(); e.stopPropagation(); id=e.pointerId; try{ box.setPointerCapture(id); }catch(x){} cur=-1; set(hit(e)); });
    box.addEventListener('pointermove',e=>{ if(e.pointerId!==id) return; set(hit(e)); });
    const end=()=>{ id=null; set(-1); cur=-1; }; box.addEventListener('pointerup',end); box.addEventListener('pointercancel',end);
@@ -299,6 +307,7 @@ const ARC=(()=>{
      e=>{ const b=e.target.closest('[data-t]'); if(!b) return; if(b.dataset.t==='next'&&i<steps.length-1){ i++; draw(); return; } try{ localStorage.setItem('tuto-'+slug,'1'); }catch(x){} closeModal(); done&&done(); }); };
    draw(); return true; };
  return A; })();
+
 
 /* ===== Souricière : souris gourmandes et chats dans un labyrinthe ===== */
 (function(){
@@ -517,5 +526,5 @@ const skip=/[?&](salle|creer)=/.test(location.search)||(()=>{ const s=load('net-
 </script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
-<!--PROF--><script src="common/profil.js?v=7c71d3ff"></script><!--/PROF-->
+<!--PROF--><script src="common/profil.js?v=b366504c"></script><!--/PROF-->
 </body></html>
