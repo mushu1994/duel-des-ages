@@ -124,18 +124,13 @@ body{background:radial-gradient(ellipse at 50% 0%,#3a6a8a,#122a3a 75%) fixed,#12
 .mcf{position:fixed;inset:auto 0 18vh;margin:auto;max-width:380px;background:#fffaf0;color:#222;border-radius:16px;padding:14px;text-align:center;z-index:30;box-shadow:0 14px 40px #000a}
 .mcf h3{margin:0 0 6px;font-family:var(--title);font-size:24px;color:#c8203a}
 @media (max-width:520px){.mb{--cw:48px;border-width:3px}.mhand{gap:3px}}
+.mbp .hd .km small{font-size:12px;opacity:.7}
+.mres{width:100%;border-collapse:collapse;margin:6px 0;font-size:14px;text-align:left}.mres td{padding:4px 6px;border-bottom:1px solid #ddd;vertical-align:top}.mres td:not(:first-child){text-align:right;white-space:nowrap}
+.mcf{max-height:70vh;overflow:auto}
 
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
 </style>
-
-
-
-
-
-
-
-
 
 <!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=282c861b"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
@@ -199,6 +194,13 @@ function sfx(n){ if(MUTED) return; if(n==='click'&&window.ARC_PLAYING) return; c
     case 'hit': nz(a,t,.25,.5,'lowpass',500); tn(a,t,160,.25,'square',.08,60); break;
     case 'catch': [660,880,1100].forEach((f,k)=>tn(a,t+k*.05,f,.12,'triangle',.08)); break;
     case 'pop': tn(a,t,600,.08,'sine',.1,900); break;
+    case 'pong': tn(a,t,440,.06,'square',.06); break;
+    case 'ping': tn(a,t,880,.05,'square',.05); break;
+    case 'brick': tn(a,t,700+Math.random()*300,.06,'square',.04); nz(a,t,.04,.15,'highpass',2500); break;
+    case 'lines': [523,659,784].forEach((f,k)=>tn(a,t+k*.05,f,.14,'square',.05)); break;
+    case 'drop': nz(a,t,.06,.3,'lowpass',600); tn(a,t,140,.06,'sine',.08); break;
+    case 'rot': tn(a,t,660,.03,'triangle',.04); break;
+    case 'fuse': nz(a,t,.15,.12,'highpass',4000); break;
   } }
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
@@ -326,111 +328,152 @@ const TK=(()=>{
  return T; })();
 
 
-/* ===== Mille Bornes ===== */
+/* ===== Mille Bornes, avec les variantes de la règle officielle : équipes, Allonge, partie en 5000 points ===== */
 (function(){
 const C={
  d25:{t:'km',v:25,n:10,l:'25 km'}, d50:{t:'km',v:50,n:10,l:'50 km'}, d75:{t:'km',v:75,n:10,l:'75 km'}, d100:{t:'km',v:100,n:12,l:'100 km'}, d200:{t:'km',v:200,n:4,l:'200 km'},
- accident:{t:'hz',n:3,e:'💥',l:'Accident'}, panne:{t:'hz',n:3,e:'⛽',l:'Panne d’essence'}, crevaison:{t:'hz',n:3,e:'🫓',l:'Crevaison'}, limite:{t:'hz',n:4,e:'🐌',l:'Limite de vitesse'}, stop:{t:'hz',n:5,e:'🔴',l:'Feu rouge'},
+ accident:{t:'hz',n:3,e:'💥',l:'Accident'}, panne:{t:'hz',n:3,e:'⛽',l:'Panne d’essence'}, crevaison:{t:'hz',n:3,e:'🔻',l:'Crevaison'}, limite:{t:'hz',n:4,e:'🐌',l:'Limite de vitesse'}, stop:{t:'hz',n:5,e:'🔴',l:'Feu rouge'},
  reparation:{t:'rm',n:6,e:'🔧',l:'Réparations',f:'accident'}, essence:{t:'rm',n:6,e:'🛢️',l:'Essence',f:'panne'}, roue:{t:'rm',n:6,e:'🛞',l:'Roue de secours',f:'crevaison'}, finlimite:{t:'rm',n:6,e:'🏁',l:'Fin de limite',f:'limite'}, vert:{t:'rm',n:14,e:'🟢',l:'Feu vert',f:'stop'},
  as:{t:'bt',n:1,e:'🏎️',l:'As du volant',p:['accident']}, citerne:{t:'bt',n:1,e:'🚛',l:'Citerne',p:['panne']}, increvable:{t:'bt',n:1,e:'🛡️',l:'Increvable',p:['crevaison']}, prioritaire:{t:'bt',n:1,e:'🚨',l:'Prioritaire',p:['stop','limite']} };
-C.crevaison.e='🔻';
 const BOTTE={accident:'as',panne:'citerne',crevaison:'increvable',stop:'prioritaire',limite:'prioritaire'};
 const HZ=['accident','panne','crevaison','stop'];
-const has=(P,b)=>P.bottes.includes(b);
-function rolling(P){ if(HZ.includes(P.battle)) return false; return P.battle==='vert'||has(P,'prioritaire'); }
-function playable(G,s,k,tgt){ const P=G.P[s], c=C[k];
-  if(c.t==='km') return rolling(P)&&!(P.limit&&c.v>50)&&P.km+c.v<=1000&&!(c.v===200&&P.n200>=2);
+const has=(T,b)=>T.bottes.includes(b);
+/* équipes : à 4, places 1-3 contre 2-4 ; à 6, trois équipes de deux (places face à face) */
+const tm=(G,s)=>s%G.nT;
+const members=(G,t)=>G.players.map((_,s)=>s).filter(s=>tm(G,s)===t);
+const tname=(G,t)=>members(G,t).map(s=>G.players[s].name).join(' & ');
+function rolling(T){ if(HZ.includes(T.battle)) return false; return T.battle==='vert'||has(T,'prioritaire'); }
+function playable(G,s,k,tgt){ const T=G.T[tm(G,s)], c=C[k];
+  if(c.t==='km') return rolling(T)&&!(T.limit&&c.v>50)&&T.km+c.v<=G.goal&&!(c.v===200&&T.n200>=2);
   if(c.t==='bt') return true;
-  if(c.t==='rm'){ if(k==='finlimite') return P.limit; if(k==='vert') return !has(P,'prioritaire')&&P.battle!=='vert'&&!['accident','panne','crevaison'].includes(P.battle); return P.battle===c.f; }
-  if(c.t==='hz'){ if(tgt==null||tgt===s||!G.P[tgt]) return false; const T=G.P[tgt]; if(has(T,BOTTE[k])) return false; if(k==='limite') return !T.limit; return rolling(T); }
+  if(c.t==='rm'){ if(k==='finlimite') return T.limit; if(k==='vert') return !has(T,'prioritaire')&&T.battle!=='vert'&&!['accident','panne','crevaison'].includes(T.battle); return T.battle===c.f; }
+  if(c.t==='hz'){ if(tgt==null||tgt===tm(G,s)||!G.T[tgt]) return false; const X=G.T[tgt]; if(has(X,BOTTE[k])) return false; if(k==='limite') return !X.limit; return rolling(X); }
   return false; }
-const targets=(G,s,k)=>G.P.map((_,i)=>i).filter(i=>playable(G,s,k,i));
+const targets=(G,s,k)=>G.T.map((_,i)=>i).filter(i=>playable(G,s,k,i));
 const canUse=(G,s,k)=>C[k].t==='hz'?targets(G,s,k).length>0:playable(G,s,k);
-function draw(G,s){ if(G.deck.length) G.P[s].hand.push(G.deck.pop()); }
-function nextTurn(G,from){ const n=G.players.length; for(let k=1;k<=n;k++){ const s=(from+k)%n; if(G.deck.length||G.P[s].hand.length){ G.turn=s; draw(G,s); return true; } } return false; }
-function score(G,s){ const P=G.P[s]; const r=[['Distance',P.km]]; if(P.bottes.length) r.push([`Bottes (${P.bottes.length})`,P.bottes.length*100]); if(P.bottes.length===4) r.push(['Les 4 bottes',300]); if(P.cf) r.push([`Coups fourrés (${P.cf})`,P.cf*300]);
-  if(P.km===1000){ r.push(['Voyage terminé',400]); if(!G.deck.length) r.push(['Action retardée',300]); if(!P.n200) r.push(['Sans 200 km',300]); if(G.P.some((Q,i)=>i!==s&&Q.km===0)) r.push(['Capot',500]); }
+function draw(G,s){ if(G.deck.length) G.H[s].push(G.deck.pop()); }
+function nextTurn(G,from){ const n=G.players.length; for(let k=1;k<=n;k++){ const s=(from+k)%n; if(G.deck.length||G.H[s].length){ G.turn=s; draw(G,s); return true; } } return false; }
+/* points d'une équipe pour la manche */
+function score(G,t){ const T=G.T[t]; const r=[['Distance',T.km]]; if(T.bottes.length) r.push([`Bottes (${T.bottes.length})`,T.bottes.length*100]); if(T.bottes.length===4) r.push(['Les 4 bottes',300]); if(T.cf) r.push([`Coups fourrés (${T.cf})`,T.cf*300]);
+  if(G.done===t){ r.push(['Voyage terminé',400]); if(G.ext!=null&&G.goal===1000&&G.ext>=0) r.push(['Allonge',200]); if(G.dry) r.push(['Action retardée',300]); if(!T.n200) r.push(['Sans 200 km',300]);
+    const cap=G.T.filter((X,i)=>i!==t&&X.km===0).length; if(cap) r.push([cap>1?`Capot (× ${cap})`:'Capot',500*cap]); }
   return r; }
-const total=(G,s)=>score(G,s).reduce((a,x)=>a+x[1],0);
-function finish(G,why){ const T=G.players.map((_,s)=>total(G,s)); const m=Math.max(...T); const W=T.map((t,i)=>t===m?i:-1).filter(i=>i>=0);
-  G.over={winners:W,title:W.length>1?'Égalité !':`${G.players[W[0]].name} gagne !`,text:why+'<br>'+G.players.map((p,s)=>`<b>${esc(p.name)}</b> : ${score(G,s).map(x=>`${x[0]} ${x[1]}`).join(' · ')}`).join('<br>')}; }
-function afterTurn(G,s,ev,again){ const P=G.P[s];
-  if(P.km===1000){ finish(G,`${G.players[s].name} a parcouru les 1000 bornes !`); return; }
-  if(again){ draw(G,s); if(!P.hand.length&&!nextTurn(G,s)) finish(G,'Plus aucune carte à jouer.'); return; }
-  if(!nextTurn(G,s)) finish(G,'Plus aucune carte à jouer.'); }
-const D={id:'mille-bornes',title:'Mille Bornes',min:2,max:4,maxLocal:4,defaultPlayers:3,hidden:true,
-  desc:'La course automobile en cartes : parcours 1000 km en évitant les crevaisons, les feux rouges et les pannes que te tendent les autres.',
-  opt:{},
-  init(players){ const deck=[]; Object.entries(C).forEach(([k,c])=>{ for(let i=0;i<c.n;i++) deck.push(k); }); TK.shuffle(deck);
-    const P=players.map(()=>({hand:[],km:0,battle:null,limit:false,bottes:[],cf:0,n200:0}));
-    for(let k=0;k<6;k++) P.forEach(p=>p.hand.push(deck.pop()));
-    const G={players,P,deck,turn:0,phase:'play',log:'',discard:null}; draw(G,0); return G; },
-  actors:G=>G.over?[]:[G.phase==='cf'?G.cf.t:G.turn],
+const total=(G,t)=>score(G,t).reduce((a,x)=>a+x[1],0);
+const firstHuman=G=>{ const h=G.players.findIndex(p=>!p.ai); return h<0?0:h; };
+function deal(G){ const deck=[]; Object.entries(C).forEach(([k,c])=>{ for(let i=0;i<c.n;i++) deck.push(k); }); TK.shuffle(deck);
+  G.deck=deck; G.H=G.players.map(()=>[]); for(let k=0;k<6;k++) G.H.forEach(h=>h.push(deck.pop()));
+  G.T=Array.from({length:G.nT},()=>({km:0,battle:null,limit:false,bottes:[],cf:0,n200:0}));
+  G.goal=G.allonge?700:1000; G.ext=null; G.done=null; G.dry=false; G.phase='play'; G.cf=null; G.log=''; G.discard=null; G.res=null;
+  G.turn=G.first; draw(G,G.turn); }
+function endHand(G,why){ G.dry=!G.deck.length; const pts=G.T.map((_,t)=>total(G,t)); const lines=G.T.map((_,t)=>score(G,t));
+  pts.forEach((p,t)=>G.tot[t]+=p); G.res={why,pts,lines};
+  const best=Math.max(...G.tot), W=G.tot.map((x,t)=>x===best?t:-1).filter(t=>t>=0);
+  const finished=G.match!=='5000'||best>=5000;
+  if(finished){ const wt=G.match==='5000'?W:pts.map((x,t)=>x===Math.max(...pts)?t:-1).filter(t=>t>=0);
+    const nm=t=>G.nT<G.players.length?tname(G,t):G.players[t].name;
+    G.over={winners:wt.flatMap(t=>members(G,t)),title:wt.length>1?'Égalité !':`${nm(wt[0])} ${G.nT<G.players.length||members(G,wt[0]).length>1?'gagnent':'gagne'} !`,
+      text:why+'<br>'+G.T.map((_,t)=>`<b>${esc(nm(t))}</b> : ${lines[t].map(x=>`${x[0]} ${x[1]}`).join(' · ')}${G.match==='5000'?` — total <b>${G.tot[t]}</b>`:''}`).join('<br>')}; return; }
+  G.phase='fin'; }
+function afterTurn(G,s,ev,again){ const t=tm(G,s), T=G.T[t];
+  if(T.km===G.goal){ G.done=t;
+    if(G.goal===700&&G.ext==null){ G.phase='allonge'; G.al=s; ev.push({t:'goal',s}); return; }
+    endHand(G,`${G.nT<G.players.length?tname(G,t):G.players[s].name} ${G.nT<G.players.length?'ont':'a'} parcouru les ${G.goal} bornes !`); return; }
+  if(again){ draw(G,s); if(!G.H[s].length&&!nextTurn(G,s)) endHand(G,'Plus aucune carte à jouer.'); return; }
+  if(!nextTurn(G,s)) endHand(G,'Plus aucune carte à jouer.'); }
+const D={id:'mille-bornes',title:'Mille Bornes',min:2,max:6,maxLocal:6,defaultPlayers:3,hidden:true,
+  desc:'La course automobile en cartes : parcours les bornes en évitant les crevaisons, les feux rouges et les pannes que te tendent les autres.',
+  opt:{equipes:'auto',allonge:true,match:'une'},
+  optsHTML(){ const b=(k,v,l)=>`<button class="${D.opt[k]===v?'on':''}" data-o="${k}:${v}">${l}</button>`;
+    return `<h4>Équipes</h4><div class="seg">${b('equipes','auto','À 4 et à 6')}${b('equipes','non','Chacun pour soi')}</div><p class="optnote">À 4 : deux équipes (places 1 et 3 contre 2 et 4). À 6 : trois équipes de deux. Les partenaires partagent la même route.</p>
+     <h4>Allonge</h4><div class="seg">${b('allonge',true,'Oui')}${b('allonge',false,'Non')}</div><p class="optnote">À 2 ou 3 routes, la course se joue en 700 bornes. Celui qui les atteint peut s’arrêter là, ou annoncer l’Allonge pour aller jusqu’à 1000 (+200 s’il y arrive).</p>
+     <h4>Partie</h4><div class="seg">${b('match','une','Une manche')}${b('match','5000','En 5000 points')}</div>`; },
+  optClick(o){ const [k,v]=o.dataset.o.split(':'); D.opt[k]=v==='true'?true:v==='false'?false:v; },
+  init(players,opt){ const n=players.length; const teams=opt.equipes!=='non'&&(n===4||n===6); const nT=teams?n/2:n;
+    const G={players,nT,teams,allonge:opt.allonge!==false&&(nT===3||(nT===2&&n===2)),match:opt.match||'une',tot:new Array(nT).fill(0),manche:1,first:0}; deal(G); return G; },
+  actors:G=>G.over?[]:G.phase==='cf'?[G.cf.t]:G.phase==='allonge'?[G.al]:G.phase==='fin'?[firstHuman(G)]:[G.turn],
   apply(G,s,a){ if(!a) return false; const ev=[];
-    if(G.phase==='cf'){ const T=G.P[s]; const {h,from}=G.cf;
-      if(a.cf){ const b=BOTTE[h]; T.hand.splice(T.hand.indexOf(b),1); T.bottes.push(b); T.cf++; if(b==='prioritaire'){ if(T.battle==='stop') T.battle=null; T.limit=false; }
+    if(G.phase==='fin'){ if(!a.next) return false; G.manche++; G.first=(G.first+1)%G.players.length; deal(G); return [{t:'deal'}]; }
+    if(G.phase==='allonge'){ if(a.ext==null) return false; const t=tm(G,s);
+      if(+a.ext){ G.goal=1000; G.ext=t; G.phase='play'; G.done=null; G.log=`${G.players[s].name} annonce l’Allonge : la course continue jusqu’à 1000 bornes !`; ev.push({t:'ext',s}); if(!nextTurn(G,s)) endHand(G,'Plus aucune carte à jouer.'); return ev; }
+      G.ext=-1; endHand(G,`${G.players[s].name} s’arrête aux 700 bornes.`); return [{t:'stop'}]; }
+    if(G.phase==='cf'){ const {h,from,tt}=G.cf, T=G.T[tt];
+      if(a.cf){ const b=BOTTE[h]; G.H[s].splice(G.H[s].indexOf(b),1); T.bottes.push(b); T.cf++; if(b==='prioritaire'){ if(T.battle==='stop') T.battle=null; T.limit=false; }
         G.log=`${G.players[s].name} : coup fourré avec ${C[b].l} ! (+300)`; ev.push({t:'cf',s}); G.phase='play'; G.cf=null; G.turn=s; draw(G,s); return ev; }
       if(a.nocf){ if(h==='limite') T.limit=true; else T.battle=h; G.phase='play'; G.cf=null; afterTurn(G,from,ev); return [{t:'hz'}]; } return false; }
-    const P=G.P[s]; const i=+a.i; const k=P.hand[i]; if(k==null) return false;
-    if(a.discard){ P.hand.splice(i,1); G.discard=k; G.log=`${G.players[s].name} défausse ${C[k].l}.`; ev.push({t:'discard'}); afterTurn(G,s,ev); return ev; }
+    const H=G.H[s]; const i=+a.i; const k=H[i]; if(k==null) return false; const t=tm(G,s), T=G.T[t];
+    if(a.discard){ H.splice(i,1); G.discard=k; G.log=`${G.players[s].name} défausse ${C[k].l}.`; ev.push({t:'discard'}); afterTurn(G,s,ev); return ev; }
     const c=C[k]; const tgt=a.tgt!=null?+a.tgt:null;
     if(!playable(G,s,k,tgt)) return false;
-    P.hand.splice(i,1);
-    if(c.t==='km'){ P.km+=c.v; if(c.v===200) P.n200++; G.log=`${G.players[s].name} roule ${c.v} km.`; ev.push({t:'km',s,v:c.v}); afterTurn(G,s,ev); return ev; }
-    if(c.t==='rm'){ if(k==='finlimite') P.limit=false; else P.battle=k; G.log=`${G.players[s].name} joue ${c.l}.`; ev.push({t:'rm'}); afterTurn(G,s,ev); return ev; }
-    if(c.t==='bt'){ P.bottes.push(k); if(c.p.includes(P.battle)) P.battle=null; if(k==='prioritaire') P.limit=false; G.log=`${G.players[s].name} pose la botte ${c.l} et rejoue.`; ev.push({t:'bt'}); afterTurn(G,s,ev,true); return ev; }
-    if(c.t==='hz'){ const T=G.P[tgt]; G.log=`${G.players[s].name} attaque ${G.players[tgt].name} : ${c.l} !`; ev.push({t:'hz',s,tgt,k});
-      if(T.hand.includes(BOTTE[k])){ G.phase='cf'; G.cf={t:tgt,h:k,from:s}; return ev; }
-      if(k==='limite') T.limit=true; else T.battle=k; afterTurn(G,s,ev); return ev; }
+    H.splice(i,1);
+    if(c.t==='km'){ T.km+=c.v; if(c.v===200) T.n200++; G.log=`${G.players[s].name} roule ${c.v} km.`; ev.push({t:'km',s,v:c.v}); afterTurn(G,s,ev); return ev; }
+    if(c.t==='rm'){ if(k==='finlimite') T.limit=false; else T.battle=k; G.log=`${G.players[s].name} joue ${c.l}.`; ev.push({t:'rm'}); afterTurn(G,s,ev); return ev; }
+    if(c.t==='bt'){ T.bottes.push(k); if(c.p.includes(T.battle)) T.battle=null; if(k==='prioritaire') T.limit=false; G.log=`${G.players[s].name} pose la botte ${c.l} et rejoue.`; ev.push({t:'bt'}); afterTurn(G,s,ev,true); return ev; }
+    if(c.t==='hz'){ const X=G.T[tgt]; const vic=G.nT<G.players.length?tname(G,tgt):G.players[tgt].name; G.log=`${G.players[s].name} attaque ${vic} : ${c.l} !`; ev.push({t:'hz',s,tgt,k});
+      /* coup fourré : n'importe quel membre de l'équipe visée qui a la botte, en commençant par le suivant */
+      const n=G.players.length; let who=-1; for(let d=1;d<=n;d++){ const q=(s+d)%n; if(tm(G,q)===tgt&&G.H[q].includes(BOTTE[k])){ who=q; break; } }
+      if(who>=0){ G.phase='cf'; G.cf={t:who,tt:tgt,h:k,from:s}; return ev; }
+      if(k==='limite') X.limit=true; else X.battle=k; afterTurn(G,s,ev); return ev; }
     return false; },
-  ai(G,s,lv){ const P=G.P[s];
-    if(G.phase==='cf') return {cf:1};
-    const H=P.hand; const idx=k=>H.indexOf(k);
-    const opts=[]; H.forEach((k,i)=>{ const c=C[k]; if(c.t==='hz') targets(G,s,k).forEach(t=>opts.push({i,k,tgt:t})); else if(playable(G,s,k)) opts.push({i,k}); });
+  ai(G,s,lv){ if(G.phase==='fin') return {next:1}; if(G.phase==='cf') return {cf:1};
+    const t=tm(G,s), T=G.T[t];
+    if(G.phase==='allonge'){ const others=G.T.filter((_,i)=>i!==t).map(X=>X.km); const lead=T.km-Math.max(...others);
+      return {ext:G.deck.length>(lv==='difficile'?30:22)&&lead>=(lv==='facile'?0:200)&&rolling(T)?1:0}; }
+    const H=G.H[s];
+    const opts=[]; H.forEach((k,i)=>{ const c=C[k]; if(c.t==='hz') targets(G,s,k).forEach(x=>opts.push({i,k,tgt:x})); else if(playable(G,s,k)) opts.push({i,k}); });
     if(lv==='facile'&&opts.length&&Math.random()<.4){ const o=opts[Math.floor(Math.random()*opts.length)]; return {i:o.i,tgt:o.tgt}; }
-    const rem=1000-P.km; const lead=G.P.map((Q,i)=>({i,km:Q.km})).filter(x=>x.i!==s).sort((a,b)=>b.km-a.km);
-    const pick=k=>opts.find(o=>o.k===k);
+    const rem=G.goal-T.km; const pick=k=>opts.find(o=>o.k===k);
     const fin=opts.find(o=>C[o.k].t==='km'&&C[o.k].v===rem); if(fin) return {i:fin.i};
     for(const k of ['reparation','essence','roue']) if(pick(k)) return {i:pick(k).i};
-    if(P.battle!=='vert'&&pick('vert')) return {i:pick('vert').i};
-    if(!rolling(P)){ const b=opts.find(o=>C[o.k].t==='bt'&&C[o.k].p.includes(P.battle)); if(b) return {i:b.i}; }
-    if(P.limit&&pick('finlimite')&&H.some(k=>C[k].t==='km'&&C[k].v>50)) return {i:pick('finlimite').i};
-    /* attaquer le joueur en tête */
-    const hz=opts.filter(o=>C[o.k].t==='hz').sort((a,b)=>G.P[b.tgt].km-G.P[a.tgt].km||(a.k==='limite')-(b.k==='limite'));
-    const best=G.P[s].km; if(hz.length&&(G.P[hz[0].tgt].km>=best-150||lv!=='difficile')) return {i:hz[0].i,tgt:hz[0].tgt};
+    if(T.battle!=='vert'&&pick('vert')) return {i:pick('vert').i};
+    if(!rolling(T)){ const b=opts.find(o=>C[o.k].t==='bt'&&C[o.k].p.includes(T.battle)); if(b) return {i:b.i}; }
+    if(T.limit&&pick('finlimite')&&H.some(k=>C[k].t==='km'&&C[k].v>50)) return {i:pick('finlimite').i};
+    const hz=opts.filter(o=>C[o.k].t==='hz').sort((a,b)=>G.T[b.tgt].km-G.T[a.tgt].km||(a.k==='limite')-(b.k==='limite'));
+    if(hz.length&&(G.T[hz[0].tgt].km>=T.km-150||lv!=='difficile')) return {i:hz[0].i,tgt:hz[0].tgt};
     const km=opts.filter(o=>C[o.k].t==='km').sort((a,b)=>C[b.k].v-C[a.k].v); if(km.length) return {i:km[0].i};
     if(hz.length) return {i:hz[0].i,tgt:hz[0].tgt};
     const bt=opts.find(o=>C[o.k].t==='bt'); if(bt&&(lv!=='difficile'||G.deck.length<20)) return {i:bt.i};
     if(pick('finlimite')) return {i:pick('finlimite').i};
-    /* défausse : la carte la moins utile */
-    const use=k=>{ const c=C[k]; if(c.t==='bt') return 100; if(c.t==='km'){ if(P.km+c.v>1000||(c.v===200&&P.n200>=2)) return 0; return 20+c.v/10; }
-      if(c.t==='rm'){ if(c.f&&has(P,BOTTE[c.f])) return 0; const dup=H.filter(x=>x===k).length; return k==='vert'?(dup>1?18:40):(dup>1?8:30); }
+    const use=k=>{ const c=C[k]; if(c.t==='bt') return 100; if(c.t==='km'){ if(T.km+c.v>1000||(c.v===200&&T.n200>=2)) return 0; return 20+c.v/10; }
+      if(c.t==='rm'){ if(c.f&&has(T,BOTTE[c.f])) return 0; const dup=H.filter(x=>x===k).length; return k==='vert'?(dup>1?18:40):(dup>1?8:30); }
       return 25; };
     let wi=0; H.forEach((k,i)=>{ if(use(k)<use(H[wi])) wi=i; }); return {i:wi,discard:1}; },
-  aiDelay:()=>950,
-  status(G,v){ if(G.over) return {who:'Course terminée',msg:'',col:'#122a3a'}; if(G.phase==='cf'){ const T=G.players[G.cf.t]; return {who:T.name,msg:TK.canPlay()?'peut contrer avec un coup fourré !':'hésite…',col:'#c8203a'}; }
-    const P=G.players[G.turn]; return {who:P.name,msg:TK.canPlay()?'joue ou défausse une carte.':(P.ai?'réfléchit…':'joue…'),col:P.col,right:`Pioche : ${G.deck.length}`}; },
-  ranking:G=>G.players.map((_,i)=>i).sort((a,b)=>total(G,b)-total(G,a)).map(s=>({seat:s,score:total(G,s)+' pts'})),
-  sound(e){ if(e.t==='km') sfx('move'); else if(e.t==='hz') sfx('hit'); else if(e.t==='cf') sfx('power'); else if(e.t==='bt') sfx('ding'); else sfx('card'); },
+  aiDelay:G=>G.phase==='fin'?4000:950,
+  status(G,v){ if(G.over) return {who:'Course terminée',msg:'',col:'#122a3a'};
+    if(G.phase==='fin') return {who:`Manche ${G.manche}`,msg:'terminée.',col:'#122a3a',right:'Objectif 5000 points'};
+    if(G.phase==='cf'){ const T=G.players[G.cf.t]; return {who:T.name,msg:TK.canPlay()?'peut contrer avec un coup fourré !':'hésite…',col:'#c8203a'}; }
+    if(G.phase==='allonge'){ const P=G.players[G.al]; return {who:P.name,msg:TK.canPlay()?'700 bornes ! Annonces-tu l’Allonge ?':'réfléchit à l’Allonge…',col:'#e8a020'}; }
+    const P=G.players[G.turn]; return {who:P.name,msg:TK.canPlay()?'joue ou défausse une carte.':(P.ai?'réfléchit…':'joue…'),col:P.col,right:`${G.goal} bornes · pioche ${G.deck.length}${G.match==='5000'?` · manche ${G.manche}`:''}`}; },
+  ranking:G=>G.players.map((_,i)=>i).sort((a,b)=>(G.match==='5000'?G.tot[tm(G,b)]-G.tot[tm(G,a)]:total(G,tm(G,b))-total(G,tm(G,a)))||a-b).map(s=>({seat:s,score:(G.match==='5000'?G.tot[tm(G,s)]:total(G,tm(G,s)))+' pts'})),
+  sound(e){ if(e.t==='km') sfx('move'); else if(e.t==='hz') sfx('hit'); else if(e.t==='cf') sfx('power'); else if(e.t==='bt'||e.t==='goal') sfx('ding'); else if(e.t==='ext') sfx('go'); else sfx('card'); },
   render(G,v,ev){ render(G,v,ev); },
-  help(){ helpTabs('Mille Bornes',[['But du jeu','<p>Le premier à parcourir <b>exactement 1000 km</b> termine la course. Chacun a 6 cartes : à ton tour, pioche une carte puis <b>joue-la</b> ou <b>défausse</b> une carte.</p><p>Pour rouler, il te faut un <b>Feu vert</b> sur ta pile de bataille. Ensuite tu poses des cartes Distance (25, 50, 75, 100, 200 km — au plus deux 200 km par course).</p>'],
+  help(){ helpTabs('Mille Bornes',[['But du jeu','<p>Le premier à parcourir <b>exactement</b> la distance de la course la termine (1000 bornes, ou 700 avec l’Allonge). Chacun a 6 cartes : à ton tour, pioche une carte puis <b>joue-la</b> ou <b>défausse</b> une carte.</p><p>Pour rouler, il te faut un <b>Feu vert</b> sur ta pile de bataille. Ensuite tu poses des cartes Distance (25, 50, 75, 100, 200 km — au plus deux 200 km par course).</p>'],
     ['Attaques et parades','<ul><li>Attaque un adversaire qui roule : <b>Feu rouge</b>, <b>Accident</b>, <b>Panne d’essence</b>, <b>Crevaison</b>. Il est arrêté jusqu’à ce qu’il pose la parade (Feu vert, Réparations, Essence, Roue de secours) puis un Feu vert.</li><li><b>Limite de vitesse</b> : plus de cartes au-dessus de 50 km jusqu’à la <b>Fin de limite</b>.</li></ul>'],
     ['Bottes','<ul><li><b>As du volant</b> (accident), <b>Citerne</b> (panne), <b>Increvable</b> (crevaison), <b>Prioritaire</b> (feu rouge et limite, et plus besoin de feu vert).</li><li>Une botte protège pour toute la course. Après l’avoir posée, tu rejoues.</li><li><b>Coup fourré</b> : si on t’attaque et que tu as la botte correspondante, pose-la aussitôt ! L’attaque est annulée, tu gagnes 300 points et tu prends la main.</li></ul>'],
-    ['Points','<ul><li>1 point par km parcouru.</li><li>100 par botte, 300 de plus pour les quatre, 300 par coup fourré.</li><li>Voyage terminé : 400 ; sans 200 km : 300 ; après la fin de la pioche : 300 ; si un adversaire n’a pas bougé (capot) : 500.</li></ul><p class="ex">Ici, chacun joue pour soi, même à quatre.</p>']]); } };
+    ['Équipes','<ul><li><b>À 4</b> : deux équipes de deux (places 1 et 3 contre 2 et 4). <b>À 6</b> : trois équipes de deux, les partenaires étant face à face.</li><li>Les partenaires posent leurs cartes sur la <b>même route</b> : un Feu vert de l’un sert à l’autre.</li><li>Un coup fourré peut être joué par n’importe quel joueur de l’équipe attaquée qui a la botte.</li></ul><p class="ex">L’option « Chacun pour soi » joue sans équipes, même à 4 ou 6.</p>'],
+    ['Allonge','<ul><li>À 2 ou 3 routes (2 ou 3 joueurs, ou 6 joueurs en équipes), la course se joue en <b>700 bornes</b>.</li><li>Celui qui atteint 700 choisit : s’arrêter (la manche est finie) ou annoncer l’<b>Allonge</b>. La course continue alors jusqu’à 1000 bornes.</li><li>Celui qui termine les 1000 bornes après une Allonge gagne <b>200 points</b> de plus.</li></ul>'],
+    ['Points','<ul><li>1 point par borne parcourue.</li><li>100 par botte, 300 de plus pour les quatre, 300 par coup fourré.</li><li>Voyage terminé : 400 ; Allonge réussie : 200 ; sans 200 km : 300 ; après la fin de la pioche (action retardée) : 300 ; capot : 500 par adversaire resté à 0 km.</li><li><b>Partie en 5000 points</b> : on enchaîne les manches et on additionne. La première équipe à 5000 gagne ; si plusieurs passent 5000 dans la même manche, le plus haut total l’emporte.</li></ul>']]); } };
 /* ---------- dessin ---------- */
 let sel=null;
 const card=(k,cls)=>{ const c=C[k]; return `<div class="mb ${c.t}${cls?' '+cls:''}"><span class="e">${c.t==='km'?c.v:c.e}</span><span class="l">${c.t==='km'?'km':c.l}</span></div>`; };
-function render(G,v,ev){ const me=v==null?0:v; const can=TK.canPlay()&&G.phase==='play';
-  $('#mbt').innerHTML=G.P.map((P,s)=>{ const st=HZ.includes(P.battle)?`<span class="tag hz">${C[P.battle].e} ${C[P.battle].l}</span>`:rolling(P)?'<span class="tag ok">🟢 Roule</span>':'<span class="tag wait">À l’arrêt</span>';
-    return `<div class="mbp${s===G.turn&&!G.over?' turn':''}${s===me?' me':''}"><div class="hd"><i style="background:${G.players[s].col}"></i>${esc(G.players[s].name)}${s===me&&G.players[s].name!=='Toi'?' (toi)':''}<span class="km">${P.km} km</span></div>
-      <div class="road"><b style="width:${P.km/10}%"></b></div><div class="piles">${st}${P.limit?'<span class="tag lim">🐌 Limité à 50</span>':''}${P.bottes.map(b=>`<span class="tag bt">${C[b].e} ${C[b].l}</span>`).join('')}${P.n200?`<span class="tag">200 × ${P.n200}</span>`:''}</div></div>`; }).join('');
+function render(G,v,ev){ const me=v==null?0:v; const myT=tm(G,me); const can=TK.canPlay()&&G.phase==='play'; const team=G.nT<G.players.length;
+  const nm=t=>team?tname(G,t):G.players[t].name;
+  const turnT=G.phase==='play'?tm(G,G.turn):-1;
+  $('#mbt').innerHTML=G.T.map((T,t)=>{ const st=HZ.includes(T.battle)?`<span class="tag hz">${C[T.battle].e} ${C[T.battle].l}</span>`:rolling(T)?'<span class="tag ok">🟢 Roule</span>':'<span class="tag wait">À l’arrêt</span>';
+    const dots=members(G,t).map(s=>`<i style="background:${G.players[s].col}"></i>`).join('');
+    return `<div class="mbp${t===turnT&&!G.over?' turn':''}${t===myT?' me':''}"><div class="hd">${dots}${esc(nm(t))}${t===myT&&!team&&G.players[t].name!=='Toi'?' (toi)':''}${t===myT&&team?' 🤝':''}<span class="km">${T.km}<small> / ${G.goal}</small></span></div>
+      <div class="road"><b style="width:${T.km/G.goal*100}%"></b>${G.goal===700&&G.allonge?'':''}</div><div class="piles">${st}${T.limit?'<span class="tag lim">🐌 Limité à 50</span>':''}${T.bottes.map(b=>`<span class="tag bt">${C[b].e} ${C[b].l}</span>`).join('')}${T.n200?`<span class="tag">200 × ${T.n200}</span>`:''}${G.match==='5000'?`<span class="tag">Total ${G.tot[t]}</span>`:''}</div></div>`; }).join('');
   $('#mdeck').textContent=`🂠 ${G.deck.length}`; $('#mlog').textContent=G.log||'';
-  const cf=$('#mcf'); if(G.phase==='cf'&&TK.canPlay()){ cf.hidden=false; cf.innerHTML=`<h3>Coup fourré ?</h3><p>${esc(G.players[G.cf.from].name)} t’attaque avec ${C[G.cf.h].l}. Tu as la botte ${C[BOTTE[G.cf.h]].l} !</p><div class="acts" style="justify-content:center"><button class="btn" data-m="nocf">Laisser passer</button><button class="btn pri" data-m="cf">Coup fourré ! (+300)</button></div>`; } else cf.hidden=true;
-  const H=G.P[me].hand; if(sel!=null&&(sel>=H.length||!can)) sel=null;
+  const cf=$('#mcf');
+  if(G.phase==='cf'&&TK.canPlay()){ cf.hidden=false; cf.innerHTML=`<h3>Coup fourré ?</h3><p>${esc(G.players[G.cf.from].name)} ${team?'attaque ton équipe':'t’attaque'} avec ${C[G.cf.h].l}. Tu as la botte ${C[BOTTE[G.cf.h]].l} !</p><div class="acts" style="justify-content:center"><button class="btn" data-m="nocf">Laisser passer</button><button class="btn pri" data-m="cf">Coup fourré ! (+300)</button></div>`; }
+  else if(G.phase==='allonge'&&TK.canPlay()){ cf.hidden=false; cf.innerHTML=`<h3 style="color:#c07a00">700 bornes !</h3><p>Tu peux t’arrêter ici et terminer la manche, ou annoncer l’<b>Allonge</b> : la course continue jusqu’à 1000 bornes, et si ${team?'ton équipe':'tu'} y ${team?'arrive':'arrives'} en premier, +200 points. Il reste ${G.deck.length} cartes dans la pioche.</p><div class="acts" style="justify-content:center"><button class="btn" data-m="ext:0">M’arrêter à 700</button><button class="btn pri" data-m="ext:1">Allonge !</button></div>`; }
+  else if(G.phase==='fin'&&G.res){ cf.hidden=false; const R=G.res;
+    cf.innerHTML=`<h3 style="color:#1d5a8a">Manche ${G.manche} terminée</h3><p>${esc(R.why)}</p><table class="mres">${G.T.map((_,t)=>`<tr><td><b>${esc(nm(t))}</b><br><small>${R.lines[t].map(x=>`${x[0]} ${x[1]}`).join(' · ')}</small></td><td>+${R.pts[t]}</td><td><b>${G.tot[t]}</b></td></tr>`).join('')}</table>${TK.canPlay()?'<div class="acts" style="justify-content:center"><button class="btn pri" data-m="next">Manche suivante</button></div>':'<p><small>La manche suivante va commencer…</small></p>'}`; }
+  else cf.hidden=true;
+  const H=G.H[me]; if(sel!=null&&(sel>=H.length||!can)) sel=null;
   $('#mhand').innerHTML=H.map((k,i)=>card(k,(i===sel?'sel':'')+(can&&!canUse(G,me,k)?' no':'')).replace('<div class="mb',`<div data-i="${i}" class="mb`)).join('');
   let b='';
   if(can&&sel!=null){ const k=H[sel], c=C[k];
-    if(c.t==='hz') targets(G,me,k).forEach(t=>b+=`<button class="btn pri" data-m="play:${t}">${c.e} Attaquer ${esc(G.players[t].name)}</button>`);
+    if(c.t==='hz') targets(G,me,k).forEach(x=>b+=`<button class="btn pri" data-m="play:${x}">${c.e} Attaquer ${esc(nm(x))}</button>`);
     else if(playable(G,me,k)) b+=`<button class="btn pri" data-m="play">Jouer ${c.t==='km'?c.v+' km':c.l}</button>`;
     b+=`<button class="btn" data-m="discard">🗑️ Défausser</button>`; }
   else if(can) b='<span style="opacity:.8;font-weight:700;align-self:center">Touche une carte pour la jouer ou la défausser.</span>';
@@ -438,7 +481,7 @@ function render(G,v,ev){ const me=v==null?0:v; const can=TK.canPlay()&&G.phase==
 TK.def(D);
 $('#mhand').addEventListener('click',e=>{ const c=e.target.closest('.mb'); if(!c||!TK.canPlay()) return; const i=+c.dataset.i; sel=sel===i?null:i; TK.render([]); });
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-m]'); if(!b) return; const m=b.dataset.m;
-  if(m==='cf') TK.input({cf:1}); else if(m==='nocf') TK.input({nocf:1});
+  if(m==='cf') TK.input({cf:1}); else if(m==='nocf') TK.input({nocf:1}); else if(m==='next') TK.input({next:1}); else if(m.startsWith('ext:')) TK.input({ext:+m.slice(4)});
   else if(m==='discard'&&sel!=null){ const i=sel; sel=null; TK.input({i,discard:1}); }
   else if(m.startsWith('play')&&sel!=null){ const i=sel; sel=null; const t=m.split(':')[1]; TK.input(t!=null?{i,tgt:+t}:{i}); } });
 })();
@@ -446,14 +489,6 @@ document.addEventListener('click',e=>{ const b=e.target.closest('[data-m]'); if(
 </script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
-
-
-
-
-
-
-
-
 
 
 <!--PROF--><script src="common/profil.js?v=b366504c"></script><!--/PROF-->

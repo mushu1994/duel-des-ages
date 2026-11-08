@@ -367,10 +367,10 @@ function blast(S,b,out){ const tiles=[b.i]; const bx=b.i%CW, by=(b.i/CW)|0;
   return tiles; }
 function explode(b){ const S=G; const q=[b]; const crates=new Set(); let any=false;
   while(q.length){ const x=q.shift(); const k=S.bombs.indexOf(x); if(k<0) continue; S.bombs.splice(k,1); any=true; const out={crates:[],chain:[]};
-    for(const i of blast(S,x,out)){ const f=S.fl.find(z=>z.i===i); if(f) f.t=FLAME; else S.fl.push({i,t:FLAME}); if(S.g[i]>=3) S.g[i]=0; }
+    for(const i of blast(S,x,out)){ const f=S.fl.find(z=>z.i===i); if(f) f.t=FLAME; else S.fl.push({i,t:FLAME}); if(S.g[i]>=3&&S.g[i]<=5) S.g[i]=0; }
     out.crates.forEach(i=>crates.add(i)); out.chain.forEach(i=>{ const c=bombAt(S,i); if(c) q.push(c); }); }
   crates.forEach(i=>{ S.g[i]=L.hid[i]||0; delete L.hid[i]; }); if(any){ emit({t:'boom'}); L.dirty=true; } }
-function hostStep(now,dt){ const S=G;
+function hostStep(now,dt){ const S=G; if(S.adv) return advStep(now,dt);
   if(S.phase==='count'&&now>=L.t0){ S.phase='play'; L.start=now; emit({t:'go'}); L.dirty=true; }
   if(S.phase==='res'&&now>=L.res){ if(S.wins.some(w=>w>=S.target)){ S.phase='over'; emit({t:'over'}); } else newRound(); L.dirty=true; return; }
   if(S.phase!=='play') return;
@@ -380,7 +380,7 @@ function hostStep(now,dt){ const S=G;
     Q.mv=dir>=0?1:0; if(dir>=0){ Q.dir=dir; step(S,Q,dir,speed(Q)*dt); } });
   if(L.rep) L.rep={};
   /* ramassage des bonus */
-  S.p.forEach(Q=>{ if(!Q.al) return; const k=id(Math.round(Q.x),Math.round(Q.y)); const v=S.g[k]; if(v>=3){ S.g[k]=0; if(v===3) Q.nb=Math.min(8,Q.nb+1); else if(v===4) Q.fr=Math.min(9,Q.fr+1); else Q.sp=Math.min(5,Q.sp+1); emit({t:'item',s:S.p.indexOf(Q),v}); L.dirty=true; } });
+  S.p.forEach(Q=>{ if(!Q.al) return; const k=id(Math.round(Q.x),Math.round(Q.y)); const v=S.g[k]; if(v>=3&&v<=5){ S.g[k]=0; if(v===3) Q.nb=Math.min(8,Q.nb+1); else if(v===4) Q.fr=Math.min(9,Q.fr+1); else Q.sp=Math.min(5,Q.sp+1); emit({t:'item',s:S.p.indexOf(Q),v}); L.dirty=true; } });
   /* bombes et flammes */
   for(const b of S.bombs.slice()){ b.t-=dt; if(b.t<=0) explode(b); }
   S.fl.forEach(f=>f.t-=dt); const nf=S.fl.length; S.fl=S.fl.filter(f=>f.t>0); if(nf!==S.fl.length) L.dirty=true;
@@ -464,20 +464,22 @@ function draw(now){ const ctx=cv.begin(), S=host()?G:snap.cur, t=now/1000;
   ctx.fillStyle='#3d7a3a'; ctx.fillRect(0,0,VW,VH);
   if(!S||!S.g.length){ for(let y=0;y<CH;y++) for(let x=0;x<CW;x++){ if(x===0||y===0||x===CW-1||y===CH-1||(x%2===0&&y%2===0)) wall(ctx,x,y); else if((x*7+y*3)%5===0) crate(ctx,x,y); else floor(ctx,x,y); }
     ARC.text(ctx,'Bombes en arène',VW/2,VH/2-20,40,'#fff','#2a1a0a'); ARC.text(ctx,'Choisis un mode de jeu',VW/2,VH/2+26,17,'#fff','#000'); return; }
-  for(let y=0;y<CH;y++) for(let x=0;x<CW;x++){ const v=S.g[id(x,y)]; if(v===1) wall(ctx,x,y); else if(v===2) crate(ctx,x,y); else { floor(ctx,x,y); if(v>=3){ ctx.font=`${T*.62}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(ICON[v],x*T+T/2,y*T+T/2+1+Math.sin(t*4+x)*1.5); } } }
+  for(let y=0;y<CH;y++) for(let x=0;x<CW;x++){ const v=S.g[id(x,y)]; if(v===1) wall(ctx,x,y); else if(v===2) crate(ctx,x,y); else { floor(ctx,x,y); if(v===6) door(ctx,x,y,S.adv&&!S.m.length,t); else if(v>=3){ ctx.font=`${T*.62}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(ICON[v],x*T+T/2,y*T+T/2+1+Math.sin(t*4+x)*1.5); } } }
   S.bombs.forEach(b=>{ const x=(b.i%CW)*T+T/2, y=((b.i/CW)|0)*T+T/2; const tl=host()?b.t:Math.max(0,b.t-(now-snap.t)/1000); const pul=1+Math.sin(t*(tl<.8?22:9))*.07;
     ctx.fillStyle='#1b1b22'; ctx.beginPath(); ctx.arc(x,y+2,T*.36*pul,0,7); ctx.fill(); ctx.fillStyle='#ffffff40'; ctx.beginPath(); ctx.arc(x-5,y-4,4,0,7); ctx.fill();
     ctx.strokeStyle='#c9a46a'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(x+6,y-8); ctx.quadraticCurveTo(x+10,y-15,x+13,y-13); ctx.stroke(); ctx.fillStyle=Math.random()<.5?'#ffd23f':'#ff7a2e'; ctx.beginPath(); ctx.arc(x+13,y-13,2.5+Math.random()*1.5,0,7); ctx.fill(); });
   S.fl.forEach(f=>{ const x=(f.i%CW)*T, y=((f.i/CW)|0)*T; const a=Math.min(1,f.t/FLAME*1.6); ctx.globalAlpha=a; const g=ctx.createRadialGradient(x+T/2,y+T/2,2,x+T/2,y+T/2,T*.7); g.addColorStop(0,'#fff6b0'); g.addColorStop(.45,'#ffb02e'); g.addColorStop(1,'#ff3a1a00'); ctx.fillStyle=g; ctx.fillRect(x-2,y-2,T+4,T+4); ctx.globalAlpha=1; });
+  if(S.adv) S.m.forEach(m=>monster(ctx,m,t));
   const me=ARC.seat();
   S.players.forEach((P,i)=>{ const Q=S.p[i]; if(!Q) return; let x=Q.x, y=Q.y;
     if(i===me&&ARC.guest()&&Q.al&&S.phase==='play'){ x=MY.x; y=MY.y; }
     else if(ARC.guest()&&snap.prev&&snap.prev.p&&snap.prev.p[i]&&snap.prev.round===S.round){ const a=snap.alpha(); x=ARC.lerp(snap.prev.p[i].x,Q.x,a); y=ARC.lerp(snap.prev.p[i].y,Q.y,a); }
     if(!Q.al){ if(S.phase==='play'||S.phase==='res'){ ctx.globalAlpha=.35; ctx.font=`${T*.7}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('👻',x*T+T/2,y*T+T/2-((t*20)%8)); ctx.globalAlpha=1; } return; }
     hero(ctx,x*T+T/2,y*T+T/2,P.col,Q.dir,Q.mv,t,i===me); ARC.text(ctx,P.name.slice(0,8),x*T+T/2,y*T-6,10,'#fff','#000c'); });
-  if(S.phase==='count'){ const ms=host()?L.t0-now:Math.max(0,(S.cd||0)-(now-snap.t)); const n=Math.max(1,Math.ceil(ms/1000)); ARC.text(ctx,`Manche ${S.round}`,VW/2,VH/2-60,28,'#fff','#0008'); ARC.text(ctx,String(n),VW/2,VH/2+10,80,'#ffe066','#0008'); if(n!==draw.n){ draw.n=n; sfx('beep'); } } else draw.n=null;
+  if(S.phase==='count'){ const ms=host()?L.t0-now:Math.max(0,(S.cd||0)-(now-snap.t)); const n=Math.max(1,Math.ceil(ms/1000)); ARC.text(ctx,S.adv?`Niveau ${S.lvl}`:`Manche ${S.round}`,VW/2,VH/2-60,28,'#fff','#0008'); ARC.text(ctx,String(n),VW/2,VH/2+10,80,'#ffe066','#0008'); if(n!==draw.n){ draw.n=n; sfx('beep'); } } else draw.n=null;
   if(S.phase==='play'&&S.sd){ const left=host()?S.left:Math.max(0,S.left-(now-snap.t)); const s=Math.ceil(left/1000); ARC.text(ctx,s>0?`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`:'Mort subite !',VW/2,T/2,15,s>0&&s<=10?'#ffe066':'#fff','#000a'); }
-  if(S.phase==='play'&&me!=null&&S.p[me]&&!S.p[me].al) ARC.text(ctx,'Boum ! Regarde la fin de la manche',VW/2,VH-T/2,14,'#fff','#000c');
+  if(S.phase==='play'&&!S.adv&&me!=null&&S.p[me]&&!S.p[me].al) ARC.text(ctx,'Boum ! Regarde la fin de la manche',VW/2,VH-T/2,14,'#fff','#000c');
+  if(S.adv&&S.phase==='res'&&S.last){ ctx.fillStyle='#000a'; ARC.rrect(ctx,VW/2-170,VH/2-60,340,120,16); ctx.fill(); ARC.text(ctx,S.last.msg,VW/2,VH/2-22,24,S.last.ok?'#7be07b':'#ff7a6a','#000'); ARC.text(ctx,S.last.sub,VW/2,VH/2+22,15,'#fff'); return; }
   if(S.phase==='res'&&S.last){ ctx.fillStyle='#000a'; ARC.rrect(ctx,VW/2-170,VH/2-60,340,120,16); ctx.fill(); const w=S.last.w;
     ARC.text(ctx,w>=0?(w===me?'Manche gagnée !':`${S.players[w].name} gagne la manche`):'Égalité !',VW/2,VH/2-22,24,w>=0?S.players[w].col:'#fff','#000'); ARC.text(ctx,S.players.map((p,i)=>`${p.name} ${'★'.repeat(S.wins[i])||'0'}`).join('   '),VW/2,VH/2+22,14,'#fff'); } }
 function floor(ctx,x,y){ ctx.fillStyle=(x+y)%2?'#4f9a48':'#55a34e'; ctx.fillRect(x*T,y*T,T,T); }
@@ -492,16 +494,68 @@ function hero(ctx,x,y,col,dir,mv,t,me){ const bob=mv?Math.sin(t*16)*1.6:0; ctx.s
 function hud(){ const S=host()?G:snap.cur; window.ARC_PLAYING=!!(S&&S.phase==='play'); const me=ARC.seat();
   if(!S){ ARC.status('Bombes en arène','Choisis un mode : en ligne ou contre l’ordinateur.','#e8543a'); $('#board').innerHTML=''; return; }
   const P=me!=null?S.players[me]:null, Q=me!=null?S.p[me]:null;
+  if(S.adv){ ARC.status(`Niveau ${S.lvl}`,S.phase==='over'?'Partie terminée':S.phase==='count'?'Prêt ?':S.phase==='res'?'…':S.m.length?`${S.m.length} monstre${S.m.length>1?'s':''} à faire sauter`:'trouve la porte !',P?P.col:'#e8543a',`${'♥'.repeat(Math.max(0,S.lives))} · ${S.score} pts`);
+    ARC.board($('#board'),[{name:`💣 ${Q.nb} · 🔥 ${Q.fr} · 👟 ${Q.sp}`,col:P.col,me:true,score:S.score}]); return; }
   ARC.status(P?esc(P.name):'Spectateur',S.phase==='over'?'Partie terminée':S.phase==='count'?'Prêt ?':S.phase==='res'?'Fin de la manche':Q&&Q.al?`💣 ${Q.nb} · 🔥 ${Q.fr} · 👟 ${Q.sp}`:'éliminé',P?P.col:'#e8543a',`Manche ${S.round} · en ${S.target}`);
   ARC.board($('#board'),S.players.map((p,i)=>({name:p.name,col:p.col,me:i===me,out:S.p[i]&&!S.p[i].al&&S.phase==='play',score:'★'.repeat(S.wins[i])||'0'}))); }
 function onEvent(e){ const me=ARC.seat(), S=host()?G:snap.cur; if(!S) return;
   if(e.t==='go') sfx('go'); else if(e.t==='bomb') sfx(e.s===me?'fuse':'click'); else if(e.t==='boom'){ sfx('boom'); if(window.PROF) PROF.vibrate(60); } else if(e.t==='item'&&e.s===me) sfx('power');
   else if(e.t==='die'){ sfx(e.s===me?'die':'pop'); if(e.s===me&&window.PROF) PROF.vibrate(250); } else if(e.t==='sd') banner('Mort subite !','Les murs se referment',"#e8543a");
-  else if(e.t==='rend'){ if(e.w===me) sfx('win'); } else if(e.t==='over') setTimeout(showEnd,500); }
+  else if(e.t==='rend'){ if(e.w===me) sfx('win'); } else if(e.t==='mdie') sfx('point'); else if(e.t==='open'){ sfx('ding'); banner('La porte est ouverte !',null,'#3fd06a'); } else if(e.t==='over') setTimeout(showEnd,500); }
 function showEnd(){ const S=host()?G:snap.cur; if(!S||S.phase!=='over') return; const me=ARC.seat();
+  if(S.adv){ const best=load('bombes-best')||0, rec=S.score>best; if(rec){ store('bombes-best',S.score); sfx('win'); confetti(); } if(window.PROF) PROF.result('bombes',{win:false,score:S.score});
+    ARC.endBox(rec?`Nouveau record : ${S.score} !`:`${S.score} points`,[{name:S.players[0].name,col:S.players[0].col,me:true,score:`niveau ${S.lvl} · record ${Math.max(best,S.score)}`}],()=>startAdv(),{j:'bombes',score:S.score}); return; }
   const r=S.players.map((p,i)=>({name:p.name,col:p.col,me:i===me,w:S.wins[i]})).sort((a,b)=>b.w-a.w); const won=r[0].me;
   if(won){ sfx('win'); confetti([r[0].col,'#fff','#ffe066']); } if(me!=null&&window.PROF) PROF.result('bombes',{win:won,score:S.wins[me]});
   ARC.endBox(`${r[0].name} gagne !`,r.map(x=>Object.assign(x,{score:`${x.w} manche${x.w>1?'s':''}`})),()=>startLocal(),null); }
+
+/* ---------- aventure en solo ---------- */
+const MON={a:{sp:1.5,pts:100,col:'#ff8a5a'},b:{sp:2.3,pts:200,col:'#4aa3ff'},c:{sp:1.35,pts:400,col:'#e6e6f0'}};
+function startAdv(){ const me=(typeof HALL!=='undefined'&&HALL.pseudo)||'Toi';
+  G={gid:Math.random().toString(36).slice(2,8),adv:true,lvl:0,lives:3,score:0,round:0,target:1,sd:200,players:ARC.recolor([{name:me,cid:null,ai:false,level:'normal'}]),wins:[0],phase:'count',g:[],p:[],bombs:[],fl:[],m:[],ev:[],evn:0,last:null};
+  L={dirty:true,hid:{},t0:0,inp:[-1],ai:{},sdi:0,sdT:0,res:0,keep:{nb:1,fr:2,sp:0}}; if(window.PROF) PROF.played('bombes',false); advLevel(true); snap.reset(G); }
+function advLevel(next){ const S=G; if(next) S.lvl++; S.round=S.lvl;
+  const g=new Array(CW*CH).fill(0); for(let y=0;y<CH;y++) for(let x=0;x<CW;x++){ if(x===0||y===0||x===CW-1||y===CH-1||(x%2===0&&y%2===0)) g[id(x,y)]=1; }
+  const near=new Set([id(1,1),id(2,1),id(1,2),id(3,1),id(1,3)]); const cr=[];
+  for(let i=0;i<g.length;i++) if(!g[i]&&!near.has(i)&&Math.random()<Math.min(.62,.42+S.lvl*.02)){ g[i]=2; cr.push(i); }
+  const far=cr.filter(i=>(i%CW)+((i/CW)|0)>=12); const hid={}; const pick=a=>a.splice(Math.floor(Math.random()*a.length),1)[0];
+  const pool=far.length?far:cr; hid[pick(pool)]=6; const it=cr.filter(i=>hid[i]==null); for(let k=0;k<(S.lvl<4?2:1);k++) if(it.length) hid[pick(it)]=3+Math.floor(Math.random()*3);
+  S.g=g; L.hid=hid; S.bombs=[]; S.fl=[];
+  const free=[]; for(let i=0;i<g.length;i++) if(!g[i]&&(i%CW)+((i/CW)|0)>=8) free.push(i);
+  const n=Math.min(10,2+S.lvl); S.m=[]; for(let k=0;k<n&&free.length;k++){ const i=pick(free); const ty=S.lvl>=5&&k%4===3?'c':S.lvl>=3&&k%3===2?'b':'a'; S.m.push({x:i%CW,y:(i/CW)|0,tx:i%CW,ty:(i/CW)|0,d:Math.floor(Math.random()*4),k:ty}); }
+  const K=L.keep; S.p=[{x:1,y:1,dir:2,al:1,nb:K.nb,fr:K.fr,sp:K.sp,ign:[],mv:0}];
+  S.phase='count'; L.t0=performance.now()+2500; S.left=S.sd*1000; L.dirty=true; emit({t:'round',r:S.lvl}); }
+function monFree(S,m,x,y){ if(x<0||y<0||x>=CW||y>=CH) return false; const i=id(x,y); const v=S.g[i]; if(v===1||(v===2&&m.k!=='c')) return false; if(bombAt(S,i)) return false; return true; }
+function monStep(S,m,dt){ const Q=S.p[0]; const spd=MON[m.k].sp*(1+Math.min(.5,S.lvl*.03));
+  if(Math.abs(m.x-m.tx)<.001&&Math.abs(m.y-m.ty)<.001){ const opts=[0,1,2,3].filter(d=>monFree(S,m,m.tx+ARC.DX[d],m.ty+ARC.DY[d]));
+    if(!opts.length) return; let d=m.d;
+    if(m.k==='b'&&Q.al){ const px=Math.round(Q.x), py=Math.round(Q.y); if(px===m.tx||py===m.ty){ const dd=px===m.tx?(py>m.ty?2:0):(px>m.tx?1:3); const dist=Math.abs(px-m.tx)+Math.abs(py-m.ty); let clear=dist<=7; for(let k=1;k<dist&&clear;k++) if(!monFree(S,m,m.tx+ARC.DX[dd]*k,m.ty+ARC.DY[dd]*k)) clear=false; if(clear&&opts.includes(dd)) d=dd; } }
+    if(!opts.includes(d)||(d===m.d&&Math.random()<.18&&opts.length>2)){ const nb=opts.filter(o=>o!==(m.d+2)%4); d=(nb.length?nb:opts)[Math.floor(Math.random()*(nb.length?nb:opts).length)]; }
+    m.d=d; m.tx+=ARC.DX[d]; m.ty+=ARC.DY[d]; }
+  if(!monFree(S,m,m.tx,m.ty)){ m.tx=Math.round(m.x); m.ty=Math.round(m.y); if(!monFree(S,m,m.tx,m.ty)){ m.tx=Math.round(m.x-ARC.DX[m.d]*.5); m.ty=Math.round(m.y-ARC.DY[m.d]*.5); } m.d=(m.d+2)%4; }
+  const dx=m.tx-m.x, dy=m.ty-m.y, L2=Math.hypot(dx,dy), st=spd*dt; if(L2<=st){ m.x=m.tx; m.y=m.ty; } else { m.x+=dx/L2*st; m.y+=dy/L2*st; } }
+function advStep(now,dt){ const S=G, Q=S.p[0];
+  if(S.phase==='count'&&now>=L.t0){ S.phase='play'; L.start=now; emit({t:'go'}); L.dirty=true; }
+  if(S.phase==='res'&&now>=L.res){ if(S.last.ok) advLevel(true); else if(S.lives<=0){ S.phase='over'; emit({t:'over'}); } else advLevel(false); return; }
+  if(S.phase!=='play') return;
+  const dir=IN.dir; Q.mv=dir>=0?1:0; if(dir>=0){ Q.dir=dir; step(S,Q,dir,speed(Q)*dt); }
+  const k=id(Math.round(Q.x),Math.round(Q.y)), v=S.g[k];
+  if(v>=3&&v<=5){ S.g[k]=0; if(v===3) Q.nb=Math.min(8,Q.nb+1); else if(v===4) Q.fr=Math.min(9,Q.fr+1); else Q.sp=Math.min(5,Q.sp+1); L.keep={nb:Q.nb,fr:Q.fr,sp:Q.sp}; S.score+=50; emit({t:'item',s:0,v}); }
+  for(const b of S.bombs.slice()){ b.t-=dt; if(b.t<=0) explode(b); }
+  S.fl.forEach(f=>f.t-=dt); S.fl=S.fl.filter(f=>f.t>0); const hot=new Set(S.fl.map(f=>f.i));
+  S.m.forEach(m=>monStep(S,m,dt));
+  const before=S.m.length; S.m=S.m.filter(m=>{ if(hot.has(id(Math.round(m.x),Math.round(m.y)))){ S.score+=MON[m.k].pts; emit({t:'mdie',x:m.x,y:m.y}); return false; } return true; });
+  if(before&&!S.m.length) emit({t:'open'});
+  S.left=Math.max(0,S.sd*1000-(now-L.start));
+  let dead=hot.has(k)||S.m.some(m=>Math.hypot(m.x-Q.x,m.y-Q.y)<.62)||S.left<=0;
+  if(dead&&Q.al){ Q.al=0; S.lives--; emit({t:'die',s:0}); S.last={ok:false,msg:S.left<=0?'Temps écoulé !':'Boum !',sub:S.lives>0?`Il te reste ${S.lives} vie${S.lives>1?'s':''}`:'Plus de vies'}; S.phase='res'; L.res=now+2600; return; }
+  if(v===6&&!S.m.length&&Math.abs(Q.x-Math.round(Q.x))<.3&&Math.abs(Q.y-Math.round(Q.y))<.3){ const bonus=Math.round(S.left/1000)*5+250; S.score+=bonus; S.last={ok:true,msg:`Niveau ${S.lvl} terminé !`,sub:`+${bonus} points de temps`}; S.phase='res'; L.res=now+2400; emit({t:'rend',w:0}); } }
+function door(ctx,x,y,open,t){ const X=x*T+5, Y=y*T+3; ctx.fillStyle=open?'#3fd06a':'#8a5a2e'; ctx.fillRect(X,Y,T-10,T-5); ctx.fillStyle=open?'#c9ffcf':'#5a3517'; ctx.fillRect(X+3,Y+3,T-16,T-11); ctx.fillStyle='#ffd23f'; ctx.beginPath(); ctx.arc(X+T-15,Y+T/2,2,0,7); ctx.fill();
+  if(open){ ctx.globalAlpha=.4+.3*Math.sin(t*6); ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.strokeRect(X-2,Y-2,T-6,T-1); ctx.globalAlpha=1; } }
+function monster(ctx,m,t){ const x=m.x*T+T/2, y=m.y*T+T/2+Math.sin(t*6+m.x)*1.5, c=MON[m.k].col; ctx.save(); if(m.k==='c') ctx.globalAlpha=.75;
+  ctx.fillStyle=c; ctx.beginPath(); if(m.k==='b'){ ctx.moveTo(x,y-T*.42); ctx.quadraticCurveTo(x+T*.38,y,x,y+T*.34); ctx.quadraticCurveTo(x-T*.38,y,x,y-T*.42); } else if(m.k==='c'){ ctx.arc(x,y-2,T*.32,Math.PI,0); ctx.lineTo(x+T*.32,y+T*.3); for(let k=0;k<4;k++) ctx.lineTo(x+T*.32-(k+.5)*T*.16,y+T*.3-(k%2?0:6)); ctx.lineTo(x-T*.32,y+T*.3); } else ctx.arc(x,y,T*.34,0,7); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(x-5,y-3,4,0,7); ctx.arc(x+5,y-3,4,0,7); ctx.fill(); ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(x-5+ARC.DX[m.d]*1.5,y-3+ARC.DY[m.d]*1.5,2,0,7); ctx.arc(x+5+ARC.DX[m.d]*1.5,y-3+ARC.DY[m.d]*1.5,2,0,7); ctx.fill();
+  if(m.k==='a'){ ctx.strokeStyle='#5a2a1a'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(x,y+T*.34); ctx.lineTo(x+2,y+T*.48); ctx.stroke(); } ctx.restore(); }
 /* ---------- boucle ---------- */
 ARC.loop((dt,now)=>{ const S=host()?G:snap.cur; ARC.idle=!S||S.phase==='over';
   if(S&&ARC.guest()) guestMove(S,dt,now);
@@ -516,12 +570,13 @@ function optsHTML(local){ const sg=(k,vals)=>`<div class="seg">${vals.map(([v,l]
 const A_PAD=()=>ARC.padHTML();
 function setOpt(b){ const [k,v]=b.dataset.o.split(':'); OPT[k]=/^\d+$/.test(v)?+v:v; store('bombes-opt',OPT); }
 function menu(){ const draw=()=>{ openModal(`<h2>Bombes en arène</h2><p>Jusqu’à quatre dans l’arène : pose des bombes pour faire sauter les caisses, ramasse les bonus et piège les autres. Le dernier debout gagne la manche.</p>
-   <div class="bigchoice"><button class="pri" data-m="online"><b>Jouer en ligne</b><small>Avec tes amis connectés, chacun sur son écran (2 à 4).</small></button><button data-m="solo"><b>Contre l’ordinateur</b><small>Entraîne-toi contre 1 à 3 adversaires.</small></button></div>
+   <div class="bigchoice"><button class="pri" data-m="online"><b>Jouer en ligne</b><small>Avec tes amis connectés, chacun sur son écran (2 à 4).</small></button><button data-m="solo"><b>Contre l’ordinateur</b><small>Entraîne-toi contre 1 à 3 adversaires.</small></button><button data-m="adv"><b>Aventure seul</b><small>Fais sauter les monstres et trouve la porte, niveau après niveau.${load('bombes-best')?` Record : ${load('bombes-best')}.`:''}</small></button></div>
    <div class="opts">${optsHTML(true)}<h4>Réglages</h4>${window.PROF?PROF.optsHTML():''}</div><div class="acts">${G?'<button class="btn" data-c="close">Fermer</button>':''}</div>`,e=>{ if(ARC.padClick(e)){ draw(); return; } const o=e.target.closest('[data-o]'); if(o){ setOpt(o); draw(); return; }
-   const m=e.target.closest('[data-m]'); if(!m) return; closeModal(); if(m.dataset.m==='online') NET.startUI(); else startLocal(); }); if(window.PROF) PROF.bindOpts($('#mbox')); };
+   const m=e.target.closest('[data-m]'); if(!m) return; closeModal(); if(m.dataset.m==='online') NET.startUI(); else if(m.dataset.m==='adv') startAdv(); else startLocal(); }); if(window.PROF) PROF.bindOpts($('#mbox')); };
   ARC.tuto('bombes',[['🕹️','Déplace-toi','Utilise la croix tactile (ou les flèches du clavier) pour circuler entre les murs.'],['💣','Pose des bombes','Le gros bouton (ou espace) pose une bombe. Elle explose en croix après deux secondes : éloigne-toi vite, et pas dans l’axe !'],['🎁','Bonus','Les caisses cachent des bonus : 💣 une bombe de plus, 🔥 une explosion plus longue, 👟 plus de vitesse. Le dernier debout gagne la manche.']],draw); }
 function help(){ helpTabs('Bombes en arène',[['Règles','<ul><li>Chaque joueur part d’un coin de l’arène.</li><li>Pose une bombe : elle explose au bout de 2,4 secondes en croix, sur une distance qui dépend de tes bonus 🔥. Les murs gris arrêtent l’explosion.</li><li>Les caisses en bois explosent et peuvent révéler un bonus.</li><li>Une explosion qui touche une autre bombe la fait sauter aussi.</li><li>Touché par une explosion, tu es éliminé pour la manche. Le dernier debout gagne la manche ; la partie se joue en plusieurs manches gagnantes.</li><li><b>Mort subite</b> : après le temps choisi, des murs tombent en spirale depuis le bord.</li></ul>'],
   ['Bonus','<ul><li>💣 une bombe de plus en même temps.</li><li>🔥 une case de plus pour tes explosions.</li><li>👟 tu cours plus vite.</li></ul><p class="ex">Les bonus sur le sol sont détruits par les explosions.</p>'],
+  ['Aventure','<ul><li>Seul contre des monstres : fais-les tous sauter avec tes bombes, puis trouve la <b>porte</b> 🚪 cachée sous une caisse et entre dedans.</li><li>🎈 les ballons errent au hasard, 💧 les gouttes te foncent dessus quand elles te voient (dès le niveau 3), 👻 les fantômes traversent les caisses (dès le niveau 5).</li><li>Un monstre qui te touche, ou ta propre bombe, te coûte une vie. Tes bonus sont gardés d’un niveau à l’autre.</li><li>200 secondes par niveau ; le temps restant rapporte des points.</li></ul>'],
   ['Commandes','<ul><li><b>Tactile</b> : la croix pour bouger (ou glisser le doigt sur l’arène), le bouton 💣 pour poser une bombe.</li><li><b>Clavier</b> : flèches (ou ZQSD / WASD) et barre d’espace.</li></ul>']]); }
 window.GAME={help,menu,state:()=>G};
 document.addEventListener('sdj-opts',e=>{ if(e.detail.k==='cb'&&G) ARC.recolor(G.players); });

@@ -322,7 +322,8 @@ const host=()=>!ARC.guest();
 const emit=e=>ARC.emit(G,e);
 /* ---------- moteur (hôte) ---------- */
 function newGame(list){ const o=Object.assign({},OPT); setSize(SIZES[o.size]||32);
-  G={W,gid:Math.random().toString(36).slice(2,8),mode:o.mode,step:SPEED[o.speed]||160,obs:o.obs||'quelques',walls:[],rounds:o.mode==='survie'?o.rounds:1,round:0,dur:o.mins*60000,
+  const solo=list.length===1&&!ARC.net();
+  G={W,gid:Math.random().toString(36).slice(2,8),solo,mode:solo?'survie':o.mode,step:SPEED[o.speed]||160,obs:o.obs||'quelques',walls:[],rounds:solo?1:o.mode==='survie'?o.rounds:1,round:0,dur:o.mins*60000,
     players:ARC.recolor(list.map((x,i)=>({name:x.name,cid:x.cid||null,ai:!!x.ai,level:x.level||o.level}))),
     sn:list.map(()=>({c:[],d:1,al:false,sc:0,len:4,rs:0,k:0,w:0})),food:[],phase:'count',cd:0,left:0,ev:[],evn:0,net:ARC.net()};
   L={q:list.map(()=>[]),acc:0,prev:null,rng:ARC.rng((Math.random()*4e9)>>>0)}; if(window.PROF) PROF.played('serpents',ARC.net());
@@ -343,7 +344,7 @@ function place(s,x,y,d){ s.d=d; s.c=[]; for(let k=0;k<4;k++) s.c.push((y-DY[d]*k
 function startRound(){ G.round++; const n=G.players.length; G.food=[]; L.prev=null;
   G.sn.forEach((s,i)=>{ const a=2*Math.PI*i/n-Math.PI/2, R=W*.33; const x=Math.round(W/2-.5+Math.cos(a)*R), y=Math.round(H/2-.5+Math.sin(a)*R);
     const tx=-Math.sin(a), ty=Math.cos(a); const d=Math.abs(tx)>Math.abs(ty)?(tx>0?1:3):(ty>0?2:0); place(s,x,y,d); s.al=true; s.rs=0; L.q[i]=[]; });
-  makeWalls(); for(let k=0;k<n+3;k++) addFood();
+  makeWalls(); for(let k=0;k<(G.solo?2:n+3);k++) addFood();
   G.phase='count'; G.cd=Math.round(3000/G.step); G.left=Math.round(G.dur/G.step); emit({t:'round',r:G.round}); }
 function occ(){ const o=new Int16Array(W*H).fill(-1); G.sn.forEach((s,i)=>{ if(s.al) s.c.forEach(p=>o[p]=i); }); return o; }
 function addFood(v,p,corpse){ if(p==null){ const o=occ(); for(let t=0;t<400;t++){ const q=(L.rng()*W*H)|0; if(o[q]<0&&!WALL[q]&&!G.food.some(f=>f.p===q)){ p=q; break; } } if(p==null) return; }
@@ -368,7 +369,7 @@ function tick(){
   heads.forEach((h,i)=>{ if(!h) return; if(h.x<0||h.y<0||h.x>=W||h.y>=H){ dead[i]=true; return; } const p=h.y*W+h.x; if(WALL[p]){ dead[i]=true; return; } if(o[p]>=0){ dead[i]=true; if(o[p]!==i) by[i]=o[p]; } });
   for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) if(heads[i]&&heads[j]&&heads[i].x===heads[j].x&&heads[i].y===heads[j].y){ dead[i]=dead[j]=true; }
   G.sn.forEach((s,i)=>{ if(!s.al) return; if(dead[i]){ kill(i,by[i]); return; } const p=heads[i].y*W+heads[i].x; s.c.unshift(p);
-    const fi=G.food.findIndex(f=>f.p===p); if(fi>=0){ const f=G.food[fi]; G.food.splice(fi,1); s.len+=f.v; s.sc+=f.v; emit({t:'eat',s:i,g:f.v>1?1:0}); if(!f.c) addFood(); }
+    const fi=G.food.findIndex(f=>f.p===p); if(fi>=0){ const f=G.food[fi]; G.food.splice(fi,1); s.len+=f.v; s.sc+=f.v; if(G.solo) G.step=Math.max(68,G.step-2*f.v); emit({t:'eat',s:i,g:f.v>1?1:0}); if(!f.c) addFood(); }
     while(s.c.length>s.len) s.c.pop(); });
   if(G.mode==='survie'){ const al=G.sn.filter(s=>s.al).length; if(al===0||(n>1&&al<=1)){ const w=G.sn.findIndex(s=>s.al); if(w>=0) G.sn[w].w++; G.phase='round'; G.cd=Math.round((G.round>=G.rounds?1800:3500)/G.step); emit({t:'rwin',s:w,r:G.round}); } }
   else if(--G.left<=0) finish(); }
@@ -413,14 +414,14 @@ function draw(){ const ctx=cv.begin(); ctx.drawImage(bg,0,0); const S=host()?G:s
     const fx=DX[d], fy=DY[d], sx=-fy, sy=fx; for(const k of [-1,1]){ const ex=cx+fx*C*.15+sx*k*C*.22, ey=cy+fy*C*.15+sy*k*C*.22; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(ex,ey,C*.15,0,7); ctx.fill(); ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(ex+fx*2,ey+fy*2,C*.08,0,7); ctx.fill(); }
     if(S.players.length>1){ ARC.text(ctx,P.name,cx,cy-C*.95,12,i===me?'#fff':'#ffffffcc','#000a'); } }
   ctx.strokeStyle='#0b2614'; ctx.lineWidth=6; ctx.strokeRect(3,3,W*C-6,H*C-6);
-  if(S.phase==='count'){ const n=Math.ceil(S.cd*S.step/1000); ARC.text(ctx,S.mode==='survie'?`Manche ${S.round} / ${S.rounds}`:'Chrono',W*C/2,H*C/2-70,30,'#fff','#000a'); ARC.text(ctx,String(n),W*C/2,H*C/2,96,'#ffe066','#000a'); if(n!==draw.lastN){ draw.lastN=n; sfx('beep'); } }
+  if(S.phase==='count'){ const n=Math.ceil(S.cd*S.step/1000); ARC.text(ctx,S.solo?'Snake':S.mode==='survie'?`Manche ${S.round} / ${S.rounds}`:'Chrono',W*C/2,H*C/2-70,30,'#fff','#000a'); ARC.text(ctx,String(n),W*C/2,H*C/2,96,'#ffe066','#000a'); if(n!==draw.lastN){ draw.lastN=n; sfx('beep'); } }
   else draw.lastN=null;
   if(S.phase==='round'){ const w=draw.lastWin; ARC.text(ctx,w!=null&&w>=0?`${S.players[w].name} gagne la manche !`:'Personne ne survit',W*C/2,H*C/2,32,'#fff','#000a'); }
   if(S.phase==='play'&&me!=null&&S.sn[me]&&!S.sn[me].al){ ARC.text(ctx,S.mode==='chrono'?'Tu réapparais…':'Éliminé : regarde la fin',W*C/2,40,22,'#fff','#000a'); } }
 function hud(){ const S=host()?G:snap.cur; const me=ARC.seat(); window.ARC_PLAYING=!!(S&&S.phase!=='over');
   if(!S){ ARC.status('Serpents','Choisis un mode : en ligne ou entraînement.','#2f8a4a'); $('#board').innerHTML=''; return; }
   const P=me!=null?S.players[me]:null, s=me!=null?S.sn[me]:null;
-  const right=S.mode==='chrono'?`⏱ ${fmt(S.phase==='count'?S.dur/1000:S.left*S.step/1000)}`:`Manche ${S.round}/${S.rounds}`;
+  const right=S.solo?`Record ${Math.max(load('serp-best')||0,S.sn[0].sc)}`:S.mode==='chrono'?`⏱ ${fmt(S.phase==='count'?S.dur/1000:S.left*S.step/1000)}`:`Manche ${S.round}/${S.rounds}`;
   const msg=S.phase==='over'?'Partie terminée':S.phase==='count'?'Prêt ?':!P?'Tu regardes la partie':s.al?`${s.c.length} anneaux`:S.mode==='chrono'?'réapparition…':'éliminé';
   ARC.status(P?esc(P.name):'Spectateur',msg,P?shade(P.col,.6):'#2f8a4a',right);
   const rows=S.players.map((p,i)=>({i,name:p.name,col:p.col,me:i===me,out:!S.sn[i].al&&S.phase==='play',score:S.mode==='survie'?S.sn[i].w:S.sn[i].sc,tag:S.mode==='survie'?(S.sn[i].al?S.sn[i].c.length+' ann.':'☠'):(S.sn[i].k?S.sn[i].k+' ✂':'')}));
@@ -436,6 +437,8 @@ function ranking(S){ return S.players.map((p,i)=>({i,name:p.name,col:p.col,me:i=
 function showEnd(){ const S=host()?G:snap.cur; if(!S||S.phase!=='over') return; const r=ranking(S); const top=r[0];
   if(top.me&&r.length>1){ sfx('win'); confetti([top.col,'#fff','#ffd23f']); }
   const mine=r.find(x=>x.me); if(mine&&window.PROF) PROF.result('serpents',{win:top.me&&r.length>1,score:mine.sc});
+  if(S.solo&&mine){ const best=load('serp-best')||0; const rec=mine.sc>best; if(rec){ store('serp-best',mine.sc); sfx('win'); confetti(); }
+    ARC.endBox(rec?`Nouveau record : ${mine.sc} !`:`${mine.sc} pomme${mine.sc>1?'s':''}`,[{name:mine.name,col:mine.col,me:true,score:`${mine.sc} pts · record ${Math.max(best,mine.sc)}`}],()=>startLocal(),{j:'serpents',score:mine.sc}); return; }
   ARC.endBox(r.length>1?`${top.name} gagne !`:'Partie terminée',r.map(x=>Object.assign(x,{score:S.mode==='survie'?`${x.w} manche${x.w>1?'s':''}`:`${x.sc} pts`})),()=>startLocal(),mine?{j:'serpents',score:mine.sc}:null); }
 /* ---------- commandes ---------- */
 function dir(d){ const S=host()?G:snap.cur; if(!S||S.phase==='over') return; const me=ARC.seat(); if(me==null||!S.sn[me]) return;
@@ -451,15 +454,15 @@ function optsHTML(local){ const sg=(k,vals)=>`<div class="seg">${vals.map(([v,l]
   return `<h4>Mode</h4>${sg('mode',[['survie','Survie'],['chrono','Chrono']])}<p class="optnote">${OPT.mode==='survie'?'Pas de réapparition : le dernier serpent en vie gagne la manche.':'On réapparaît après chaque accident ; pommes et serpents coupés rapportent des points.'}</p>
    ${OPT.mode==='survie'?`<h4>Manches</h4><div class="step"><button data-o="rounds:-" aria-label="Une manche de moins">−</button><b>${OPT.rounds}</b><button data-o="rounds:+" aria-label="Une manche de plus">+</button></div>`:`<h4>Durée</h4>${sg('mins',[[2,'2 min'],[3,'3 min'],[5,'5 min']])}`}
    <h4>Vitesse</h4>${sg('speed',[['lent','Lente'],['normal','Normale'],['rapide','Rapide']])}<h4>Obstacles</h4>${sg('obs',[['aucun','Aucun'],['quelques','Quelques-uns'],['beaucoup','Beaucoup']])}<h4>Taille de l’arène</h4>${sg('size',[['petite','Petite'],['normale','Normale'],['grande','Grande']])}
-   ${local?`<h4>Ordinateurs</h4>${sg('bots',[[1,'1'],[2,'2'],[3,'3'],[5,'5'],[7,'7']])}${sg('level',[['facile','facile'],['normal','normal'],['difficile','difficile']])}`:''}`; }
+   ${local?`<h4>Ordinateurs</h4>${sg('bots',[[0,'Aucun (seul)'],[1,'1'],[2,'2'],[3,'3'],[5,'5'],[7,'7']])}${OPT.bots?sg('level',[['facile','facile'],['normal','normal'],['difficile','difficile']]):'<p class="optnote">Seul : le Snake classique. Le serpent accélère à chaque pomme ; bats ton record.</p>'}`:''}`; }
 function setOpt(b){ const [k,v]=b.dataset.o.split(':'); if(v==='+'||v==='-') OPT[k]=Math.max(1,Math.min(10,(OPT[k]||1)+(v==='+'?1:-1))); else OPT[k]=/^\d+$/.test(v)?+v:v; store('serp-opt',OPT); }
 function menu(){ const draw=()=>{ openModal(`<h2>Serpents</h2><p>Tous les serpents dans la même arène : mange des pommes pour grandir et fais en sorte que les autres s’écrasent contre ton corps.</p>
-   <div class="bigchoice"><button class="pri" data-m="online"><b>Jouer en ligne</b><small>Avec tes amis connectés, chacun sur son écran.</small></button><button data-m="solo"><b>S’entraîner</b><small>Contre l’ordinateur, sans connexion.</small></button></div>
+   <div class="bigchoice"><button class="pri" data-m="online"><b>Jouer en ligne</b><small>Avec tes amis connectés, chacun sur son écran.</small></button><button data-m="solo"><b>${OPT.bots?'S’entraîner':'Jouer seul'}</b><small>${OPT.bots?'Contre l’ordinateur, sans connexion.':'Snake classique.'+(load('serp-best')?` Record : ${load('serp-best')}.`:'')}</small></button></div>
    <div class="opts">${optsHTML(true)}${ARC.padHTML()}<h4>Réglages</h4>${window.PROF?PROF.optsHTML():''}</div><div class="acts">${G?'<button class="btn" data-c="close">Fermer</button>':''}</div>`,e=>{ if(ARC.padClick(e)){ draw(); return; } const o=e.target.closest('[data-o]'); if(o){ setOpt(o); draw(); return; }
    const m=e.target.closest('[data-m]'); if(!m) return; closeModal(); if(m.dataset.m==='online') NET.startUI(); else startLocal(); }); if(window.PROF) PROF.bindOpts($('#mbox')); };
   ARC.tuto('serpents',[['🍎','Grandis','Mange les pommes pour allonger ton serpent. La pomme dorée vaut 3 anneaux.'],['🧱','Évite tout','Murs, rochers, autres serpents et ton propre corps : le moindre contact t’élimine.'],['👆','Dirige','Glisse le doigt sur le jeu ou utilise la grande croix. Au clavier : les flèches.']],draw); }
 function help(){ helpTabs('Serpents',[['But du jeu','<p>Chaque joueur dirige un serpent dans la même arène. Les pommes font grandir (la pomme dorée vaut 3 anneaux). Un serpent qui touche un mur, un rocher, un autre serpent ou son propre corps est éliminé et se transforme en pommes.</p><ul><li><b>Survie</b> : pas de réapparition. Le dernier serpent en vie gagne la manche ; le nombre de manches se choisit au départ, de 1 à 10.</li><li><b>Chrono</b> : on réapparaît 2 secondes après un accident. Une pomme vaut 1 point, un serpent qui s’écrase contre toi en vaut 5. Le meilleur score à la fin du temps gagne.</li></ul>'],['Commandes','<ul><li><b>Clavier</b> : flèches ou Z, Q, S, D.</li><li><b>Écran tactile</b> : glisse le doigt n’importe où sur le jeu dans la direction voulue, ou utilise la croix sous l’arène.</li><li>Deux virages rapprochés sont mémorisés : tu peux faire un demi-tour en deux gestes.</li></ul>'],['En ligne','<p>Crée une table avec le bouton « En ligne », invite tes amis connectés ou envoie-leur le code. L’hôte choisit le mode, la vitesse et peut compléter avec des ordinateurs. Ton serpent est entouré d’un halo.</p><p class="ex">Garde le jeu à l’écran pendant la partie : si l’hôte passe sur une autre appli, le jeu se fige pour tout le monde jusqu’à son retour.</p><p class="ex">Astuce : un serpent long peut encercler un adversaire pour l’enfermer.</p>']]); }
-window.GAME={help,menu};
+window.GAME={help,menu,state:()=>G};
 document.addEventListener('sdj-opts',e=>{ if(e.detail.k==='cb'&&G) ARC.recolor(G.players); });
 window.NETGAME={id:'serpents',title:'Serpents',min:1,max:8,
   rules:()=>`<div class="opts">${optsHTML(false)}</div>`, rulesClick(e){ const b=e.target.closest('[data-o]'); if(!b) return false; setOpt(b); return true; },
