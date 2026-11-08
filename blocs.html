@@ -120,6 +120,24 @@ body.immersive .stage{padding-top:max(6px,env(safe-area-inset-top))}
 .tuto-dots{display:flex;gap:6px;justify-content:center;margin:12px 0 2px}.tuto-dots i{width:8px;height:8px;border-radius:50%;background:#c9b98f}.tuto-dots i.on{background:var(--accent)}
 .optrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0}.optrow input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
 
+/* croix tactile : sous le plateau en portrait, à côté en paysage, plus grande sur tablette */
+:root{--padsz:min(46vw,210px)}
+@media (pointer:coarse) and (min-width:600px){:root{--padsz:min(34vw,300px)}}
+@media (orientation:portrait) and (pointer:coarse){
+ .cvwrap:has(.pad:not([hidden])){padding-bottom:calc(var(--padsz) + 14px)}
+ .cvwrap .pad{bottom:0;width:var(--padsz);height:var(--padsz)}
+ .cvwrap .pad[data-pos="gauche"]{left:4px}.cvwrap .pad[data-pos="droite"]{right:4px}
+ .cvwrap .pad svg{opacity:.85}
+}
+@media (orientation:landscape) and (pointer:coarse) and (min-height:541px){
+ .pad{position:fixed;bottom:max(18px,env(safe-area-inset-bottom));width:min(36vh,300px);height:min(36vh,300px);transform:none!important}
+ .pad svg{opacity:.8}
+ .pad[data-pos="centre"],.pad[data-pos="gauche"]{left:max(18px,env(safe-area-inset-left));right:auto}
+ .pad[data-pos="droite"]{right:max(18px,env(safe-area-inset-right));left:auto}
+ .stage:has(.pad:not([hidden]):not([data-pos="droite"])){padding-left:calc(min(36vh,300px) + 34px)}
+ .stage:has(.pad[data-pos="droite"]:not([hidden])){padding-right:calc(min(36vh,300px) + 34px)}
+}
+
 .hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
 .bkeys{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;width:min(96vw,460px);user-select:none;-webkit-user-select:none;touch-action:none}
 .bkeys button{height:56px;border-radius:12px;border:1px solid #ffffff30;background:#ffffff18;color:#fff;font:800 24px var(--ui);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;padding:0;touch-action:none}
@@ -140,7 +158,7 @@ body.immersive .stage{padding-top:max(6px,env(safe-area-inset-top))}
 <div class="stage" id="stage"><div class="cvwrap"><canvas id="cv"></canvas></div><div class="bkeys" id="bkeys"><button data-k="hold" aria-label="Réserve">⇄<small>Réserve</small></button><button data-k="ccw" aria-label="Tourner à gauche">↺</button><button data-k="l" aria-label="Gauche">◀</button><button data-k="soft" aria-label="Descendre">▼</button><button data-k="r" aria-label="Droite">▶</button><button data-k="cw" aria-label="Tourner à droite">↻</button><button data-k="hard" class="hd" aria-label="Poser">⤓<small>Poser</small></button></div>
 <div class="board" id="board"></div></div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
-<!--NET--><script src="common/hall.js?v=acec1867"></script><script src="common/net.js?v=01f46845"></script><!--/NET--><script>
+<!--NET--><script src="common/hall.js?v=e82d0531"></script><script src="common/net.js?v=2ba51f77"></script><!--/NET--><script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const SVGNS='http://www.w3.org/2000/svg';
@@ -149,7 +167,11 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts">'+(window.GAME_TUTO?'<button class="btn" data-tuto="1">🎓 Revoir le tutoriel</button>':'')+'<button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ if(e.target.closest('[data-tuto]')){ window.GAME_TUTO(); return; } const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+/* tutoriel en quelques écrans ; il se revoit depuis l'aide */
+function showTuto(slug,steps,done){ let i=0; const draw=()=>{ const s=steps[i]; openModal(`<div class="tuto"><div class="tuto-ic">${s[0]}</div><h2>${s[1]}</h2><p>${s[2]}</p><div class="tuto-dots">${steps.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div></div><div class="acts">${i?'<button class="btn" data-t="prev">Précédent</button>':'<button class="btn" data-t="skip">Passer</button>'}<button class="btn pri" data-t="next">${i<steps.length-1?'Suivant':'C’est parti !'}</button></div>`,
+    e=>{ const b=e.target.closest('[data-t]'); if(!b) return; if(b.dataset.t==='prev'){ i--; draw(); return; } if(b.dataset.t==='next'&&i<steps.length-1){ i++; draw(); return; } try{ localStorage.setItem('tuto-'+slug,'1'); }catch(x){} closeModal(); done&&done(); }); };
+  draw(); }
 function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
@@ -253,7 +275,8 @@ const ARC=(()=>{
  A.lerp=(a,b,t)=>a+(b-a)*t;
  /* ---------- écran ---------- */
  A.canvas=(cv,VW,VH,below)=>{ const ctx=cv.getContext('2d'); const o={cv,ctx,VW,VH,k:1,w:VW,h:VH};
-   o.fit=()=>{ const r=cv.getBoundingClientRect(); const land=matchMedia('(orientation:landscape) and (max-height:540px)').matches; const avH=Math.max(160,innerHeight-r.top-(land?0:(below?below():0))-12); const pw=land&&document.querySelector('.pad:not([hidden])')?Math.min(innerHeight*.48,180)+20:0; const avW=Math.min(innerWidth-16-(land?205:0)-pw,980); const k=Math.min(avW/VW,avH/VH);
+   o.fit=()=>{ const r=cv.getBoundingClientRect(); const land=matchMedia('(orientation:landscape) and (max-height:540px)').matches; const pad=document.querySelector('.pad:not([hidden])'); const coarse=matchMedia('(pointer:coarse)').matches; const port=matchMedia('(orientation:portrait)').matches; const tabLand=coarse&&!port&&!land;
+    const avH=Math.max(160,innerHeight-r.top-(land?0:(below?below():0))-12-(pad&&coarse&&port?pad.offsetHeight+14:0)); const bb=document.querySelector('.bombbtn'); const pw=(pad&&land?Math.min(innerHeight*.48,180)+20:pad&&tabLand?pad.offsetWidth+34:0)+(bb&&tabLand?bb.offsetWidth+40:0); const avW=Math.min(innerWidth-16-(land?205:0)-pw,980); const k=Math.min(avW/VW,avH/VH);
      const w=Math.max(120,Math.floor(VW*k)), h=Math.max(120,Math.floor(VH*k)); cv.style.width=w+'px'; cv.style.height=h+'px'; const d=Math.min(2.5,devicePixelRatio||1); cv.width=Math.round(w*d); cv.height=Math.round(h*d); o.k=w/VW*d; o.w=w; o.h=h; };
    o.begin=()=>{ ctx.setTransform(o.k,0,0,o.k,0,0); return ctx; };
    addEventListener('resize',()=>o.fit()); addEventListener('orientationchange',()=>setTimeout(o.fit,250)); setTimeout(o.fit,0); setTimeout(o.fit,500); return o; };
@@ -310,10 +333,7 @@ const ARC=(()=>{
  addEventListener('DOMContentLoaded',()=>{ const tools=document.querySelector('.top .tools'); if(tools){ const b=document.createElement('button'); b.className='btn'; b.id='fsBtn'; b.title='Plein écran'; b.setAttribute('aria-label','Plein écran'); b.textContent='⛶'; b.onclick=()=>A.immersive(); tools.insertBefore(b,tools.firstChild); }
    const x=document.createElement('button'); x.id='fsExit'; x.textContent='✕'; x.setAttribute('aria-label','Quitter le plein écran'); x.onclick=()=>A.immersive(false); document.body.appendChild(x); });
  /* ---------- tutoriel de la première partie ---------- */
- A.tuto=(slug,steps,done)=>{ let seen=false; try{ seen=!!localStorage.getItem('tuto-'+slug); }catch(e){} if(seen){ done&&done(); return false; }
-   let i=0; const draw=()=>{ const s=steps[i]; openModal(`<div class="tuto"><div class="tuto-ic">${s[0]}</div><h2>${s[1]}</h2><p>${s[2]}</p><div class="tuto-dots">${steps.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div></div><div class="acts"><button class="btn" data-t="skip">Passer</button><button class="btn pri" data-t="next">${i<steps.length-1?'Suivant':'C’est parti !'}</button></div>`,
-     e=>{ const b=e.target.closest('[data-t]'); if(!b) return; if(b.dataset.t==='next'&&i<steps.length-1){ i++; draw(); return; } try{ localStorage.setItem('tuto-'+slug,'1'); }catch(x){} closeModal(); done&&done(); }); };
-   draw(); return true; };
+ A.tuto=(slug,steps,done)=>{ window.GAME_TUTO=()=>showTuto(slug,steps,null); let seen=false; try{ seen=!!localStorage.getItem('tuto-'+slug); }catch(e){} if(seen){ done&&done(); return false; } showTuto(slug,steps,done); return true; };
  return A; })();
 
 
@@ -541,5 +561,5 @@ const skip=/[?&](salle|creer)=/.test(location.search)||(()=>{ const s=load('net-
 </script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
-<!--PROF--><script src="common/profil.js?v=b366504c"></script><!--/PROF-->
+<!--PROF--><script src="common/profil.js?v=d959263a"></script><!--/PROF-->
 </body></html>

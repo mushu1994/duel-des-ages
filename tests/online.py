@@ -14,7 +14,7 @@ ALL = ['serpents', 'souriciere', 'piaf', 'quatre-en-ligne', 'echecs', 'dames', '
        'tetes-de-boeuf', 'duel-des-ages', 'duel-des-joyaux', 'grand-proprietaire', 'nouvelle-terre', 'rails-d-europe',
        'remparts', 'conquete', 'joyaux-renaissance', 'sept-merveilles', 'derniere-carte', 'quitte-ou-sept', 'approche-finale',
        'awale', 'morpion-geant', 'backgammon', 'yams', 'memory', 'belote', 'mille-bornes', 'demineur', '2048', 'mot-du-jour', 'mots-meles',
-       'pong', 'casse-briques', 'blocs', 'bombes', 'dessine']
+       'pong', 'casse-briques', 'blocs', 'bombes', 'dessine', 'bataille-corse']
 GAMES = ARGS[0].split(',') if ARGS else ALL
 WHO = [('EssaiHote', 'essaihote0secret0fixe0pour0tests'), ('EssaiInvite', 'essaiinvite0secret0fixe0tests0'), ('EssaiTiers', 'essaitiers0secret0fixe0tests00')]
 SIG = "(()=>{ const G=NETGAME.state(); if(!G) return null; try{ return JSON.stringify(G).length+':'+JSON.stringify(G).slice(-400); }catch(e){ return 'x'; } })()"

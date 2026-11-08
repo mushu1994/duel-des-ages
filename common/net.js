@@ -142,7 +142,7 @@ const NET=(()=>{
  function failUI(){ N.on=false; box(`<h2>Connexion impossible</h2><p>Le serveur de jeu n’a pas répondu. Vérifie ta connexion internet${isGh()?'':', ou ouvre le jeu directement sur le site'}.</p>${isGh()?'':`<p><a href="${SITE}${NG().id}.html" target="_blank" rel="noopener">Ouvrir ${es(NG().title)} sur le site</a></p>`}<div class="acts"><button class="btn" data-hl="close">Fermer</button><button class="btn pri" data-net="start">Réessayer</button></div>`); badge(); }
  function lobbyUI(note){ N.ui='lobby'; const g=NG();
    const order=N.host?lobbyOrder():((N.lobby&&N.lobby.order)||[]).map(x=>x.cid); const names=N.host?order.map(k=>N.peers[k].name):((N.lobby&&N.lobby.order)||[]).map(x=>x.name);
-   const hs=order.length, maxAI=Math.max(0,g.max-hs); if(N.host&&N.ai.n>maxAI) N.ai.n=maxAI; const ai=N.host?N.ai:((N.lobby&&N.lobby.ai)||{n:0,level:'normal'}); const total=hs+ai.n;
+   const hs=order.length, maxAI=Math.max(0,g.max-hs); if(N.host&&N.ai.n>maxAI) N.ai.n=maxAI; if(N.host&&g.noAI) N.ai.n=0; const ai=N.host?N.ai:((N.lobby&&N.lobby.ai)||{n:0,level:'normal'}); const total=hs+ai.n;
    const list=names.map((n,i)=>`<li><span class="net-av">${es((n||'?')[0])}</span>${es(n)}${order[i]===N.cid?' <small>(toi)</small>':''}${i===0?' <small>· hôte</small>':''}</li>`).join('')+Array.from({length:ai.n},(_,i)=>`<li class="ai"><span class="net-av">🤖</span>Ordinateur ${i+1} <small>· ${ai.level}</small></li>`).join('');
    const cand=N.host&&HALL.ok?HALL.list().filter(m=>!N.peers[m.cid]&&!(m.r&&m.r.started)):[];
    box(`<h2>Table ${N.code}</h2>${note?`<p class="net-note">${note}</p>`:''}
@@ -151,8 +151,8 @@ const NET=(()=>{
     <h4>Joueurs (${total} · de ${g.min} à ${g.max})</h4><ul class="net-list">${list||'<li>…</li>'}</ul>
     ${N.host?`<h4>Inviter des joueurs connectés</h4>${cand.length?`<ul class="net-list">${cand.map(m=>`<li><span class="net-av">${es(m.p[0])}</span>${es(m.p)} <small>· ${m.r?'à une autre table':m.gt?'sur '+es(m.gt):'sur le portail'}</small>${N.invited.has(m.cid)?'<small class="net-r">invité ✓</small>':`<button class="btn net-r" data-net="inv:${m.cid}">Inviter</button>`}</li>`).join('')}</ul>`:'<p class="net-note">Personne d’autre de disponible sur le site pour l’instant. Partage le lien ou le code.</p>'}
      <label class="net-chk"><input type="checkbox" id="netOpen2" ${N.open?'checked':''}> Table visible et ouverte à tous les connectés</label>
-     <h4>Ordinateurs en plus</h4><div class="seg">${Array.from({length:maxAI+1},(_,n)=>`<button class="${ai.n===n?'on':''}" data-net="ai:${n}">${n}</button>`).join('')}</div>
-     ${ai.n?`<div class="seg" style="margin-left:6px">${['facile','normal','difficile'].map(l=>`<button class="${ai.level===l?'on':''}" data-net="lv:${l}">${l}</button>`).join('')}</div>`:''}
+     ${g.noAI?'':`<h4>Ordinateurs en plus</h4><div class="seg">${Array.from({length:maxAI+1},(_,n)=>`<button class="${ai.n===n?'on':''}" data-net="ai:${n}">${n}</button>`).join('')}</div>
+     ${ai.n?`<div class="seg" style="margin-left:6px">${['facile','normal','difficile'].map(l=>`<button class="${ai.level===l?'on':''}" data-net="lv:${l}">${l}</button>`).join('')}</div>`:''}`}
      ${g.rules?`<div class="net-rules">${g.rules()}</div>`:''}
      <div class="acts"><button class="btn" data-net="quit">Fermer la table</button><button class="btn pri" data-net="go" ${total>=g.min&&total<=g.max?'':'disabled'}>${total<g.min?`Encore ${g.min-total} joueur${g.min-total>1?'s':''}`:'Lancer la partie'}</button></div>`
     :`<p class="net-wait"><span class="net-spin"></span>En attente que l’hôte lance la partie…</p><div class="acts"><button class="btn" data-net="quit">Quitter la table</button></div>`}`,true);

@@ -96,6 +96,8 @@ body{background:radial-gradient(ellipse at 50% 0%,#3d5a3a,#142214 75%) fixed,#14
 @media (max-width:520px){.cd{--cw:48px}}
 .pchip{display:inline-flex;align-items:center;gap:6px;background:#0005;border:1px solid #fff3;border-radius:999px;padding:3px 10px;font-weight:800;font-size:14px;white-space:nowrap}
 .pchip i{width:11px;height:11px;border-radius:50%}.pchip.turn{background:#fff;color:#1c1c24;box-shadow:0 0 0 3px var(--pcol,#ffd84a)}
+.tuto{text-align:center}.tuto-ic{font-size:56px;line-height:1.1;margin:4px 0 6px}.tuto h2{margin:0 0 6px}.tuto p{margin:0 auto;max-width:34ch;line-height:1.45}
+.tuto-dots{display:flex;gap:6px;justify-content:center;margin:12px 0 2px}.tuto-dots i{width:8px;height:8px;border-radius:50%;background:#c9b98f}.tuto-dots i.on{background:var(--accent)}
 
 .who{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0 6px}
 #bg{display:block;width:100%;max-width:min(980px,calc((100vh - 250px)*1.145));margin:0 auto;filter:drop-shadow(0 12px 22px #0009);touch-action:manipulation}
@@ -133,16 +135,6 @@ body{background:radial-gradient(ellipse at 50% 0%,#3d5a3a,#142214 75%) fixed,#14
 
 
 
-
-
-
-
-
-
-
-
-
-
 <!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=282c861b"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
@@ -154,7 +146,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#3d5a3a,#142214 75%) fixed,#14
 </div>
 <div id="tkcover" hidden></div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
-<!--NET--><script src="common/hall.js?v=acec1867"></script><script src="common/net.js?v=01f46845"></script><!--/NET-->
+<!--NET--><script src="common/hall.js?v=e82d0531"></script><script src="common/net.js?v=2ba51f77"></script><!--/NET-->
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -164,7 +156,11 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,30):ms));
 function openModal(h,onclick){ $('#mbox').innerHTML=h; $('#mbox').onclick=onclick||null; $('#modal').hidden=false; }
 function paintModal(h){ $('#mbox').innerHTML=h; $('#modal').hidden=false; }
-function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts"><button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+function helpTabs(title,tabs){ let k=0; const draw=()=>paintModal('<h2>'+title+'</h2>'+(tabs.length>1?'<div class="tabs">'+tabs.map((t,i)=>'<button class="'+(i===k?'on':'')+'" data-ht="'+i+'">'+t[0]+'</button>').join('')+'</div>':'')+'<div class="hbody">'+tabs[k][1]+'</div><div class="acts">'+(window.GAME_TUTO?'<button class="btn" data-tuto="1">🎓 Revoir le tutoriel</button>':'')+'<button class="btn pri" data-c="close">Compris</button></div>'); draw(); $('#mbox').onclick=e=>{ if(e.target.closest('[data-tuto]')){ window.GAME_TUTO(); return; } const b=e.target.closest('[data-ht]'); if(b){ k=+b.dataset.ht; draw(); $('#mbox').scrollTop=0; } }; }
+/* tutoriel en quelques écrans ; il se revoit depuis l'aide */
+function showTuto(slug,steps,done){ let i=0; const draw=()=>{ const s=steps[i]; openModal(`<div class="tuto"><div class="tuto-ic">${s[0]}</div><h2>${s[1]}</h2><p>${s[2]}</p><div class="tuto-dots">${steps.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div></div><div class="acts">${i?'<button class="btn" data-t="prev">Précédent</button>':'<button class="btn" data-t="skip">Passer</button>'}<button class="btn pri" data-t="next">${i<steps.length-1?'Suivant':'C’est parti !'}</button></div>`,
+    e=>{ const b=e.target.closest('[data-t]'); if(!b) return; if(b.dataset.t==='prev'){ i--; draw(); return; } if(b.dataset.t==='next'&&i<steps.length-1){ i++; draw(); return; } try{ localStorage.setItem('tuto-'+slug,'1'); }catch(x){} closeModal(); done&&done(); }); };
+  draw(); }
 function closeModal(){ $('#modal').hidden=true; $('#mbox').onclick=null; window.COVER_HIDDEN=null; }
 function toast(s){ const t=document.createElement('div'); t.className='toast'; t.textContent=s; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
 function banner(s,sub,col){ const b=document.createElement('div'); b.className='bannerx'; b.innerHTML=`<div style="${col?'--bc:'+col:''}">${esc(s)}${sub?`<small>${esc(sub)}</small>`:''}</div>`; document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
@@ -202,6 +198,13 @@ function sfx(n){ if(MUTED) return; if(n==='click'&&window.ARC_PLAYING) return; c
     case 'hit': nz(a,t,.25,.5,'lowpass',500); tn(a,t,160,.25,'square',.08,60); break;
     case 'catch': [660,880,1100].forEach((f,k)=>tn(a,t+k*.05,f,.12,'triangle',.08)); break;
     case 'pop': tn(a,t,600,.08,'sine',.1,900); break;
+    case 'pong': tn(a,t,440,.06,'square',.06); break;
+    case 'ping': tn(a,t,880,.05,'square',.05); break;
+    case 'brick': tn(a,t,700+Math.random()*300,.06,'square',.04); nz(a,t,.04,.15,'highpass',2500); break;
+    case 'lines': [523,659,784].forEach((f,k)=>tn(a,t+k*.05,f,.14,'square',.05)); break;
+    case 'drop': nz(a,t,.06,.3,'lowpass',600); tn(a,t,140,.06,'sine',.08); break;
+    case 'rot': tn(a,t,660,.03,'triangle',.04); break;
+    case 'fuse': nz(a,t,.15,.12,'highpass',4000); break;
   } }
 function updSnd(){ const b=$('#sndBtn'); if(b) b.textContent=MUTED?'Son : non':'Son : oui'; }
 document.addEventListener('click',e=>{
@@ -304,8 +307,8 @@ const TK=(()=>{
    draw(); }
  T.menu=menu;
  /* ---------- aide de première visite ---------- */
- function firstHelp(){ let seen=false; try{ seen=!!localStorage.getItem('tuto-'+D.id); }catch(e){} if(seen) return; try{ localStorage.setItem('tuto-'+D.id,'1'); }catch(e){}
-   setTimeout(()=>{ if(window.PROF&&PROF.notice) PROF.notice(`Première partie de ${D.title} ? Les règles en une minute.`,false,['Voir les règles',()=>D.help()]); },1500); }
+ function firstHelp(){ if(D.tuto) window.GAME_TUTO=()=>showTuto(D.id,D.tuto,null); let seen=false; try{ seen=!!localStorage.getItem('tuto-'+D.id); }catch(e){} if(seen) return; try{ localStorage.setItem('tuto-'+D.id,'1'); }catch(e){}
+   setTimeout(()=>{ if(window.PROF&&PROF.notice) PROF.notice(`Première partie de ${D.title} ? ${D.tuto?'Le tutoriel en trois écrans.':'Les règles en une minute.'}`,false,D.tuto?['Voir le tutoriel',()=>window.GAME_TUTO()]:['Voir les règles',()=>D.help()]); },1500); }
  /* ---------- démarrage ---------- */
  T.def=d=>{ D=d; D.maxLocal=D.maxLocal||D.max; D.opt=Object.assign({},D.opt||{},load('tk-opt-'+D.id)||{});
    window.GAME={help:()=>D.help(),menu};
@@ -395,6 +398,7 @@ function afterMove(G,ev){ const s=G.turn;
   if(!G.dice.length||!legal(S(G),s,G.dice).length){ if(G.dice.length) ev.push({t:'stuck',s}); endTurn(G,ev); } }
 const D={id:'backgammon',title:'Backgammon',min:2,max:2,maxLocal:2,
   desc:'Le plus ancien des jeux de course : fais le tour du plateau et sors tes 15 pions avant l’adversaire.',
+  tuto:[["🎲", "Lance les dés", "Touche « Lancer les dés », puis avance tes pions du nombre de chaque dé. Ton jan intérieur est en bas à droite."], ["👆", "Déplace", "Touche un pion surligné, puis une case d’arrivée verte. « Annuler » remet le tour à zéro."], ["🏁", "Sors tes pions", "Frappe les pions seuls de l’adversaire, ramène les tiens chez toi et sors-les tous en premier."]],
   opt:{target:1},
   optsHTML(){ return `<h4>Match</h4><div class="seg">${[1,3,5].map(n=>`<button class="${D.opt.target===n?'on':''}" data-o="${n}">${n===1?'1 partie':'en '+n+' points'}</button>`).join('')}</div>`; },
   optClick(o){ D.opt.target=+o.dataset.o; },
@@ -476,15 +480,5 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else
 
 
 
-
-
-
-
-
-
-
-
-
-
-<!--PROF--><script src="common/profil.js?v=b366504c"></script><!--/PROF-->
+<!--PROF--><script src="common/profil.js?v=d959263a"></script><!--/PROF-->
 </body></html>

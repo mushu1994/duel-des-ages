@@ -5,9 +5,9 @@ from playwright.async_api import async_playwright
 BASE = next((a for a in sys.argv[1:] if a.startswith('http')), 'http://localhost:8765/')
 ARGS = [a for a in sys.argv[1:] if not a.startswith('http')]
 GAMES = ARGS[0].split(';') if ARGS else ['demineur', '2048', 'mot-du-jour', 'mots-meles', 'awale', 'morpion-geant', 'backgammon', 'yams', 'memory', 'belote', 'mille-bornes',
-         'mille-bornes|2|{"allonge":true}', 'mille-bornes|4|{"equipes":"auto","match":"5000"}', 'mille-bornes|6|{"equipes":"auto"}']
+         'mille-bornes|2|{"allonge":true}', 'mille-bornes|4|{"equipes":"auto","match":"5000"}', 'mille-bornes|6|{"equipes":"auto"}', 'bataille-corse|3']
 if ARGS and ';' not in ARGS[0] and '|' not in ARGS[0]: GAMES = ARGS[0].split(',')
-N = {'belote': 4, 'mille-bornes': 3, 'yams': 3, 'memory': 3, 'demineur': 3, '2048': 2, 'mot-du-jour': 3, 'mots-meles': 3}
+N = {'bataille-corse': 3, 'belote': 4, 'mille-bornes': 3, 'yams': 3, 'memory': 3, 'demineur': 3, '2048': 2, 'mot-du-jour': 3, 'mots-meles': 3}
 async def run(b, spec):
     ctx = await b.new_context(viewport={'width': 420, 'height': 860})
     g, *rest = spec.split('|'); n = int(rest[0]) if rest else N.get(g, 2); opt = rest[1] if len(rest) > 1 else None
