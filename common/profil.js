@@ -72,7 +72,8 @@ const PROF=(()=>{
  P.moi=async()=>{ const ps=P.pseudo(); if(!ps) return null; try{ return await P.rpc('profil_moi',{p_k:key(ps),p_secret:SECRET}); }catch(e){ return null; } };
  P.restore=async(ps,code)=>{ code=String(code||'').replace(/[^a-z0-9]/gi,'').toLowerCase(); const r=await P.rpc('profil_moi',{p_k:key(ps),p_secret:code}); if(!r) return false;
    SECRET=code; sv('prof-secret',code); const d=r.data||{}; for(const [k,x] of Object.entries(D.jeux)){ const y=(d.jeux=d.jeux||{})[k]||{}; d.jeux[k]={p:Math.max(x.p||0,y.p||0),v:Math.max(x.v||0,y.v||0),l:Math.max(x.l||0,y.l||0),t:Math.max(x.t||0,y.t||0),last:Math.max(x.last||0,y.last||0)}; }
-   D=Object.assign({},D,d,{jeux:d.jeux,succes:Object.assign({},D.succes,d.succes),rec:Object.assign({},D.rec,d.rec)}); D.pris=null; sv('prof',D); sv('net-name',r.pseudo); return true; };
+   const av=Object.assign({},D.av||{}); for(const [g,x] of Object.entries(d.av||{})){ const y=av[g]||{n:0,st:{}}; const st=Object.assign({},y.st); for(const [k,v] of Object.entries(x.st||{})) st[k]=Math.max(st[k]||0,v); av[g]={n:Math.max(y.n||0,x.n||0),st}; }
+   D=Object.assign({},D,d,{jeux:d.jeux,av,succes:Object.assign({},D.succes,d.succes),rec:Object.assign({},D.rec,d.rec)}); D.pris=null; sv('prof',D); sv('net-name',r.pseudo); return true; };
  P.setData=o=>{ Object.assign(D,o); save(); };
  /* ---------- défis ---------- */
  const b64=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');

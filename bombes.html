@@ -138,6 +138,11 @@ body.immersive .stage{padding-top:max(6px,env(safe-area-inset-top))}
  .stage:has(.pad[data-pos="droite"]:not([hidden])){padding-right:calc(min(36vh,300px) + 34px)}
 }
 
+.avmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin:10px 0;max-height:52vh;overflow:auto;padding:2px}
+.avl{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:12px;border:2px solid #c9b98f;background:#fffaf0;padding:8px 4px;cursor:pointer;color:#2a2418}
+.avl b{font:800 22px var(--title)}.avl small{font-size:11px;line-height:1.15;text-align:center;min-height:26px}.avl span{color:#e0a800;letter-spacing:1px}
+.avl.cur{border-color:var(--accent);box-shadow:0 0 0 3px #2f8a4a55}.avl.lock{opacity:.45;cursor:default}
+
 .hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
 .bombbtn{position:absolute;right:12px;bottom:14px;width:min(24vw,96px);height:min(24vw,96px);border-radius:50%;border:3px solid #fff8;background:radial-gradient(circle at 35% 30%,#ff8a5a,#c8301a);font-size:min(10vw,40px);box-shadow:0 6px 18px #0008;z-index:5;touch-action:none;line-height:1;opacity:.85}
 .bombbtn:active{transform:scale(.92)}
@@ -621,5 +626,5 @@ const skip=/[?&](salle|creer)=/.test(location.search)||(()=>{ const s=load('net-
 </script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
-<!--PROF--><script src="common/profil.js?v=d959263a"></script><!--/PROF-->
+<!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
 </body></html>

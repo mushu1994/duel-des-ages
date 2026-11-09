@@ -108,7 +108,15 @@ body{background:radial-gradient(ellipse at 50% 30%,#2a2230,#0c0a10 80%) fixed,#0
 .hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
+.coach{display:flex;gap:10px;align-items:flex-start;margin-top:8px;background:#fffbe9;color:#3a2d12;border:2px solid #e8c55a;border-radius:14px;padding:8px 10px;font-size:14px;line-height:1.35;box-shadow:0 4px 14px #0003}
+.coach[hidden]{display:none}.coach .cav{font-size:26px;line-height:1}.coach .ctx{flex:1;display:flex;flex-direction:column;gap:3px}.coach .cbt{display:flex;gap:6px;flex-shrink:0}
+.coach .btn{background:#f3e3a8;color:#3a2d12;border-color:#d9b84a;padding:5px 9px;font-size:13px}
+.bar .btn.rec{box-shadow:0 0 0 3px #f6d27a,0 0 16px #f6d27a;animation:recp 1.6s ease-in-out infinite}@keyframes recp{50%{box-shadow:0 0 0 3px #f6d27a,0 0 4px #f6d27a}}
+@media(max-width:600px){.coach{font-size:12.5px;padding:6px 8px}.coach .cav{display:none}.coach .cbt{flex-direction:column}}
 </style>
+
+
+
 
 
 
@@ -156,9 +164,9 @@ body{background:radial-gradient(ellipse at 50% 30%,#2a2230,#0c0a10 80%) fixed,#0
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Poker</h1>
-<div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
+<div class="tools"><button class="btn" data-k="coach" title="Mode apprentissage">🎓</button><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
 <div class="status" id="status"></div>
-<div class="room"><div class="tbl" id="tbl"><div class="felt"></div><div class="blinds" id="blinds"></div><div class="center"><div class="board" id="board"></div><div class="pot" id="pot"></div><div class="hname" id="hname"></div></div></div><div class="bar" id="bar"></div></div>
+<div class="room"><div class="tbl" id="tbl"><div class="felt"></div><div class="blinds" id="blinds"></div><div class="center"><div class="board" id="board"></div><div class="pot" id="pot"></div><div class="hname" id="hname"></div></div></div><div class="coach" id="coach" hidden><span class="cav">🎓</span><div class="ctx"></div><div class="cbt"><button class="btn" data-k="rank" title="Classement des mains">📖</button><button class="btn" data-k="coach" title="Masquer le coach">✕</button></div></div><div class="bar" id="bar"></div></div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
 <!--NET--><script src="common/hall.js?v=e82d0531"></script><script src="common/net.js?v=2ba51f77"></script><!--/NET--><script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -277,7 +285,7 @@ async function nextHand(){ const my=GEN; P.hand++; if(P.hand>1&&(P.hand-1)%P.cfg
   const live=P.players.map((p,i)=>i).filter(i=>!P.players[i].out);
   if((!NETON()&&P.players[0].out)||live.length<2){ return gameOver(); }
   do{ P.dealer=(P.dealer+1)%P.players.length; }while(P.players[P.dealer].out);
-  P.deck=shuffleArr(deck52(2)); P.board=[]; P.street=0; P.reveal=false; P.hname='';
+  CO.fb=null; P.deck=shuffleArr(deck52(2)); P.board=[]; P.street=0; P.reveal=false; P.hname='';
   const nx=i=>{ do{ i=(i+1)%P.players.length; }while(P.players[i].out); return i; };
   const [sb,bb]=BL[P.lvl]; const heads=live.length===2; const sbI=heads?P.dealer:nx(P.dealer), bbI=nx(sbI);
   postBet(sbI,sb); postBet(bbI,bb); P.players[sbI].act='Petite blind'; P.players[bbI].act='Grosse blind';
@@ -342,23 +350,67 @@ function render(){ const n=P.players.length, tbl=$('#tbl'), M0=ME(); if(NETON()&
   $('#pot').textContent=`Pot : ${pot()}`; $('#hname').textContent=P.hname||''; $('#blinds').textContent=`Blinds ${BL[P.lvl][0]} / ${BL[P.lvl][1]} · main ${P.hand}`;
   const st=$('#status'); st.style.setProperty('--pc',P.cur===M0?'#2f8a4a':'#3a2a4a');
   st.innerHTML=`<span class="who">${P.cur>=0?esc(P.players[P.cur].name):'Fin de la main'}</span><span class="msg">${W()?'À toi de parler.':P.cur>=0?'réfléchit…':esc(P.hname||'')}</span><span class="right">${['Pré-flop','Flop','Turn','River'][P.street]}</span>`;
-  const bar=$('#bar'); const WW=W(); if(P.over) return; if(!WW){ bar.innerHTML=''; return; }
+  const bar=$('#bar'); const WW=W(); if(P.over){ coachRender(); return; } if(!WW){ bar.innerHTML=''; coachRender(); return; }
   const me=P.players[M0], tc=WW.toCall, minTo=Math.min(me.chips+me.bet,P.max+P.minRaise), maxTo=me.chips+me.bet;
   WW.raise=WW.raise||minTo;
   bar.innerHTML=`<button class="btn" data-p="fold">Se coucher</button><button class="btn pri" data-p="${tc?'call':'check'}">${tc?`Suivre ${tc}`:'Parole'}</button>
    ${maxTo>P.max?`<input type="range" id="rz" min="${minTo}" max="${maxTo}" step="${BL[P.lvl][0]}" value="${WW.raise}"><span class="amt" id="rzv">${WW.raise}</span><button class="btn" data-p="half">½ pot</button><button class="btn" data-p="potr">Pot</button><button class="btn pri" data-p="raise">${P.max?'Relancer':'Miser'}</button>`:''}<button class="btn" data-p="allin" style="background:#c9302c;color:#fff">Tapis</button>`;
-  const rz=$('#rz'); if(rz) rz.oninput=()=>{ WW.raise=+rz.value; $('#rzv').textContent=rz.value; }; }
-document.addEventListener('click',e=>{ const b=e.target.closest('[data-p]'); const WW=P&&W(); if(!b||!WW) return; const me=P.players[ME()]; const k=b.dataset.p;
+  const rz=$('#rz'); if(rz) rz.oninput=()=>{ WW.raise=+rz.value; $('#rzv').textContent=rz.value; };  coachRender(); }
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-p]'); const WW=P&&W(); if(!b||!WW) return; const me=P.players[ME()]; const k=b.dataset.p; coachJudge(k);
   if(k==='half'||k==='potr'){ const f=k==='half'?.5:1; WW.raise=Math.min(me.chips+me.bet,Math.max(P.max+P.minRaise,Math.round(P.max+WW.toCall+pot()*f))); render(); return; }
   const a=k==='raise'?{a:'raise',to:WW.raise}:{a:k};
   if(NETON()){ if(NET.guest){ P.wait=null; render(); NET.act('bet',[ME(),a]); return; } } const r=WAIT&&WAIT.res; if(r) r(a); });
-let M={me:'Toi',n:4,level:'normal',stack:1000,every:8,speed:800};
+/* ===== Mode apprentissage (coach) ===== */
+const CO={fb:null,eq:{},rec:null};
+const coachOn=()=>!!P&&!NETON()&&M.coach!==false;
+const RN=r=>({14:'As',13:'Roi',12:'Dame',11:'Valet'}[r]||String(r));
+const PCT=x=>Math.round(x*100)+' %';
+const ACTN={fold:'te coucher',check:'parler (passer)',call:'suivre',raise:'relancer'};
+function startHand(h){ const [a,b]=h.map(c=>c.r).sort((x,y)=>y-x), s=h[0].s===h[1].s;
+  if(a===b) return a>=10?`Paire de ${RN(a)} : une main <b>premium</b> !`:a>=6?`Paire moyenne (${RN(a)}) : bonne main, surtout si tu touches un brelan.`:`Petite paire (${RN(a)}) : jouable pas cher, en espérant un brelan.`;
+  if(a===14&&b>=12||(a===13&&b===12&&s)||(a===14&&b===11&&s)) return `${RN(a)}-${RN(b)}${s?' assortis':''} : une <b>grosse main de départ</b>.`;
+  if(a>=10&&b>=10) return `Deux hautes cartes (${RN(a)}-${RN(b)}) : main solide.`;
+  if(s&&a-b===1) return 'Connecteurs assortis : jouable si ça ne coûte pas cher (quinte ou couleur possibles).';
+  if(a===14) return `As-${RN(b)} : l’As est fort, mais la petite carte peut te coûter cher. Prudence.`;
+  if(s) return 'Cartes assorties : la couleur est possible mais rare. Main moyenne.';
+  return 'Main faible : en général on se couche si quelqu’un relance.'; }
+function draws(hole,board){ const all=hole.concat(board), out=[]; if(board.length<3||board.length>=5) return out;
+  const cat=catOf(eval7(all));
+  if(cat<5){ for(let s=0;s<4;s++){ const n=all.filter(c=>c.s===s).length; if(n===4&&hole.some(c=>c.s===s)) out.push({t:'tirage couleur',o:9}); } }
+  if(cat<4){ const has=new Set(all.map(c=>c.r)); if(has.has(14)) has.add(1); let outs=0; for(let r=2;r<=14;r++){ if(has.has(r)) continue; const H=new Set(has); H.add(r); if(r===14) H.add(1); let ok=false; for(let h=14;h>=5&&!ok;h--){ let k=0; while(k<5&&H.has(h-k)) k++; if(k===5) ok=true; } if(ok) outs++; }
+    if(outs>=2) out.push({t:'tirage quinte par les deux bouts',o:8}); else if(outs===1) out.push({t:'tirage quinte ventrale',o:4}); }
+  return out; }
+function pkAdvice(){ const WW=W(); if(!WW) return null; const me=P.players[ME()], tc=WW.toCall, nOpp=Math.max(1,inHand().length-1), b=P.board;
+  const ck=me.hole.map(c=>c.s+'.'+c.r).join()+'|'+b.map(c=>c.s+'.'+c.r).join()+'|'+nOpp; const eq=CO.eq[ck]??(CO.eq={},CO.eq[ck]=equity(me.hole,b,nOpp,500));
+  const pt=pot(), need=tc?tc/(pt+tc):0, strong=nOpp===1?.62:nOpp===2?.48:.38, vstrong=strong+.15, canRaise=me.chips>tc, dr=draws(me.hole,b), L=[];
+  if(b.length<3) L.push('🂠 '+startHand(me.hole));
+  else { const cat=catOf(eval7(me.hole.concat(b))); let t=`🃏 Tu as : <b>${cat?HNAMES[cat]:'rien pour l’instant (carte haute)'}</b>`; if(b.length===5&&catOf(eval7(b))===cat&&eval7(b)===eval7(me.hole.concat(b))) t+=' (toute sur la table : tout le monde l’a !)'; L.push(t+'.'); }
+  if(dr.length){ const o=Math.max(...dr.map(d=>d.o)), left=b.length===3?2:1; L.push(`🎯 ${dr.map(d=>d.t).join(' + ')} : ${o} cartes t’améliorent (≈ ${o*(left===2?4:2)} % avec la règle du « ×${left===2?4:2} »).`); }
+  L.push(`📊 Chances de gagner contre ${nOpp} adversaire${nOpp>1?'s':''} : <b>≈ ${PCT(eq)}</b>.`);
+  let rec, why;
+  if(!tc){ if(eq>=strong&&canRaise){ rec='raise'; why='Mise environ la moitié du pot : ta main est sûrement devant, fais payer les mains plus faibles.'; }
+    else { rec='check'; why=dr.length?'Parole : tu as un tirage, profite de la carte gratuite.':'Parole : rien à protéger, regarde la carte suivante gratuitement.'; } }
+  else { L.push(`⚖️ Cote du pot : tu mets ${tc} pour gagner ${pt} → il te faut au moins <b>${PCT(need)}</b> de chances.`);
+    if(eq>=vstrong&&canRaise){ rec='raise'; why='Relance : ta main est très forte, fais grossir le pot.'; }
+    else if(eq>=need+.03){ rec='call'; why=`Suis : tu as ≈ ${PCT(eq)} de chances, plus que les ${PCT(need)} nécessaires.`; }
+    else { rec='fold'; why=`Couche-toi : il te faudrait ${PCT(need)} de chances et tu n’en as qu’environ ${PCT(eq)}. Garde tes jetons pour une meilleure occasion.`; } }
+  L.push('👉 <b>Conseil</b> : '+why); return {rec,L}; }
+function coachRender(){ const el=$('#coach'); if(!el) return; $$('#bar .rec').forEach(x=>x.classList.remove('rec')); if(!coachOn()||P.over){ el.hidden=true; return; }
+  const L=[]; if(CO.fb) L.push(CO.fb); let adv=null; try{ adv=pkAdvice(); }catch(e){ console.warn(e); }
+  if(adv){ CO.rec=adv.rec; const WW=W(), me=P.players[ME()], rz=$('#rz'); if(adv.rec==='raise'&&rz&&!WW.cset){ WW.cset=1; WW.raise=Math.min(me.chips+me.bet,Math.max(P.max+P.minRaise,Math.round(P.max+WW.toCall+pot()*.5))); rz.value=WW.raise; $('#rzv').textContent=WW.raise; } L.push(...adv.L); const sel=adv.rec==='raise'?'[data-p="raise"]':'[data-p="'+adv.rec+'"]'; ($(`#bar ${sel}`)||(adv.rec==='raise'?$('#bar [data-p="call"],#bar [data-p="check"]'):null))?.classList.add('rec'); }
+  else { if(P.cur<0) L.push('🏁 Main terminée. '+(P.hname?esc(P.hname)+'.':'')); else { const tips=['Observe les mises : une grosse relance cache souvent une grosse main.','Plus tu parles tard (près du donneur « D »), plus tu as d’informations.','Ne suis pas « pour voir » avec une main faible : les petits appels finissent par coûter cher.','Les blinds montent : sans jetons, il faudra prendre des risques. Ne laisse pas ton tapis fondre.']; L.push('💭 '+tips[P.hand%tips.length]); } }
+  el.querySelector('.ctx').innerHTML=L.map(x=>'<div>'+x+'</div>').join(''); el.hidden=false; }
+document.addEventListener('click',e=>{ const a=e.target.closest('[data-k]'); if(a&&a.dataset.k==='coach'&&P){ M.coach=!coachOn(); store('pk-prefs',M); toast(M.coach?'Mode apprentissage activé':'Mode apprentissage désactivé (bouton 🎓 pour le remettre)'); coachRender(); }
+  if(a&&a.dataset.k==='rank') help(); },true);
+function coachJudge(k){ if(!coachOn()||!CO.rec||k==='half'||k==='potr') return; const act=k==='allin'?'raise':k; CO.fb=act===CO.rec?'👍 <b>Bien joué</b>, c’était aussi le choix du coach.':`🤔 Tu as choisi de ${ACTN[act]||act} ; le coach aurait plutôt conseillé de <b>${ACTN[CO.rec]}</b>.`; CO.rec=null; }
+let M={me:'Toi',n:4,level:'normal',stack:1000,every:8,speed:800,coach:true};
 function menu(){ const draw=()=>paintModal(`<h2>Texas Hold'em</h2><p>Tournoi « sit &amp; go » : chacun démarre avec le même tapis, les blinds montent, le dernier joueur avec des jetons gagne.</p><div class="prow">Ton prénom <input type="text" id="me" value="${esc(M.me)}" placeholder="Toi" maxlength="14"></div>
   <h4>Joueurs à la table</h4><div class="seg">${[2,3,4,5,6].map(n=>`<button class="${M.n===n?'on':''}" data-m="n:${n}">${n}</button>`).join('')}</div>
   <h4>Adversaires</h4><div class="seg">${[['facile','Touristes'],['normal','Habitués'],['difficile','Requins']].map(([k,l])=>`<button class="${M.level===k?'on':''}" data-m="level:${k}">${l}</button>`).join('')}</div>
   <h4>Tapis de départ</h4><div class="seg">${[500,1000,2000].map(v=>`<button class="${M.stack===v?'on':''}" data-m="stack:${v}">${v}</button>`).join('')}</div> <div class="seg">${[[5,'Blinds rapides'],[8,'Normales'],[12,'Lentes']].map(([v,l])=>`<button class="${M.every===v?'on':''}" data-m="every:${v}">${l}</button>`).join('')}</div>
+  <h4>Mode apprentissage 🎓</h4><div class="seg"><button class="${M.coach!==false?'on':''}" data-m="coach:1">Coach activé</button><button class="${M.coach===false?'on':''}" data-m="coach:0">Sans coach</button></div><p style="font-size:13px;opacity:.75;margin:4px 0 0">Le coach décrit ta main, calcule tes chances et la cote du pot, puis te conseille : se coucher, suivre ou relancer.</p>
   <div class="acts">${P?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="start">S'asseoir</button></div>`);
-  draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; M.me=$('#me').value; const [k,v]=x.dataset.m.split(':'); if(k==='start'){ closeModal(); M.me=M.me.trim()||'Toi'; store('pk-prefs',M); newGame({...M}); return; } M[k]=k==='level'?v:+v; draw(); }; }
+  draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; M.me=$('#me').value; const [k,v]=x.dataset.m.split(':'); if(k==='start'){ closeModal(); M.me=M.me.trim()||'Toi'; store('pk-prefs',M); newGame({...M}); return; } M[k]=k==='level'?v:k==='coach'?v==='1':+v; draw(); }; }
 function help(){ helpTabs("Poker · Texas Hold’em",[["But du jeu","<p>Tournoi « sit &amp; go » : tout le monde démarre avec le même tapis de jetons, les mises obligatoires (blinds) montent régulièrement, et le <b>dernier joueur qui a encore des jetons</b> gagne.</p>"],["Une main","<ol><li>Chacun reçoit 2 cartes cachées. Les deux joueurs après le donneur posent la petite et la grosse blind.</li><li>Tour d’enchères, puis 3 cartes communes (<b>flop</b>), enchères, 1 carte (<b>turn</b>), enchères, 1 carte (<b>river</b>), dernières enchères.</li><li>À chaque tour : <b>se coucher</b>, <b>parole</b> (si personne n’a misé), <b>suivre</b>, <b>relancer</b> ou <b>tapis</b>.</li><li>Au bout, chacun forme sa meilleure main de 5 cartes parmi ses 2 cartes et les 5 communes. La meilleure gagne le pot.</li></ol><p>Quand un joueur est à tapis, des pots secondaires sont créés automatiquement.</p>"],["Valeur des mains","<ol><li>Quinte flush : 5 cartes qui se suivent, même couleur.</li><li>Carré : 4 cartes de même valeur.</li><li>Full : un brelan et une paire.</li><li>Couleur : 5 cartes de même couleur.</li><li>Quinte : 5 cartes qui se suivent.</li><li>Brelan : 3 cartes de même valeur.</li><li>Double paire.</li><li>Paire.</li><li>Carte haute.</li></ol><p>Options : 2 à 6 joueurs, adversaires <b>touristes</b>, <b>habitués</b> ou <b>requins</b>, tapis de 500 à 2000, blinds rapides, normales ou lentes.</p>"]]); }
 window.PK={get P(){return P;}};
 window.NETGAME={id:'poker',title:'Poker',min:2,max:6,
@@ -423,5 +475,8 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else
 
 
 
-<!--PROF--><script src="common/profil.js?v=d959263a"></script><!--/PROF-->
+
+
+
+<!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
 </body></html>

@@ -138,6 +138,11 @@ body.immersive .stage{padding-top:max(6px,env(safe-area-inset-top))}
  .stage:has(.pad[data-pos="droite"]:not([hidden])){padding-right:calc(min(36vh,300px) + 34px)}
 }
 
+.avmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin:10px 0;max-height:52vh;overflow:auto;padding:2px}
+.avl{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:12px;border:2px solid #c9b98f;background:#fffaf0;padding:8px 4px;cursor:pointer;color:#2a2418}
+.avl b{font:800 22px var(--title)}.avl small{font-size:11px;line-height:1.15;text-align:center;min-height:26px}.avl span{color:#e0a800;letter-spacing:1px}
+.avl.cur{border-color:var(--accent);box-shadow:0 0 0 3px #2f8a4a55}.avl.lock{opacity:.45;cursor:default}
+
 .hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
 
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
@@ -341,9 +346,9 @@ let PEND=null;
 const host=()=>!ARC.guest();
 const emit=e=>ARC.emit(G,e);
 /* ---------- moteur (hôte) ---------- */
-function newGame(list){ const o=Object.assign({},OPT); setSize(SIZES[o.size]||32);
-  const solo=list.length===1&&!ARC.net();
-  G={W,gid:Math.random().toString(36).slice(2,8),solo,mode:solo?'survie':o.mode,step:SPEED[o.speed]||160,obs:o.obs||'quelques',walls:[],rounds:solo?1:o.mode==='survie'?o.rounds:1,round:0,dur:o.mins*60000,
+function newGame(list,adv){ const o=Object.assign({},OPT); setSize(adv?AW:(SIZES[o.size]||32));
+  const solo=(list.length===1||!!adv)&&!ARC.net();
+  G={W,gid:Math.random().toString(36).slice(2,8),solo,adv:adv?{lvl:adv,goal:AV[adv-1].g,ticks:0,won:false}:null,mode:solo?'survie':o.mode,step:adv?AV[adv-1].sp:SPEED[o.speed]||160,obs:o.obs||'quelques',walls:[],rounds:solo?1:o.mode==='survie'?o.rounds:1,round:0,dur:o.mins*60000,
     players:ARC.recolor(list.map((x,i)=>({name:x.name,cid:x.cid||null,ai:!!x.ai,level:x.level||o.level}))),
     sn:list.map(()=>({c:[],d:1,al:false,sc:0,len:4,rs:0,k:0,w:0})),food:[],phase:'count',cd:0,left:0,ev:[],evn:0,net:ARC.net()};
   L={q:list.map(()=>[]),acc:0,prev:null,rng:ARC.rng((Math.random()*4e9)>>>0)}; if(window.PROF) PROF.played('serpents',ARC.net());
@@ -364,7 +369,7 @@ function place(s,x,y,d){ s.d=d; s.c=[]; for(let k=0;k<4;k++) s.c.push((y-DY[d]*k
 function startRound(){ G.round++; const n=G.players.length; G.food=[]; L.prev=null;
   G.sn.forEach((s,i)=>{ const a=2*Math.PI*i/n-Math.PI/2, R=W*.33; const x=Math.round(W/2-.5+Math.cos(a)*R), y=Math.round(H/2-.5+Math.sin(a)*R);
     const tx=-Math.sin(a), ty=Math.cos(a); const d=Math.abs(tx)>Math.abs(ty)?(tx>0?1:3):(ty>0?2:0); place(s,x,y,d); s.al=true; s.rs=0; L.q[i]=[]; });
-  makeWalls(); for(let k=0;k<(G.solo?2:n+3);k++) addFood();
+  makeWalls(); if(G.adv) advSetup(); else for(let k=0;k<(G.solo?2:n+3);k++) addFood();
   G.phase='count'; G.cd=Math.round(3000/G.step); G.left=Math.round(G.dur/G.step); emit({t:'round',r:G.round}); }
 function occ(){ const o=new Int16Array(W*H).fill(-1); G.sn.forEach((s,i)=>{ if(s.al) s.c.forEach(p=>o[p]=i); }); return o; }
 function addFood(v,p,corpse){ if(p==null){ const o=occ(); for(let t=0;t<400;t++){ const q=(L.rng()*W*H)|0; if(o[q]<0&&!WALL[q]&&!G.food.some(f=>f.p===q)){ p=q; break; } } if(p==null) return; }
@@ -389,11 +394,53 @@ function tick(){
   heads.forEach((h,i)=>{ if(!h) return; if(h.x<0||h.y<0||h.x>=W||h.y>=H){ dead[i]=true; return; } const p=h.y*W+h.x; if(WALL[p]){ dead[i]=true; return; } if(o[p]>=0){ dead[i]=true; if(o[p]!==i) by[i]=o[p]; } });
   for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) if(heads[i]&&heads[j]&&heads[i].x===heads[j].x&&heads[i].y===heads[j].y){ dead[i]=dead[j]=true; }
   G.sn.forEach((s,i)=>{ if(!s.al) return; if(dead[i]){ kill(i,by[i]); return; } const p=heads[i].y*W+heads[i].x; s.c.unshift(p);
-    const fi=G.food.findIndex(f=>f.p===p); if(fi>=0){ const f=G.food[fi]; G.food.splice(fi,1); s.len+=f.v; s.sc+=f.v; if(G.solo) G.step=Math.max(68,G.step-2*f.v); emit({t:'eat',s:i,g:f.v>1?1:0}); if(!f.c) addFood(); }
+    const fi=G.food.findIndex(f=>f.p===p); if(fi>=0){ const f=G.food[fi]; G.food.splice(fi,1); s.len+=f.v; s.sc+=f.v; if(G.solo&&!G.adv) G.step=Math.max(68,G.step-2*f.v); if(G.adv&&i===0&&s.sc>=G.adv.goal) G.adv.won=true; emit({t:'eat',s:i,g:f.v>1?1:0}); if(!f.c) addFood(); }
     while(s.c.length>s.len) s.c.pop(); });
+  if(G.adv){ G.adv.ticks++; if(G.adv.won||!G.sn[0].al){ emit({t:G.adv.won?'advwin':'advlose'}); finish(); } return; }
   if(G.mode==='survie'){ const al=G.sn.filter(s=>s.al).length; if(al===0||(n>1&&al<=1)){ const w=G.sn.findIndex(s=>s.al); if(w>=0) G.sn[w].w++; G.phase='round'; G.cd=Math.round((G.round>=G.rounds?1800:3500)/G.step); emit({t:'rwin',s:w,r:G.round}); } }
   else if(--G.left<=0) finish(); }
 function finish(){ G.phase='over'; emit({t:'over'}); }
+
+/* ---------- aventure : 20 niveaux, progression gardée dans le profil ---------- */
+const AW=24;
+const AV=[[8,165,0],[10,160,0],[12,158,0],[12,156,0],[12,155,1,'facile'],[14,152,0],[14,150,0],[15,148,0],[15,146,0],[16,145,2,'normal'],[16,142,0],[18,140,0],[18,138,1,'normal'],[18,136,0],[20,134,0],[20,132,0],[20,130,3,'normal'],[22,126,0],[22,122,0],[25,118,3,'difficile']].map(([g,sp,b,lv])=>({g,sp,b,lv}));
+const AVN=['Le pré','Les quatre rochers','La croisée','Le jardin clos','Un rival !','Les deux murs','Les quatre salles','L’escalier','Le colimaçon','Les jumeaux','Les zigzags','La forêt de piquets','Chambres et rival','Le grand H','Les douves','Face à face','Trois rivaux','Le peigne','Le labyrinthe','Le roi des serpents'];
+function avLay(n){ const w=new Set(); const r=(x,y,a,b)=>{ for(let j=0;j<b;j++) for(let i=0;i<a;i++){ const X=x+i,Y=y+j; if(X>=0&&Y>=0&&X<AW&&Y<AW) w.add(Y*AW+X); } }; const d=(x,y,a,b)=>{ for(let j=0;j<b;j++) for(let i=0;i<a;i++) w.delete((y+j)*AW+x+i); };
+  switch(n){
+   case 2: case 10: case 20: [[6,6],[16,6],[6,16],[16,16]].forEach(([x,y])=>r(x,y,2,2)); if(n===20){ r(11,3,2,3); r(11,18,2,3); r(3,11,3,2); r(18,11,3,2); } break;
+   case 3: r(11,4,2,6); r(11,14,2,6); r(4,11,6,2); r(14,11,6,2); break;
+   case 4: r(5,5,14,1); r(5,18,14,1); r(5,5,1,14); r(18,5,1,14); d(11,5,2,1); d(11,18,2,1); d(5,11,1,2); d(18,11,1,2); break;
+   case 6: r(3,8,12,1); r(9,15,12,1); break;
+   case 7: case 13: r(11,0,2,24); r(0,11,24,2); d(11,4,2,3); d(11,17,2,3); d(4,11,3,2); d(17,11,3,2); break;
+   case 8: for(let k=0;k<6;k++) r(3+k*3,3+k*3,2,2); break;
+   case 9: r(4,4,16,1); r(19,4,1,16); r(4,19,16,1); r(4,8,1,12); r(4,8,11,1); r(14,8,1,8); r(8,15,7,1); break;
+   case 11: r(4,5,15,1); r(6,10,15,1); r(4,15,15,1); r(6,20,15,1); break;
+   case 12: for(let x=3;x<AW-2;x+=4) for(let y=3;y<AW-2;y+=4) r(x,y,1,1); break;
+   case 14: r(6,3,2,18); r(16,3,2,18); r(6,11,12,2); break;
+   case 15: r(5,5,14,1); r(5,18,14,1); r(5,5,1,14); r(18,5,1,14); d(11,5,2,1); d(11,18,2,1); d(5,11,1,2); d(18,11,1,2); r(9,9,6,6); break;
+   case 16: r(3,4,1,16); r(3,4,7,1); r(3,19,7,1); r(20,4,1,16); r(14,4,7,1); r(14,19,7,1); r(11,9,2,6); break;
+   case 18: [4,8,12,16,20].forEach(x=>r(x,0,1,14)); [6,10,14,18].forEach(x=>r(x,10,1,14)); break;
+   case 19: r(2,4,8,1); r(14,4,8,1); r(4,8,1,8); r(19,8,1,8); r(8,8,8,1); r(8,15,8,1); r(2,19,8,1); r(14,19,8,1); r(11,9,2,3); break; }
+  return w; }
+function avGet(){ const d=window.PROF&&PROF.data&&PROF.data().av; const x=(d&&d.serpents)||load('serp-av')||{}; return {n:x.n||0,st:x.st||{}}; }
+function avSet(lvl,stars){ const a=avGet(); a.st[lvl]=Math.max(a.st[lvl]||0,stars); a.n=Math.max(a.n,lvl); store('serp-av',a);
+  if(window.PROF&&PROF.setData){ const av=Object.assign({},PROF.data().av||{}); av.serpents=a; PROF.setData({av}); } }
+function advSetup(){ const lv=G.adv.lvl, A=AV[lv-1]; const spots=[[3,AW-4,1],[AW-4,3,3],[AW-4,AW-4,0],[3,3,2]];
+  G.sn.forEach((s,i)=>{ const [x,y,d]=spots[i]; place(s,x,y,d); });
+  const w=avLay(lv); G.sn.forEach(s=>{ const h=s.c[0], hx=h%W, hy=(h/W)|0; for(let k=-4;k<7;k++) for(let a=-1;a<=1;a++){ const x=hx+DX[s.d]*k+(DX[s.d]?0:a), y=hy+DY[s.d]*k+(DY[s.d]?0:a); w.delete(y*W+x); } });
+  G.walls=[...w]; setWalls(G.walls); G.food=[]; for(let k=0;k<2+A.b;k++) addFood(); }
+function startAdv(lv){ const me=(typeof HALL!=='undefined'&&HALL.pseudo)||'Toi'; const A=AV[lv-1]; const list=[{name:me}]; for(let i=0;i<A.b;i++) list.push({ai:true,name:['Vipère','Couleuvre','Python'][i],level:A.lv}); newGame(list,lv); }
+const starsOf=(S)=>{ const sec=S.adv.ticks*S.step/1000, g=S.adv.goal; return sec<=g*3.2?3:sec<=g*5?2:1; };
+function advMap(){ const a=avGet(); const tot=Object.values(a.st).reduce((x,y)=>x+y,0);
+  openModal(`<h2>🗺️ Aventure</h2><p>Mange le nombre de pommes demandé sans te cogner. Plus tu es rapide, plus tu gagnes d’étoiles. Ta progression est enregistrée dans ton profil. <b>${a.n}/20</b> niveaux · <b>${tot}</b> ★</p>
+   <div class="avmap">${AV.map((L2,i)=>{ const k=i+1, open=k<=a.n+1, st=a.st[k]||0; return `<button class="avl${open?'':' lock'}${k===a.n+1?' cur':''}" data-lv="${k}"${open?'':' disabled'}><b>${open?k:'🔒'}</b><small>${esc(AVN[i])}</small><span>${'★'.repeat(st)}${'☆'.repeat(3-st)}</span></button>`; }).join('')}</div>
+   <div class="acts"><button class="btn" data-c="back">Retour</button></div>`,e=>{ const b=e.target.closest('[data-lv]'); if(b&&!b.disabled){ closeModal(); startAdv(+b.dataset.lv); return; } if(e.target.closest('[data-c="back"]')){ closeModal(); menu(); } }); }
+function advEnd(S){ const lv=S.adv.lvl, won=S.adv.won; const sec=Math.round(S.adv.ticks*S.step/1000);
+  if(won){ const st=starsOf(S); avSet(lv,st); sfx('win'); confetti(); if(window.PROF) PROF.result('serpents',{win:true,score:S.sn[0].sc});
+    openModal(`<div class="tuto"><div class="tuto-ic">${'⭐'.repeat(st)}${'☆'.repeat(3-st)}</div><h2>Niveau ${lv} réussi !</h2><p>${esc(AVN[lv-1])} : ${S.adv.goal} pommes en ${sec} s.${st<3?`<br>Moins de ${Math.ceil(S.adv.goal*(st===1?5:3.2))} s pour ${st+1} étoiles.`:''}</p></div>
+      <div class="acts"><button class="btn" data-a="map">Carte</button><button class="btn" data-a="again">Rejouer</button>${lv<20?'<button class="btn pri" data-a="next">Niveau suivant</button>':''}</div>`,e=>{ const b=e.target.closest('[data-a]'); if(!b) return; closeModal(); const a=b.dataset.a; if(a==='next') startAdv(lv+1); else if(a==='again') startAdv(lv); else advMap(); });
+    if(lv===20) banner('Aventure terminée !','Tu es le roi des serpents','#2f8a4a'); }
+  else { sfx('lose'); openModal(`<div class="tuto"><div class="tuto-ic">💥</div><h2>Raté !</h2><p>${S.sn[0].sc} pomme${S.sn[0].sc>1?'s':''} sur ${S.adv.goal}. Encore un essai ?</p></div><div class="acts"><button class="btn" data-a="map">Carte</button><button class="btn pri" data-a="again">Réessayer</button></div>`,e=>{ const b=e.target.closest('[data-a]'); if(!b) return; closeModal(); if(b.dataset.a==='again') startAdv(lv); else advMap(); }); } }
 /* ---------- ordinateur ---------- */
 function ai(i){ const s=G.sn[i], lv=G.players[i].level||'normal', h=s.c[0], hx=h%W, hy=(h/W)|0;
   const blk=WALL.slice(); G.sn.forEach(t=>{ if(!t.al) return; const m=t.c.length>=t.len?t.c.length-1:t.c.length; for(let k=0;k<m;k++) blk[t.c[k]]=1; });
@@ -434,15 +481,15 @@ function draw(){ const ctx=cv.begin(); ctx.drawImage(bg,0,0); const S=host()?G:s
     const fx=DX[d], fy=DY[d], sx=-fy, sy=fx; for(const k of [-1,1]){ const ex=cx+fx*C*.15+sx*k*C*.22, ey=cy+fy*C*.15+sy*k*C*.22; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(ex,ey,C*.15,0,7); ctx.fill(); ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(ex+fx*2,ey+fy*2,C*.08,0,7); ctx.fill(); }
     if(S.players.length>1){ ARC.text(ctx,P.name,cx,cy-C*.95,12,i===me?'#fff':'#ffffffcc','#000a'); } }
   ctx.strokeStyle='#0b2614'; ctx.lineWidth=6; ctx.strokeRect(3,3,W*C-6,H*C-6);
-  if(S.phase==='count'){ const n=Math.ceil(S.cd*S.step/1000); ARC.text(ctx,S.solo?'Snake':S.mode==='survie'?`Manche ${S.round} / ${S.rounds}`:'Chrono',W*C/2,H*C/2-70,30,'#fff','#000a'); ARC.text(ctx,String(n),W*C/2,H*C/2,96,'#ffe066','#000a'); if(n!==draw.lastN){ draw.lastN=n; sfx('beep'); } }
+  if(S.phase==='count'){ const n=Math.ceil(S.cd*S.step/1000); ARC.text(ctx,S.adv?`Niveau ${S.adv.lvl} : ${S.adv.goal} pommes`:S.solo?'Snake':S.mode==='survie'?`Manche ${S.round} / ${S.rounds}`:'Chrono',W*C/2,H*C/2-70,30,'#fff','#000a'); ARC.text(ctx,String(n),W*C/2,H*C/2,96,'#ffe066','#000a'); if(n!==draw.lastN){ draw.lastN=n; sfx('beep'); } }
   else draw.lastN=null;
   if(S.phase==='round'){ const w=draw.lastWin; ARC.text(ctx,w!=null&&w>=0?`${S.players[w].name} gagne la manche !`:'Personne ne survit',W*C/2,H*C/2,32,'#fff','#000a'); }
   if(S.phase==='play'&&me!=null&&S.sn[me]&&!S.sn[me].al){ ARC.text(ctx,S.mode==='chrono'?'Tu réapparais…':'Éliminé : regarde la fin',W*C/2,40,22,'#fff','#000a'); } }
 function hud(){ const S=host()?G:snap.cur; const me=ARC.seat(); window.ARC_PLAYING=!!(S&&S.phase!=='over');
   if(!S){ ARC.status('Serpents','Choisis un mode : en ligne ou entraînement.','#2f8a4a'); $('#board').innerHTML=''; return; }
   const P=me!=null?S.players[me]:null, s=me!=null?S.sn[me]:null;
-  const right=S.solo?`Record ${Math.max(load('serp-best')||0,S.sn[0].sc)}`:S.mode==='chrono'?`⏱ ${fmt(S.phase==='count'?S.dur/1000:S.left*S.step/1000)}`:`Manche ${S.round}/${S.rounds}`;
-  const msg=S.phase==='over'?'Partie terminée':S.phase==='count'?'Prêt ?':!P?'Tu regardes la partie':s.al?`${s.c.length} anneaux`:S.mode==='chrono'?'réapparition…':'éliminé';
+  const right=S.adv?`Niveau ${S.adv.lvl} · ⏱ ${Math.round(S.adv.ticks*S.step/1000)} s`:S.solo?`Record ${Math.max(load('serp-best')||0,S.sn[0].sc)}`:S.mode==='chrono'?`⏱ ${fmt(S.phase==='count'?S.dur/1000:S.left*S.step/1000)}`:`Manche ${S.round}/${S.rounds}`;
+  const msg=S.adv&&S.phase!=='over'?`🍎 ${S.sn[0].sc} / ${S.adv.goal}`:S.phase==='over'?'Partie terminée':S.phase==='count'?'Prêt ?':!P?'Tu regardes la partie':s.al?`${s.c.length} anneaux`:S.mode==='chrono'?'réapparition…':'éliminé';
   ARC.status(P?esc(P.name):'Spectateur',msg,P?shade(P.col,.6):'#2f8a4a',right);
   const rows=S.players.map((p,i)=>({i,name:p.name,col:p.col,me:i===me,out:!S.sn[i].al&&S.phase==='play',score:S.mode==='survie'?S.sn[i].w:S.sn[i].sc,tag:S.mode==='survie'?(S.sn[i].al?S.sn[i].c.length+' ann.':'☠'):(S.sn[i].k?S.sn[i].k+' ✂':'')}));
   rows.sort((a,b)=>b.score-a.score); ARC.board($('#board'),rows); }
@@ -454,7 +501,7 @@ function onEvent(e){ const me=ARC.seat(), S=host()?G:snap.cur;
   else if(e.t==='rwin'){ draw.lastWin=e.s; if(e.s===me&&me!=null) sfx('win'); else sfx('pop'); }
   else if(e.t==='over') setTimeout(()=>showEnd(),500); }
 function ranking(S){ return S.players.map((p,i)=>({i,name:p.name,col:p.col,me:i===ARC.seat(),w:S.sn[i].w,sc:S.sn[i].sc,k:S.sn[i].k})).sort((a,b)=>S.mode==='survie'?(b.w-a.w)||(b.sc-a.sc):(b.sc-a.sc)||(b.k-a.k)); }
-function showEnd(){ const S=host()?G:snap.cur; if(!S||S.phase!=='over') return; const r=ranking(S); const top=r[0];
+function showEnd(){ const S=host()?G:snap.cur; if(!S||S.phase!=='over') return; if(S.adv) return advEnd(S); const r=ranking(S); const top=r[0];
   if(top.me&&r.length>1){ sfx('win'); confetti([top.col,'#fff','#ffd23f']); }
   const mine=r.find(x=>x.me); if(mine&&window.PROF) PROF.result('serpents',{win:top.me&&r.length>1,score:mine.sc});
   if(S.solo&&mine){ const best=load('serp-best')||0; const rec=mine.sc>best; if(rec){ store('serp-best',mine.sc); sfx('win'); confetti(); }
@@ -477,12 +524,12 @@ function optsHTML(local){ const sg=(k,vals)=>`<div class="seg">${vals.map(([v,l]
    ${local?`<h4>Ordinateurs</h4>${sg('bots',[[0,'Aucun (seul)'],[1,'1'],[2,'2'],[3,'3'],[5,'5'],[7,'7']])}${OPT.bots?sg('level',[['facile','facile'],['normal','normal'],['difficile','difficile']]):'<p class="optnote">Seul : le Snake classique. Le serpent accélère à chaque pomme ; bats ton record.</p>'}`:''}`; }
 function setOpt(b){ const [k,v]=b.dataset.o.split(':'); if(v==='+'||v==='-') OPT[k]=Math.max(1,Math.min(10,(OPT[k]||1)+(v==='+'?1:-1))); else OPT[k]=/^\d+$/.test(v)?+v:v; store('serp-opt',OPT); }
 function menu(){ const draw=()=>{ openModal(`<h2>Serpents</h2><p>Tous les serpents dans la même arène : mange des pommes pour grandir et fais en sorte que les autres s’écrasent contre ton corps.</p>
-   <div class="bigchoice"><button class="pri" data-m="online"><b>Jouer en ligne</b><small>Avec tes amis connectés, chacun sur son écran.</small></button><button data-m="solo"><b>${OPT.bots?'S’entraîner':'Jouer seul'}</b><small>${OPT.bots?'Contre l’ordinateur, sans connexion.':'Snake classique.'+(load('serp-best')?` Record : ${load('serp-best')}.`:'')}</small></button></div>
+   <div class="bigchoice"><button class="pri" data-m="online"><b>Jouer en ligne</b><small>Avec tes amis connectés, chacun sur son écran.</small></button><button data-m="adv"><b>🗺️ Aventure</b><small>20 niveaux à débloquer, enregistrés dans ton profil. ${avGet().n}/20 réussis.</small></button><button data-m="solo"><b>${OPT.bots?'S’entraîner':'Jouer seul'}</b><small>${OPT.bots?'Contre l’ordinateur, sans connexion.':'Snake classique.'+(load('serp-best')?` Record : ${load('serp-best')}.`:'')}</small></button></div>
    <div class="opts">${optsHTML(true)}${ARC.padHTML()}<h4>Réglages</h4>${window.PROF?PROF.optsHTML():''}</div><div class="acts">${G?'<button class="btn" data-c="close">Fermer</button>':''}</div>`,e=>{ if(ARC.padClick(e)){ draw(); return; } const o=e.target.closest('[data-o]'); if(o){ setOpt(o); draw(); return; }
-   const m=e.target.closest('[data-m]'); if(!m) return; closeModal(); if(m.dataset.m==='online') NET.startUI(); else startLocal(); }); if(window.PROF) PROF.bindOpts($('#mbox')); };
+   const m=e.target.closest('[data-m]'); if(!m) return; closeModal(); if(m.dataset.m==='online') NET.startUI(); else if(m.dataset.m==='adv') advMap(); else startLocal(); }); if(window.PROF) PROF.bindOpts($('#mbox')); };
   ARC.tuto('serpents',[['🍎','Grandis','Mange les pommes pour allonger ton serpent. La pomme dorée vaut 3 anneaux.'],['🧱','Évite tout','Murs, rochers, autres serpents et ton propre corps : le moindre contact t’élimine.'],['👆','Dirige','Glisse le doigt sur le jeu ou utilise la grande croix. Au clavier : les flèches.']],draw); }
 function help(){ helpTabs('Serpents',[['But du jeu','<p>Chaque joueur dirige un serpent dans la même arène. Les pommes font grandir (la pomme dorée vaut 3 anneaux). Un serpent qui touche un mur, un rocher, un autre serpent ou son propre corps est éliminé et se transforme en pommes.</p><ul><li><b>Survie</b> : pas de réapparition. Le dernier serpent en vie gagne la manche ; le nombre de manches se choisit au départ, de 1 à 10.</li><li><b>Chrono</b> : on réapparaît 2 secondes après un accident. Une pomme vaut 1 point, un serpent qui s’écrase contre toi en vaut 5. Le meilleur score à la fin du temps gagne.</li></ul>'],['Commandes','<ul><li><b>Clavier</b> : flèches ou Z, Q, S, D.</li><li><b>Écran tactile</b> : glisse le doigt n’importe où sur le jeu dans la direction voulue, ou utilise la croix sous l’arène.</li><li>Deux virages rapprochés sont mémorisés : tu peux faire un demi-tour en deux gestes.</li></ul>'],['En ligne','<p>Crée une table avec le bouton « En ligne », invite tes amis connectés ou envoie-leur le code. L’hôte choisit le mode, la vitesse et peut compléter avec des ordinateurs. Ton serpent est entouré d’un halo.</p><p class="ex">Garde le jeu à l’écran pendant la partie : si l’hôte passe sur une autre appli, le jeu se fige pour tout le monde jusqu’à son retour.</p><p class="ex">Astuce : un serpent long peut encercler un adversaire pour l’enfermer.</p>']]); }
-window.GAME={help,menu,state:()=>G};
+window.GAME={help,menu,state:()=>G,adv:lv=>startAdv(lv)};
 document.addEventListener('sdj-opts',e=>{ if(e.detail.k==='cb'&&G) ARC.recolor(G.players); });
 window.NETGAME={id:'serpents',title:'Serpents',min:1,max:8,
   rules:()=>`<div class="opts">${optsHTML(false)}</div>`, rulesClick(e){ const b=e.target.closest('[data-o]'); if(!b) return false; setOpt(b); return true; },
@@ -499,5 +546,5 @@ const skip=/[?&](salle|creer)=/.test(location.search)||(()=>{ const s=load('net-
 </script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
-<!--PROF--><script src="common/profil.js?v=d959263a"></script><!--/PROF-->
+<!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
 </body></html>

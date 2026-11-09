@@ -6,7 +6,7 @@
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
 <!--HALL--><script src="common/hall.js?v=e82d0531"></script><!--/HALL-->
-<!--PROF--><script src="common/profil.js?v=d959263a"></script><!--/PROF-->
+<!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
 <style>
 :root{--felt:#123426;--felt2:#0d281d;--cream:#f4ecd9;--cream2:#e8dcc0;--ink:#1f1a12;--mute:#6b604c;--gold:#d8b25a;--chalk:#eef3ea;--chalk-mute:#a9c2b3;--display:'DM Serif Display',Georgia,serif;--body:'Karla',system-ui,sans-serif;color-scheme:dark}
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -93,6 +93,7 @@ const sp=new URLSearchParams(location.search); const other=sp.get('p');
 const fmtT=m=>m<60?`${Math.round(m)} min`:`${Math.floor(m/60)} h ${String(Math.round(m%60)).padStart(2,'0')}`;
 const share=async(text,url)=>{ if(navigator.share){ try{ await navigator.share({title:'Salle de jeux',text,url}); return; }catch(e){ if(e&&e.name==='AbortError') return; } } try{ await navigator.clipboard.writeText(text+' '+url); P.notice('Lien copié'); }catch(e){ prompt('Lien',url); } };
 let ui={edit:false,fav:false,picker:false,code:false,defis:null,liste:null,q:'',fil:null,tab:'recus'};
+function avHTML(d){ const a=(d.av||{}).serpents; if(!a||!a.n) return ''; const st=Object.values(a.st||{}).reduce((x,y)=>x+y,0); return `<div class="card"><h2>Aventures</h2><p>🐍 <b>Serpents</b> : niveau ${a.n} / 20 réussi · ${st} ★ sur 60 <a class="btn" href="serpents.html">Continuer</a></p></div>`; }
 function statsHTML(s,rec){ return `<div class="stats">
   <div class="st"><b>${s.parties}</b><span>parties jouées</span></div><div class="st"><b>${s.nbj}</b><span>jeux essayés sur ${Object.keys(CAT).length}</span></div>
   <div class="st"><b>${s.v}</b><span>victoires</span></div><div class="st"><b>${s.l}</b><span>parties en ligne</span></div>
@@ -117,7 +118,7 @@ async function showOther(){ const app=$('#app'); let r=null; try{ r=await P.rpc(
      <div class="row">${mine?'<a class="btn pri" href="profil.html">Modifier mon profil</a>':`<button class="btn pri" data-a="defier">⚔️ Défier ${es(r.pseudo)}</button>`}<button class="btn" data-a="share-other">Partager ce profil</button></div>
      <div id="defiBox"></div></div>
     <div class="card"><h2>Statistiques</h2>${statsHTML(s)}</div>
-    <div class="card"><h2>Top 3 des jeux</h2>${podium(s)}</div>
+    <div class="card"><h2>Top 3 des jeux</h2>${podium(s)}</div>${avHTML(d)}
     <div class="card"><h2>Jeux favoris</h2>${favHTML(d,false)}</div>
     <div class="card"><h2>Records des mini-jeux</h2>${recHTML(d,false)}</div>
     <div class="card"><h2>Succès <small>${s.nbs} / ${P.SUCCES.length}</small></h2>${achHTML(d,true)}</div>`;
@@ -162,7 +163,7 @@ function render(){ if(other) return; const D=P.data(), s=P.stats(), ps=P.pseudo(
     ${D.pris&&ps&&P.key(ps)===D.pris?`<div class="warn">Le pseudo « ${es(ps)} » appartient déjà au profil de quelqu’un d’autre : ton profil n’est pas publié. Choisis un autre pseudo, ou récupère ce profil avec son code (en bas de page).</div>`:''}
     <div class="row">${ps?'':'<button class="btn pri" data-a="pseudo">Choisir un pseudo</button>'}<button class="btn" data-a="edit">${ui.edit?'Enregistrer':'Modifier ma présentation'}</button>${ps&&pub?'<button class="btn gold" data-a="share">Partager mon profil</button>':''}${ps?'<button class="btn" data-a="pseudo">Changer de pseudo</button>':''}</div></div>
    <div class="card"><h2>Statistiques</h2>${statsHTML(s)}</div>
-   <div class="card"><h2>Top 3 de mes jeux</h2>${podium(s)}</div>
+   <div class="card"><h2>Top 3 de mes jeux</h2>${podium(s)}</div>${avHTML(D)}
    <div class="card"><h2>Mes jeux favoris <button class="btn" data-a="fav">${ui.fav?'Terminer':'Modifier'}</button></h2>${favHTML(D,true)}</div>
    <div class="card"><h2>Records des mini-jeux</h2>${recHTML(D,true)}</div>
    <div class="card"><h2>Succès <small>${s.nbs} / ${P.SUCCES.length} débloqués</small></h2>${achHTML(D,false)}</div>

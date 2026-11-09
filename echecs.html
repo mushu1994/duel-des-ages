@@ -57,7 +57,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#3b3530,#141210 75%) fixed,#14
 .top h1{font-size:30px}
 .wrap{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:16px;max-width:1100px;margin:0 auto;padding:12px}
 @media(max-width:880px){.wrap{grid-template-columns:1fr;padding:8px}}
-.bd{width:min(100%,calc(100vh - 170px));margin:0 auto;aspect-ratio:1;padding:16px;border-radius:12px;background:linear-gradient(135deg,#5a3a22,#2a1a0e);box-shadow:0 20px 40px #000a;position:relative}
+.bd{width:min(100%,calc(100vh - 170px - var(--coh,0px)));margin:0 auto;aspect-ratio:1;padding:16px;border-radius:12px;background:linear-gradient(135deg,#5a3a22,#2a1a0e);box-shadow:0 20px 40px #000a;position:relative}
 #g{display:grid;grid-template:repeat(8,1fr)/repeat(8,1fr);width:100%;height:100%;border:2px solid #1a1008}
 .s{position:relative;display:grid;place-items:center;user-select:none}
 .s.l{background:#efdcb6}.s.d{background:#b07c4f}
@@ -82,7 +82,15 @@ body{background:radial-gradient(ellipse at 50% 0%,#3b3530,#141210 75%) fixed,#14
 .hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
+.coach{display:flex;gap:10px;align-items:flex-start;margin:8px auto 0;max-width:980px;width:calc(100% - 24px);box-sizing:border-box;background:#fffbe9;color:#3a2d12;border:2px solid #e8c55a;border-radius:14px;padding:8px 10px;font-size:14px;line-height:1.35;box-shadow:0 4px 14px #0003}
+.coach[hidden]{display:none}.coach .cav{font-size:26px;line-height:1}.coach .ctx{flex:1;display:flex;flex-direction:column;gap:3px}.coach .cbt{display:flex;gap:6px;flex-shrink:0}
+.coach .btn{background:#f3e3a8;color:#3a2d12;border-color:#d9b84a;padding:5px 9px;font-size:13px}.coach .btn[hidden]{display:none}.cdim{opacity:.7}
+.s.hf{box-shadow:inset 0 0 0 4px #3d8bff}.s.ht::before{content:"";position:absolute;inset:7%;border:3px dashed #3d8bff;border-radius:8px;pointer-events:none}
+@media(max-width:600px){.coach{font-size:13px;padding:6px 8px}.coach .cav{display:none}.coach .cbt{flex-direction:column}}
 </style>
+
+
+
 
 
 
@@ -130,8 +138,9 @@ body{background:radial-gradient(ellipse at 50% 0%,#3b3530,#141210 75%) fixed,#14
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
 <header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>Échecs</h1>
-<div class="tools"><button class="btn" data-a="undo">Annuler</button><button class="btn" data-a="flip">Tourner</button><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
+<div class="tools"><button class="btn" data-a="undo">Annuler</button><button class="btn" data-a="flip">Tourner</button><button class="btn" data-a="coach" title="Mode apprentissage">🎓</button><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
 <div class="status" id="status"></div>
+<div class="coach" id="coach" hidden><span class="cav">🎓</span><div class="ctx"></div><div class="cbt"><button class="btn" data-a="hint">💡 Indice</button><button class="btn" data-a="coachx" title="Masquer le coach">✕</button></div></div>
 <div class="wrap"><div><div class="bd"><div id="g"></div></div></div>
 <div class="side"><div class="card"><h3 id="nb"></h3><div class="capt" id="cb"></div><h3 id="nw" style="margin-top:8px"></h3><div class="capt" id="cw"></div></div><div class="card"><h3>Coups</h3><div id="moves"></div></div></div></div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
@@ -252,7 +261,7 @@ function aiMove(P,level){ const ms=legal(P); if(!ms.length) return null;
 const FR={K:'R',Q:'D',R:'T',B:'F',N:'C',P:''};
 function san(P,m,all){ const p=P.b[m.from], U=p.toUpperCase(), sq=i=>'abcdefgh'[i&7]+(8-(i>>3)); let s;
   if(m.f==='k') s='O-O'; else if(m.f==='q') s='O-O-O'; else { const cap=P.b[m.to]||m.f==='e'; s=FR[U];
-    if(U!=='P'){ const amb=all.filter(o=>o!==m&&o.to===m.to&&P.b[o.from]===p); if(amb.length) s+= amb.some(o=>(o.from&7)===(m.from&7))?sq(m.from)[1]:sq(m.from)[0]; } else if(cap) s+=sq(m.from)[0];
+    if(U!=='P'){ const amb=all.filter(o=>o.from!==m.from&&o.to===m.to&&P.b[o.from]===p); if(amb.length) s+= amb.some(o=>(o.from&7)===(m.from&7))?sq(m.from)[1]:sq(m.from)[0]; } else if(cap) s+=sq(m.from)[0];
     s+=(cap?'x':'')+sq(m.to)+(m.promo?'='+FR[m.promo.toUpperCase()]:''); }
   const u=make(P,m); const chk=inCheck(P,P.t), mate=chk&&!legal(P).length; unmake(P,u); return s+(mate?'#':chk?'+':''); }
 const key=P=>P.b.map(x=>x||'.').join('')+P.t+Object.entries(P.cr).filter(e=>e[1]).map(e=>e[0]).join('')+P.ep;
@@ -274,11 +283,11 @@ function render(){ const P=S.P, ms=S.over||isAI(P.t)||!myTurn(P.t)?[]:legal(P), 
   const capt=c=>S.capt.filter(p=>col(p)===c).sort((a,b)=>VAL[b.toUpperCase()]-VAL[a.toUpperCase()]).map(p=>GL[p.toUpperCase()]).join('');
   $('#nw').textContent=S.names.w+' (Blancs)'; $('#nb').textContent=S.names.b+' (Noirs)'; $('#cw').textContent=capt('b'); $('#cb').textContent=capt('w');
   const st=$('#status'); st.style.setProperty('--pc',S.over?'#5a2a1a':P.t==='w'?'#9a8a6a':'#2a2420');
-  st.innerHTML=S.over?`<span class="who">${esc(S.over)}</span>`:`<span class="who">${esc(S.names[P.t])}</span><span class="msg">${isAI(P.t)?'réfléchit…':!myTurn(P.t)?(chk>=0?'est en échec.':'réfléchit…'):chk>=0?'Échec ! Protège ton roi.':'À toi de jouer.'}</span>`; }
-async function doMove(m){ if(NETON()&&NET.host) NET.push([{t:'move',m}]); BUSY=true; SEL=null; const P=S.P, my=GEN; const all=legal(P); const s=san(P,m,all);
+  st.innerHTML=S.over?`<span class="who">${esc(S.over)}</span>`:`<span class="who">${esc(S.names[P.t])}</span><span class="msg">${isAI(P.t)?'réfléchit…':!myTurn(P.t)?(chk>=0?'est en échec.':'réfléchit…'):chk>=0?'Échec ! Protège ton roi.':'À toi de jouer.'}</span>`; coachRender(); }
+async function doMove(m){ if(NETON()&&NET.host) NET.push([{t:'move',m}]); BUSY=true; SEL=null; const P=S.P, my=GEN; const all=legal(P); const s=san(P,m,all); coachBefore(P,m,s);
   const fromEl=$(`#g .s[data-i="${m.from}"] .pc`), toS=$(`#g .s[data-i="${m.to}"]`);
   if(fromEl&&toS&&!REDUCED){ const a=fromEl.getBoundingClientRect(), b=toS.getBoundingClientRect(); fromEl.style.position='relative'; fromEl.style.zIndex=5; await fromEl.animate([{transform:'translate(0,0)'},{transform:`translate(${b.left+b.width/2-a.left-a.width/2}px,${b.top+b.height/2-a.top-a.height/2}px)`}],{duration:220,easing:'ease-in-out',fill:'forwards'}).finished; }
-  if(my!==GEN) return;
+  if(my!==GEN) return; if(S.P!==P||!P.b[m.from]){ BUSY=false; render(); return; }
   S.hist.push(JSON.stringify({P:S.P,san:S.san,capt:S.capt,last:S.last,reps:S.reps}));
   const u=make(P,m); if(u.cap) S.capt.push(u.cap); S.san.push(s); S.last=[m.from,m.to]; sfx(u.cap?'capture':'move');
   const k=key(P); S.reps[k]=(S.reps[k]||0)+1;
@@ -298,15 +307,79 @@ $('#g').addEventListener('click',async e=>{ const s=e.target.closest('.s'); if(!
 document.addEventListener('click',e=>{ const a=e.target.closest('[data-a]'); if(!a||!S) return;
   if(a.dataset.a==='flip'){ FLIP=!FLIP; build(); render(); }
   if(a.dataset.a==='undo'&&NETON()){ toast('Pas de retour en arrière en ligne'); return; }
-  if(a.dataset.a==='undo'&&!BUSY&&S.hist.length){ GEN++; const n=S.mode==='ia'&&!isAI(S.P.t)?2:1; let h; for(let k=0;k<n&&S.hist.length;k++) h=JSON.parse(S.hist.pop()); Object.assign(S,h); S.over=null; SEL=null; render(); next(); } });
-let M={mode:'ia',level:'normal',color:'w',names:['Camille','Lucas'],autoflip:false};
-function newGame(){ GEN++; const names=M.mode==='ia'?(M.color==='w'?{w:'Toi',b:'Ordinateur'}:{w:'Ordinateur',b:'Toi'}):{w:M.names[0].trim()||'Camille',b:M.names[1].trim()||'Lucas'};
-  S={P:newPos(),mode:M.mode,level:M.level,ai:M.color==='w'?'b':'w',names,hist:[],san:[],capt:[],last:null,reps:{},over:null,autoflip:M.autoflip}; FLIP=M.mode==='ia'&&M.color==='b'; build(); render(); store('ech',S); next(); }
+  if(a.dataset.a==='undo'&&!BUSY&&S.hist.length){ GEN++; const n=S.mode==='ia'&&!isAI(S.P.t)?2:1; let h; for(let k=0;k<n&&S.hist.length;k++) h=JSON.parse(S.hist.pop()); Object.assign(S,h); S.over=null; SEL=null; CO.fb=CO.opp=CO.fb2=null; CO.hint=0; render(); next(); } });
+/* ===== Mode apprentissage (coach) ===== */
+const CO={fb:null,opp:null,hint:0,cache:{},pre:0};
+const NMF={P:'pion',N:'cavalier',B:'fou',R:'tour',Q:'dame',K:'roi'}, FEM={R:1,Q:1};
+const RULE={P:'Le <b>pion</b> avance tout droit d’une case (deux au premier coup) et prend en diagonale.',N:'Le <b>cavalier</b> se déplace en « L » (2 cases puis 1 de côté) et saute par-dessus les pièces.',B:'Le <b>fou</b> glisse en diagonale, aussi loin que le chemin est libre.',R:'La <b>tour</b> glisse en ligne droite (horizontale ou verticale).',Q:'La <b>dame</b> combine tour et fou : la pièce la plus forte !',K:'Le <b>roi</b> avance d’une seule case. Il ne peut jamais aller sur une case attaquée.'};
+const TIPS=['Avant de jouer, pose-toi 3 questions : mes pièces sont-elles attaquées ? Puis-je prendre quelque chose ? Puis-je faire échec ?','Une pièce qui ne bouge pas ne sert à rien : active-les toutes.','Valeur des pièces : pion 1, cavalier 3, fou 3, tour 5, dame 9. N’échange pas une grosse pièce contre une petite !','Vérifie toujours ce que menace le dernier coup de l’adversaire.','Les tours aiment les colonnes ouvertes (sans pions).','En finale, le roi devient une pièce active : rapproche-le du centre.'];
+const sqn=i=>'abcdefgh'[i&7]+(8-(i>>3));
+const coachOn=()=>!!S&&!NETON()&&(S.coach??M.coach)!==false&&S.mode!=='net';
+function art(p,mover,viewer){ const U=p.toUpperCase(), f=FEM[U], c=col(p); if(c===viewer) return (f?'ta ':'ton ')+NMF[U]; if(c===mover) return (f?'sa ':'son ')+NMF[U]; return (f?'la ':'le ')+NMF[U]+' adverse'; }
+function attackers(P,i,by){ return pseudo({...P,t:by,ep:-1}).filter(m=>m.to===i); }
+function hang(P,i){ const p=P.b[i]; if(!p) return false; const U=p.toUpperCase(); if(U==='K') return false; const c=col(p), op=c==='w'?'b':'w'; const at=attackers(P,i,op); if(!at.length) return false; if(!attacked(P,i,c)) return true; return Math.min(...at.map(m=>VAL[P.b[m.from].toUpperCase()]))<VAL[U]; }
+function coachAna(P){ const k=key(P); if(CO.cache[k]) return CO.cache[k]; const sv=DEAD, ms=legal(P); let res=ms.map(m=>({m,v:score(P,m)})).sort((a,b)=>b.v-a.v); DEAD=Date.now()+380;
+  for(let d=1;d<=3;d++){ const Q={...P,b:P.b.slice(),cr:{...P.cr}}; try{ const sc=res.map(({m})=>{ const u=make(Q,m); const v=-negamax(Q,d-1,-Infinity,Infinity,1); unmake(Q,u); return {m,v}; }); sc.sort((a,b)=>b.v-a.v); res=sc; if(sc[0]&&sc[0].v>90000) break; }catch(e){ if(e!=='time') throw e; break; } }
+  DEAD=sv; const ks=Object.keys(CO.cache); if(ks.length>40) delete CO.cache[ks[0]]; return CO.cache[k]=res; }
+function coachWhy(P,m,viewer){ const Q={...P,b:P.b.slice(),cr:{...P.cr}}, me=Q.t, op=me==='w'?'b':'w', p=Q.b[m.from], U=p.toUpperCase(), r=[];
+  const capP=m.f==='e'?(me==='w'?'p':'P'):Q.b[m.to], wasHang=hang(Q,m.from), free=capP&&!attacked(Q,m.to,op);
+  make(Q,m); const chk=inCheck(Q,op); if(chk&&!legal(Q).length) return 'fait échec et mat !';
+  if(m.promo) r.push('transforme '+art(p,me,viewer)+' en '+NMF[m.promo.toUpperCase()]);
+  if(m.f==='k'||m.f==='q') r.push('roque : '+(me===viewer?'ton':'son')+' roi est à l’abri et la tour entre en jeu');
+  if(capP) r.push('prend '+art(capP,me,viewer)+(free?' sans risque':''));
+  if(chk) r.push('met '+(op===viewer?'ton roi':'le roi adverse')+' en échec');
+  if(wasHang&&!hang(Q,m.to)&&!capP) r.push('met '+art(p,me,viewer)+' à l’abri');
+  if(!r.length&&'NB'.includes(U)&&(m.from>>3)===(me==='w'?7:0)) r.push('développe '+art(p,me,viewer)+' vers le centre');
+  if(!r.length&&U==='P'&&[27,28,35,36].includes(m.to)) r.push('occupe le centre');
+  if(r.length<2){ const t=pseudo({...Q,t:me,ep:-1}).filter(x=>x.from===m.to&&Q.b[x.to]&&Q.b[x.to].toUpperCase()!=='K').map(x=>x.to).find(i=>VAL[Q.b[i].toUpperCase()]>VAL[U]||!attacked(Q,i,op)); if(t!=null) r.push('attaque '+art(Q.b[t],me,viewer)+' en '+sqn(t)); }
+  if(!r.length) r.push(U==='K'?'met '+(me===viewer?'ton':'son')+' roi en sécurité':'améliore la place '+(FEM[U]?'de la ':'du ')+NMF[U]);
+  return r.slice(0,2).join(' et '); }
+function coachJudge(P,m,s){ const A=coachAna(P); if(A.length<2) return null; const same=x=>x.m.from===m.from&&x.m.to===m.to&&(x.m.promo||null)===(m.promo||null); const mine=A.find(same), best=A[0]; if(!mine) return null;
+  const loss=best.v-mine.v, bs=san(P,best.m,legal(P)), bw=coachWhy(P,best.m,P.t);
+  const Q={...P,b:P.b.slice(),cr:{...P.cr}}, me=P.t; make(Q,m); let hi=-1; for(let i=0;i<64;i++) if(Q.b[i]&&col(Q.b[i])===me&&hang(Q,i)&&(hi<0||VAL[Q.b[i].toUpperCase()]>VAL[Q.b[hi].toUpperCase()])) hi=i;
+  const hg=hi<0?'':(()=>{ const U=Q.b[hi].toUpperCase(), A=art(Q.b[hi],me,me); return ' '+A[0].toUpperCase()+A.slice(1)+' en '+sqn(hi)+(hi===m.to?' peut être pris':' reste menacé')+(FEM[U]?'e':'')+' !'; })();
+  if(best.v>90000&&mine.v<90000) return `😮 Tu avais un <b>échec et mat</b> avec <b>${bs}</b> !`;
+  if(same(best)||loss<=20) return `🌟 <b>Excellent !</b> ${s} est le meilleur coup.`;
+  if(loss<=70) return `✅ <b>Bon coup.</b>`;
+  if(loss<=160) return `🙂 <b>Correct</b>, mais <b>${bs}</b> était un peu mieux : il ${bw}.`;
+  if(loss<=380) return `⚠️ <b>Imprécision.</b>${hg} Mieux valait <b>${bs}</b> : il ${bw}.`;
+  return `❌ <b>Gaffe !</b>${hg} Mieux valait <b>${bs}</b> : il ${bw}.`; }
+function coachBefore(P,m,s){ CO.hint=0; if(!coachOn()) return; try{ const ai=isAI(P.t), viewer=S.mode==='ia'?(S.ai==='w'?'b':'w'):P.t;
+    if(ai){ CO.opp=`L’ordinateur a joué <b>${s}</b> : il ${coachWhy(P,m,viewer)}.`; }
+    else { const fb=coachJudge(P,m,s); CO.fb=fb?(S.mode==='2p'?`<i>${esc(S.names[P.t])}</i> — `:'')+fb:null; CO.opp=S.mode==='2p'?`<i>${esc(S.names[P.t])}</i> a joué <b>${s}</b> : il ${coachWhy(P,m,P.t==='w'?'b':'w')}.`:null; if(S.mode==='2p'){ CO.fb2=CO.fb; CO.fb=null; } }
+  }catch(e){ console.warn(e); } }
+function coachRender(){ const el=$('#coach'); if(!el) return; $$('#g .s').forEach(x=>x.classList.remove('hf','ht')); if(!coachOn()||!S||S.over){ el.hidden=true; setCoh(); return; }
+  const P=S.P, human=!isAI(P.t)&&myTurn(P.t), L=[];
+  if(S.mode==='2p'&&CO.fb2) L.push(CO.fb2);
+  if(S.mode==='ia'&&CO.fb) L.push(CO.fb);
+  if(CO.opp) L.push('🤖 '+CO.opp);
+  if(!human){ L.push('<span class="cdim">L’ordinateur réfléchit…</span>'); }
+  else { const me=P.t;
+    if(inCheck(P,me)) L.push('🛡️ <b>Ton roi est en échec !</b> Trois solutions : le déplacer, mettre une pièce devant, ou prendre l’attaquant.');
+    else { const hs=[]; for(let i=0;i<64;i++) if(P.b[i]&&col(P.b[i])===me&&hang(P,i)) hs.push(i); hs.sort((a,b)=>VAL[P.b[b].toUpperCase()]-VAL[P.b[a].toUpperCase()]);
+      if(hs.length) L.push('👀 Attention : '+hs.slice(0,2).map(i=>art(P.b[i],me,me)+' en '+sqn(i)).join(' et ')+(hs.length>1?' sont menacés':' est menacé'+(FEM[P.b[hs[0]].toUpperCase()]?'e':''))+'.');
+      else if(P.fm<=4&&!CO.fb) L.push('📖 <b>Ouverture</b> : occupe le centre avec tes pions, sors cavaliers et fous, puis roque pour protéger ton roi.');
+      else if(!CO.fb&&!CO.opp) L.push('💭 '+TIPS[P.fm%TIPS.length]); }
+    if(SEL!=null&&P.b[SEL]) L.push('♟️ '+RULE[P.b[SEL].toUpperCase()]);
+    if(CO.hint){ const A=coachAna(P); if(A.length){ const b=A[0].m; $(`#g .s[data-i="${b.from}"]`)?.classList.add('hf');
+        if(CO.hint>=2){ $(`#g .s[data-i="${b.to}"]`)?.classList.add('ht'); L.push(`💡 Joue <b>${san(P,b,legal(P))}</b> : il ${coachWhy(P,b,P.t)}.`); }
+        else L.push(`💡 Regarde ${art(P.b[b.from],P.t,P.t)} en <b>${sqn(b.from)}</b>… Encore un clic sur « Indice » pour voir le coup.`); } }
+    const k=key(P); if(CO.pre!==k){ CO.pre=k; setTimeout(()=>{ if(S&&!S.over&&key(S.P)===k&&!BUSY) try{ coachAna(S.P); }catch(e){} },120); } }
+  el.querySelector('.ctx').innerHTML=L.map(x=>'<div>'+x+'</div>').join('');
+  el.querySelector('[data-a="hint"]').hidden=!human; el.hidden=false; setCoh(); }
+function setCoh(){ const el=$('#coach'); document.documentElement.style.setProperty('--coh',el&&!el.hidden?(el.offsetHeight+8)+'px':'0px'); }
+document.addEventListener('click',e=>{ const a=e.target.closest('[data-a]'); if(!a||!S) return;
+  if(a.dataset.a==='hint'){ CO.hint=Math.min(2,CO.hint+1); coachRender(); }
+  if(a.dataset.a==='coachx'||a.dataset.a==='coach'){ const on=a.dataset.a==='coach'?!coachOn():false; S.coach=on; M.coach=on; store('echp',M); store('ech',S); toast(on?'Mode apprentissage activé':'Mode apprentissage désactivé (bouton 🎓 pour le remettre)'); coachRender(); } });
+let M={mode:'ia',level:'normal',color:'w',names:['Camille','Lucas'],autoflip:false,coach:true};
+function newGame(){ GEN++; CO.fb=CO.opp=CO.fb2=null; CO.hint=0; const names=M.mode==='ia'?(M.color==='w'?{w:'Toi',b:'Ordinateur'}:{w:'Ordinateur',b:'Toi'}):{w:M.names[0].trim()||'Camille',b:M.names[1].trim()||'Lucas'};
+  S={P:newPos(),mode:M.mode,level:M.level,ai:M.color==='w'?'b':'w',names,hist:[],san:[],capt:[],last:null,reps:{},over:null,autoflip:M.autoflip,coach:M.coach}; FLIP=M.mode==='ia'&&M.color==='b'; build(); render(); store('ech',S); next(); }
 function menu(){ const draw=()=>paintModal(`<h2>Nouvelle partie</h2><h4>Adversaire</h4><div class="seg"><button class="${M.mode==='ia'?'on':''}" data-m="mode:ia">Contre l'ordinateur</button><button class="${M.mode==='2p'?'on':''}" data-m="mode:2p">À deux</button></div>
   ${M.mode==='ia'?`<h4>Niveau</h4><div class="seg">${[['facile','Débutant'],['normal','Club'],['difficile','Maître']].map(([k,l])=>`<button class="${M.level===k?'on':''}" data-m="level:${k}">${l}</button>`).join('')}</div><h4>Tu joues</h4><div class="seg"><button class="${M.color==='w'?'on':''}" data-m="color:w">Les Blancs</button><button class="${M.color==='b'?'on':''}" data-m="color:b">Les Noirs</button></div>`:
   `<div class="prow"><input type="text" id="n0" value="${esc(M.names[0])}" placeholder="Camille" maxlength="14"> (Blancs) contre <input type="text" id="n1" value="${esc(M.names[1])}" placeholder="Lucas" maxlength="14"></div><div class="seg"><button class="${!M.autoflip?'on':''}" data-m="autoflip:0">Échiquier fixe</button><button class="${M.autoflip?'on':''}" data-m="autoflip:1">Tourner à chaque coup</button></div>`}
+  <h4>Mode apprentissage 🎓</h4><div class="seg"><button class="${M.coach!==false?'on':''}" data-m="coach:1">Coach activé</button><button class="${M.coach===false?'on':''}" data-m="coach:0">Sans coach</button></div><p class="cdim" style="font-size:13px;margin:4px 0 0">Le coach explique les coups, signale les pièces menacées, donne des indices et juge chacun de tes coups.</p>
   <div class="acts">${S?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="start">Jouer</button></div>`);
-  draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; if($('#n0')) M.names=[$('#n0').value,$('#n1').value]; const [k,v]=x.dataset.m.split(':'); if(k==='start'){ closeModal(); store('echp',M); newGame(); return; } M[k]=k==='autoflip'?v==='1':v; draw(); }; }
+  draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; if($('#n0')) M.names=[$('#n0').value,$('#n1').value]; const [k,v]=x.dataset.m.split(':'); if(k==='start'){ closeModal(); store('echp',M); newGame(); return; } M[k]=k==='autoflip'||k==='coach'?v==='1':v; draw(); }; }
 function help(){ helpTabs("Échecs",[["But du jeu","<p>Mettre le roi adverse <b>échec et mat</b> : il est attaqué et ne peut plus y échapper. Les Blancs commencent.</p><p>Notation : R roi, D dame, T tour, F fou, C cavalier ; les pions n’ont pas de lettre.</p>"],["Pièces","<ul><li><b>Roi</b> : une case dans toutes les directions.</li><li><b>Dame</b> : autant de cases qu’elle veut en ligne droite ou en diagonale.</li><li><b>Tour</b> : en ligne droite. <b>Fou</b> : en diagonale.</li><li><b>Cavalier</b> : en « L » (2 cases puis 1 de côté), il saute par-dessus les pièces.</li><li><b>Pion</b> : avance d’une case (deux depuis sa case de départ) et prend en diagonale.</li></ul>"],["Règles spéciales","<ul><li><b>Roque</b> : roi et tour qui n’ont jamais bougé, cases libres entre eux, roi ni en échec ni traversant une case attaquée. Touche le roi, puis sa case d’arrivée.</li><li><b>Prise en passant</b> : un pion qui avance de deux cases peut être pris comme s’il n’avançait que d’une, au coup suivant seulement.</li><li><b>Promotion</b> : un pion qui atteint la dernière rangée devient la pièce de ton choix.</li><li><b>Nulle</b> : pat (aucun coup légal sans être en échec), 50 coups sans prise ni pion, triple répétition, matériel insuffisant.</li></ul>"],["Jouer ici","<ul><li>Touche une pièce, puis une case marquée.</li><li>Niveaux : <b>Débutant</b> (fait des erreurs), <b>Club</b> (calcule environ 4 demi-coups), <b>Maître</b> (cherche plus loin, environ 2,5 s par coup).</li><li>« Tourner » retourne l’échiquier ; à deux, il peut tourner tout seul à chaque coup.</li><li>« Annuler » reprend le dernier coup.</li></ul>"]]); }
 window.ECH={get S(){return S;},legal,get BUSY(){return BUSY;}};
 window.NETGAME={id:'echecs',title:'Échecs',min:2,max:2,
@@ -372,5 +445,8 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else
 
 
 
-<!--PROF--><script src="common/profil.js?v=d959263a"></script><!--/PROF-->
+
+
+
+<!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
 </body></html>
