@@ -56,7 +56,7 @@
 
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=b25ecf2f"><!--/NETCSS-->
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=3da929cd"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head>
 <body>
@@ -1149,7 +1149,7 @@ function senateHTML(){return `<section class="side-box"><h3>Sénat <button class
 /* Modale */
 function openModal(html,cfg={}){if(IS_NODE)return;modalForced=!!cfg.forced;const who=cfg.who??(G?(G.awaiting??G.cur):0);const m=$('modal');m.innerHTML=`<div class="mpanel ${cfg.wide?'wide':''} ${FF&&G&&who===1?'flip':''}" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;const f=m.querySelector('button:not([disabled])');if(f)f.focus({preventScroll:true});}
 function closeModal(force){if(IS_NODE)return;if(modalForced&&!force)return;modalForced=false;$('modal').hidden=true;$('modal').innerHTML='';}
-function info(title,body){openModal(`<h3>${title}</h3>${body}<button class="ghost" data-a="close">Fermer</button>`);}
+function info(title,body){openModal(`<h3>${title}</h3>${body}<button class="ghost" data-a="close">Compris</button>`);}
 
 function onSlot(i){
   const s=G.struct[i];if(!s||s.taken)return;
@@ -1162,7 +1162,7 @@ function onSlot(i){
     sheetActs.push({type:'discard',slot:i});btns+=btn(`Défausser — +${discardGain(pi)} pièces`,'2 + 1 par carte jaune','',false);
     if(G.built<7)p.wonders.forEach((w,wi)=>{if(w.built||w.dead)return;const wc=wonderCost(pi,w);sheetActs.push({type:'wonder',slot:i,wi});btns+=btn(`Bâtir ${w.n} — ${plural(wc.total,'pièce')}`,fxText(w.e).join(' · '),wc.total>p.coins);});
   }
-  openModal(`<div class="sheet">${miniCard(c,120)}<div><h3>${esc(c.n)}</h3><p class="sub">Carte ${COLN[c.col].toLowerCase()} · Âge ${roman(c.age)}</p><ul>${describe(c).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${can?`<div class="acts">${btns}</div>`:`<p class="sub" style="margin-top:12px">${G.awaiting==null?'Ce n’est pas ton tour.':'Carte recouverte : libère d’abord les cartes du dessous.'}</p>`}<button class="ghost" data-a="close">Fermer</button>`);
+  openModal(`<div class="sheet">${miniCard(c,120)}<div><h3>${esc(c.n)}</h3><p class="sub">Carte ${COLN[c.col].toLowerCase()} · Âge ${roman(c.age)}</p><ul>${describe(c).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${can?`<div class="acts">${btns}</div>`:`<p class="sub" style="margin-top:12px">${G.awaiting==null?'Ce n’est pas ton tour.':'Carte recouverte : libère d’abord les cartes du dessous.'}</p>`}<button class="ghost" data-a="close">Compris</button>`);
 }
 function resolveAct(a){closeModal(true);if(NET.guest){ if(G.awaiting===NET.seat){ G.awaiting=null; render(); NET.act('ui',[NET.seat,a]); } return; }if(uiResolve){const r=uiResolve;uiResolve=null;G.awaiting=null;r(a);}}
 function onGod(i){
@@ -1170,7 +1170,7 @@ function onGod(i){
   const can=pi!=null&&G.age>=2&&godCost(pi,i)<=G.P[pi].coins;
   sheetActs=[{type:'god',slot:i}];
   const cst=pi!=null?godCost(pi,i):G.pcost[i];
-  openModal(`<h3>${g.n}</h3><p class="sub">${CULT[g.cu].n} · invocation ${plural(cst,'pièce')}${pi!=null&&G.P[pi].offerings.length?' (offrande déduite)':''}</p><p>${esc(g.d)}</p>${can?`<div class="acts"><button class="act main" data-a="act" data-v="0"><b>Invoquer — ${plural(cst,'pièce')}</b><span>Remplace la prise de carte ce tour</span></button></div>`:`<p class="sub">${G.age<2?'Les invocations commencent à l’Âge II.':pi==null?'Ce n’est pas ton tour.':'Pas assez de pièces.'}</p>`}<button class="ghost" data-a="close">Fermer</button>`);
+  openModal(`<h3>${g.n}</h3><p class="sub">${CULT[g.cu].n} · invocation ${plural(cst,'pièce')}${pi!=null&&G.P[pi].offerings.length?' (offrande déduite)':''}</p><p>${esc(g.d)}</p>${can?`<div class="acts"><button class="act main" data-a="act" data-v="0"><b>Invoquer — ${plural(cst,'pièce')}</b><span>Remplace la prise de carte ce tour</span></button></div>`:`<p class="sub">${G.age<2?'Les invocations commencent à l’Âge II.':pi==null?'Ce n’est pas ton tour.':'Pas assez de pièces.'}</p>`}<button class="ghost" data-a="close">Compris</button>`);
 }
 function onConsp(){
   const pi=AW();if(pi==null)return;const p=G.P[pi];
@@ -1439,10 +1439,10 @@ function helpBody(tab){
   return '';
 }
 /*GUIDE*/const GUIDE_TABS=[["debut", "Première partie"], ["victoires", "Gagner et se défendre"], ["argent", "Argent et commerce"], ["conseils", "Conseils"], ["extensions", "Extensions"]],GUIDE_BODY={"debut":"<div class=\"gd\"><ol class=\"gd-steps\"><li><span>Avant de jouer, chaque joueur choisit 4 merveilles.<\/span><\/li><li><span>À ton tour, touche une carte <b>dorée<\/b> de la pyramide et choisis : la <b>construire<\/b>, la <b>défausser<\/b> contre des pièces, ou t’en servir pour <b>bâtir une merveille<\/b>.<\/span><\/li><li><span>Prendre une carte en libère d’autres, parfois retournées face visible à ce moment-là. Regarde ce que tu offres à l’adversaire avant de jouer.<\/span><\/li><li><span>À la fin d’un âge, le joueur le plus faible militairement ouvre le suivant.<\/span><\/li><li><span>Si personne n’a gagné avant, on compte les points après l’Âge III.<\/span><\/li><\/ol><h5>Quoi viser<\/h5><div class=\"gd-grid\"><div><b>Âge I : les ressources<\/b>Des cartes marron et grises variées, et un ou deux dépôts jaunes pour payer moins cher.<\/div><div><b>Âge II : prendre l’avantage<\/b>Les paires de symboles scientifiques donnent des jetons progrès. C’est aussi le moment de pousser le pion conflit.<\/div><div><b>Âge III : conclure<\/b>Guildes et gros bâtiments bleus pour les points. Surveille les deux victoires immédiates jusqu’à la dernière carte.<\/div><\/div><div class=\"gd-tip\">Pour découvrir le jeu, joue sans extension contre l’IA facile.<\/div><\/div>","victoires":"<div class=\"gd\"><div class=\"gd-grid\"><div><b>Par les armes<\/b>Chaque bouclier pousse le pion conflit d’une case. À 9 cases, il atteint la capitale adverse et la partie s’arrête. En chemin, les cases 3 et 6 pillent l’adversaire : −2 puis −5 pièces.<br><b>Pour t’en défendre<\/b> : construis des cartes rouges, ou retire-les à l’adversaire en les défaussant.<\/div><div><b>Par la science<\/b>Réunis 6 symboles scientifiques différents. Deux symboles identiques donnent un jeton progrès.<br><b>Pour t’en défendre<\/b> : compte ses symboles. À partir du quatrième, prends les cartes vertes qui lui manquent, même pour les défausser.<\/div><div><b>Par le Sénat (Agora)<\/b>Contrôle les 6 chambres en même temps.<br><b>Pour t’en défendre<\/b> : garde la majorité dans au moins une chambre.<\/div><div><b>Aux points<\/b>Après l’Âge III : bâtiments bleus, merveilles, jetons progrès, guildes, et 1 point pour 3 pièces. Ton score provisoire s’affiche en vert à côté de tes pièces.<\/div><\/div><\/div>","argent":"<div class=\"gd\"><table class=\"gd-table l\"><tr><td>Ressource qui te manque<\/td><td>2 pièces + 1 par exemplaire que produit l’adversaire<\/td><\/tr><tr><td>Avec un dépôt (carte jaune)<\/td><td>cette ressource coûte 1 pièce<\/td><\/tr><tr><td>Défausser une carte<\/td><td>2 pièces + 1 par carte jaune que tu possèdes<\/td><\/tr><tr><td>Chaînage<\/td><td>gratuit si tu as déjà le symbole demandé<\/td><\/tr><tr><td>Fin de partie<\/td><td>3 pièces = 1 point<\/td><\/tr><\/table><div class=\"gd-tip\">Le jeu achète tout seul ce qui te manque. Le détail du prix s’affiche sous le bouton Construire.<\/div><p>Plus l’adversaire produit une ressource, plus elle te coûte cher. Si tu es seul à produire une ressource rare, c’est lui qui paiera le prix fort.<\/p><\/div>","conseils":"<div class=\"gd\"><div class=\"gd-grid\"><div><b>Compte ce que tu libères<\/b>Avant de prendre une carte, regarde lesquelles deviennent jouables pour l’adversaire. Parfois la bonne carte est celle qui ne libère rien.<\/div><div><b>Garde un « Rejoue »<\/b>Une merveille qui fait rejouer permet de prendre deux cartes de suite : idéal pour saisir une carte que tu viens de libérer.<\/div><div><b>Sept merveilles, pas huit<\/b>Seules 7 merveilles peuvent être bâties. La huitième est abandonnée : ne laisse pas la tienne pour la fin.<\/div><div><b>Varie tes ressources tôt<\/b>Une ressource que tu ne produis pas et que l’adversaire produit en double te coûtera 4 pièces à chaque fois.<\/div><div><b>Défausser n’est pas perdre<\/b>Défausser une carte que l’adversaire attendait te donne des pièces et lui retire une occasion.<\/div><div><b>Évite les pillages<\/b>Perdre 5 pièces à la case 6 peut t’empêcher de construire au pire moment. Un bouclier bien placé suffit souvent.<\/div><\/div><\/div>","extensions":"<div class=\"gd\"><p>Les deux extensions peuvent se jouer séparément ou ensemble. Essaie-les une par une.<\/p><div class=\"gd-grid\"><div><b>Panthéon<\/b>Des dieux à invoquer à la place de ta prise de carte, dès l’Âge II. Les sceaux de l’Âge I décident quels dieux entrent en jeu.<\/div><div><b>Agora<\/b>Un Sénat à six chambres, des décrets, des complots secrets, et une troisième victoire immédiate.<\/div><\/div><p>Chacune est expliquée pas à pas dans l’Aide, onglets Panthéon et Agora.<\/p><\/div>"};
-function showGuide(tab='debut'){ openModal(`<h3>Guide de jeu</h3><div class="tabs">${GUIDE_TABS.map(([k,l])=>`<button class="tab ${k===tab?'on':''}" data-a="guide" data-v="${k}">${l}</button>`).join('')}</div><div class="rules">${GUIDE_BODY[tab]||''}</div><button class="ghost" data-a="close">Fermer</button>`,{wide:true}); }
+function showGuide(tab='debut'){ openModal(`<h3>Guide de jeu</h3><div class="tabs">${GUIDE_TABS.map(([k,l])=>`<button class="tab ${k===tab?'on':''}" data-a="guide" data-v="${k}">${l}</button>`).join('')}</div><div class="rules">${GUIDE_BODY[tab]||''}</div><button class="ghost" data-a="close">Compris</button>`,{wide:true}); }
 if(typeof window!=='undefined') window.SDJ_GUIDE=()=>showGuide();/*/GUIDE*/
 function showHelp(tab='bases'){
-  openModal(`<h3>Aide</h3><div class="tabs">${HELP_TABS.map(([k,l])=>`<button class="tab ${k===tab?'on':''}" data-a="help" data-v="${k}">${l}</button>`).join('')}</div><div class="rules">${helpBody(tab)}</div><button class="ghost" data-a="close">Fermer</button>`,{wide:true});
+  openModal(`<h3>Aide</h3><div class="tabs">${HELP_TABS.map(([k,l])=>`<button class="tab ${k===tab?'on':''}" data-a="help" data-v="${k}">${l}</button>`).join('')}</div><div class="rules">${helpBody(tab)}</div><button class="ghost" data-a="close">Compris</button>`,{wide:true});
 }
 
 /* Événements */
@@ -1560,6 +1560,6 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else
 
 
 <!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
-<!--MENUJS--><script src="common/menu.js?v=7e842768"></script><!--/MENUJS-->
+<!--MENUJS--><script src="common/menu.js?v=528d070f"></script><!--/MENUJS-->
 </body>
 </html>

@@ -178,7 +178,7 @@ table.res tr.win td{color:var(--straw);font-weight:800}
 
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=b25ecf2f"><!--/NETCSS-->
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=3da929cd"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head>
 <body>
@@ -368,7 +368,7 @@ function render(){
   const oth=NETON()&&!inp&&G.inputs?Object.values(G.inputs).find(x=>x&&x.rows):null;
   const who=oth?`${G.P[oth.pi].name} choisit une rangée`:NETON()&&!inp&&G.played&&!G.order?'Les autres choisissent…':inp?(inp.rows?`${G.P[inp.pi].name} choisit une rangée`:NETON()?inp.prompt:humansCount()===1?'À toi de choisir':`Au tour de ${G.P[inp.pi].name}`):G.order?'On pose les cartes, de la plus petite à la plus grande':'Les joueurs choisissent';
   const sc=window.scrollY;
-  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">←<span class="long"> Salle de jeux</span></a><span class="logo">Têtes de Bœuf</span><span class="spacer"></span>
+  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">Salle de jeux</a><span class="logo">Têtes de Bœuf</span><span class="spacer"></span>
     <button class="hbtn" data-a="risk">${G.showRisk?'Aide au risque ✓':'Aide au risque'}</button><button class="hbtn" data-a="sound">${MUTED?'Son coupé':'Son'}</button><button class="hbtn" data-a="help">Aide</button><button class="hbtn" data-a="menu"><span class="long">Nouvelle partie</span><span class="short">Menu</span></button></div>
     <div class="turnbar"><div class="wrap"><span class="who">${esc(who)}</span><span class="hint">Manche ${G.round} · tour ${G.trick} · fin à ${G.target} têtes</span></div></div></header>
   <div class="wrap"><div class="game">
@@ -423,7 +423,7 @@ function showHelp(){openModal(`<h3>Comment jouer</h3><div class="rules">
   <div class="ex"><b>Passe à gauche.</b> Avant chaque tour (sauf le dernier), chacun donne une carte à son voisin de gauche. La carte reçue est entourée de jaune.</div>
   <div class="ex"><b>Rangées élastiques.</b> Une rangée n’est plus limitée à 5 cartes : dès qu’une carte à plusieurs têtes y entre, elle fixe la taille maximale (autant de cartes en plus que de têtes). La case rouge hachurée indique la carte qui fera ramasser.</div>
   <div class="ex"><b>Jeu tactique.</b> Seules les cartes 1 à 10 × joueurs + 4 sont utilisées : avec 3 joueurs, 1 à 34.</div>
-  <p>Le bouton <b>Aide au risque</b> indique sous chaque carte de ta main si elle est sûre, risquée ou dangereuse.</p></div><button class="ghost" data-a="close">Fermer</button>`);}
+  <p>Le bouton <b>Aide au risque</b> indique sous chaque carte de ta main si elle est sûre, risquée ou dangereuse.</p></div><button class="ghost" data-a="close">Compris</button>`);}
 function floatHeads(r,h){if(IS_NODE)return;const el=$('row'+r);if(!el)return;const b=el.getBoundingClientRect();const d=document.createElement('div');d.className='float';d.innerHTML=`+${h} ${bullS}`;d.style.left=(b.left+b.width/2)+'px';d.style.top=b.top+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1900);}
 /* Sauvegarde (en début de tour) */
 const SAVE_KEY='tetes-de-boeuf-save';
@@ -545,6 +545,6 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else
 
 
 <!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
-<!--MENUJS--><script src="common/menu.js?v=7e842768"></script><!--/MENUJS-->
+<!--MENUJS--><script src="common/menu.js?v=528d070f"></script><!--/MENUJS-->
 </body>
 </html>

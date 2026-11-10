@@ -270,7 +270,7 @@ main,aside{min-width:0;display:flex;flex-direction:column;gap:14px}
 
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=b25ecf2f"><!--/NETCSS-->
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=3da929cd"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head>
 <body>
@@ -750,7 +750,7 @@ function render(){
   document.body.classList.toggle('ff',FF);
   if(!G){renderMenu();return;}
   const sc=window.scrollY;
-  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">←<span class="long"> Salle de jeux</span></a><span class="logo">Duel des Joyaux</span><span class="spacer"></span>
+  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">Salle de jeux</a><span class="logo">Duel des Joyaux</span><span class="spacer"></span>
     <button class="hbtn" data-a="ff" aria-pressed="${FF}" title="Pour poser l’écran à plat entre deux joueurs">${FF?'Face à face ✓':'Face à face'}</button><button class="hbtn" data-a="sound">${MUTED?'Son coupé':'Son'}</button><button class="hbtn" data-a="help">Aide</button><button class="hbtn" data-a="menu"><span class="long">Nouvelle partie</span><span class="short">Menu</span></button></div>${turnbarHTML()}</header>
   <div class="wrap"><div class="layout"><main>${playerHTML(1-MEB())}${boardHTML()}${playerHTML(MEB())}</main>
   <aside>
@@ -764,7 +764,7 @@ function render(){
 }
 function renderMenu(){document.body.classList.remove('ff');
   const s=buildDecks();const sample=[{...s[1][0],id:1},{...s[2][1],id:2},{...s[3][0],id:3},{...s[1][25],id:4},{...FAKES[6],kind:'passive'}];
-  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">←<span class="long"> Salle de jeux</span></a><span class="spacer"></span><button class="hbtn" data-a="help">Aide</button></div></header>
+  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">Salle de jeux</a><span class="spacer"></span><button class="hbtn" data-a="help">Aide</button></div></header>
   <div class="wrap"><div class="menu">
     <div class="preview">${sample.map(c=>cardH(c,c.kind?84:72)).join('')}</div>
     <h1>Duel des Joyaux</h1>
@@ -787,10 +787,10 @@ function renderMenu(){document.body.classList.remove('ff');
 /* Modales */
 function openModal(html,cfg={}){if(IS_NODE)return;modalForced=!!cfg.forced;const who=cfg.who??(G?(G.awaiting??G.cur):0);const m=$('modal');m.innerHTML=`<div class="mpanel ${FF&&G&&who===1?'flip':''}" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;const f=m.querySelector('button:not([disabled])');if(f)f.focus({preventScroll:true});}
 function closeModal(force){if(IS_NODE)return;if(modalForced&&!force)return;modalForced=false;$('modal').hidden=true;$('modal').innerHTML='';}
-function info(t,b){openModal(`<h3>${t}</h3>${b}<button class="ghost" data-a="close">Fermer</button>`);}
+function info(t,b){openModal(`<h3>${t}</h3>${b}<button class="ghost" data-a="close">Compris</button>`);}
 function cardSheet(card,acts,note){
   sheetActs=acts.map(a=>a.act);
-  openModal(`<div class="sheet">${cardH(card,card.kind?130:120)}<div><h3>${esc(card.n||cardName(card).replace(/^une? /,'').replace(/^./,m=>m.toUpperCase()))}</h3><ul>${describe(card).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${acts.length?`<div class="acts">${acts.map((a,i)=>`<button class="act ${i===0?'main':''}" data-a="act" data-v="${i}" ${a.dis?'disabled':''}><b>${a.label}</b><span>${a.sub||''}</span></button>`).join('')}</div>`:`<p class="sub" style="margin-top:12px">${note||''}</p>`}<button class="ghost" data-a="close">Fermer</button>`);
+  openModal(`<div class="sheet">${cardH(card,card.kind?130:120)}<div><h3>${esc(card.n||cardName(card).replace(/^une? /,'').replace(/^./,m=>m.toUpperCase()))}</h3><ul>${describe(card).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${acts.length?`<div class="acts">${acts.map((a,i)=>`<button class="act ${i===0?'main':''}" data-a="act" data-v="${i}" ${a.dis?'disabled':''}><b>${a.label}</b><span>${a.sub||''}</span></button>`).join('')}</div>`:`<p class="sub" style="margin-top:12px">${note||''}</p>`}<button class="ghost" data-a="close">Compris</button>`);
 }
 function payText(pi,card){const pay=payPlan(pi,card);if(!pay)return 'Pas assez de jetons';const s=Object.entries(pay).map(([k,v])=>`${v} ${NM[k].toLowerCase()}`).join(', ');return s?'Tu paies : '+s:'Gratuit grâce à tes bonus';}
 function onCard(src,lvl,i){
@@ -833,7 +833,7 @@ function helpBody(t){
     <div class="glist">${FAKES.map(f=>`<div><b>${f.n}</b><br>${f.d}</div>`).join('')}</div>`;
   return '';
 }
-function showHelp(t='bases'){openModal(`<h3>Aide</h3><div class="tabs">${HELP.map(([k,l])=>`<button class="tab ${k===t?'on':''}" data-a="help" data-v="${k}">${l}</button>`).join('')}</div><div class="rules">${helpBody(t)}</div><button class="ghost" data-a="close">Fermer</button>`);}
+function showHelp(t='bases'){openModal(`<h3>Aide</h3><div class="tabs">${HELP.map(([k,l])=>`<button class="tab ${k===t?'on':''}" data-a="help" data-v="${k}">${l}</button>`).join('')}</div><div class="rules">${helpBody(t)}</div><button class="ghost" data-a="close">Compris</button>`);}
 
 /* Animations et sons */
 let prev=null;
@@ -883,9 +883,9 @@ document.addEventListener('click',e=>{
     case 'refill':if(me!=null)resolveAct({t:'refill'});break;
     case 'card':{const[l,i]=v.split('-').map(Number);onCard('pyr',l,i);break;}
     case 'fakebuy':onCard('fake',0,+v);break;
-    case 'deck':{if(me==null)return;const l=+v;const p=G.P[me];if(!G.decks[l].length)return;sheetActs=[{t:'reserve',src:'deck',lvl:l}];openModal(`<h3>Pioche de niveau ${['','I','II','III'][l]}</h3><p class="sub">${pl(G.decks[l].length,'carte')} restante(s). Tu peux réserver la carte du dessus sans la voir.</p><div class="acts"><button class="act main" data-a="act" data-v="0" ${p.res.length>=3||!G.board.includes('Y')?'disabled':''}><b>Réserver la carte cachée (+1 or)</b><span>${p.res.length>=3?'Déjà 3 réservations':!G.board.includes('Y')?'Plus d’or sur le plateau':''}</span></button></div><button class="ghost" data-a="close">Fermer</button>`);break;}
+    case 'deck':{if(me==null)return;const l=+v;const p=G.P[me];if(!G.decks[l].length)return;sheetActs=[{t:'reserve',src:'deck',lvl:l}];openModal(`<h3>Pioche de niveau ${['','I','II','III'][l]}</h3><p class="sub">${pl(G.decks[l].length,'carte')} restante(s). Tu peux réserver la carte du dessus sans la voir.</p><div class="acts"><button class="act main" data-a="act" data-v="0" ${p.res.length>=3||!G.board.includes('Y')?'disabled':''}><b>Réserver la carte cachée (+1 or)</b><span>${p.res.length>=3?'Déjà 3 réservations':!G.board.includes('Y')?'Plus d’or sur le plateau':''}</span></button></div><button class="ghost" data-a="close">Compris</button>`);break;}
     case 'res':{const[pp,i]=v.split('-').map(Number);const c=G.P[pp].res[i];if(isAI(pp)&&G.mode==='ai'){info('Carte réservée','<p class="sub">L’IA garde cette carte secrète.</p>');return;}if(me===pp){const pay=payPlan(pp,c);cardSheet(c,[{label:'Acheter',sub:payText(pp,c),dis:!pay,act:{t:'buy',src:'res',i}}]);}else cardSheet(c,[],'Carte réservée.');break;}
-    case 'fake':{const[pp,ab]=[+v.split('-')[0],v.split('-').slice(1).join('-')];const p=G.P[pp];const f=p.fakes.find(x=>(x.ab||x.n)===ab);if(!f)return;const can=me===pp&&f.kind==='active'&&!p.used[f.ab]&&p.tok.V>=f.pay;sheetActs=[{t:'act',ab:f.ab}];openModal(`<h3>${esc(f.n)}</h3><p>${esc(f.d)}</p>${f.kind==='active'?`<div class="acts"><button class="act main" data-a="act" data-v="0" ${can?'':'disabled'}><b>Utiliser (${f.pay} verre${f.pay>1?'s':''})</b><span>${p.used[f.ab]?'Déjà utilisé ce tour':me!==pp?'Ce n’est pas ton tour':p.tok.V<f.pay?'Pas assez de verre':'Action gratuite, avant ton action principale'}</span></button></div>`:''}<button class="ghost" data-a="close">Fermer</button>`);break;}
+    case 'fake':{const[pp,ab]=[+v.split('-')[0],v.split('-').slice(1).join('-')];const p=G.P[pp];const f=p.fakes.find(x=>(x.ab||x.n)===ab);if(!f)return;const can=me===pp&&f.kind==='active'&&!p.used[f.ab]&&p.tok.V>=f.pay;sheetActs=[{t:'act',ab:f.ab}];openModal(`<h3>${esc(f.n)}</h3><p>${esc(f.d)}</p>${f.kind==='active'?`<div class="acts"><button class="act main" data-a="act" data-v="0" ${can?'':'disabled'}><b>Utiliser (${f.pay} verre${f.pay>1?'s':''})</b><span>${p.used[f.ab]?'Déjà utilisé ce tour':me!==pp?'Ce n’est pas ton tour':p.tok.V<f.pay?'Pas assez de verre':'Action gratuite, avant ton action principale'}</span></button></div>`:''}<button class="ghost" data-a="close">Compris</button>`);break;}
     case 'help':showHelp(v||'bases');break;
     case 'ffset':FF=v==='1';try{localStorage.setItem('salle-ff',FF?'1':'0');}catch(e){}render();break;
     case 'ff':FF=!FF;try{localStorage.setItem('salle-ff',FF?'1':'0');}catch(e){}render();break;
@@ -978,6 +978,6 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else
 
 
 <!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
-<!--MENUJS--><script src="common/menu.js?v=7e842768"></script><!--/MENUJS-->
+<!--MENUJS--><script src="common/menu.js?v=528d070f"></script><!--/MENUJS-->
 </body>
 </html>

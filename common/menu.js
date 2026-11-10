@@ -18,7 +18,7 @@
           m.classList.add('sdj-start'); } }
     }
     var me=document.querySelector('.menu');
-    if(me&&!me.querySelector('.sdj-head')){ var h1=me.querySelector('h1'); if(h1) head(me,h1); }
+    if(me&&!me.querySelector('.sdj-head')){ var h1=me.querySelector('h1'); if(h1) head(me,h1); me.classList.toggle('sdj-nohead',!document.querySelector('header.top')); }
   }
   var busy=false;
   new MutationObserver(function(){ if(busy) return; busy=true; try{ dress(); }finally{ busy=false; } }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});

@@ -163,12 +163,12 @@ body{background:radial-gradient(ellipse at 50% -10%,#5a3f22 0%,#231a12 55%,#140e
 
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=b25ecf2f"><!--/NETCSS-->
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=3da929cd"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
 <!--MENU--><template id="sdj-cover"><svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice"><rect x="0" y="0" width="240" height="180" fill="#f0a531"/><circle cx="178" cy="52" r="30" fill="#ffe08a"/><path d="M0 180V140H240V180Z" fill="#c9791a"/><path d="M20 140L84 46L148 140Z" fill="#e0872a"/><path d="M84 46L148 140H104Z" fill="#b9651b"/><path d="M120 140L172 72L224 140Z" fill="#f6c45c"/><path d="M172 72L224 140H190Z" fill="#d99a34"/><rect x="26" y="140" width="190" height="10" fill="#8a4a12"/><g transform="translate(53 56) rotate(-12)"><rect x="-17" y="-23" width="34" height="46" rx="5" fill="rgba(10,8,40,.28)"/></g><g transform="translate(50 50) rotate(-12)"><rect x="-17" y="-23" width="34" height="46" rx="5" fill="#fff"/><rect x="-12" y="-18" width="24" height="10" rx="2" fill="#4f8ef7"/><circle cx="0" cy="6" r="7" fill="#ffc93c"/></g></svg></template><script>window.SDJ_JEU={"t": "Sept Merveilles", "d": "Trois âges pour bâtir ta cité et ta merveille : on choisit une carte, on passe le reste à son voisin. Dans l’esprit de 7 Wonders."}</script><!--/MENU-->
 <header class="top"><a class="back" href="index.html">Salle de jeux</a><h1>Sept Merveilles<small>dans l’esprit de 7 Wonders</small></h1>
-<div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="guide">Guide</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
+<div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" id="asBtn" data-c="assist">Assistance : oui</button><button class="btn" data-c="guide">Guide</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
 <div class="status" id="status"></div>
 <main class="sm" id="tbl"></main>
 <section class="act" id="act"><div class="in2" id="actin"></div></section>
@@ -219,6 +219,7 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('[data-c]'); if(!t) return;
   switch(t.dataset.c){
     case 'sound': MUTED=!MUTED; store('salle-mute',MUTED); updSnd(); break;
+    case 'assist': ASSIST=!ASSIST; store('sm-assist',ASSIST); updAssist(); if(G) render(); break;
     case 'guide': guide(); break;
     case 'help': GAME.help(); break;
     case 'new': { const cv=$('#cover'); window.MODAL_CLOSABLE=true; GAME.menu(); if(cv&&!cv.hidden){ cv.hidden=true; window.COVER_HIDDEN=cv; } break; }
@@ -473,6 +474,52 @@ function effTxt(eff){ return effs(eff).map(e=>{ const [k,a,b,c]=e.split(':');
    case 'pc': return `${b} pt par carte ${CN[a]} à toi`; case 'vt': return '+1 pt par victoire militaire'; case 'wall': return '+3 pts si la merveille est terminée'; }
   return e; }).join(' · '); }
 function cardHTML(c,o){ o=o||{}; return `<button class="cd ${c.color} ${o.cls||''}" data-card="${c.id}" style="${o.delay?'animation-delay:'+o.delay+'ms':''}"><div class="hd h-${c.color}">${esc(c.name)}</div><div class="bd"><div class="cs">${c.color==='leader'?`<span class="ri" style="background:#d9a520;color:#2a1f14">${c.cost}●</span>`:costHTML(c.cost)}</div><div class="ef">${effTxt(c.eff)}</div>${c.chain&&c.chain.length?`<div class="ch">Gratuit si tu as : ${c.chain.map(esc).join(' ou ')}</div>`:''}</div>${o.tag||''}</button>`; }
+/*ASSIST*/
+/* ---------- assistance : conseille la carte à jouer et explique pourquoi (même évaluation que l'ordinateur, sans hasard) ---------- */
+let ASSIST=load('sm-assist')!==false, ADV=null;
+function updAssist(){ const b=$('#asBtn'); if(b){ b.textContent=ASSIST?'Assistance : oui':'Assistance : non'; b.setAttribute('aria-pressed',ASSIST); } }
+function cardReasons(G,p,c,o){ const P=G.players[p], out=[], age=G.age, lN=esc(G.players[L(G,p)].name), rN=esc(G.players[R(G,p)].name); let sci=false;
+  effs(c.eff).forEach(e=>{ const [k,a]=e.split(':');
+    if(k==='p'){ const have=prodUnits(P,false).join(''), rs=[...a.replace('/','')], miss=rs.filter(r=>!have.includes(r));
+      out.push(miss.length?`Elle produit ${miss.map(r=>RES[r].toLowerCase()).join(a.includes('/')?' ou ':' et ')}, que tu ne produis pas encore.`:'Elle double une ressource que tu produis déjà.');
+      if(age===3) out.push('À l’âge III, les ressources servent peu.'); }
+    if(k==='m'){ const my=shields(P), l=shields(G.players[L(G,p)]), r=shields(G.players[R(G,p)]), w={1:1,2:3,3:5}[age], beat=[]; if(my<=l&&my+ +a>l) beat.push(lN); if(my<=r&&my+ +a>r) beat.push(rN);
+      out.push(beat.length?`Avec ${a} bouclier${+a>1?'s':''} de plus, tu passes devant ${beat.join(' et ')} : ${w} point${w>1?'s':''} par conflit gagné à la fin de l’âge.`:(my>l&&my>r?'Tu es déjà devant tes deux voisins : ces boucliers ne changent rien pour l’instant.':'Ces boucliers ne suffisent pas encore à dépasser tes voisins.')); }
+    if(k==='s'){ sci=true; const s=sciCounts(P), b=sciScore(s), s2=Object.assign({},s); if(a==='*'||a==='*1') s2.w++; else s2[a]++; const n=sciScore(s2); out.push(`Ta science passe de ${b} à ${n} point${n>1?'s':''}.`); }
+    if(k==='tr') out.push('Les matières premières achetées à ton voisin ne coûtent plus que 1 pièce.');
+    if(k==='tg') out.push('Les produits manufacturés achetés à tes voisins ne coûtent plus que 1 pièce.');
+    if(k==='ar'||k==='ag') out.push('Elle fournit à chaque tour une ressource au choix.');
+    if(k==='c') out.push(`Elle rapporte ${a} pièces tout de suite.`);
+    if(k==='cp'||k==='cv') out.push('Elle rapporte des pièces selon les cartes déjà construites.');
+    if(k==='dip') out.push('Elle t’évite le prochain conflit.');
+    if(k==='debt') out.push('Elle fait perdre des pièces à tes adversaires.'); });
+  if(!sci){ const before=scoreOf(G,p).total; P.built.push(c); let d=0; try{ d=scoreOf(G,p).total-before; }finally{ P.built.pop(); } if(d>0) out.push(`Elle vaut ${d} point${d>1?'s':''} au décompte actuel.`); }
+  const next=[...new Set(CARDS_SRC.filter(x=>x[6]&&x[1]>c.age&&x[6].split('|').includes(c.name)).map(x=>x[0]))]; if(next.length) out.push(`Elle rendra gratuit${next.length>1?'s':''} : ${next.map(esc).join(', ')}.`);
+  if(o){ if(o.chain) out.push('Gratuite grâce à une chaîne.'); else if(o.ok&&o.plan.coins) out.push(`Elle te coûte ${o.plan.coins} pièce${o.plan.coins>1?'s':''} de commerce.`); }
+  return out; }
+function advise(G,p){ const P=G.players[p]; if(!P||P.ai||BUSY||G.choices[p]) return null;
+  if(G.phase==='ldraft'){ const h=G.hands[p]||[]; if(!h.length) return null; const l=h.slice().sort((a,b)=>leaderVal(G,p,b)-leaderVal(G,p,a))[0];
+    return {id:l.id,txt:`garde <b>${esc(l.name)}</b>`,why:[`Son pouvoir : ${effTxt(l.eff)}.`,'C’est le meneur le plus rentable de cette main.']}; }
+  if(G.phase==='recruit'){ const ok=(P.lhand||[]).filter(l=>l.cost<=P.coins).sort((a,b)=>leaderVal(G,p,b)-leaderVal(G,p,a));
+    if(ok.length&&leaderVal(G,p,ok[0])>ok[0].cost/3) return {id:ok[0].id,txt:`recrute <b>${esc(ok[0].name)}</b>`,why:[`Son pouvoir : ${effTxt(ok[0].eff)}.`,`Il coûte ${ok[0].cost} pièces, il t’en restera ${P.coins-ok[0].cost}.`]};
+    const l=(P.lhand||[])[0]; return l?{id:l.id,txt:`renvoie <b>${esc(l.name)}</b>`,why:['Aucun meneur ne vaut son prix pour l’instant : 3 pièces te seront plus utiles.']}:null; }
+  if(G.phase!=='play'&&G.phase!=='last') return null; if(G.phase==='last'&&!(G.lastWho||[]).includes(p)) return null;
+  const hand=G.hands[p]||[]; if(!hand.length) return null; const base=scoreOf(G,p).total, so=stageOptions(G,p); let best=null;
+  for(const c of hand){ const o=buildOptions(G,p,c);
+    if(o&&(o.ok||o.free)){ const free=!o.ok&&o.free; const v=cardVal(G,p,c,base)-(free?0:o.plan.coins/3)-(free?2:0); if(!best||v>best.v) best={v,id:c.id,act:free?'free':'build',c,o}; }
+    if(so&&so.ok){ const st=stagesOf(P)[P.stages]; const v=stageVal(G,p,st[1])-so.plan.coins/3-cardVal(G,p,c,base)*.25; if(!best||v>best.v) best={v,id:c.id,act:'wonder',c}; }
+    const dv=1+(P.coins<3?1:0)-cardVal(G,p,c,base)*.15; if(!best||dv>best.v) best={v:dv,id:c.id,act:'discard',c}; }
+  const n=`<b>${esc(best.c.name)}</b>`;
+  if(best.act==='wonder'){ const st=stagesOf(P)[P.stages]; best.txt=`glisse ${n} sous ta merveille`; best.why=[`L’étape ${P.stages+1} de ta merveille donne : ${effTxt(st[1])}.`,'Aucune carte de ta main ne t’apporte autant en la construisant.'].concat(so.plan.coins?[`Elle te coûte ${so.plan.coins} pièce${so.plan.coins>1?'s':''} de commerce.`]:[]); }
+  else if(best.act==='discard'){ best.txt=`défausse ${n}`; best.why=['Rien d’utile à construire ce tour-ci : 3 pièces te serviront pour commercer.']; }
+  else { best.txt=(best.act==='free'?'construis gratuitement ':'construis ')+n; best.why=cardReasons(G,p,best.c,best.o).slice(0,4); if(best.act==='free') best.why.push('Tu utilises le pouvoir de ta merveille : une carte gratuite par âge.'); }
+  return best; }
+function coachHTML(m){ if(!ASSIST||!ADV) return ''; const hand=G.phase==='recruit'?G.players[m].lhand:(G.hands[m]||[]); let other='';
+  if(SEL&&SEL!==ADV.id&&(G.phase==='play'||G.phase==='last')){ const c=hand.find(x=>x.id===SEL); if(c){ const o=buildOptions(G,m,c); const rs=o&&!o.ok&&!o.free?[o.why==='Déjà construit'?'Tu l’as déjà construite.':'Tu n’as pas les ressources pour la construire : merveille ou défausse seulement.']:cardReasons(G,m,c,o);
+      other=`<div class="coach-sel"><b>${esc(c.name)}</b> : ${rs.length?rs.join(' '):'peu d’intérêt pour toi en ce moment.'}</div>`; } }
+  return `<div class="coach" role="status"><svg class="coach-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.700V17h8v-2.300A7 7 0 0 0 12 2z" fill="#ffc93c"/><path d="M9 19h6v1.500a1.500 1.500 0 0 1-1.500 1.500h-3A1.500 1.500 0 0 1 9 20.500z" fill="#1a1740"/></svg><div class="coach-tx"><div><b>Conseil :</b> ${ADV.txt}.</div><ul>${ADV.why.map(w=>`<li>${w}</li>`).join('')}</ul>${other}</div>${SEL===ADV.id?'':'<button type="button" data-a="coach">Choisir</button>'}</div>`; }
+addEventListener('DOMContentLoaded',updAssist);
+/*/ASSIST*/
 /* ---------- rendu ---------- */
 const ONLINE=()=>NET.on&&NET.started;
 let ENDKEY=null;
@@ -492,7 +539,8 @@ function render(){ if(!G){ $('#tbl').innerHTML=''; $('#actin').innerHTML=''; ren
   const hd=G.phase==='ldraft'?'Choisis un meneur à garder':G.phase==='recruit'?'Recrute un meneur pour cet âge':G.phase==='disc'?'':`Âge ${['','I','II','III'][G.age]} · tour ${G.turn} · ta main`;
   const opps=G.players.map((P,i)=>`<div class="opp ${i===m?'me':''}"><b>${esc(P.name)}</b> · ${esc(wonderOf(P).name)}<br>● ${P.coins} · ⚔ ${shields(P)} · étapes ${P.stages}/${stagesOf(P).length}${G.choices[i]?' · ✓ a choisi':''}</div>`).join('');
   const ed=G.opts.edifice&&G.edif?`<div class="pan"><h3>Édifice de l’âge : ${esc(G.edif.name)}</h3><div style="font-size:13px">Participation en construisant une étape de merveille : ${G.edif.cost} pièces. Réussi si au moins ${Math.ceil(G.n*G.edif.need)} joueurs participent : récompense ${effTxt(G.edif.rew)} pour les participants, pénalité ${effTxt(G.edif.pen)} pour les autres. Participants : ${G.edif.by.map(i=>esc(G.players[i].name)).join(', ')||'aucun'}.</div></div>`:'';
-  $('#tbl').innerHTML=`<div class="row3">${cityHTML(l,false)}${cityHTML(m,true)}${cityHTML(r,false)}</div>${ed}<div class="pan handpan"><h3>${hd}</h3><div class="hand">${canSee?hand.map((c,k)=>cardHTML(c,{cls:(SEL===c.id?'sel ':'')+'in',delay:k*40,tag:tag(c)})).join(''):''}</div></div><div class="opps">${opps}</div>`;
+  ADV=canSee&&ASSIST?advise(G,m):null;
+  $('#tbl').innerHTML=`<div class="row3">${cityHTML(l,false)}${cityHTML(m,true)}${cityHTML(r,false)}</div>${ed}<div class="pan handpan"><h3>${hd}</h3>${canSee?coachHTML(m):''}<div class="hand">${canSee?hand.map((c,k)=>cardHTML(c,{cls:(SEL===c.id?'sel ':'')+(ADV&&ADV.id===c.id?'reco ':'')+'in',delay:k*40,tag:tag(c)})).join(''):''}</div></div><div class="opps">${opps}</div>`;
   LASTBUILT.clear(); renderAct(); renderStatus(); }
 function renderAct(){ const a=$('#actin'); if(G.phase==='over'){ a.innerHTML=`<span class="msg2">Partie terminée.</span><button class="btn pri" data-c="new">Nouvelle partie</button>`; return; }
   const m=me(); if(BUSY){ a.innerHTML='<span class="msg2">Les cités construisent…</span>'; return; }
@@ -557,6 +605,7 @@ document.addEventListener('click',e=>{ const t=e.target.closest('[data-card],[da
   if(BUSY||G.phase==='over'||!$('#modal').hidden) return; const m=me();
   if(t.dataset.card&&t.closest('.hand')){ if(G.choices[m]) return; SEL=SEL===t.dataset.card?null:t.dataset.card; FLEETO=false; EDIFO=false; sfx('click'); render(); return; }
   const a=t.dataset.a; let ok=false;
+  if(a==='coach'){ if(ADV&&!G.choices[m]){ SEL=ADV.id; FLEETO=false; EDIFO=false; sfx('click'); render(); } return; }
   if(a==='undo'){ if(NET.guest){ NET.act('undo',[m]); return; } delete G.choices[m]; render(); NET.push(); return; }
   if(!SEL) return;
   if(a==='keep') ok=choose(G,m,{type:'keep',id:SEL});
@@ -582,10 +631,11 @@ function menu(){ window.MODAL_CLOSABLE=true;
    <h4>Cités</h4><div class="seg">${[3,4,5,6,7].map(n=>`<button class="${M.n===n?'on':''}" data-m="n:${n}">${n}</button>`).join('')}</div>
    ${M.seats.slice(0,M.n).map((s,i)=>`<div class="seatrow"><input type="text" data-nm="${i}" value="${esc(s.name)}" placeholder="${s.h?(i===0?'Toi':NAMES[i]):NAMES[(i+1)%7]}" maxlength="14"><div class="seg"><button class="${s.h?'on':''}" data-m="h:${i}:1">Humain</button><button class="${s.h?'':'on'}" data-m="h:${i}:0">Ordinateur</button></div></div>`).join('')}
    ${hs<M.n?`<h4>Niveau de l’ordinateur</h4><div class="seg">${['facile','normal','difficile'].map(l=>`<button class="${M.level===l?'on':''}" data-m="level:${l}">${l}</button>`).join('')}</div>`:''}
+   <h4>Assistance</h4><div class="seg"><button class="${ASSIST?'on':''}" data-m="assist:1">Activée</button><button class="${ASSIST?'':'on'}" data-m="assist:0">Désactivée</button></div><p class="net-note">Une bulle conseille la carte à jouer et explique pourquoi.</p>
    ${rulesHTML()}
    <div class="acts">${G&&G.phase!=='over'?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="go" ${hs?'':'disabled'}>Fonder les cités</button></div>`); };
   draw(); $('#mbox').onclick=e=>{ $$('#mbox [data-nm]').forEach(i=>{ M.seats[+i.dataset.nm].name=i.value; }); $$('#mbox [data-o]').forEach(i=>{ M[i.dataset.o]=i.checked; }); const x=e.target.closest('[data-m]'); if(!x) return; const [k,v,w]=x.dataset.m.split(':'); sfx('click');
-    if(k==='go'){ closeModal(); store('smp',M); startGame(); return; } if(k==='h') M.seats[+v].h=+w; else if(k==='n') M.n=+v; else M[k]=v; draw(); }; }
+    if(k==='go'){ closeModal(); store('smp',M); startGame(); return; } if(k==='assist'){ ASSIST=v==='1'; store('sm-assist',ASSIST); updAssist(); draw(); return; } if(k==='h') M.seats[+v].h=+w; else if(k==='n') M.n=+v; else M[k]=v; draw(); }; }
 /*GUIDE*/function guide(){ const back=!!document.querySelector('#modal:not([hidden]) .sdj-head'); helpTabs('Guide de jeu',[["Première partie","<div class=\"gd\"><p>Une partie dure trois âges de six tours. Voici un tour, puis ce qu’il faut viser à chaque âge.<\/p><ol class=\"gd-steps\"><li><span>Tu reçois 7 cartes. Touche-en une : l’étiquette dit si tu peux la construire tout de suite, ce qu’elle coûte en commerce, ou si elle est gratuite par chaîne.<\/span><\/li><li><span>Choisis quoi en faire : la <b>construire<\/b>, la glisser sous ta merveille pour <b>bâtir une étape<\/b>, ou la <b>défausser<\/b> contre 3 pièces.<\/span><\/li><li><span>Tout le monde révèle son choix en même temps, puis les mains passent au voisin.<\/span><\/li><li><span>Après six cartes jouées, la septième est défaussée et les conflits se règlent avec tes deux voisins.<\/span><\/li><\/ol><h5>Quoi viser<\/h5><div class=\"gd-grid\"><div><b>Âge I : les ressources<\/b>Deux ou trois cartes marron variées et une grise. Sans elles, tout coûtera cher ensuite.<\/div><div><b>Âge II : une direction<\/b>Complète ce qui te manque, puis choisis ta voie : science, bâtiments bleus ou armée.<\/div><div><b>Âge III : les points<\/b>Les ressources ne servent plus à rien. Prends les bleues, les guildes et les dernières étapes de ta merveille.<\/div><\/div><div class=\"gd-tip\">Pour découvrir le jeu, joue sans extension, à 3 ou 4 cités.<\/div><\/div>"],["Marquer des points","<div class=\"gd\"><table class=\"gd-table \"><tr><th>D’où viennent les points<\/th><th><\/th><\/tr><tr><td><span class=\"gd-chip\" style=\"--c:#3f7cf0\"><\/span>Bâtiments bleus<\/td><td>points de la carte<\/td><\/tr><tr><td>Merveille<\/td><td>points des étapes bâties<\/td><\/tr><tr><td><span class=\"gd-chip\" style=\"--c:#e5383b\"><\/span>Conflits, par voisin battu<\/td><td>+1, +3 puis +5<\/td><\/tr><tr><td>Conflit perdu<\/td><td>−1<\/td><\/tr><tr><td>Pièces<\/td><td>1 point pour 3<\/td><\/tr><tr><td><span class=\"gd-chip\" style=\"--c:#3fb56b\"><\/span>Science<\/td><td>voir ci-dessous<\/td><\/tr><tr><td><span class=\"gd-chip\" style=\"--c:#ffc93c\"><\/span>Jaunes et <span class=\"gd-chip\" style=\"--c:#8757e6\"><\/span>guildes<\/td><td>selon tes cartes ou tes voisins<\/td><\/tr><\/table><h5>La science<\/h5><p>Chaque symbole rapporte le carré de son nombre d’exemplaires, et chaque série des trois symboles rapporte 7 points de plus.<\/p><table class=\"gd-table \"><tr><td>1 symbole<\/td><td>1<\/td><\/tr><tr><td>2 identiques<\/td><td>4<\/td><\/tr><tr><td>3 identiques<\/td><td>9<\/td><\/tr><tr><td>4 identiques<\/td><td>16<\/td><\/tr><tr><td>1 compas + 1 engrenage + 1 tablette<\/td><td>1 + 1 + 1 + 7 = 10<\/td><\/tr><\/table><div class=\"gd-tip\">La science rapporte beaucoup à partir de quatre ou cinq cartes vertes, presque rien avec une ou deux. Fais-la à fond ou pas du tout.<\/div><\/div>"],["Conseils","<div class=\"gd\"><div class=\"gd-grid\"><div><b>Regarde tes voisins<\/b>Tu ne commerces et ne te bats qu’avec eux. S’ils produisent déjà une ressource, tu peux la leur acheter au lieu de la construire.<\/div><div><b>Garde quelques pièces<\/b>Une ressource achetée coûte 2 pièces. Avec 4 à 6 pièces de côté, tu n’es jamais bloqué.<\/div><div><b>Un bouclier de plus suffit<\/b>Gagner un conflit de 1 ou de 5 boucliers rapporte la même chose. Dépasse tes voisins de peu.<\/div><div><b>Prive ton voisin<\/b>La carte que tu ne joues pas part chez lui. S’il en attend une, glisse-la sous ta merveille ou défausse-la.<\/div><div><b>Suis les chaînes<\/b>Un petit bâtiment de l’âge I peut rendre gratuit un bâtiment bien plus fort aux âges suivants.<\/div><div><b>Bâtis ta merveille<\/b>Une étape transforme une carte qui ne te sert pas en points ou en pouvoir.<\/div><\/div><\/div>"],["Aide-mémoire","<div class=\"gd\"><table class=\"gd-table l\"><tr><td>Sens de passe<\/td><td>à gauche aux âges I et III, à droite à l’âge II<\/td><\/tr><tr><td>Cartes jouées<\/td><td>6 par âge, la 7ᵉ est défaussée<\/td><\/tr><tr><td>Acheter une ressource<\/td><td>2 pièces au voisin, 1 avec un comptoir ou un marché<\/td><\/tr><tr><td>Défausser<\/td><td>+3 pièces<\/td><\/tr><tr><td>Conflits<\/td><td>+1, +3, +5 par victoire selon l’âge, −1 par défaite<\/td><\/tr><tr><td>Pièces en fin de partie<\/td><td>3 pièces = 1 point<\/td><\/tr><tr><td>Doublons<\/td><td>jamais deux bâtiments identiques<\/td><\/tr><tr><td>Égalité<\/td><td>le plus riche gagne<\/td><\/tr><\/table><h5>Les couleurs<\/h5><p><span class=\"gd-chip\" style=\"--c:#9a6a3a\"><\/span>ressources &nbsp; <span class=\"gd-chip\" style=\"--c:#9aa3b5\"><\/span>produits &nbsp; <span class=\"gd-chip\" style=\"--c:#3f7cf0\"><\/span>points &nbsp; <span class=\"gd-chip\" style=\"--c:#ffc93c\"><\/span>commerce &nbsp; <span class=\"gd-chip\" style=\"--c:#e5383b\"><\/span>boucliers &nbsp; <span class=\"gd-chip\" style=\"--c:#3fb56b\"><\/span>science &nbsp; <span class=\"gd-chip\" style=\"--c:#8757e6\"><\/span>guildes<\/p><\/div>"],["Extensions","<div class=\"gd\"><p>Ajoute-les une par une, dans cet ordre, quand le jeu de base est acquis.<\/p><ol class=\"gd-steps\"><li><span><b>Meneurs.<\/b> La plus simple : un personnage recruté au début de chaque âge oriente ta partie.<\/span><\/li><li><span><b>Cités.<\/b> Plus d’interaction : impôts qui font perdre des pièces aux autres, diplomatie pour éviter un conflit.<\/span><\/li><li><span><b>Armada.<\/b> Quatre flottes à faire avancer en payant 1 pièce de plus. Les parties sont plus longues.<\/span><\/li><li><span><b>Édifices.<\/b> Un projet commun par âge : participer rapporte, s’abstenir peut coûter.<\/span><\/li><\/ol><p>Le détail de chaque extension est dans l’Aide.<\/p><\/div>"]]); if(back){ const fix=()=>{ const b=document.querySelector('#mbox .acts [data-c="close"]'); if(b){ b.dataset.c='new'; b.textContent='Retour au menu'; } }; fix(); const prev=$('#mbox').onclick; $('#mbox').onclick=e=>{ prev(e); fix(); }; } }
 window.SDJ_GUIDE=guide;/*/GUIDE*/
 function help(){ helpTabs('Sept Merveilles',[
@@ -674,5 +724,5 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else
 
 
 <!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
-<!--MENUJS--><script src="common/menu.js?v=7e842768"></script><!--/MENUJS-->
+<!--MENUJS--><script src="common/menu.js?v=528d070f"></script><!--/MENUJS-->
 </body></html>

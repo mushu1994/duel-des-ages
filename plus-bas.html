@@ -184,7 +184,7 @@ table.res tr.win td{color:var(--p-on);font-weight:800}
 
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=b25ecf2f"><!--/NETCSS-->
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=3da929cd"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head>
 <body>
@@ -416,7 +416,7 @@ function render(){
   const others=G.P.map((p,i)=>i).filter(i=>i!==me);
   const who=isAI(G.cur)?`${G.P[G.cur].name} joue`:NETON()?(G.input&&G.input.pi===NET.seat?'À toi de jouer':`Tour de ${G.P[G.input?G.input.pi:G.cur].name}`):(G.P.filter(p=>!p.ai).length===1?'À toi de jouer':`Tour de ${G.P[G.cur].name}`);
   const sc=window.scrollY;
-  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">←<span class="long"> Salle de jeux</span></a><span class="logo">Plus Bas</span><span class="spacer"></span>
+  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">Salle de jeux</a><span class="logo">Plus Bas</span><span class="spacer"></span>
     ${G.P.length===2?`<button class="hbtn" data-a="ff">${FF?'Face à face ✓':'Face à face'}</button>`:''}<button class="hbtn" data-a="sound">${MUTED?'Son coupé':'Son'}</button><button class="hbtn" data-a="help">Aide</button><button class="hbtn" data-a="menu"><span class="long">Nouvelle partie</span><span class="short">Menu</span></button></div>
     <div class="turnbar ${FF&&G.P.length===2&&G.cur!==me?'flip':''}"><div class="wrap"><span class="dot"></span><span class="who">${esc(who)}</span><span class="hint">Manche ${G.round} · fin de partie à ${G.target} points${G.finisher!=null?' · dernier tour !':''}</span></div></div></header>
   <div class="wrap"><div class="game">
@@ -455,7 +455,7 @@ function renderMenu(){
 }
 function openModal(html,cfg={}){if(IS_NODE)return;modalForced=!!cfg.forced;const who=cfg.who??(G?G.cur:0);const m=$('modal');m.innerHTML=`<div class="mpanel ${FF&&G&&G.P.length===2&&who!==viewer()?'flip':''}" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;const f=m.querySelector('button');if(f)f.focus({preventScroll:true});}
 function closeModal(force){if(IS_NODE)return;if(modalForced&&!force)return;modalForced=false;$('modal').hidden=true;$('modal').innerHTML='';}
-function info(t,b,who){openModal(`<h3>${t}</h3>${b}<button class="ghost" data-a="close">Fermer</button>`,{who});}
+function info(t,b,who){openModal(`<h3>${t}</h3>${b}<button class="ghost" data-a="close">Compris</button>`,{who});}
 function showEnd(){
   if(IS_NODE||G.fast)return;
   const w=G.over.winners; if(window.PROFWIN){ const me=(()=>{ const L=G.P||G.players; const me=NETON()?NET.seat:(L.filter(p=>!p.ai).length===1?L.findIndex(p=>!p.ai):-1); return me==null||me<0?-1:me; })(); PROFWIN(me<0?null:w.includes(me)); }const humanWin=w.some(i=>!G.P[i].ai);sfx(humanWin?'win':'turn');
@@ -473,7 +473,7 @@ function showHelp(){openModal(`<h3>Comment jouer</h3><div class="rules">
   <li>Quand un joueur a retourné toutes ses cartes, chacun des autres joue un dernier tour. On retourne tout et on compte.</li>
   <li>Si celui qui a fini n’a pas strictement le plus petit total de la manche (et que son total est positif), son score est <b>doublé</b>.</li></ol>
   <div class="ex"><b>Extension.</b> Les <b>13</b> valent 13 points ; quand tu en retournes un, tu regardes en secret une de tes cartes cachées. Le <b>−4</b> vaut −4. Les <b>Étoiles ★</b> remplacent n’importe quelle valeur pour former une colonne, mais valent +20 si elles restent dans ta grille en fin de manche.</div>
-  <p>Couleurs : bleu foncé négatif, bleu clair 0, vert 1 à 4, jaune 5 à 8, rouge 9 à 12, violet 13.</p></div><button class="ghost" data-a="close">Fermer</button>`);}
+  <p>Couleurs : bleu foncé négatif, bleu clair 0, vert 1 à 4, jaune 5 à 8, rouge 9 à 12, violet 13.</p></div><button class="ghost" data-a="close">Compris</button>`);}
 function splash(pi){if(IS_NODE||G.fast||isAI(pi)&&G.P.filter(p=>!p.ai).length===1&&G.P.length>2)return;const d=document.createElement('div');d.className='splash'+(FF&&G.P.length===2&&pi!==viewer()?' flip':'');d.innerHTML=`<div>${isAI(pi)?esc(G.P[pi].name)+' joue':G.P.filter(p=>!p.ai).length===1?'À toi de jouer':esc(G.P[pi].name)+', à toi'}</div>`;document.body.appendChild(d);setTimeout(()=>d.remove(),1200);sfx('turn');}
 function floatOver(id,txt){if(IS_NODE||G.fast)return;setTimeout(()=>{const el=document.getElementById(id+'-1');if(!el)return;const r=el.getBoundingClientRect();const d=document.createElement('div');d.className='float';d.textContent=txt;d.style.left=(r.left+r.width/2)+'px';d.style.top=r.top+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1700);},60);}
 let AC=null,MUTED=false;try{MUTED=localStorage.getItem('pb-mute')==='1';}catch(e){}
@@ -594,6 +594,6 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else
 
 
 <!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
-<!--MENUJS--><script src="common/menu.js?v=7e842768"></script><!--/MENUJS-->
+<!--MENUJS--><script src="common/menu.js?v=528d070f"></script><!--/MENUJS-->
 </body>
 </html>
