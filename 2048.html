@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>2048</title>
-<meta name="theme-color" content="#111">
+<meta name="theme-color" content="#15133a">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800&display=swap" rel="stylesheet">
 <style>
 :root{--fg:#eef3ff;--accent:#e08a2a;--title:"Baloo 2",system-ui,sans-serif;--ui:"Nunito Sans",system-ui,sans-serif;--titlec:#ffe2b0}
@@ -24,25 +24,25 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation}
 .status .right{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:14px}
 #modal{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:12px}
 #modal[hidden]{display:none}
-.mbox{background:#fbf6ea;color:#2a2418;border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;animation:pop .3s cubic-bezier(.2,1.3,.4,1)}
+.mbox{background:#fbfaff;color:#1a1740;border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #000c;animation:pop .3s cubic-bezier(.2,1.3,.4,1)}
 @keyframes pop{from{transform:scale(.92);opacity:0}}
 .mbox h2{font-family:var(--title,Georgia,serif);font-size:26px;margin:0 0 6px}
 .mbox h4{font-family:var(--title,Georgia,serif);font-size:16px;margin:14px 0 6px}
 .mbox p,.mbox li{line-height:1.5}
-.mbox .btn{background:#ece3cf;color:#2a2418;border-color:#c9b98f}
+.mbox .btn{background:#e9e5fb;color:#1a1740;border-color:#cfc9ef}
 .mbox .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
-.mbox .btn.on{background:#2a2418;color:#fff}
-.seg{display:inline-flex;border:1px solid #c9b98f;border-radius:9px;overflow:hidden;flex-wrap:wrap}
-.seg button{border:0;background:#f6efdc;padding:7px 11px;font-weight:700;color:#2a2418;font-size:13.5px}
-.seg button.on{background:#2a2418;color:#fff}
+.mbox .btn.on{background:#1a1740;color:#fff}
+.seg{display:inline-flex;border:1px solid #cfc9ef;border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:#f1eefc;padding:7px 11px;font-weight:700;color:#1a1740;font-size:13.5px}
+.seg button.on{background:#1a1740;color:#fff}
 .prow{display:flex;gap:8px;align-items:center;margin:7px 0;flex-wrap:wrap}
 .prow .dot{width:16px;height:16px;border-radius:50%;background:var(--pc);border:2px solid #0004}
-.prow input[type=text]{font-family:inherit;font-weight:700;font-size:16px;padding:6px 9px;border-radius:8px;border:1px solid #c9b98f;background:#fff;color:#2a2418;-webkit-text-fill-color:#2a2418;caret-color:var(--accent);width:150px;color-scheme:light}
-.prow input[type=text]::placeholder{color:#a3926e;-webkit-text-fill-color:#a3926e;font-weight:600}
+.prow input[type=text]{font-family:inherit;font-weight:700;font-size:16px;padding:6px 9px;border-radius:8px;border:1px solid #cfc9ef;background:#fff;color:#1a1740;-webkit-text-fill-color:#1a1740;caret-color:var(--accent);width:150px;color-scheme:light}
+.prow input[type=text]::placeholder{color:#8f8ab8;-webkit-text-fill-color:#8f8ab8;font-weight:600}
 .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
-.tabs button{border:1px solid #c9b98f;background:#f6efdc;border-radius:20px;padding:5px 12px;font-weight:800;color:#2a2418}
-.tabs button.on{background:#2a2418;color:#fff}
+.tabs button{border:1px solid #cfc9ef;background:#f1eefc;border-radius:20px;padding:5px 12px;font-weight:800;color:#1a1740}
+.tabs button.on{background:#1a1740;color:#fff}
 .toast{position:fixed;left:50%;top:100px;transform:translateX(-50%);background:#1b1b1f;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 10px 30px #000a;z-index:70;font-weight:700;animation:toast 2.6s forwards;pointer-events:none;max-width:90vw;text-align:center}
 @keyframes toast{0%{opacity:0;transform:translate(-50%,-12px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
 .bannerx{position:fixed;inset:0;display:grid;place-items:center;z-index:65;pointer-events:none}
@@ -56,9 +56,9 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation}
 body{background:radial-gradient(ellipse at 50% 0%,#5a4a3a,#221a12 75%) fixed,#221a12;--bg:#221a12}
 .wrap{max-width:1100px;margin:0 auto;padding:10px 10px 90px}
 .bigchoice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-.bigchoice button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border:1px solid #c9b98f;background:#f6efdc;border-radius:12px;padding:12px;color:#2a2418;font-family:inherit}
+.bigchoice button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border:1px solid #cfc9ef;background:#f1eefc;border-radius:12px;padding:12px;color:#1a1740;font-family:inherit}
 .bigchoice button b{font-family:var(--title);font-size:19px}
-.bigchoice button small{font-size:13px;color:#6b5d40;line-height:1.35}
+.bigchoice button small{font-size:13px;color:#5d588a;line-height:1.35}
 .bigchoice button.pri{background:#1d8f5a;border-color:#1d8f5a;color:#fff}.bigchoice button.pri small{color:#e3f5ea}
 @media (max-width:520px){.bigchoice{grid-template-columns:1fr}}
 .tk-desc{margin:0 0 4px;color:#4a3f2c}
@@ -121,10 +121,11 @@ body{background:radial-gradient(ellipse at 50% 0%,#5a4a3a,#221a12 75%) fixed,#22
 
 
 
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=dcc23d61"><!--/NETCSS-->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=92ad5b4a"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
-<header class="top"><a class="back" href="index.html">← Salle de jeux</a><h1>2048</h1>
+<header class="top"><a class="back" href="index.html">Salle de jeux</a><h1>2048</h1>
 <div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
 <div class="status" id="status"></div>
 <div class="wrap" id="app"><div class="who" id="rk"></div>

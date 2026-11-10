@@ -183,7 +183,8 @@ table.res tr.win td{color:var(--p-on);font-weight:800}
 
 
 
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=dcc23d61"><!--/NETCSS-->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=92ad5b4a"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head>
 <body>
@@ -437,7 +438,7 @@ function render(){
 function renderMenu(){
   document.body.classList.remove('ff');
   const sv=loadSave();
-  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">← Salle de jeux</a><span class="spacer"></span><button class="hbtn" data-a="help">Aide</button></div></header>
+  $('app').innerHTML=`<header class="top"><div class="wrap hrow"><a class="home" href="index.html">Salle de jeux</a><span class="spacer"></span><button class="hbtn" data-a="help">Aide</button></div></header>
   <div class="wrap"><div class="menu">
     <div class="preview">${[{v:-2},{v:0},{v:3},{v:7},{v:11},{v:13},{v:20,star:1}].map(c=>cardH(c)).join('')}</div>
     <h1>Plus Bas</h1>

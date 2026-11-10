@@ -55,7 +55,8 @@
 
 
 
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=dcc23d61"><!--/NETCSS-->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=92ad5b4a"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head>
 <body>
@@ -1051,7 +1052,7 @@ function render(){
   const scroll=window.scrollY;
   $('app').innerHTML=`
   <header class="top"><div class="wrap hrow">
-    <a class="home" href="index.html">← Salle de jeux</a><span class="logo">Duel des Âges</span>${G.age?`<span class="age-pill">Âge ${roman(G.age)}</span>`:''}
+    <a class="home" href="index.html">Salle de jeux</a><span class="logo">Duel des Âges</span>${G.age?`<span class="age-pill">Âge ${roman(G.age)}</span>`:''}
     <span class="spacer"></span>
     <button class="hbtn" data-a="ff" aria-pressed="${FF}" title="Pour poser l’écran à plat entre deux joueurs">${FF?'Face à face ✓':'Face à face'}</button><button class="hbtn" data-a="sound" aria-pressed="${!MUTED}" title="Activer ou couper le son">${MUTED?'Son coupé':'Son'}</button><button class="hbtn" data-a="rules">Aide</button><button class="hbtn" data-a="menu"><span class="long">Nouvelle partie</span><span class="short">Menu</span></button>
   </div>${turnbarHTML()}</header>
@@ -1195,7 +1196,7 @@ function showEnd(){
 function renderMenu(){
   const sample=[['Taverne','yellow','',{coins:4,link:'Jarre'}],['Murailles','red','SS',{sh:2}],['Bibliothèque','green','SWG',{sci:'plume',pts:2,from:'Livre'}],['Aqueduc','blue','SSS',{pts:5,from:'Goutte'}],['Sénateur','senate','W',{senator:2}]].map(d=>({n:d[0],col:d[1],cost:pc(d[2]),e:d[3]}));
   $('app').innerHTML=`<div class="wrap"><div class="menu">
-    <a class="home" href="index.html" style="align-self:flex-start">← Salle de jeux</a>
+    <a class="home" href="index.html" style="align-self:flex-start">Salle de jeux</a>
     <div class="preview">${sample.map(c=>miniCard(c,70)).join('')}</div>
     <h1>Duel des Âges</h1>
     <p class="lead">Deux civilisations, trois âges, une pyramide de cartes. Gagne par la science, par les armes, par le Sénat, ou au décompte des points.</p>
