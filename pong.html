@@ -148,9 +148,10 @@ body.immersive .stage{padding-top:max(6px,env(safe-area-inset-top))}
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
 </style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=92ad5b4a"><!--/NETCSS-->
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=b25ecf2f"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
+<!--MENU--><template id="sdj-cover"><svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice"><rect x="0" y="0" width="240" height="180" fill="#15133a"/><path d="M120 0V180" fill="none" stroke="#3b3876" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="12 12"/><rect x="16" y="26" width="20" height="72" rx="10" fill="#5eeaa8"/><rect x="204" y="84" width="20" height="72" rx="10" fill="#ff7a6b"/><circle cx="133" cy="87" r="9.8" fill="#ffc93c" opacity="0.38"/><circle cx="116" cy="78" r="7.6" fill="#ffc93c" opacity="0.26"/><circle cx="99" cy="69" r="5.4" fill="#ffc93c" opacity="0.14"/><circle cx="158" cy="100" r="14" fill="#ffc93c"/><text x="72" y="44" font-size="30" text-anchor="middle" fill="#3b3876" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">3</text><text x="168" y="44" font-size="30" text-anchor="middle" fill="#3b3876" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">2</text></svg></template><script>window.SDJ_JEU={"t": "Pong", "d": "Le grand classique de la raquette, à deux face à face ou jusqu’à quatre autour du terrain."}</script><!--/MENU-->
 <header class="top"><a class="back" href="index.html">Salle de jeux</a><h1>Pong</h1>
 <div class="tools"><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
 <div class="status" id="status"></div>
@@ -505,4 +506,5 @@ const skip=/[?&](salle|creer)=/.test(location.search)||(()=>{ const s=load('net-
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
 <!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
+<!--MENUJS--><script src="common/menu.js?v=7e842768"></script><!--/MENUJS-->
 </body></html>

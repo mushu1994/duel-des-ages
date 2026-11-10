@@ -27,7 +27,9 @@ Technique : tables `profils` et `defis` dans Supabase, sans accès direct (RLS) 
 - **Coach pour débuter** à la Belote et au Mille Bornes : une bulle conseille la carte à jouer et explique les règles qui s'appliquent. Chaque jeu a un tutoriel que l'on peut revoir depuis l'aide.
 - **Tests** dans `tests/` : `smoke.py` (chaque page), `offline.py` (appli et hors ligne), `online.py` (partie à trois et reprise par un autre joueur), `ia.py` (l'ordinateur joue contre lui-même jusqu'au bout dans les onze derniers jeux). Ils tournent chaque lundi et après chaque mise à jour (`.github/workflows/tests.yml`).
 
-Construction : `make.sh` (mini-jeux, profil, code commun, appli) dans l'espace de travail de Claude ; les pages publiées sont autonomes.
+Chaque jeu s’ouvre sur le même écran de démarrage : couverture du jeu, titre, présentation, puis ses options (`common/menu.js`). Sept Merveilles, Joyaux de la Renaissance et Duel des Âges ont un **guide de jeu** (bouton « Guide » : première partie, points, conseils, aide-mémoire, extensions).
+
+Outils dans `outils/` : `couvertures.py` (les 51 illustrations), `guides.py` (textes des guides), `habillage.py` (pose couvertures, écran de démarrage et guides dans les pages), `versions.sh` (numéros de version du cache). Les pages publiées sont autonomes.
 
 ## Jouer en ligne
 
