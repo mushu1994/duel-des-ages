@@ -100,6 +100,11 @@ body{background:radial-gradient(ellipse at 50% 40%,#7a1f2a,#2a0a10 80%) fixed,#2
 .hbody p,.hbody li{line-height:1.5}.hbody ul,.hbody ol{padding-left:22px;margin:6px 0}.hbody li{margin:4px 0}.hbody .ex{background:#efe6d0;border-left:4px solid #c9b98f;border-radius:8px;padding:8px 12px;margin:10px 0}
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
+.coach{display:flex;gap:10px;align-items:flex-start;margin:8px auto 0;max-width:900px;width:calc(100% - 20px);box-sizing:border-box;background:#fffbe9;color:#3a2d12;border:2px solid #e8c55a;border-radius:14px;padding:8px 10px;font-size:14px;line-height:1.35;box-shadow:0 4px 14px #0003}
+.coach[hidden]{display:none}.coach .cav{font-size:26px;line-height:1}.coach .ctx{flex:1;display:flex;flex-direction:column;gap:3px}.coach .cbt{flex-shrink:0}
+.coach .btn{background:#f3e3a8;color:#3a2d12;border-color:#d9b84a;padding:5px 9px;font-size:13px}
+.pcard.hint{box-shadow:0 0 0 3px #3d8bff,0 0 14px #3d8bff;transform:translateY(-6px)}
+@media(max-width:600px){.coach{font-size:13px;padding:6px 8px}.coach .cav{display:none}}
 </style>
 
 
@@ -148,16 +153,18 @@ body{background:radial-gradient(ellipse at 50% 40%,#7a1f2a,#2a0a10 80%) fixed,#2
 
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=3da929cd"><!--/NETCSS-->
+
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=258accaa"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
 <!--MENU--><template id="sdj-cover"><svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice"><rect x="0" y="0" width="240" height="180" fill="#6a4be0"/><circle cx="120" cy="100" r="96" fill="#7a5cf0"/><g transform="translate(87 118) rotate(-12)"><rect x="-27" y="-38" width="54" height="76" rx="7" fill="rgba(10,8,40,.28)"/></g><g transform="translate(84 112) rotate(-12)"><rect x="-27" y="-38" width="54" height="76" rx="7" fill="#fff"/><text x="-16" y="-18" font-size="17" text-anchor="middle" fill="#1a1740" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">2</text><g transform="translate(0 9) scale(1.3)" fill="#1a1740"><path d="M0-10C-4-6-10-3-10 2C-10 7-3 8-1 4C-1 7-2 9-4 10H4C2 9 1 7 1 4C3 8 10 7 10 2C10-3 4-6 0-10Z"/></g></g><g transform="translate(159 118) rotate(12)"><rect x="-27" y="-38" width="54" height="76" rx="7" fill="rgba(10,8,40,.28)"/></g><g transform="translate(156 112) rotate(12)"><rect x="-27" y="-38" width="54" height="76" rx="7" fill="#fff"/><text x="-16" y="-18" font-size="17" text-anchor="middle" fill="#e5383b" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">2</text><g transform="translate(0 9) scale(1.3)" fill="#e5383b"><path d="M0-4C-2-9-10-8-10-2C-10 3-4 6 0 10C4 6 10 3 10-2C10-8 2-9 0-4Z"/></g></g><path d="M70 62L76 22L100 44L120 12L140 44L164 22L170 62Z" fill="rgba(10,8,40,.28)" transform="translate(3 5)"/><path d="M70 62L76 22L100 44L120 12L140 44L164 22L170 62Z" fill="#ffc93c"/><rect x="70" y="56" width="100" height="12" rx="3" fill="#f0a020"/><circle cx="120" cy="62" r="5" fill="#e5383b"/><circle cx="92" cy="62" r="4" fill="#4f8ef7"/><circle cx="148" cy="62" r="4" fill="#4f8ef7"/></svg></template><script>window.SDJ_JEU={"t": "Président", "d": "Débarrasse-toi de tes cartes le premier pour devenir Président."}</script><!--/MENU-->
 <header class="top"><a class="back" href="index.html">Salle de jeux</a><h1>Président</h1>
-<div class="tools"><button class="btn" data-a="scores">Scores</button><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
+<div class="tools"><button class="btn" data-a="scores">Scores</button><button class="btn" data-k="coach" title="Coach pour débuter">🎓</button><button class="btn" id="sndBtn" data-c="sound">Son</button><button class="btn" data-c="help">Aide</button><button class="btn pri" data-c="new">Nouvelle partie</button></div></header>
 <div class="status" id="status"></div>
+<div class="coach" id="coach" hidden><span class="cav">🎓</span><div class="ctx"></div><div class="cbt"><button class="btn" data-k="coach" title="Masquer le coach">✕</button></div></div>
 <div class="table"><div class="opps" id="opps"></div><div class="felt" id="felt"></div><div class="me"><div class="head" id="mehead"></div><div class="fan" id="hand"></div></div></div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
-<!--NET--><script src="common/hall.js?v=e82d0531"></script><script src="common/net.js?v=2ba51f77"></script><!--/NET--><script>
+<!--NET--><script src="common/hall.js?v=e82d0531"></script><script src="common/net.js?v=788b14dc"></script><!--/NET--><script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const SVGNS='http://www.w3.org/2000/svg';
@@ -267,11 +274,32 @@ function render(){ const n=P.players.length, M0=ME(); if(NETON()&&NET.host) NET.
   $('#opps').innerHTML=Array.from({length:n-1},(_,k)=>(M0+k+1)%n).map(i=>{ const p=P.players[i]; return `<div class="opp ${i===P.cur&&!P.over?'cur':''} ${p.done?'done':''}"><div class="nm">${esc(p.name)}</div><div class="role">${p.done?'✓ '+(P.finish.indexOf(i)+1)+'ᵉ':p.role||''}</div><div class="bk">${Array.from({length:Math.min(p.hand.length,13)},()=>cardHTML(null,{back:1})).join('')}</div><small>${p.hand.length} carte${p.hand.length>1?'s':''}</small>${p.said?`<div class="said">${esc(p.said)}</div>`:''}</div>`; }).join('');
   const t=P.trick; $('#felt').innerHTML=`<div class="pile">${t?`<span class="who">${esc(P.players[t.by].name)}</span>${t.cards.map(c=>cardHTML(c,{cls:'in'})).join('')}`:'<span style="opacity:.6;font-weight:800">Nouveau pli</span>'}</div><div class="info">Manche ${P.round}${t?` · ${t.count===1?'carte seule':t.count===2?'paire':t.count===3?'brelan':'carré'}`:''}</div>`;
   const me=P.players[M0], myTurn=W&&W.play;
-  $('#mehead').innerHTML=`${esc(me.name)} <span class="role">${me.done?'✓ terminé':me.role||''}</span><span class="acts2">${W&&W.give?`<button class="btn pri" data-a="give" ${SEL.size===W.give?'':'disabled'}>Donner ${W.give} carte${W.give>1?'s':''}</button>`:myTurn?`<button class="btn" data-a="pass" ${P.trick?'':'disabled'}>Passer</button><button class="btn pri" data-a="play" ${validSel()?'':'disabled'}>Jouer</button>`:''}</span>`;
+  $('#mehead').innerHTML=`${esc(me.name)} <span class="role">${me.done?'✓ terminé':me.role||''}</span><span class="acts2">${W&&W.give?`<button class="btn pri" data-a="give" ${SEL.size===W.give?'':'disabled'}>Donner ${W.give} carte${W.give>1?'s':''}</button>`:myTurn?`<button class="btn" data-a="pass" ${P.trick?'':'disabled'}>Passer</button><button class="btn pri" data-a="play" ${validSel()?'':'disabled'}>Jouer</button>`:P.over?'<button class="btn pri" data-a="next">Manche suivante ▶</button>':''}</span>`;
   $('#hand').innerHTML=me.hand.map((c,i)=>cardHTML(c,{cls:(SEL.has(i)?'sel ':'')+((myTurn||W&&W.give)?'play':''),attr:`data-c="${i}"`})).join('');
   const st=$('#status'), cp=P.players[P.cur];
   st.style.setProperty('--pc',P.over?'#5a2a7a':P.cur===M0?'#2f8a4a':'#7a1f2a');
-  st.innerHTML=W&&W.give?`<span class="who">Échange</span><span class="msg">Tu as reçu ${W.got.map(c=>rlab(c.r)+SUITS[c.s]).join(' ')}. Choisis ${W.give} carte${W.give>1?'s':''} à rendre.</span>`:NETON()&&P.wait&&P.wait.give?`<span class="who">Échange</span><span class="msg">${esc(P.players[P.wait.i].name)} choisit les cartes à rendre.</span>`:P.over?`<span class="who">${esc(P.over)}</span>`:cp?`<span class="who">${esc(cp.name)}</span><span class="msg">${P.cur===M0&&(!NETON()||myTurn)?(P.trick?`Joue ${P.trick.count} carte${P.trick.count>1?'s':''} plus forte${P.trick.count>1?'s':''} que ${rlab(P.trick.cards[0].r)}, ou passe.`:'Tu ouvres : joue une carte, une paire, un brelan ou un carré.'):'réfléchit…'}</span>`:''; }
+  st.innerHTML=W&&W.give?`<span class="who">Échange</span><span class="msg">Tu as reçu ${W.got.map(c=>rlab(c.r)+SUITS[c.s]).join(' ')}. Choisis ${W.give} carte${W.give>1?'s':''} à rendre.</span>`:NETON()&&P.wait&&P.wait.give?`<span class="who">Échange</span><span class="msg">${esc(P.players[P.wait.i].name)} choisit les cartes à rendre.</span>`:P.over?`<span class="who">${esc(P.over)}</span>`:cp?`<span class="who">${esc(cp.name)}</span><span class="msg">${P.cur===M0&&(!NETON()||myTurn)?(P.trick?`Joue ${P.trick.count} carte${P.trick.count>1?'s':''} plus forte${P.trick.count>1?'s':''} que ${rlab(P.trick.cards[0].r)}, ou passe.`:'Tu ouvres : joue une carte, une paire, un brelan ou un carré.'):'réfléchit…'}</span>`:''; coachRender(); }
+/* ===== coach pour débuter ===== */
+const CO={k:null,v:null};
+const coachOn=()=>!!P&&M.coach!==false;
+const RNM={11:'Valet',12:'Dame',13:'Roi',14:'As'}; const rart=r=>r===14?'l’As':'le '+(RNM[r]||r);
+const cdesc=cs=>{ const n=cs.length, x=cs[0].r, r=(RNM[x]||x)+(n>1&&RNM[x]&&x!==14?'s':''); return (n===1?'ton ':n===2?'ta paire de ':n===3?'ton brelan de ':'ton carré de ')+`<b>${r}</b>`; };
+function coachRender(){ const el=$('#coach'); if(!el) return; document.querySelectorAll('#hand .hint').forEach(x=>x.classList.remove('hint')); if(!coachOn()){ el.hidden=true; return; }
+  const W=myW(), me=P.players[ME()], h=me.hand, L=[]; let hl=[];
+  if(P.over){ L.push(`🏁 Manche terminée : tu es <b>${me.role||'classé'}</b>. À la manche suivante, le Trou donne ses 2 meilleures cartes au Président, qui lui rend 2 cartes de son choix.`); }
+  else if(W&&W.give){ hl=h.slice(0,W.give); L.push(`🔁 <b>Échange</b> : rends ${W.give>1?'tes '+W.give+' cartes':'ta carte'} les plus faibles (${hl.map(c=>rlab(c.r)+SUITS[c.s]).join(' ')}). Garde précieusement les 2 et les As : ils servent à reprendre la main.`); }
+  else if(W&&W.play){ const t=P.trick, k=ids(h).join()+'|'+(t?t.rank+'x'+t.count:'-'); if(CO.k!==k){ CO.k=k; CO.v=aiChoice(h,t,P.cfg,'difficile'); } const cs=CO.v, g=groups(h);
+    if(!t){ hl=cs||[]; if(cs){ const n=cs.length; L.push(`👉 <b>Tu ouvres</b> : joue ${cdesc(cs)}. ${n>1?`Les autres devront répondre avec ${n} cartes identiques plus fortes, c’est plus dur à battre.`:'Débarrasse-toi d’abord de tes petites cartes : elles sont les plus difficiles à placer.'}${h.length-n===0?' Et tu as fini !':''}`); } }
+    else { const can=Object.keys(g).map(Number).filter(r=>(r>t.rank||(P.cfg.equal&&r===t.rank))&&g[r].length>=t.count);
+      const need=`${t.count===1?'une carte':t.count===2?'une paire':t.count===3?'un brelan':'un carré'} ${P.cfg.equal?'qui égale ou bat':'qui bat'} <b>${rart(t.cards[0].r)}</b>`;
+      if(!can.length) L.push(`✋ Il faut ${need} : tu n’en as pas. <b>Passe</b>, tu rejoueras au prochain pli.`);
+      else if(!cs) L.push(`✋ Tu pourrais jouer ${can.length===1&&can[0]===15?'ton <b>2</b>':'une grosse carte'}, mais il te reste beaucoup de cartes : <b>passe</b> et garde-la pour reprendre la main au bon moment.`);
+      else { hl=cs; const r=rv(cs[0]), brk=g[r].length>cs.length; L.push(`👉 Il faut ${need}. Joue ${cdesc(cs)} : ${r===15?(P.cfg.twoCloses?'le 2 ferme le pli, tu reprends la main et tu ouvres avec ce que tu veux.':'le 2 est la carte la plus forte.'):'c’est la plus petite qui passe, inutile de gaspiller plus gros.'}${brk?' (Tu casses un groupe, mais c’est ce qui te coûte le moins.)':''}`); } }
+    if(h.length<=3&&hl.length<h.length) L.push('🔥 Presque fini ! Pense à garder une carte forte pour reprendre la main avant de poser ta dernière.'); }
+  else { const tips=['Quand tout le monde passe, celui qui a joué la dernière carte ramasse le pli et rouvre avec ce qu’il veut.','Ordre des cartes : 3 (la plus faible), 4, 5 … Valet, Dame, Roi, As, puis le <b>2</b>, la plus forte.','Compte les 2 et les As déjà tombés : quand il n’en reste plus, tes Rois deviennent les maîtres.','Le premier sans cartes devient Président, le dernier devient Trou.']; L.push('💭 '+tips[(P.round+(P.trick?P.trick.rank:0))%tips.length]); }
+  hl.forEach(c=>{ const i=h.indexOf(c); if(i>=0&&!SEL.has(i)) $(`#hand .pcard[data-c="${i}"]`)?.classList.add('hint'); });
+  el.querySelector('.ctx').innerHTML=L.map(x=>'<div>'+x+'</div>').join(''); el.hidden=false; }
+document.addEventListener('click',e=>{ const a=e.target.closest('[data-k="coach"]'); if(!a) return; M.coach=M.coach===false; store('pres-prefs',M); toast(M.coach?'Coach activé':'Coach désactivé (bouton 🎓 pour le remettre)'); if(P) coachRender(); });
 function validSel(){ const W=myW(); if(!W||!W.play) return false; const cs=[...SEL].map(i=>P.players[ME()].hand[i]); if(!cs.length) return false; const r=rv(cs[0]); if(!cs.every(c=>rv(c)===r)) return false;
   if(!P.trick) return true; return cs.length===P.trick.count&&(r>P.trick.rank||(P.cfg.equal&&r===P.trick.rank)); }
 const active=()=>P.players.map((p,i)=>i).filter(i=>!P.players[i].done);
@@ -297,33 +325,34 @@ function endRound(){ const n=P.players.length, roles=ROLES[n]; P.finish.forEach(
   P.over=`${P.players[P.finish[0]].name} est Président !`; render(); endUI(); }
 function endUI(){ const n=P.players.length, roles=ROLES[n]; const me=P.finish.indexOf(ME());
   banner(me===0?'Président !':roles[me],me===0?'Bravo, tu gagnes la manche':`Tu finis ${me+1}ᵉ`,me===0?'#2f8a4a':me===n-1?'#5a1a1a':'#7a5a1a'); sfx(me===0?'win':me===n-1?'lose':'ding'); if(me===0) confetti();
-  setTimeout(()=>openModal(`<h2>Fin de la manche ${P.round}</h2><table style="width:100%;border-collapse:collapse">${P.finish.map((pi,k)=>`<tr><td style="padding:4px"><b>${k+1}.</b> ${esc(P.players[pi].name)}</td><td><b>${roles[k]}</b></td><td style="text-align:right">${P.players[pi].score} pts</td></tr>`).join('')}</table><p style="font-size:14px">À la prochaine manche, le Trou donne ses ${n>=4?'deux':'deux'} meilleures cartes au Président, qui lui en rend deux de son choix${n>=4?' (et le Vice-trou une au Vice-président)':''}.</p>${NET.guest?'<p>L’hôte lance la manche suivante…</p>':'<div class="acts"><button class="btn pri" data-a="next">Manche suivante</button></div>'}`),1600); }
+  const rd=P.round; setTimeout(()=>P&&P.over&&P.round===rd&&openModal(`<h2>Fin de la manche ${P.round}</h2><table style="width:100%;border-collapse:collapse">${P.finish.map((pi,k)=>`<tr><td style="padding:4px"><b>${k+1}.</b> ${esc(P.players[pi].name)}</td><td><b>${roles[k]}</b></td><td style="text-align:right">${P.players[pi].score} pts</td></tr>`).join('')}</table><p style="font-size:14px">À la prochaine manche, le Trou donne ses ${n>=4?'deux':'deux'} meilleures cartes au Président, qui lui en rend deux de son choix${n>=4?' (et le Vice-trou une au Vice-président)':''}.</p><div class="acts"><button class="btn pri" data-a="next">Manche suivante</button></div>`),1600); }
 document.addEventListener('click',e=>{ if(!P) return; const c=e.target.closest('#hand .pcard.play');
   if(c){ const i=+c.dataset.c; if(SEL.has(i)) SEL.delete(i); else { const W=myW(); if(W&&W.give&&SEL.size>=W.give) return; if(W&&W.play){ const h=P.players[ME()].hand; const r=rv(h[i]); [...SEL].forEach(j=>{ if(rv(h[j])!==r) SEL.delete(j); }); } SEL.add(i); } sfx('click'); render(); return; }
   const a=e.target.closest('[data-a]'); if(!a) return;
   const W=myW(); switch(a.dataset.a){ case 'play': if(validSel()){ const h=P.players[ME()].hand; const cs=[...SEL].sort((x,y)=>x-y).map(i=>h[i]); if(NET.guest){ P.wait=null; SEL=new Set(); render(); NET.act('play',[ME(),ids(cs)]); break; } act(cs); } break;
     case 'pass': if(W&&W.play&&P.trick){ if(NET.guest){ P.wait=null; render(); NET.act('pass',[ME()]); break; } act(null); } break;
     case 'give': if(W&&W.give&&SEL.size===W.give){ const h=P.players[ME()].hand; if(NET.guest){ const cs=[...SEL].map(i=>h[i]); P.wait=null; SEL=new Set(); render(); NET.act('give',[ME(),ids(cs)]); break; } const cs=[...SEL].sort((x,y)=>y-x).map(i=>h.splice(i,1)[0]); const r=WAIT.res; WAIT=null; SEL=new Set(); r(cs); } break;
-    case 'next': if(NET.guest) break; closeModal(); P.over=null; newRound(); break;
+    case 'next': if(!P.over){ closeModal(); break; } if(NET.guest){ closeModal(); NET.act('next',[ME()]); toast('Manche suivante demandée…'); break; } closeModal(); P.over=null; newRound(); break;
     case 'scores': openModal(`<h2>Scores</h2><table style="width:100%">${P.players.slice().sort((a,b)=>b.score-a.score).map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${p.role||''}</td><td style="text-align:right">${p.score}</td></tr>`).join('')}</table><p style="font-size:14px">Chaque manche : ${P.players.length-1} points au Président, puis un de moins à chaque place.</p><div class="acts"><button class="btn pri" data-c="close">OK</button></div>`); break; } });
-let M={n:4,level:'normal',me:'Toi',equal:false,twoCloses:true,speed:700};
+let M={n:4,level:'normal',me:'Toi',equal:false,twoCloses:true,speed:700,coach:true};
 function menu(){ const draw=()=>paintModal(`<h2>Nouvelle partie</h2><h4>Joueurs</h4><div class="seg">${[3,4,5,6].map(n=>`<button class="${M.n===n?'on':''}" data-m="n:${n}">${n}</button>`).join('')}</div>
   <div class="prow">Ton prénom <input type="text" id="me" value="${esc(M.me)}" placeholder="Toi" maxlength="14"></div>
   <h4>Niveau des adversaires</h4><div class="seg">${['facile','normal','difficile'].map(l=>`<button class="${M.level===l?'on':''}" data-m="level:${l}">${l}</button>`).join('')}</div>
   <h4>Règles</h4><div class="seg"><button class="${M.twoCloses?'on':''}" data-m="twoCloses:1">Le 2 ferme le pli</button><button class="${!M.twoCloses?'on':''}" data-m="twoCloses:0">Le 2 ne ferme pas</button></div> <div class="seg"><button class="${!M.equal?'on':''}" data-m="equal:0">Strictement plus fort</button><button class="${M.equal?'on':''}" data-m="equal:1">Égalité permise</button></div>
   <h4>Vitesse</h4><div class="seg">${[[1100,'lente'],[700,'normale'],[300,'rapide']].map(([v,l])=>`<button class="${M.speed===v?'on':''}" data-m="speed:${v}">${l}</button>`).join('')}</div>
+  <h4>Coach pour débuter 🎓</h4><div class="seg"><button class="${M.coach!==false?'on':''}" data-m="coach:1">Activé</button><button class="${M.coach===false?'on':''}" data-m="coach:0">Désactivé</button></div>
   <div class="acts">${P?'<button class="btn" data-c="close">Annuler</button>':''}<button class="btn pri" data-m="start">Distribuer</button></div>`);
   draw(); $('#mbox').onclick=e=>{ const x=e.target.closest('[data-m]'); if(!x) return; M.me=$('#me').value; const [k,v]=x.dataset.m.split(':');
     if(k==='start'){ closeModal(); M.me=M.me.trim()||'Toi'; store('pres-prefs',M); newMatch({...M}); return; }
-    M[k]=k==='level'?v:(k==='equal'||k==='twoCloses')?v==='1':+v; draw(); }; }
+    M[k]=k==='level'?v:(k==='equal'||k==='twoCloses'||k==='coach')?v==='1':+v; draw(); }; }
 function help(){ helpTabs("Président",[["But du jeu","<p>Être le premier à se débarrasser de toutes ses cartes pour devenir <b>Président</b>. Le dernier devient <b>Trou</b> (Trouduc).</p><p>Ordre des cartes : 3 &lt; 4 &lt; … &lt; Roi &lt; As &lt; <b>2</b> (le plus fort). Toutes les cartes sont distribuées.</p>"],["Déroulement","<ol><li>Celui qui ouvre pose une carte seule, une paire, un brelan ou un carré.</li><li>Les suivants doivent poser <b>le même nombre de cartes</b>, d’une valeur plus forte, ou passer.</li><li>Quand tout le monde a passé, le dernier à avoir joué ramasse le pli et rouvre.</li><li>Un carré ferme le pli. Selon l’option, le 2 le ferme aussi.</li></ol>"],["Échanges et options","<p>À la manche suivante, le Trou donne ses 2 meilleures cartes au Président, qui lui rend 2 cartes de son choix. Même chose avec 1 carte entre Vice-trou et Vice-président.</p><ul><li><b>Le 2 ferme le pli</b> ou non.</li><li><b>Strictement plus fort</b> : il faut une valeur supérieure. <b>Égalité permise</b> : on peut aussi poser la même valeur.</li><li>3 à 6 joueurs, trois niveaux d’adversaires, trois vitesses.</li></ul><p class=\"ex\">Jouer ici : touche tes cartes de même valeur, puis « Jouer ». « Scores » montre le classement.</p>"]]); }
 window.NETGAME={id:'president',title:'Président',min:3,max:6,
   rules(){ return `<h4>Règles</h4><div class="seg"><button class="${M.twoCloses?'on':''}" data-m="twoCloses:1">Le 2 ferme le pli</button><button class="${!M.twoCloses?'on':''}" data-m="twoCloses:0">Le 2 ne ferme pas</button></div> <div class="seg"><button class="${!M.equal?'on':''}" data-m="equal:0">Strictement plus fort</button><button class="${M.equal?'on':''}" data-m="equal:1">Égalité permise</button></div>`; },
   rulesClick(e){ const x=e.target.closest('[data-m^="twoCloses:"],[data-m^="equal:"]'); if(!x) return false; const [k,v]=x.dataset.m.split(':'); M[k]=v==='1'; store('pres-prefs',M); return true; },
   start(list){ GEN++; WAIT=null; SEL=new Set(); P={cfg:{...M,n:list.length,level:(list.find(x=>x.ai)||{}).level||M.level},players:list.map(x=>({name:x.name,cid:x.cid||null,ai:!!x.ai,level:x.level,hand:[],role:null,score:0,done:false})),round:0,net:true,wait:null}; NET.push(null,'new'); newRound(); },
   state:()=>P, busy:()=>false,
-  resume(){ if(WAIT&&P.players[WAIT.i].ai){ const p=P.players[WAIT.i]; if(WAIT.play){ const c=aiChoice(p.hand,P.trick,P.cfg,p.level||P.cfg.level); act(c); } else if(WAIT.give){ const r=WAIT.res; WAIT=null; r(p.hand.splice(0,WAIT?WAIT.give:2)); } } },
-  act(seat,fn,args){ if(!P||args[0]!==seat||!WAIT||WAIT.i!==seat) return false; const h=P.players[seat].hand; const pick=a=>Array.isArray(a)?a.map(id=>h.find(c=>c.s*20+c.r===id)).filter(Boolean):[];
+  resume(){ if(WAIT&&P.players[WAIT.i].ai){ const p=P.players[WAIT.i]; if(WAIT.play){ const c=aiChoice(p.hand,P.trick,P.cfg,p.level||P.cfg.level); act(c); } else if(WAIT.give){ const r=WAIT.res, k=WAIT.give; WAIT=null; r(p.hand.splice(0,k)); } } },
+  act(seat,fn,args){ if(P&&fn==='next'){ if(!P.over) return false; closeModal(); P.over=null; newRound(); return true; } if(!P||args[0]!==seat||!WAIT||WAIT.i!==seat) return false; const h=P.players[seat].hand; const pick=a=>Array.isArray(a)?a.map(id=>h.find(c=>c.s*20+c.r===id)).filter(Boolean):[];
     if(fn==='play'&&WAIT.play){ const cs=pick(args[1]); if(!cs.length||cs.length!==(args[1]||[]).length) return false; const r=rv(cs[0]); if(!cs.every(c=>rv(c)===r)) return false; if(P.trick&&!(cs.length===P.trick.count&&(r>P.trick.rank||(P.cfg.equal&&r===P.trick.rank)))) return false; act(cs.sort((a,b)=>h.indexOf(a)-h.indexOf(b))); return true; }
     if(fn==='pass'&&WAIT.play&&P.trick){ act(null); return true; }
     if(fn==='give'&&WAIT.give){ const cs=pick(args[1]); if(cs.length!==WAIT.give) return false; cs.forEach(c=>h.splice(h.indexOf(c),1)); const r=WAIT.res; WAIT=null; SEL=new Set(); r(cs); return true; } return false; },
@@ -335,6 +364,12 @@ window.__T={get P(){return P},get WAIT(){return WAIT},set SEL(v){SEL=v},act,aiCh
 </script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
+
+
+
+
+
+
 
 
 

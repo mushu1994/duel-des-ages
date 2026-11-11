@@ -78,12 +78,13 @@
 #netBtn .net-dot{display:inline-block;margin-right:5px;vertical-align:1px}
 
 /* réactions rapides et demande de revanche (tables en ligne) */
-#netReact{position:fixed;left:max(10px,env(safe-area-inset-left));bottom:max(12px,env(safe-area-inset-bottom));z-index:70;display:flex;align-items:flex-end;gap:6px}
-.net-rbtn{width:46px;height:46px;border-radius:50%;border:1px solid #fff6;background:#000a;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 6px 16px #0006}
-.net-rpick{display:flex;flex-wrap:wrap;gap:4px;max-width:220px;background:#1b1b1fee;border-radius:14px;padding:6px;box-shadow:0 8px 24px #0008}
+#netReact{flex-shrink:0;padding-left:8px;padding-right:8px;font-size:18px;line-height:1}
+#netReact.net-rtop{margin-left:auto;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);font-size:20px;padding:0;cursor:pointer;display:grid;place-items:center}
+#netReact.net-rfab{position:fixed;right:max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));z-index:70;width:38px;height:38px;border-radius:50%;border:1px solid #fff6;background:#000a;font-size:20px;padding:0;cursor:pointer}
+.net-rpick{position:fixed;z-index:90;display:flex;flex-wrap:wrap;gap:4px;width:204px;background:#1b1b1fee;border-radius:14px;padding:6px;box-shadow:0 8px 24px #0008}
 .net-rpick[hidden]{display:none}
 .net-rpick button{width:44px;height:44px;border:0;border-radius:10px;background:#ffffff14;font-size:24px;cursor:pointer}
-.net-react{position:fixed;bottom:70px;z-index:75;display:flex;flex-direction:column;align-items:center;pointer-events:none;animation:netup 2.6s ease-out forwards}
+.net-react{position:fixed;top:38%;z-index:75;display:flex;flex-direction:column;align-items:center;pointer-events:none;animation:netup 2.6s ease-out forwards}
 .net-react b{font-size:44px;line-height:1;filter:drop-shadow(0 3px 6px #0008)}
 .net-react small{font:800 12px system-ui,sans-serif;color:#fff;background:#000a;border-radius:99px;padding:1px 8px;margin-top:2px;white-space:nowrap}
 @keyframes netup{0%{transform:translateY(20px) scale(.6);opacity:0}12%{transform:translateY(0) scale(1.1);opacity:1}80%{opacity:1}100%{transform:translateY(-220px) scale(1);opacity:0}}

@@ -98,6 +98,14 @@ body{background:radial-gradient(ellipse at 50% 0%,#24406e,#0d1830 75%) fixed,#0d
 .pchip i{width:11px;height:11px;border-radius:50%}.pchip.turn{background:#fff;color:#1c1c24;box-shadow:0 0 0 3px var(--pcol,#ffd84a)}
 .tuto{text-align:center}.tuto-ic{font-size:56px;line-height:1.1;margin:4px 0 6px}.tuto h2{margin:0 0 6px}.tuto p{margin:0 auto;max-width:34ch;line-height:1.45}
 .tuto-dots{display:flex;gap:6px;justify-content:center;margin:12px 0 2px}.tuto-dots i{width:8px;height:8px;border-radius:50%;background:#c9b98f}.tuto-dots i.on{background:var(--accent)}
+.tkc{display:flex;align-items:flex-start;gap:10px;max-width:760px;margin:8px auto 0;background:#fffdf3;color:#2a2418;border-radius:16px;padding:9px 12px;box-shadow:0 6px 18px #0006;position:relative;font-size:14.5px;line-height:1.4;border:2px solid #ffd84a;width:calc(100% - 16px)}
+.tkc[hidden]{display:none}
+.tkc::before{content:"";position:absolute;left:26px;top:-9px;border:8px solid transparent;border-top:0;border-bottom-color:#ffd84a}
+.tkc-av{font-size:26px;line-height:1}
+.tkc-t{flex:1}.tkc-t b{color:#8a3a00}.tkc-t .cv{display:inline-block;background:#f0e6cf;border-radius:6px;padding:0 5px;font-weight:800}
+.tkc-x{border:0;background:#0001;border-radius:50%;width:26px;height:26px;cursor:pointer;color:#555;flex:none}
+.coach{outline:4px solid #ffd84a!important;outline-offset:2px;box-shadow:0 0 18px #ffd84a!important;animation:coachp 1.2s ease-in-out infinite}
+@keyframes coachp{50%{outline-color:#ffb02e}}
 
 .who{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0 8px}
 .gk-wrap{max-width:min(96vw,calc(100vh - 210px),760px);margin:0 auto}
@@ -113,17 +121,12 @@ body{background:radial-gradient(ellipse at 50% 0%,#24406e,#0d1830 75%) fixed,#0d
 #gk .st.new{animation:pop .25s ease-out;transform-box:fill-box;transform-origin:center}
 @keyframes pop{from{transform:scale(.3)}}
 
+#gk .hot.coach{fill:#ffd84a99;stroke:#ff8a1e;stroke-width:.12;animation:coachs 1.2s ease-in-out infinite}@keyframes coachs{50%{fill:#ffb02e55}}
+
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
-</style>
-
-
-
-
-
-
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=3da929cd"><!--/NETCSS-->
+</style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=258accaa"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
 <!--MENU--><template id="sdj-cover"><svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice"><rect x="0" y="0" width="240" height="180" fill="#e9c27a"/><path d="M20 0V180" fill="none" stroke="#b98d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M60 0V180" fill="none" stroke="#b98d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M100 0V180" fill="none" stroke="#b98d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M140 0V180" fill="none" stroke="#b98d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M180 0V180" fill="none" stroke="#b98d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M220 0V180" fill="none" stroke="#b98d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M0 10H240" fill="none" stroke="#b98d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M0 50H240" fill="none" stroke="#b98d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M0 90H240" fill="none" stroke="#b98d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M0 130H240" fill="none" stroke="#b98d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M0 170H240" fill="none" stroke="#b98d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 170L180 10" fill="none" stroke="#e5383b" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" opacity=".35"/><circle cx="62" cy="134" r="16" fill="rgba(10,8,40,.28)"/><circle cx="60" cy="130" r="16" fill="#1a1740"/><circle cx="54.9" cy="124.2" r="2.6" fill="rgba(255,255,255,.4)"/><circle cx="102" cy="94" r="16" fill="rgba(10,8,40,.28)"/><circle cx="100" cy="90" r="16" fill="#1a1740"/><circle cx="94.9" cy="84.2" r="2.6" fill="rgba(255,255,255,.4)"/><circle cx="142" cy="54" r="16" fill="rgba(10,8,40,.28)"/><circle cx="140" cy="50" r="16" fill="#1a1740"/><circle cx="134.9" cy="44.2" r="2.6" fill="rgba(255,255,255,.4)"/><circle cx="182" cy="14" r="16" fill="rgba(10,8,40,.28)"/><circle cx="180" cy="10" r="16" fill="#1a1740"/><circle cx="174.9" cy="4.2" r="2.6" fill="rgba(255,255,255,.4)"/><circle cx="22" cy="174" r="16" fill="rgba(10,8,40,.28)"/><circle cx="20" cy="170" r="16" fill="#1a1740"/><circle cx="14.9" cy="164.2" r="2.6" fill="rgba(255,255,255,.4)"/><circle cx="102" cy="134" r="16" fill="rgba(10,8,40,.28)"/><circle cx="100" cy="130" r="16" fill="#fff"/><circle cx="94.9" cy="124.2" r="2.6" fill="rgba(255,255,255,.4)"/><circle cx="142" cy="94" r="16" fill="rgba(10,8,40,.28)"/><circle cx="140" cy="90" r="16" fill="#fff"/><circle cx="134.9" cy="84.2" r="2.6" fill="rgba(255,255,255,.4)"/><circle cx="62" cy="94" r="16" fill="rgba(10,8,40,.28)"/><circle cx="60" cy="90" r="16" fill="#fff"/><circle cx="54.9" cy="84.2" r="2.6" fill="rgba(255,255,255,.4)"/><circle cx="182" cy="54" r="16" fill="rgba(10,8,40,.28)"/><circle cx="180" cy="50" r="16" fill="#fff"/><circle cx="174.9" cy="44.2" r="2.6" fill="rgba(255,255,255,.4)"/><circle cx="182" cy="134" r="16" fill="rgba(10,8,40,.28)"/><circle cx="180" cy="130" r="16" fill="#fff"/><circle cx="174.9" cy="124.2" r="2.6" fill="rgba(255,255,255,.4)"/><circle cx="22" cy="54" r="16" fill="rgba(10,8,40,.28)"/><circle cx="20" cy="50" r="16" fill="#1a1740"/><circle cx="14.9" cy="44.2" r="2.6" fill="rgba(255,255,255,.4)"/></svg></template><script>window.SDJ_JEU={"t": "Morpion géant", "d": "Le gomoku : aligne cinq pierres sur une grille de 15×15 ou 19×19."}</script><!--/MENU-->
@@ -134,7 +137,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#24406e,#0d1830 75%) fixed,#0d
 </div>
 <div id="tkcover" hidden></div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
-<!--NET--><script src="common/hall.js?v=e82d0531"></script><script src="common/net.js?v=2ba51f77"></script><!--/NET-->
+<!--NET--><script src="common/hall.js?v=e82d0531"></script><script src="common/net.js?v=788b14dc"></script><!--/NET-->
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -229,6 +232,8 @@ const TK=(()=>{
  /* ---------- actions ---------- */
  T.input=a=>{ if(!G||G.over) return false; const v=T.viewer(); if(v==null||!D.actors(G).includes(v)) return false;
    if(guest()){ NET.act('a',[v,a]); return true; } return doAct(v,a); };
+ /* plusieurs joueurs sur le même appareil qui agissent en même temps (ex. taper à la bataille corse) */
+ T.inputAs=(seat,a)=>{ if(!G||G.over||net()||!G.players[seat]||G.players[seat].ai) return false; return doAct(seat,a); };
  function doAct(seat,a){ if(!G||G.over||!D.actors(G).includes(seat)) return false; let ev; try{ ev=D.apply(G,seat,a); }catch(e){ console.error(e); return false; }
    if(ev===false) return false; G.v=(G.v||0)+1; after(ev||[]); return true; }
  function after(ev){ save(); render(ev); if(net()) NET.push(ev.length?ev:null); if(G.over) end(); else schedule(); }
@@ -245,8 +250,18 @@ const TK=(()=>{
  /* ---------- affichage ---------- */
  function render(ev){ if(!G){ D.empty&&D.empty(); return; } const v=T.viewer();
    if(!net()&&D.hidden&&humans().length>1){ const a=D.actors(G).find(s=>!G.players[s].ai); if(a!=null&&a!==shown&&!G.over){ cover(a); } }
-   try{ D.render(G,v,ev||[]); }catch(e){ console.error(e); } status(); if(ev&&ev.length&&D.sound) ev.forEach(e=>{ try{ D.sound(e,G,v); }catch(x){} }); }
+   try{ D.render(G,v,ev||[]); }catch(e){ console.error(e); } status(); coach(v); if(ev&&ev.length&&D.sound) ev.forEach(e=>{ try{ D.sound(e,G,v); }catch(x){} }); }
  T.render=render;
+ /* ---------- coach pour débuter : une bulle qui conseille et explique ---------- */
+ const coachOn=()=>{ const v=load('tk-coach-'+D.id); return v==null?true:!!v; };
+ function coach(v){ let el=document.getElementById('tkcoach'); if(!D.coach){ if(el) el.hidden=true; return; }
+   if(!el){ el=document.createElement('div'); el.id='tkcoach'; el.className='tkc'; $('#status').after(el);
+     el.addEventListener('click',e=>{ if(e.target.closest('.tkc-x')){ store('tk-coach-'+D.id,0); toast('Coach désactivé. Tu peux le réactiver dans « Nouvelle partie ».'); coach(v); } }); }
+   document.querySelectorAll('.coach').forEach(x=>x.classList.remove('coach'));
+   let c=null; if(G&&!G.over&&coachOn()&&(!net()||NET.seat!=null)) try{ c=D.coach(G,v==null?0:v,TK.canPlay()); }catch(e){ console.error(e); }
+   if(!c){ el.hidden=true; return; } el.hidden=false; el.innerHTML=`<span class="tkc-av" aria-hidden="true">🧑‍🏫</span><div class="tkc-t">${c.t}</div><button class="tkc-x" aria-label="Désactiver le coach">✕</button>`;
+   if(c.hl) document.querySelectorAll(c.hl).forEach(h=>h.classList.add('coach')); }
+ T.coachOn=coachOn;
  function cover(a){ const c=document.getElementById('tkcover'); if(!c) return; shown=null; c.hidden=false; c.innerHTML=`<div><h2>Au tour de ${esc(G.players[a].name)}</h2><p>Passe l’appareil à ${esc(G.players[a].name)}, sans regarder son jeu.</p><button class="btn pri" id="tkreveal">Voir mon jeu</button></div>`;
    document.getElementById('tkreveal').onclick=()=>{ shown=a; c.hidden=true; render([]); }; }
  function status(){ const st=$('#status'); if(!st||!G) return; const s=D.status(G,T.viewer())||{}; st.style.setProperty('--pc',s.col||'var(--accent)');
@@ -282,10 +297,12 @@ const TK=(()=>{
      <h4>Joueurs sur cet appareil</h4><div class="tk-seats">${SEATS.map((s,i)=>`<div class="tk-seat"><i style="background:${COLS[i%6]}"></i><input type="text" data-n="${i}" value="${esc(s.name)}" maxlength="14"${s.ai?' disabled':''}>
        <div class="seg"><button class="${!s.ai?'on':''}" data-s="${i}:h">Joueur</button><button class="${s.ai?'on':''}" data-s="${i}:a">Ordi</button></div>${s.ai?`<div class="seg">${lv.map(l=>`<button class="${s.level===l?'on':''}" data-s="${i}:${l}">${l}</button>`).join('')}</div>`:''}${SEATS.length>D.min?`<button class="tk-x" data-s="${i}:x" aria-label="Retirer">✕</button>`:''}</div>`).join('')}
        ${SEATS.length<D.maxLocal?'<button class="btn" data-s="add">+ Ajouter un joueur</button>':''}</div>
+     ${D.coach?`<h4>Coach pour débuter</h4><div class="seg"><button class="${coachOn()?'on':''}" data-coach="1">🧑‍🏫 Activé</button><button class="${coachOn()?'':'on'}" data-coach="0">Désactivé</button></div><p class="optnote">Une bulle te conseille quoi jouer et t’explique pourquoi.</p>`:''}
      ${D.optsHTML?`<div class="opts">${D.optsHTML()}</div>`:''}
      <div class="acts">${G?'<button class="btn" data-c="close">Fermer</button>':''}<button class="btn pri" data-k="local">Lancer la partie</button></div>`,click); };
    const grab=()=>{ document.querySelectorAll('#mbox [data-n]').forEach(x=>{ const s=SEATS[+x.dataset.n]; if(s&&!s.ai) s.name=x.value.trim()||s.name; }); };
    const click=e=>{ grab(); const k=e.target.closest('[data-k]'), s=e.target.closest('[data-s]'), o=e.target.closest('[data-o]');
+     const cb=e.target.closest('[data-coach]'); if(cb){ store('tk-coach-'+D.id,+cb.dataset.coach); draw(); if(G) render([]); return; }
      if(o&&D.optClick){ D.optClick(o); store('tk-opt-'+D.id,D.opt); draw(); return; }
      if(s){ const v=s.dataset.s; if(v==='add'){ SEATS.push({name:['Ada','Hal','Pixel','Nova','Atlas','Écho'][SEATS.length-1]||'Ordi',ai:true,level:'normal'}); }
        else { const [i,x]=v.split(':'); const st=SEATS[+i]; if(x==='h'){ st.ai=false; if(/^(Ada|Hal|Pixel|Nova|Atlas|Écho|Ordi.*)$/.test(st.name)) st.name='Joueur '+(+i+1); } else if(x==='a'){ st.ai=true; st.name=['Ada','Hal','Pixel','Nova','Atlas','Écho'][+i%6]; } else if(x==='x') SEATS.splice(+i,1); else st.level=x; }
@@ -376,6 +393,23 @@ const D={id:'morpion-geant',title:'Morpion géant',min:2,max:2,maxLocal:2,
   help(){ helpTabs('Morpion géant',[['But du jeu','<p>Chacun à son tour pose une pierre de sa couleur sur une intersection libre. Les noirs commencent.</p><p>Le premier qui aligne <b>cinq pierres</b> à l’horizontale, à la verticale ou en diagonale gagne.</p>'],
     ['Variantes','<ul><li><b>5 ou plus</b> : une ligne de six pierres ou plus compte aussi.</li><li><b>Exactement 5</b> (règle du gomoku classique) : une ligne de six ne gagne pas.</li><li>Grille de 15 × 15 ou de 19 × 19.</li></ul>'],
     ['Conseils','<ul><li>Une ligne de <b>quatre ouverte aux deux bouts</b> ne peut plus être arrêtée.</li><li>Bloque tôt les lignes de trois ouvertes de l’adversaire.</li><li>Le meilleur coup crée souvent deux menaces à la fois.</li></ul>']]); } };
+/* ---------- coach pour débuter ---------- */
+D.coach=(G,v,mine)=>{ if(!mine) return {t:'Observe où l’adversaire pose sa pierre : cherche ses lignes de <b>trois</b> ou de <b>quatre</b>.'};
+  if(!G.moves) return {t:'Les noirs commencent : pose ta première pierre <b>au centre</b>, c’est là qu’on a le plus de place pour construire.',hl:`#gk .hot[data-i="${((G.n/2)|0)*G.n+((G.n/2)|0)}"]`};
+  const C=cands(G), o=1-v; let best=null;
+  for(const i of C){ const x=i%G.n,y=(i/G.n)|0; let a=[0,0],d=[0,0],as=0,ds=0; for(const [dx,dy] of DIR){ const A=line(G,x,y,dx,dy,v), B=line(G,x,y,dx,dy,o); if(SC(...A)>as){ as=SC(...A); a=A; } if(SC(...B)>ds){ ds=SC(...B); d=B; } }
+    const rank=a[0]>=5?9:d[0]>=5?8:(a[0]===4&&a[1]===2)?7:(d[0]===4&&d[1]===2)?6:0; const sc=rank*1e9+cellScore(G,i,v); if(!best||sc>best.sc) best={i,sc,rank,a,d}; }
+  if(!best) return null; const {rank,a,d}=best; let t;
+  if(rank===9) t='<b>Tu peux gagner !</b> Pose ta pierre ici : cela fait cinq alignées.';
+  else if(rank===8) t='<b>Danger !</b> L’adversaire a quatre pierres alignées : bloque ici tout de suite, sinon il gagne au prochain coup.';
+  else if(rank===7) t='Pose ici pour faire un <b>quatre ouvert</b> (libre des deux côtés) : l’adversaire ne peut bloquer qu’un bout, tu gagnes au coup suivant.';
+  else if(rank===6) t='L’adversaire a un <b>trois ouvert</b> : s’il ajoute une pierre, tu ne pourras plus l’arrêter. Ferme un bout maintenant.';
+  else if(a[0]===4) t='Fais un <b>quatre</b> : l’adversaire sera obligé de te bloquer, et c’est toi qui gardes la main.';
+  else if(a[0]===3&&a[1]===2&&d[0]>=3) t='Ce coup fait d’une pierre deux coups : tu construis un <b>trois ouvert</b> et tu gênes une ligne adverse.';
+  else if(a[0]===3&&a[1]===2) t='Construis un <b>trois ouvert</b> (libre des deux côtés) : c’est une menace que l’adversaire doit traiter.';
+  else if(d[0]>=3) t='Gêne l’adversaire : cette case coupe sa ligne en construction.';
+  else t='Pose ta pierre <b>près des tiennes</b>, de façon à pouvoir t’étendre dans plusieurs directions à la fois.';
+  return {t,hl:`#gk .hot[data-i="${best.i}"]`}; };
 TK.def(D);
 $('#gk').addEventListener('click',e=>{ const r=e.target.closest('.hot'); if(r) TK.input({i:+r.dataset.i}); });
 })();
@@ -383,13 +417,6 @@ $('#gk').addEventListener('click',e=>{ const r=e.target.closest('.hot'); if(r) T
 </script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
-
-
-
-
-
-
-
 <!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
 <!--MENUJS--><script src="common/menu.js?v=528d070f"></script><!--/MENUJS-->
 </body></html>

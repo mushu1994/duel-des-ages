@@ -140,14 +140,8 @@ body{background:radial-gradient(ellipse at 50% 0%,#3a6a8a,#122a3a 75%) fixed,#12
 
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
-</style>
-
-
-
-
-
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=3da929cd"><!--/NETCSS-->
+</style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=258accaa"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
 <!--MENU--><template id="sdj-cover"><svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice"><rect x="0" y="0" width="240" height="180" fill="#4aa8e8"/><ellipse cx="190" cy="40" rx="34" ry="14" fill="#fff"/><ellipse cx="60" cy="30" rx="26" ry="10" fill="#fff"/><path d="M0 180V112Q120 86 240 112V180Z" fill="#4fb360"/><path d="M84 180L112 100H128L156 180Z" fill="#3d3a4a"/><path d="M118 106H122L123 122H117ZM116 134H124L125 156H115ZM114 168H126L127 180H113Z" fill="#fff"/><path d="M158 150V96C158 78 198 78 198 96V150Z" fill="rgba(10,8,40,.28)" transform="translate(3 5)"/><path d="M158 150V96C158 78 198 78 198 96V150Z" fill="#fff"/><path d="M158 108V96C158 78 198 78 198 96V108Z" fill="#e5383b"/><text x="178" y="136" font-size="15" text-anchor="middle" fill="#1a1740" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">1000</text></svg></template><script>window.SDJ_JEU={"t": "Mille Bornes", "d": "Parcours 1000 km à coups de cartes Distance, d’attaques, de parades et de coups fourrés. Avec les équipes, l’Allonge et la partie en 5000 points."}</script><!--/MENU-->
@@ -162,7 +156,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#3a6a8a,#122a3a 75%) fixed,#12
 </div>
 <div id="tkcover" hidden></div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
-<!--NET--><script src="common/hall.js?v=e82d0531"></script><script src="common/net.js?v=2ba51f77"></script><!--/NET-->
+<!--NET--><script src="common/hall.js?v=e82d0531"></script><script src="common/net.js?v=788b14dc"></script><!--/NET-->
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -257,6 +251,8 @@ const TK=(()=>{
  /* ---------- actions ---------- */
  T.input=a=>{ if(!G||G.over) return false; const v=T.viewer(); if(v==null||!D.actors(G).includes(v)) return false;
    if(guest()){ NET.act('a',[v,a]); return true; } return doAct(v,a); };
+ /* plusieurs joueurs sur le même appareil qui agissent en même temps (ex. taper à la bataille corse) */
+ T.inputAs=(seat,a)=>{ if(!G||G.over||net()||!G.players[seat]||G.players[seat].ai) return false; return doAct(seat,a); };
  function doAct(seat,a){ if(!G||G.over||!D.actors(G).includes(seat)) return false; let ev; try{ ev=D.apply(G,seat,a); }catch(e){ console.error(e); return false; }
    if(ev===false) return false; G.v=(G.v||0)+1; after(ev||[]); return true; }
  function after(ev){ save(); render(ev); if(net()) NET.push(ev.length?ev:null); if(G.over) end(); else schedule(); }
@@ -283,7 +279,7 @@ const TK=(()=>{
    document.querySelectorAll('.coach').forEach(x=>x.classList.remove('coach'));
    let c=null; if(G&&!G.over&&coachOn()&&(!net()||NET.seat!=null)) try{ c=D.coach(G,v==null?0:v,TK.canPlay()); }catch(e){ console.error(e); }
    if(!c){ el.hidden=true; return; } el.hidden=false; el.innerHTML=`<span class="tkc-av" aria-hidden="true">🧑‍🏫</span><div class="tkc-t">${c.t}</div><button class="tkc-x" aria-label="Désactiver le coach">✕</button>`;
-   if(c.hl){ const h=document.querySelector(c.hl); if(h) h.classList.add('coach'); } }
+   if(c.hl) document.querySelectorAll(c.hl).forEach(h=>h.classList.add('coach')); }
  T.coachOn=coachOn;
  function cover(a){ const c=document.getElementById('tkcover'); if(!c) return; shown=null; c.hidden=false; c.innerHTML=`<div><h2>Au tour de ${esc(G.players[a].name)}</h2><p>Passe l’appareil à ${esc(G.players[a].name)}, sans regarder son jeu.</p><button class="btn pri" id="tkreveal">Voir mon jeu</button></div>`;
    document.getElementById('tkreveal').onclick=()=>{ shown=a; c.hidden=true; render([]); }; }
@@ -540,12 +536,6 @@ document.addEventListener('click',e=>{ const b=e.target.closest('[data-m]'); if(
 </script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
-
-
-
-
-
-
 <!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
 <!--MENUJS--><script src="common/menu.js?v=528d070f"></script><!--/MENUJS-->
 </body></html>

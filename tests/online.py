@@ -59,6 +59,9 @@ async def run(b, g):
         await P[0][1].wait_for_timeout(3500)
         seats = [await pg.evaluate('NET.seat') for _, pg, _ in P]
         res['places'] = seats
+        # bouton de réaction : dans l'en-tête, jamais par-dessus le jeu
+        rb = await P[1][1].evaluate("(()=>{ const b=document.getElementById('netReact'); if(!b) return 'absent'; const r=b.getBoundingClientRect(); b.click(); const k=document.getElementById('netRpick'); const vis=k&&!k.hidden; if(vis) k.querySelector('[data-e]').click(); return (r.top<innerHeight*.4?'haut':'bas')+(vis?'':' sans-choix'); })()")
+        if rb != 'haut': res['reaction'] = rb
         s1 = await P[2][1].evaluate(SIG)
         res['invites_recoivent'] = bool(await P[1][1].evaluate(SIG)) and bool(s1)
         if g in ('serpents', 'souriciere', 'piaf'):
@@ -113,7 +116,7 @@ async def main():
         for g in GAMES:
             r = await run(b, g); out.append(r); print(json.dumps(r, ensure_ascii=False), flush=True)
         await b.close()
-    bad = [r['jeu'] for r in out if not r.get('invites_recoivent') or not r.get('nouvel_hote') or not r.get('la_partie_continue') or r.get('erreurs') or r.get('exception')]
+    bad = [r['jeu'] for r in out if not r.get('invites_recoivent') or not r.get('nouvel_hote') or not r.get('la_partie_continue') or r.get('erreurs') or r.get('exception') or r.get('reaction')]
     print('\nÀ revoir :', ', '.join(bad) if bad else 'aucun')
     sys.exit(1 if bad else 0)
 

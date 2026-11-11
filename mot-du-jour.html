@@ -98,6 +98,14 @@ body{background:radial-gradient(ellipse at 50% 0%,#24543a,#0b1e14 75%) fixed,#0b
 .pchip i{width:11px;height:11px;border-radius:50%}.pchip.turn{background:#fff;color:#1c1c24;box-shadow:0 0 0 3px var(--pcol,#ffd84a)}
 .tuto{text-align:center}.tuto-ic{font-size:56px;line-height:1.1;margin:4px 0 6px}.tuto h2{margin:0 0 6px}.tuto p{margin:0 auto;max-width:34ch;line-height:1.45}
 .tuto-dots{display:flex;gap:6px;justify-content:center;margin:12px 0 2px}.tuto-dots i{width:8px;height:8px;border-radius:50%;background:#c9b98f}.tuto-dots i.on{background:var(--accent)}
+.tkc{display:flex;align-items:flex-start;gap:10px;max-width:760px;margin:8px auto 0;background:#fffdf3;color:#2a2418;border-radius:16px;padding:9px 12px;box-shadow:0 6px 18px #0006;position:relative;font-size:14.5px;line-height:1.4;border:2px solid #ffd84a;width:calc(100% - 16px)}
+.tkc[hidden]{display:none}
+.tkc::before{content:"";position:absolute;left:26px;top:-9px;border:8px solid transparent;border-top:0;border-bottom-color:#ffd84a}
+.tkc-av{font-size:26px;line-height:1}
+.tkc-t{flex:1}.tkc-t b{color:#8a3a00}.tkc-t .cv{display:inline-block;background:#f0e6cf;border-radius:6px;padding:0 5px;font-weight:800}
+.tkc-x{border:0;background:#0001;border-radius:50%;width:26px;height:26px;cursor:pointer;color:#555;flex:none}
+.coach{outline:4px solid #ffd84a!important;outline-offset:2px;box-shadow:0 0 18px #ffd84a!important;animation:coachp 1.2s ease-in-out infinite}
+@keyframes coachp{50%{outline-color:#ffb02e}}
 
 .who{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0 4px}
 .who .mini{display:inline-grid;grid-template-columns:repeat(5,6px);gap:1px;margin-left:4px;vertical-align:middle}
@@ -122,15 +130,8 @@ body{background:radial-gradient(ellipse at 50% 0%,#24543a,#0b1e14 75%) fixed,#0b
 
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
-</style>
-
-
-
-
-
-
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
-<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=3da929cd"><!--/NETCSS-->
+</style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
+<!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=258accaa"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
 </head><body>
 <!--MENU--><template id="sdj-cover"><svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice"><rect x="0" y="0" width="240" height="180" fill="#15133a"/><rect x="13" y="14" width="40" height="48" rx="7" fill="#2fae66"/><text x="33" y="49" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">A</text><rect x="56.5" y="14" width="40" height="48" rx="7" fill="#f2b01e"/><text x="76.5" y="49" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">R</text><rect x="100" y="14" width="40" height="48" rx="7" fill="#2fae66"/><text x="120" y="49" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">B</text><rect x="143.5" y="14" width="40" height="48" rx="7" fill="#3b3876"/><text x="163.5" y="49" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">R</text><rect x="187" y="14" width="40" height="48" rx="7" fill="#3b3876"/><text x="207" y="49" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">E</text><rect x="13" y="67" width="40" height="48" rx="7" fill="#2fae66"/><text x="33" y="102" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">R</text><rect x="56.5" y="67" width="40" height="48" rx="7" fill="#2fae66"/><text x="76.5" y="102" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">O</text><rect x="100" y="67" width="40" height="48" rx="7" fill="#3b3876"/><text x="120" y="102" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">U</text><rect x="143.5" y="67" width="40" height="48" rx="7" fill="#3b3876"/><text x="163.5" y="102" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">T</text><rect x="187" y="67" width="40" height="48" rx="7" fill="#f2b01e"/><text x="207" y="102" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">E</text><rect x="13" y="120" width="40" height="48" rx="7" fill="#2fae66"/><text x="33" y="155" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">R</text><rect x="56.5" y="120" width="40" height="48" rx="7" fill="#2fae66"/><text x="76.5" y="155" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">O</text><rect x="100" y="120" width="40" height="48" rx="7" fill="#2fae66"/><text x="120" y="155" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">N</text><rect x="143.5" y="120" width="40" height="48" rx="7" fill="#2fae66"/><text x="163.5" y="155" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">D</text><rect x="187" y="120" width="40" height="48" rx="7" fill="#2fae66"/><text x="207" y="155" font-size="30" text-anchor="middle" fill="#fff" font-family="'Bricolage Grotesque',Arial,sans-serif" font-weight="800">E</text></svg></template><script>window.SDJ_JEU={"t": "Mot du jour", "d": "Un mot de cinq lettres à trouver en six essais, le même pour tout le monde chaque jour."}</script><!--/MENU-->
@@ -144,7 +145,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#24543a,#0b1e14 75%) fixed,#0b
 </div>
 <div id="tkcover" hidden></div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
-<!--NET--><script src="common/hall.js?v=e82d0531"></script><script src="common/net.js?v=2ba51f77"></script><!--/NET-->
+<!--NET--><script src="common/hall.js?v=e82d0531"></script><script src="common/net.js?v=788b14dc"></script><!--/NET-->
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -239,6 +240,8 @@ const TK=(()=>{
  /* ---------- actions ---------- */
  T.input=a=>{ if(!G||G.over) return false; const v=T.viewer(); if(v==null||!D.actors(G).includes(v)) return false;
    if(guest()){ NET.act('a',[v,a]); return true; } return doAct(v,a); };
+ /* plusieurs joueurs sur le même appareil qui agissent en même temps (ex. taper à la bataille corse) */
+ T.inputAs=(seat,a)=>{ if(!G||G.over||net()||!G.players[seat]||G.players[seat].ai) return false; return doAct(seat,a); };
  function doAct(seat,a){ if(!G||G.over||!D.actors(G).includes(seat)) return false; let ev; try{ ev=D.apply(G,seat,a); }catch(e){ console.error(e); return false; }
    if(ev===false) return false; G.v=(G.v||0)+1; after(ev||[]); return true; }
  function after(ev){ save(); render(ev); if(net()) NET.push(ev.length?ev:null); if(G.over) end(); else schedule(); }
@@ -255,8 +258,18 @@ const TK=(()=>{
  /* ---------- affichage ---------- */
  function render(ev){ if(!G){ D.empty&&D.empty(); return; } const v=T.viewer();
    if(!net()&&D.hidden&&humans().length>1){ const a=D.actors(G).find(s=>!G.players[s].ai); if(a!=null&&a!==shown&&!G.over){ cover(a); } }
-   try{ D.render(G,v,ev||[]); }catch(e){ console.error(e); } status(); if(ev&&ev.length&&D.sound) ev.forEach(e=>{ try{ D.sound(e,G,v); }catch(x){} }); }
+   try{ D.render(G,v,ev||[]); }catch(e){ console.error(e); } status(); coach(v); if(ev&&ev.length&&D.sound) ev.forEach(e=>{ try{ D.sound(e,G,v); }catch(x){} }); }
  T.render=render;
+ /* ---------- coach pour débuter : une bulle qui conseille et explique ---------- */
+ const coachOn=()=>{ const v=load('tk-coach-'+D.id); return v==null?true:!!v; };
+ function coach(v){ let el=document.getElementById('tkcoach'); if(!D.coach){ if(el) el.hidden=true; return; }
+   if(!el){ el=document.createElement('div'); el.id='tkcoach'; el.className='tkc'; $('#status').after(el);
+     el.addEventListener('click',e=>{ if(e.target.closest('.tkc-x')){ store('tk-coach-'+D.id,0); toast('Coach désactivé. Tu peux le réactiver dans « Nouvelle partie ».'); coach(v); } }); }
+   document.querySelectorAll('.coach').forEach(x=>x.classList.remove('coach'));
+   let c=null; if(G&&!G.over&&coachOn()&&(!net()||NET.seat!=null)) try{ c=D.coach(G,v==null?0:v,TK.canPlay()); }catch(e){ console.error(e); }
+   if(!c){ el.hidden=true; return; } el.hidden=false; el.innerHTML=`<span class="tkc-av" aria-hidden="true">🧑‍🏫</span><div class="tkc-t">${c.t}</div><button class="tkc-x" aria-label="Désactiver le coach">✕</button>`;
+   if(c.hl) document.querySelectorAll(c.hl).forEach(h=>h.classList.add('coach')); }
+ T.coachOn=coachOn;
  function cover(a){ const c=document.getElementById('tkcover'); if(!c) return; shown=null; c.hidden=false; c.innerHTML=`<div><h2>Au tour de ${esc(G.players[a].name)}</h2><p>Passe l’appareil à ${esc(G.players[a].name)}, sans regarder son jeu.</p><button class="btn pri" id="tkreveal">Voir mon jeu</button></div>`;
    document.getElementById('tkreveal').onclick=()=>{ shown=a; c.hidden=true; render([]); }; }
  function status(){ const st=$('#status'); if(!st||!G) return; const s=D.status(G,T.viewer())||{}; st.style.setProperty('--pc',s.col||'var(--accent)');
@@ -292,10 +305,12 @@ const TK=(()=>{
      <h4>Joueurs sur cet appareil</h4><div class="tk-seats">${SEATS.map((s,i)=>`<div class="tk-seat"><i style="background:${COLS[i%6]}"></i><input type="text" data-n="${i}" value="${esc(s.name)}" maxlength="14"${s.ai?' disabled':''}>
        <div class="seg"><button class="${!s.ai?'on':''}" data-s="${i}:h">Joueur</button><button class="${s.ai?'on':''}" data-s="${i}:a">Ordi</button></div>${s.ai?`<div class="seg">${lv.map(l=>`<button class="${s.level===l?'on':''}" data-s="${i}:${l}">${l}</button>`).join('')}</div>`:''}${SEATS.length>D.min?`<button class="tk-x" data-s="${i}:x" aria-label="Retirer">✕</button>`:''}</div>`).join('')}
        ${SEATS.length<D.maxLocal?'<button class="btn" data-s="add">+ Ajouter un joueur</button>':''}</div>
+     ${D.coach?`<h4>Coach pour débuter</h4><div class="seg"><button class="${coachOn()?'on':''}" data-coach="1">🧑‍🏫 Activé</button><button class="${coachOn()?'':'on'}" data-coach="0">Désactivé</button></div><p class="optnote">Une bulle te conseille quoi jouer et t’explique pourquoi.</p>`:''}
      ${D.optsHTML?`<div class="opts">${D.optsHTML()}</div>`:''}
      <div class="acts">${G?'<button class="btn" data-c="close">Fermer</button>':''}<button class="btn pri" data-k="local">Lancer la partie</button></div>`,click); };
    const grab=()=>{ document.querySelectorAll('#mbox [data-n]').forEach(x=>{ const s=SEATS[+x.dataset.n]; if(s&&!s.ai) s.name=x.value.trim()||s.name; }); };
    const click=e=>{ grab(); const k=e.target.closest('[data-k]'), s=e.target.closest('[data-s]'), o=e.target.closest('[data-o]');
+     const cb=e.target.closest('[data-coach]'); if(cb){ store('tk-coach-'+D.id,+cb.dataset.coach); draw(); if(G) render([]); return; }
      if(o&&D.optClick){ D.optClick(o); store('tk-opt-'+D.id,D.opt); draw(); return; }
      if(s){ const v=s.dataset.s; if(v==='add'){ SEATS.push({name:['Ada','Hal','Pixel','Nova','Atlas','Écho'][SEATS.length-1]||'Ordi',ai:true,level:'normal'}); }
        else { const [i,x]=v.split(':'); const st=SEATS[+i]; if(x==='h'){ st.ai=false; if(/^(Ada|Hal|Pixel|Nova|Atlas|Écho|Ordi.*)$/.test(st.name)) st.name='Joueur '+(+i+1); } else if(x==='a'){ st.ai=true; st.name=['Ada','Hal','Pixel','Nova','Atlas','Écho'][+i%6]; } else if(x==='x') SEATS.splice(+i,1); else st.level=x; }
@@ -419,13 +434,6 @@ addEventListener('keydown',e=>{ if(document.querySelector('#modal:not([hidden])'
 </script><script>/*hh*/(function(){function f(){var h=[].slice.call(document.querySelectorAll('header.top')).filter(function(x){return x.offsetParent!==null;})[0];var b=h?Math.max(0,h.getBoundingClientRect().bottom):0;document.documentElement.style.setProperty('--hh',b+'px');}
 addEventListener('resize',f);addEventListener('scroll',f,{passive:true});var mo=new MutationObserver(f);function obs(){['modal','cover'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.__hh){e.__hh=1;mo.observe(e,{attributes:true,attributeFilter:['hidden','style','class']});}});f();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',obs);else obs();setTimeout(obs,800);})();</script>
-
-
-
-
-
-
-
 <!--PROF--><script src="common/profil.js?v=0532fd02"></script><!--/PROF-->
 <!--MENUJS--><script src="common/menu.js?v=528d070f"></script><!--/MENUJS-->
 </body></html>

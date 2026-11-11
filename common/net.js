@@ -91,10 +91,14 @@ const NET=(()=>{
  let lastReact=0;
  function showReact(name,e){ if(!EMO.includes(e)) return; const d=document.createElement('div'); d.className='net-react'; d.style.left=(12+Math.random()*60)+'%'; d.innerHTML=`<b>${e}</b><small>${es(name||'')}</small>`; document.body.appendChild(d); setTimeout(()=>d.remove(),2600); }
  function react(e){ const t=Date.now(); if(t-lastReact<900) return; lastReact=t; send('react',{n:N.name,e}); showReact(N.name,e); }
- function reactBtn(){ let b=$q('#netReact'); if(!N.on||!N.started){ if(b) b.remove(); return; } if(b) return;
-   b=document.createElement('div'); b.id='netReact'; b.innerHTML='<button class="net-rbtn" aria-label="Réagir">😀</button><div class="net-rpick" hidden>'+EMO.map(e=>`<button data-e="${e}">${e}</button>`).join('')+'</div>';
-   document.body.appendChild(b); const pick=b.querySelector('.net-rpick');
-   b.addEventListener('click',ev=>{ const x=ev.target.closest('[data-e]'); if(x){ react(x.dataset.e); pick.hidden=true; return; } if(ev.target.closest('.net-rbtn')) pick.hidden=!pick.hidden; }); }
+ function reactBtn(){ let b=$q('#netReact'), pick=$q('#netRpick'); if(!N.on||!N.started){ if(b) b.remove(); if(pick) pick.remove(); return; }
+   const nb=$q('#netBtn'), h1=$q('header.top h1'), anchor=h1||(nb&&!nb.classList.contains('net-fab')?nb:null); if(b&&b.isConnected&&(!anchor||b.previousElementSibling===anchor)) return; if(b) b.remove();
+   b=document.createElement('button'); b.id='netReact'; b.type='button'; b.setAttribute('aria-label','Réagir'); b.title='Envoyer une réaction'; b.textContent='😀';
+   if(h1){ b.className='net-rtop'; h1.after(b); } else if(anchor){ b.className=nb.className.replace('net-on','').trim(); nb.after(b); } else { b.className='net-rfab'; document.body.appendChild(b); }
+   if(!pick){ pick=document.createElement('div'); pick.id='netRpick'; pick.className='net-rpick'; pick.hidden=true; pick.innerHTML=EMO.map(e=>`<button data-e="${e}">${e}</button>`).join(''); document.body.appendChild(pick);
+     pick.addEventListener('click',ev=>{ const x=ev.target.closest('[data-e]'); if(x){ react(x.dataset.e); pick.hidden=true; } });
+     document.addEventListener('click',ev=>{ if(!pick.hidden&&!ev.target.closest('#netRpick,#netReact')) pick.hidden=true; },true); }
+   b.onclick=()=>{ const pk=$q('#netRpick'); if(!pk.hidden){ pk.hidden=true; return; } const r=b.getBoundingClientRect(); pk.hidden=false; pk.style.top=(r.bottom+6)+'px'; pk.style.left=Math.max(6,Math.min(innerWidth-pk.offsetWidth-6,r.right-pk.offsetWidth))+'px'; }; }
  const wants=new Map(); let rmBar=null;
  function wantRematch(cid,n){ wants.set(cid,n); if(!rmBar){ rmBar=document.createElement('div'); rmBar.className='net-rm'; document.body.appendChild(rmBar); rmBar.addEventListener('click',e=>{ const b=e.target.closest('[data-rm]'); if(!b) return; if(b.dataset.rm==='go') restart(); clearRm(); }); }
    const humans=PL(NG().state()).filter(P=>P.cid&&!P.ai&&P.cid!==N.cid&&N.peers[P.cid]).length;
@@ -182,7 +186,7 @@ const NET=(()=>{
    HALL.closeBox(); gameClose(); N.ui=null; N.started=true; N.aq=[]; N.seat=0; hallRoom(); NG().start(list); }
  function restart(){ clearRm(); const G=NG().state(); if(!G||!N.host) return; const list=PL(G).map(P=>P.cid&&!P.ai?{name:P.name,cid:P.cid}:{ai:true,level:P.level||'normal',name:P.cid?botNames(PL(G).map(x=>x.name),1)[0]:P.name}); HALL.closeBox(); gameClose(); N.started=true; N.aq=[]; hallRoom(); NG().start(list); }
  function replace(){ const G=NG().state(); if(!G) return; PL(G).forEach(P=>{ if(P.cid&&!P.ai&&!N.peers[P.cid]){ P.ai=true; P.away=true; P.level=P.level||'normal'; } }); HALL.closeBox(); NG().resume(); pushFull(); }
- async function leave(silent){ if(N.host&&!silent&&N.started&&Object.keys(N.peers).length>1){ handover(); silent=true; } if(N.host&&!silent) send('close',{}); clearRm(); if(elT){ clearTimeout(elT); elT=null; } const rb=$q('#netReact'); if(rb) rb.remove(); const was=N.on; N.on=false; N.host=false; N.guest=false; N.started=false; N.seat=null; N.code=null; N.q=[]; N.aq=[]; N.ui=null; setSess(null);
+ async function leave(silent){ if(N.host&&!silent&&N.started&&Object.keys(N.peers).length>1){ handover(); silent=true; } if(N.host&&!silent) send('close',{}); clearRm(); if(elT){ clearTimeout(elT); elT=null; } const rb=$q('#netReact'); if(rb) rb.remove(); const rp=$q('#netRpick'); if(rp) rp.remove(); const was=N.on; N.on=false; N.host=false; N.guest=false; N.started=false; N.seat=null; N.code=null; N.q=[]; N.aq=[]; N.ui=null; setSess(null);
    if(ch&&client){ try{ await client.removeChannel(ch); }catch(e){} } ch=null; HALL.set({r:null}); badge(); HALL.closeBox(); if(was) NG().leave(); }
  function netMenu(){ if(N.host) box(`<h2>Partie en ligne</h2><p>Tu es l’hôte de la table ${N.code}.</p><div class="acts" style="justify-content:flex-start"><button class="btn pri" data-net="again">Relancer avec les mêmes joueurs</button><button class="btn" data-net="lobby">Revenir au salon (joueurs, règles)</button><button class="btn" data-net="quitlocal">Fermer la table et jouer en local</button></div><div class="acts"><button class="btn" data-hl="close">Annuler</button></div>`);
    else box(`<h2>Partie en ligne</h2><p>Seul l’hôte peut relancer une partie. Tu peux lui demander une revanche.</p><div class="acts"><button class="btn" data-hl="close">Continuer</button><button class="btn" data-net="rematch">🔁 Demander une revanche</button><button class="btn pri" data-net="quitlocal">Quitter la table et jouer en local</button></div>`);
