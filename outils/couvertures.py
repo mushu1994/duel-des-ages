@@ -1,4 +1,4 @@
-"""Couvertures des boîtes de jeux : 51 illustrations à fond perdu (240×180), même trait pour toutes.
+"""Couvertures des boîtes de jeux : 52 illustrations à fond perdu (240×180), même trait pour toutes.
 Formes pleines, couleurs franches, ombres portées nettes, aucun émoji ni police système."""
 import math
 INK = '#1a1740'
@@ -511,6 +511,20 @@ def _bombes():
     o += E(122, 136, 40, 9, SH) + C(118, 100, 40, INK) + C(104, 86, 9, 'rgba(255,255,255,.3)') + R(108, 50, 22, 16, 4, '#3b3876') + L('M119 50Q122 32 142 34', '#f6e7b4', 5)
     return o + star(148, 34, 16, '#ff7a45', 8, .5) + star(148, 34, 8, '#ffc93c', 8, .5)
 W['bombes'] = _bombes
+def _chars():
+    o = bg('#e0bb84') + ''.join(R(0, y, 240, 2, 0, '#c99f66') for y in (44, 90, 136)) + ''.join(R(x, y, 2, 46, 0, '#c99f66') for x, y in [(70, 0), (170, 44), (40, 90), (130, 136), (200, 90)])
+    def block(x, y, w, h, top='#f6e6c2', side='#c7a268'):
+        return R(x + 5, y + 6, w, h, 4, SH) + R(x, y, w, h, 4, side) + R(x, y, w, h - 8, 4, top)
+    def tank(x, y, rot, col, tur):
+        t = R(-30, -28, 60, 15, 5, INK) + R(-30, 13, 60, 15, 5, INK) + R(-25, -20, 50, 40, 8, col) + R(-25, -20, 50, 14, 8, 'rgba(255,255,255,.22)')
+        t += G(R(0, -6, 46, 12, 3, col, f' stroke="{INK}" stroke-width="3"') + C(0, 0, 15, col, f' stroke="{INK}" stroke-width="3"') + C(-4, -4, 5, 'rgba(255,255,255,.4)'), f'rotate({tur})')
+        return E(x + 4, y + 8, 36, 30, SH) + G(t, at(x, y, rot))
+    o += block(96, 0, 40, 48) + block(96, 132, 40, 48) + block(196, 60, 44, 40, '#c1905f', '#8a5e38')
+    o += L('M92 104L150 70L176 30', '#fff', 4, ' stroke-dasharray="2 10" opacity=".8"')
+    o += tank(52, 124, -30, '#4f8ef7', 0) + tank(196, 150, 200, '#e5383b', 20)
+    o += G(R(-9, -5, 18, 10, 5, '#fff', f' stroke="{INK}" stroke-width="3"'), at(178, 28, -58))
+    return o + star(150, 70, 13, '#ffc93c', 8, .5) + star(150, 70, 6, '#fff', 8, .5)
+W['chars'] = _chars
 def _dessine():
     o = bg('#12a594', burst('#17b3a1'))
     o += R(27, 21, 168, 138, 12, SH) + R(24, 16, 168, 138, 12, '#fff')

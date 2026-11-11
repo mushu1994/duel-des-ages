@@ -14,7 +14,7 @@ ALL = ['serpents', 'souriciere', 'piaf', 'quatre-en-ligne', 'echecs', 'dames', '
        'tetes-de-boeuf', 'duel-des-ages', 'duel-des-joyaux', 'grand-proprietaire', 'nouvelle-terre', 'rails-d-europe',
        'remparts', 'conquete', 'joyaux-renaissance', 'sept-merveilles', 'derniere-carte', 'quitte-ou-sept', 'approche-finale',
        'awale', 'morpion-geant', 'backgammon', 'yams', 'memory', 'belote', 'mille-bornes', 'demineur', '2048', 'mot-du-jour', 'mots-meles',
-       'pong', 'casse-briques', 'blocs', 'bombes', 'dessine', 'bataille-corse']
+       'pong', 'casse-briques', 'blocs', 'bombes', 'dessine', 'bataille-corse', 'chars']
 GAMES = ARGS[0].split(',') if ARGS else ALL
 WHO = [('EssaiHote', 'essaihote0secret0fixe0pour0tests'), ('EssaiInvite', 'essaiinvite0secret0fixe0tests0'), ('EssaiTiers', 'essaitiers0secret0fixe0tests00')]
 SIG = "(()=>{ const G=NETGAME.state(); if(!G) return null; try{ return JSON.stringify(G).length+':'+JSON.stringify(G).slice(-400); }catch(e){ return 'x'; } })()"
@@ -23,7 +23,7 @@ async def browser_ctx(b, i):
     ctx = await b.new_context(viewport={'width': 420, 'height': 860})
     name, secret = WHO[i]
     await ctx.add_init_script(f"try{{ localStorage.setItem('prof-secret',JSON.stringify('{secret}')); localStorage.setItem('net-open','false'); "
-                              f"['serpents','souriciere','piaf','pong','casse-briques','blocs','bombes','dessine'].forEach(s=>localStorage.setItem('tuto-'+s,'1')); }}catch(e){{}}")
+                              f"['serpents','souriciere','piaf','pong','casse-briques','blocs','bombes','dessine','chars'].forEach(s=>localStorage.setItem('tuto-'+s,'1')); }}catch(e){{}}")
     pg = await ctx.new_page(); errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)[:160]))
     return ctx, pg, errs
