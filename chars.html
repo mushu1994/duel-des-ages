@@ -98,6 +98,7 @@ body{overflow-x:hidden}
 .pad .pw.on path{fill:#ffffff88}.pad .pw.on .pa{fill:#fff}
 .pad .pc{fill:#0005;stroke:#fff5}
 #cv{cursor:crosshair}
+.avmap h4{grid-column:1/-1;margin:8px 0 0;font:800 15px var(--title);color:#2a2418}.avmap h4 small{font-weight:700;color:#b98a00;margin-left:6px}.avmap h4:first-child{margin-top:0}
 .step{display:inline-flex;align-items:center;gap:0;border:1px solid #c9b98f;border-radius:9px;overflow:hidden}
 .step button{border:0;background:#f6efdc;color:#2a2418;font-weight:900;font-size:18px;width:40px;height:36px;font-family:inherit;cursor:pointer}
 .step b{min-width:46px;text-align:center;font-size:17px;color:#2a2418}
@@ -367,6 +368,8 @@ const TY={
  r:{n:'Mitrailleur',col:'#e5484d',d:'Te fonce dessus et tire en rafale.',sp:1.8,ss:3.6,b:1,mx:4,cd:.5,tr:2.4,err:.08,mv:'c'},
  t:{n:'Tireur d’élite',col:'#4c8c3f',d:'Immobile. Obus rapides à deux ricochets : il t’atteint derrière un mur.',sp:0,ss:6.4,b:2,mx:2,cd:1.6,tr:2.2,err:.05},
  f:{n:'Fantôme',col:'#eef1f5',d:'Invisible : repère ses traces de chenilles et l’éclair de ses tirs.',sp:1.6,ss:3.6,b:1,mx:2,cd:1.2,tr:2.2,err:.06,mv:'c',ghost:1},
+ v:{n:'Éclaireur',col:'#f08a24',d:'Très rapide et collant, mais un seul obus à la fois.',sp:3,ss:4.3,b:1,mx:1,cd:1.5,tr:2.6,err:.08,mv:'c'},
+ a:{n:'Artilleur',col:'#7b4fa3',d:'Immobile. Obus lents à trois ricochets, tirés par salves.',sp:0,ss:3.6,b:3,mx:3,cd:.9,tr:2,err:.05},
  n:{n:'Char noir',col:'#2b2d42',d:'Le plus rapide. Esquive, tire vite et pose des mines.',sp:2.6,ss:6.4,b:1,mx:3,cd:.75,tr:3.2,err:.03,mv:'c',mn:1,dodge:1}
 };
 const BOT={facile:{sp:1.7,ss:3.6,b:1,mx:1,cd:1.8,tr:1.6,err:.12,mv:'w'},normal:{sp:2.2,ss:4.3,b:1,mx:3,cd:.95,tr:2.6,err:.06,mv:'c'},difficile:{sp:2.5,ss:4.3,b:1,mx:4,cd:.6,tr:3.2,err:.03,mv:'c',dodge:1,mn:1}};
@@ -374,6 +377,10 @@ const prof=(Q,S)=>Q.k==='P'?(BOT[(S.players[Q.pi]||{}).level]||BOT.normal):TY[Q.
 /* ---------- les 20 missions : [type, x, y, largeur, hauteur] ; 1 mur, 2 liège (une mine le détruit), 3 trou (les obus passent) ---------- */
 const W=1, K=2, H=3, F=0;
 const pil=(xs,ys,w,h)=>xs.flatMap(x=>ys.map(y=>[W,x,y,w,h]));
+/* même motif recopié dans les quatre quarts de l'arène */
+const Q4=r=>{ const a=r.concat(r.map(([v,x,y,w,h])=>[v,CW-x-w,y,w,h])); return a.concat(a.map(([v,x,y,w,h])=>[v,x,CH-y-h,w,h])); };
+const WORLD=['Le parquet','Le tapis vert','L’atelier'];
+const world=S=>S&&S.mode==='coop'&&S.lvl?Math.min(2,Math.floor((S.lvl-1)/20)):0;
 const LV=[
  {n:'Premier tir',r:[[W,11,5,2,5]],e:[['s',19,7]],h:'Vise avec la tourelle et tire. Les obus rebondissent une fois sur les murs.'},
  {n:'Deux sentinelles',r:[[W,7,3,1,4],[W,16,8,1,4],[K,11,6,2,3]],e:[['s',20,2],['s',20,12]]},
@@ -395,6 +402,46 @@ const LV=[
  {n:'La forteresse',r:[[W,15,3,1,9],[K,15,6,1,3],[W,15,3,6,1],[W,15,11,6,1],[W,7,5,2,1],[W,7,9,2,1],[H,10,7,3,1]],e:[['t',19,7],['r',12,2],['r',12,12],['m',18,5]]},
  {n:'Le dernier rempart',r:[[W,6,2,1,4],[W,6,9,1,4],[K,6,6,1,3],[W,11,5,2,1],[W,11,9,2,1],[H,11,6,2,3],[W,17,2,1,4],[W,17,9,1,4],[K,17,6,1,3]],e:[['r',14,2],['r',14,12],['c',20,4],['c',20,10],['t',21,7],['m',9,12]]},
  {n:'Le char noir',r:[[W,6,4,2,2],[W,6,9,2,2],[W,16,4,2,2],[W,16,9,2,2],[K,11,2,2,2],[K,11,11,2,2],[H,11,7,2,1]],e:[['n',20,7],['f',19,2],['r',19,12],['t',22,1]]}
+ ,{n:'Nouveau départ',r:Q4([[W,6,3,3,1]]).concat([[K,11,6,2,3]]),e:[['v',19,7],['p',19,3],['s',20,11]],h:'L’éclaireur orange fonce sur toi : ne le laisse pas approcher.'},
+ {n:'L’artilleur',r:[[W,14,5,1,5],[W,8,2,1,4],[W,8,9,1,4]],e:[['a',20,7],['p',17,2],['p',17,12]],h:'Ses obus rebondissent trois fois : ne reste pas dans un couloir.'},
+ {n:'Les éclaireurs',r:Q4([[W,5,5,2,1]]).concat([[H,10,6,4,3]]),e:[['v',20,3],['v',20,11],['s',21,7]]},
+ {n:'Le damier',r:pil([6,10,14,18],[2,6,10],1,1).concat(pil([8,12,16],[4,8,12],1,1)),e:[['p',20,3],['c',20,11],['m',21,7],['s',13,1]]},
+ {n:'Le pont',r:[[H,11,1,2,5],[H,11,9,2,5],[W,7,4,1,2],[W,7,9,1,2],[W,16,4,1,2],[W,16,9,1,2]],e:[['c',19,7],['r',20,3],['s',20,11],['p',15,12]]},
+ {n:'Les caisses de liège',r:pil([6,9,12,15,18],[2,5,8,11],2,2).map(b=>[K,b[1],b[2],2,2]),e:[['m',20,4],['m',20,10],['p',21,7],['c',17,7]]},
+ {n:'Le goulot',r:[[W,12,1,1,5],[W,12,9,1,5],[W,7,6,1,3],[W,17,6,1,3]],e:[['r',20,7],['t',21,2],['p',15,3],['p',15,11]]},
+ {n:'Ombre et vitesse',r:Q4([[W,6,3,1,3],[W,9,6,2,1]]),e:[['f',20,7],['v',19,2],['v',19,12],['s',14,7]]},
+ {n:'La croix',r:[[W,11,3,2,9],[W,6,7,12,1]],e:[['c',20,3],['c',20,11],['a',21,7],['m',14,2]]},
+ {n:'Le retour du char noir',r:Q4([[W,6,4,2,2]]).concat([[K,11,2,2,2],[K,11,11,2,2],[H,11,6,2,3]]),e:[['n',20,7],['t',21,2],['r',19,12],['v',15,3]]},
+ {n:'Les tranchées',r:[[H,5,4,14,1],[H,5,10,14,1],[F,11,4,2,1],[F,11,10,2,1],[W,8,7,2,1],[W,14,7,2,1]],e:[['t',20,2],['t',20,12],['c',19,7],['p',12,2],['p',12,12]]},
+ {n:'Zigzag',r:[[W,6,1,1,9],[W,10,5,1,9],[W,14,1,1,9],[W,18,5,1,9]],e:[['p',8,3],['c',12,11],['r',16,3],['a',21,11],['m',20,3]]},
+ {n:'L’enclos',r:[[K,8,4,8,1],[K,8,10,8,1],[K,8,5,1,5],[K,15,5,1,5]],e:[['m',10,6],['m',13,8],['t',21,7],['v',20,2],['v',20,12]]},
+ {n:'Les piliers',r:pil([5,8,11,14,17,20],[3,7,11],1,1),e:[['r',19,5],['r',19,9],['f',21,7],['c',16,2],['s',22,13]]},
+ {n:'Le donjon',r:[[H,9,4,6,1],[H,9,10,6,1],[H,9,5,1,5],[H,14,5,1,5],[F,9,7,1,1]],e:[['a',11,6],['t',12,8],['c',20,3],['c',20,11],['m',19,7]]},
+ {n:'Les quatre coins',p:[[11,7],[12,7],[11,6],[12,8]],r:Q4([[W,5,4,3,1],[W,8,4,1,3]]),e:[['t',2,2],['s',21,2],['s',2,12],['t',21,12],['v',21,7],['c',2,7]]},
+ {n:'Tir croisé',r:[[W,11,1,2,3],[W,11,11,2,3],[W,7,6,1,3],[W,16,6,1,3],[K,11,6,2,3]],e:[['a',20,2],['a',20,12],['r',19,7],['p',14,4],['m',14,10]]},
+ {n:'Le dédale hanté',r:[[W,5,3,1,5],[W,5,10,4,1],[W,9,1,1,5],[W,9,8,1,3],[W,13,4,1,7],[W,13,4,5,1],[W,17,7,1,5],[K,13,11,1,2],[W,20,3,1,3]],e:[['f',11,3],['f',15,8],['f',21,11],['p',19,5],['c',11,12]]},
+ {n:'Le mur de liège',r:[[K,10,1,2,13],[W,15,6,1,3]],e:[['r',17,4],['r',17,10],['t',21,7],['m',14,7],['c',20,2]],h:'Ouvre une brèche à la mine… ou attends qu’ils viennent à toi.'},
+ {n:'L’escadron noir',r:Q4([[W,6,3,2,2],[K,10,5,1,2]]).concat([[H,11,7,2,1]]),e:[['n',20,4],['n',20,10],['a',22,7],['v',16,2],['v',16,12]]},
+ {n:'L’atelier',r:Q4([[W,7,2,1,3],[H,9,6,2,1]]).concat([[W,11,6,2,3]]),e:[['p',19,3],['p',19,11],['v',20,7],['a',14,1]]},
+ {n:'Les deux ponts',r:[[H,10,1,4,13],[F,10,3,4,1],[F,10,11,4,1],[W,16,6,1,3],[W,7,6,1,3]],e:[['t',20,7],['c',18,3],['c',18,11],['r',21,2],['m',21,12]]},
+ {n:'La spirale',r:[[W,5,3,14,1],[W,18,3,1,9],[W,8,11,11,1],[W,8,6,1,5],[W,8,6,7,1]],e:[['a',11,8],['r',16,8],['v',21,2],['v',21,12],['m',20,7],['p',12,13]]},
+ {n:'Le barrage',r:[[W,9,1,1,13],[K,9,3,1,1],[K,9,11,1,1],[F,9,7,1,1],[W,14,4,1,7],[H,17,1,1,4],[H,17,10,1,4]],e:[['r',12,3],['r',12,11],['t',21,7],['a',20,2],['c',20,12],['m',16,7]]},
+ {n:'Champ libre',r:pil([6,17],[3,11],1,1).concat([[W,11,7,2,1]]),e:[['c',20,3],['c',20,11],['v',21,7],['v',15,2],['r',15,12]]},
+ {n:'Mines fantômes',r:Q4([[K,6,3,2,2],[K,9,6,1,1]]).concat([[W,11,5,2,5]]),e:[['f',20,3],['f',20,11],['m',18,7],['m',14,2],['t',22,7]]},
+ {n:'Le sablier',r:[[H,8,1,8,3],[H,8,11,8,3],[W,11,6,2,1],[W,11,8,2,1],[W,5,5,1,5],[W,18,5,1,5]],e:[['a',21,3],['a',21,11],['r',15,7],['c',20,7],['v',12,7]]},
+ {n:'Le couloir de tir',r:[[W,4,4,16,1],[W,4,10,16,1],[K,11,4,2,1],[K,11,10,2,1]],e:[['t',21,7],['r',18,7],['a',12,2],['a',12,12],['c',21,2],['c',21,12]]},
+ {n:'Le labyrinthe de liège',r:pil([5,8,11,14,17,20],[2,5,8,11],1,2).map(b=>[K,b[1],b[2],1,2]).concat([[K,6,7,2,1],[K,12,7,2,1],[K,18,7,2,1]]),e:[['m',21,2],['m',21,12],['m',15,7],['f',19,4],['r',22,7]]},
+ {n:'Le général',r:Q4([[W,6,3,2,1],[W,9,5,1,2]]).concat([[K,19,6,1,3],[W,19,4,1,2],[W,19,9,1,2],[H,11,7,2,1]]),e:[['n',21,7],['t',21,2],['t',21,12],['r',17,5],['r',17,9],['m',14,7]]},
+ {n:'Reflets',r:[0,1,2,3,4].flatMap(k=>[[W,5+k*3,2+k*2,1,2],[W,5+k*3,11-k*2,1,2]]),e:[['t',21,7],['a',20,1],['a',20,13],['v',15,7],['c',18,7]]},
+ {n:'L’île',r:[[H,7,3,10,1],[H,7,11,10,1],[H,7,4,1,7],[H,16,4,1,7],[W,11,7,2,1]],e:[['t',10,6],['a',13,8],['r',20,3],['c',20,11],['v',21,7],['m',19,7]],h:'Les trous encerclent l’île : seuls les obus y passent.',isle:1},
+ {n:'La meute',r:Q4([[W,6,4,1,2],[W,9,2,2,1]]).concat([[K,11,6,2,3]]),e:[['v',20,2],['v',20,12],['v',21,7],['v',15,7],['f',18,4]]},
+ {n:'La muraille',r:[[W,13,1,1,13],[K,13,4,1,1],[K,13,10,1,1],[W,7,3,1,3],[W,7,9,1,3],[H,9,6,2,3]],e:[['r',17,3],['r',17,11],['a',21,7],['t',20,2],['m',16,7],['c',20,12]]},
+ {n:'La poudrière',r:pil([5,7,9,11,13,15,17,19],[3,6,8,11],1,1).map(b=>[K,b[1],b[2],1,1]),e:[['m',20,2],['m',20,12],['m',21,7],['r',16,7],['v',12,1]]},
+ {n:'Les tireurs embusqués',r:[[W,6,2,1,3],[W,6,6,1,3],[W,6,10,1,3],[W,12,4,1,7],[H,15,1,2,4],[H,15,10,2,4]],e:[['t',21,2],['t',21,12],['t',22,7],['a',18,5],['a',18,9],['v',9,7]]},
+ {n:'Brouillard de guerre',r:Q4([[W,5,4,2,1],[W,9,2,1,3],[K,8,6,1,1]]).concat([[W,11,6,2,3]]),e:[['f',20,3],['f',20,11],['f',15,2],['f',15,12],['t',21,7]]},
+ {n:'L’encerclement',p:[[11,7],[12,7],[11,8],[12,6]],r:[[W,8,4,2,1],[W,14,4,2,1],[W,8,10,2,1],[W,14,10,2,1],[K,8,6,1,3],[K,15,6,1,3]],e:[['r',2,2],['r',21,12],['c',21,2],['c',2,12],['a',2,7],['a',21,7]]},
+ {n:'L’avant-garde',r:Q4([[W,6,3,1,3],[W,9,6,1,1]]).concat([[W,18,6,1,3],[H,11,6,2,3]]),e:[['n',20,3],['n',20,11],['r',16,7],['t',22,7],['m',13,2],['m',13,12]]},
+ {n:'Le dernier char',r:Q4([[W,6,4,2,2]]).concat([[K,11,2,2,2],[K,11,11,2,2],[H,11,7,2,1],[W,16,6,1,3]]),e:[['n',20,7],['n',18,2],['n',18,12],['f',14,7],['t',22,2],['a',22,12]]}
 ];
 const ARENAS=[2,6,8,12,19,3];
 const SPAWN=[[2,7],[2,4],[2,10],[4,7]], CORNER=[[2,2],[21,12],[21,2],[2,12]];
@@ -436,7 +483,7 @@ function newGame(list,o){ o=Object.assign({},OPT,o||{}); list=list.slice(0,4);
 function setup(){ const S=G, melee=S.mode==='melee'; S.mid++; S.round++;
   const def=melee?LV[ARENAS[(S.round-1)%ARENAS.length]]:LV[S.lvl-1], b=build(def,S.players.length,melee);
   S.w=b.w; S.br=[]; S.sh=[]; S.mn=[]; S.t=0; S.last=null; S.ne=b.en.length;
-  S.tk=b.pl.map(([x,y],i)=>mkTank('P',x,y,melee?i:0,i)); b.en.forEach(([k,x,y])=>{ const q=mkTank(k,x,y,9,-1); q.cd=1.4+Math.random(); S.tk.push(q); });
+  S.tk=b.pl.map(([x,y],i)=>mkTank('P',x,y,melee?i:0,i)); b.en.forEach(([k,x,y])=>{ const q=mkTank(k,x,y,9,-1); q.cd=2.4+Math.random()*1.2; S.tk.push(q); });
   S.phase='count'; L.t0=performance.now()+3200; L.ai={}; L.rep={}; L.dirty=true; emit({t:'round'}); }
 function fire(i,ang){ const S=G, Q=S.tk[i]; if(!Q||!Q.al||S.phase!=='play'||Q.cd>0) return false; const p=Q.pi>=0&&!ARC.bot(S.players[Q.pi])?TY.P:prof(Q,S);
   if(S.sh.filter(s=>s.o===i).length>=p.mx) return false;
@@ -563,9 +610,9 @@ function guestMove(S,dt,now){ const me=ARC.seat(); if(me==null||!S.tk[me]) retur
 const FX=[], TR=[], VIS={}; let trKey=null; const lastTr={};
 const hsh=(x,y)=>ARC.hash(x*73+y*131,7);
 const BG={key:null,c:document.createElement('canvas')};
-function background(S,g){ const key=GC.key+':'+cv.cv.width; if(BG.key===key) return BG.c; BG.key=key; const c=BG.c; c.width=cv.cv.width; c.height=cv.cv.height; const x=c.getContext('2d'); x.setTransform(cv.k,0,0,cv.k,0,0);
-  /* parquet */
-  for(let r=0;r*24<VH;r++){ let px=-(hsh(r,1)*90); while(px<VW){ const w=110+hsh(r,px|0)*90; x.fillStyle=['#e3c08b','#dcb67e','#e8c894','#d8b077'][Math.floor(hsh(px|0,r)*4)]; x.fillRect(px,r*24,w,24); x.fillStyle='#b98f5a55'; x.fillRect(px+w-1,r*24,1,24); px+=w; } x.fillStyle='#b98f5a44'; x.fillRect(0,r*24+23,VW,1); }
+function background(S,g){ const key=GC.key+':'+world(S)+':'+cv.cv.width; if(BG.key===key) return BG.c; BG.key=key; const c=BG.c; c.width=cv.cv.width; c.height=cv.cv.height; const x=c.getContext('2d'); x.setTransform(cv.k,0,0,cv.k,0,0);
+  /* sol : parquet, tapis vert ou dalles d'atelier selon le monde */ const th=[['#e3c08b','#dcb67e','#e8c894','#d8b077','#b98f5a'],['#62a070','#5c986a','#68a877','#589365','#3f7a4d'],['#aeb8c3','#a5b0bc','#b6c0ca','#a0abb7','#7d8894']][world(S)];
+  for(let r=0;r*24<VH;r++){ let px=-(hsh(r,1)*90); while(px<VW){ const w=110+hsh(r,px|0)*90; x.fillStyle=th[Math.floor(hsh(px|0,r)*4)]; x.fillRect(px,r*24,w,24); x.fillStyle=th[4]+'55'; x.fillRect(px+w-1,r*24,1,24); px+=w; } x.fillStyle=th[4]+'44'; x.fillRect(0,r*24+23,VW,1); }
   /* trous */
   for(let i=0;i<g.length;i++) if(g[i]===3){ const X=i%CW*T, Y=(i/CW|0)*T; x.fillStyle='#3a2716'; x.fillRect(X,Y,T,T); x.fillStyle='#22160b'; x.fillRect(X,Y,T,5); x.fillRect(X,Y,4,T); }
   /* ombres puis blocs */
@@ -619,7 +666,7 @@ function draw(now){ const ctx=cv.begin(), S=state(), t=now/1000, me=ARC.seat();
   /* textes */
   if(S.phase==='count'){ const ms=host()?L.t0-now:Math.max(0,(S.cd||0)-(now-snap.t)), n=Math.max(1,Math.ceil(ms/1000)), def=S.mode==='coop'?LV[S.lvl-1]:null;
     ctx.fillStyle='#000a'; ARC.rrect(ctx,VW/2-250,VH/2-112,500,def&&def.h?218:186,18); ctx.fill();
-    ARC.text(ctx,def?`Mission ${S.lvl}`:`Manche ${S.round}`,VW/2,VH/2-82,20,'#ffe2a0'); ARC.text(ctx,def?def.n:'Chacun pour soi',VW/2,VH/2-50,30,'#fff');
+    ARC.text(ctx,def?`${WORLD[world(S)]} · Mission ${S.lvl}`:`Manche ${S.round}`,VW/2,VH/2-82,20,'#ffe2a0'); ARC.text(ctx,def?def.n:'Chacun pour soi',VW/2,VH/2-50,30,'#fff');
     if(def) ARC.text(ctx,`${S.ne} char${S.ne>1?'s':''} à détruire`,VW/2,VH/2-18,15,'#fff'); ARC.text(ctx,String(n),VW/2,VH/2+32,66,'#ffe066','#0008');
     if(def&&def.h){ ctx.save(); ctx.font='700 14px "Nunito Sans",system-ui,sans-serif'; ctx.textAlign='center'; ctx.fillStyle='#fff'; ctx.fillText(def.h,VW/2,VH/2+88,470); ctx.restore(); }
     if(n!==draw.n){ draw.n=n; sfx('beep'); } } else draw.n=null;
@@ -648,18 +695,18 @@ function avSet(lvl,st){ const a=avGet(); a.st[lvl]=Math.max(a.st[lvl]||0,st); a.
 function startAdv(lv){ const me=(typeof HALL!=='undefined'&&HALL.pseudo)||'Toi'; newGame([{name:me}],{mode:'coop',solo:true,from:lv}); }
 function advMap(){ const a=avGet(), tot=Object.values(a.st).reduce((x,y)=>x+y,0);
   openModal(`<h2>🗺️ Missions</h2><p>Détruis tous les chars ennemis de chaque mission. Plus tu vas vite, plus tu gagnes d’étoiles. Ta progression est enregistrée dans ton profil. <b>${a.n}/${LV.length}</b> missions · <b>${tot}</b> ★</p>
-   <div class="avmap">${LV.map((d,i)=>{ const k=i+1, open=k<=a.n+1, st=a.st[k]||0; return `<button class="avl${open?'':' lock'}${k===a.n+1?' cur':''}" data-lv="${k}"${open?'':' disabled'}><b>${open?k:'🔒'}</b><small>${esc(d.n)}</small><span>${'★'.repeat(st)}${'☆'.repeat(3-st)}</span></button>`; }).join('')}</div>
+   <div class="avmap">${LV.map((d,i)=>{ const k=i+1, hd=i%20===0?`<h4>${WORLD[i/20]} <small>${Object.keys(a.st).filter(q=>q>i&&q<=i+20).reduce((x,q)=>x+a.st[q],0)}/60 ★</small></h4>`:'', open=k<=a.n+1, st=a.st[k]||0; return hd+`<button class="avl${open?'':' lock'}${k===a.n+1?' cur':''}" data-lv="${k}"${open?'':' disabled'}><b>${open?k:'🔒'}</b><small>${esc(d.n)}</small><span>${'★'.repeat(st)}${'☆'.repeat(3-st)}</span></button>`; }).join('')}</div>
    <div class="acts"><button class="btn" data-c="back">Retour</button></div>`,e=>{ const b=e.target.closest('[data-lv]'); if(b&&!b.disabled){ closeModal(); startAdv(+b.dataset.lv); return; } if(e.target.closest('[data-c="back"]')){ closeModal(); menu(); } }); }
 function advEnd(S){ const lv=S.lvl, ok=S.last&&S.last.ok, go=e=>{ const b=e.target.closest('[data-a]'); if(!b) return; closeModal(); const a=b.dataset.a; if(a==='next') startAdv(lv+1); else if(a==='again') startAdv(lv); else advMap(); };
   if(window.PROF) PROF.result('chars',{win:!!ok,score:avGet().n});
   if(ok){ const st=S.last.st, par=15+14*S.ne; confetti();
-    openModal(`<div class="tuto"><div class="tuto-ic">${'⭐'.repeat(st)}${'☆'.repeat(3-st)}</div><h2>Mission ${lv} réussie !</h2><p>${esc(LV[lv-1].n)} : ${S.ne} char${S.ne>1?'s':''} détruit${S.ne>1?'s':''} en ${fmt(S.t)}.${st<3?`<br>Moins de ${fmt(st===1?par*2:par)} pour ${st+1} étoiles.`:''}${lv===LV.length?'<br><b>Tu as terminé les 20 missions !</b>':''}</p></div>
+    openModal(`<div class="tuto"><div class="tuto-ic">${'⭐'.repeat(st)}${'☆'.repeat(3-st)}</div><h2>Mission ${lv} réussie !</h2><p>${esc(LV[lv-1].n)} : ${S.ne} char${S.ne>1?'s':''} détruit${S.ne>1?'s':''} en ${fmt(S.t)}.${st<3?`<br>Moins de ${fmt(st===1?par*2:par)} pour ${st+1} étoiles.`:''}${lv===LV.length?`<br><b>Tu as terminé les ${LV.length} missions !</b>`:''}</p></div>
       <div class="acts"><button class="btn" data-a="map">Carte</button><button class="btn" data-a="again">Rejouer</button>${lv<LV.length?'<button class="btn pri" data-a="next">Mission suivante</button>':''}</div>`,go); }
   else openModal(`<div class="tuto"><div class="tuto-ic">💥</div><h2>Mission échouée</h2><p>${esc(LV[lv-1].n)} : il restait ${S.tk.filter(q=>q.al&&q.pi<0).length} char(s) ennemi(s). Encore un essai ?</p></div><div class="acts"><button class="btn" data-a="map">Carte</button><button class="btn pri" data-a="again">Réessayer</button></div>`,go); }
 function showEnd(){ const S=state(); if(!S||S.phase!=='over') return; const me=ARC.seat(); if(S.solo) return advEnd(S);
   if(S.mode==='coop'){ const r=S.players.map((p,i)=>({name:p.name,col:p.col,me:i===me,k:S.sc[i]})).sort((a,b)=>b.k-a.k); if(S.won){ sfx('win'); confetti(); }
     if(me!=null&&window.PROF) PROF.result('chars',{win:!!S.won,score:S.lvl-(S.won?0:1)});
-    ARC.endBox(S.won?'Les 20 missions sont réussies !':`L’équipe s’arrête à la mission ${S.lvl}`,r.map(x=>Object.assign(x,{score:`${x.k} char${x.k>1?'s':''}`})),()=>menu(),null); return; }
+    ARC.endBox(S.won?`Les ${LV.length} missions sont réussies !`:`L’équipe s’arrête à la mission ${S.lvl}`,r.map(x=>Object.assign(x,{score:`${x.k} char${x.k>1?'s':''}`})),()=>menu(),null); return; }
   const r=S.players.map((p,i)=>({name:p.name,col:p.col,me:i===me,w:S.wins[i]})).sort((a,b)=>b.w-a.w), won=r[0].me;
   if(won){ sfx('win'); confetti([r[0].col,'#fff','#ffe066']); } if(me!=null&&window.PROF) PROF.result('chars',{win:won,score:S.wins[me]});
   ARC.endBox(`${r[0].name} gagne !`,r.map(x=>Object.assign(x,{score:`${x.w} manche${x.w>1?'s':''}`})),()=>startLocal(),null); }
@@ -675,19 +722,19 @@ const sg=(k,vals)=>`<div class="seg">${vals.map(([v,l])=>`<button class="${Strin
 function optsHTML(local){ const mx=Math.min(LV.length,avGet().n+1); OPT.from=clamp(OPT.from,1,mx);
   if(local) return `<h4>Mêlée contre l’ordinateur</h4>${sg('bots',[[1,'1 adversaire'],[2,'2'],[3,'3']])}${sg('level',[['facile','facile'],['normal','normal'],['difficile','difficile']])}<h4>Manches gagnantes</h4>${sg('wins',[[1,'1'],[2,'2'],[3,'3'],[5,'5']])}${ARC.padHTML()}`;
   return `<h4>Mode</h4>${sg('mode',[['coop','Missions en équipe'],['melee','Mêlée, chacun pour soi']])}
-   ${OPT.mode==='coop'?`<h4>Mission de départ</h4><div class="step"><button data-o="from:${Math.max(1,OPT.from-1)}">−</button><b>${OPT.from}</b><button data-o="from:${Math.min(mx,OPT.from+1)}">+</button></div><p class="optnote">${esc(LV[OPT.from-1].n)}. L’équipe a 3 essais ; un essai de plus toutes les 5 missions. L’hôte peut partir de n’importe quelle mission qu’il a déjà débloquée.</p><h4>Tirs entre alliés</h4>${sg('ff',[[0,'sans danger'],[1,'dangereux']])}`
+   ${OPT.mode==='coop'?`<h4>Mission de départ</h4><div class="step"><button data-o="from:${Math.max(1,OPT.from-5)}">−5</button><button data-o="from:${Math.max(1,OPT.from-1)}">−</button><b>${OPT.from}</b><button data-o="from:${Math.min(mx,OPT.from+1)}">+</button><button data-o="from:${Math.min(mx,OPT.from+5)}">+5</button></div><p class="optnote">${esc(LV[OPT.from-1].n)}. L’équipe a 3 essais ; un essai de plus toutes les 5 missions. L’hôte peut partir de n’importe quelle mission qu’il a déjà débloquée.</p><h4>Tirs entre alliés</h4>${sg('ff',[[0,'sans danger'],[1,'dangereux']])}`
      :`<h4>Manches gagnantes</h4>${sg('wins',[[1,'1'],[2,'2'],[3,'3'],[5,'5']])}`}`; }
 function setOpt(b){ const [k,v]=b.dataset.o.split(':'); OPT[k]=/^\d+$/.test(v)?+v:v; store('chars-opt',OPT); }
-function menu(){ const draw=()=>{ const a=avGet(); openModal(`<h2>Bataille de chars</h2><p>Pilote ton char dans l’arène : vise avec la tourelle, fais rebondir tes obus sur les murs et pose des mines. Vingt missions à réussir seul ou en équipe jusqu’à quatre, ou une mêlée chacun pour soi.</p>
-   <div class="bigchoice"><button class="pri" data-m="online"><b>Jouer en ligne</b><small>De 1 à 4, chacun sur son écran : les missions en équipe ou la mêlée.</small></button><button data-m="adv"><b>🗺️ Missions</b><small>20 missions seul, étoiles enregistrées dans ton profil. ${a.n}/${LV.length} réussies.</small></button><button data-m="solo"><b>Mêlée contre l’ordinateur</b><small>Chacun pour soi contre 1 à 3 chars, sans connexion.</small></button></div>
+function menu(){ const draw=()=>{ const a=avGet(); openModal(`<h2>Bataille de chars</h2><p>Pilote ton char dans l’arène : vise avec la tourelle, fais rebondir tes obus sur les murs et pose des mines. Soixante missions à réussir seul ou en équipe jusqu’à quatre, ou une mêlée chacun pour soi.</p>
+   <div class="bigchoice"><button class="pri" data-m="online"><b>Jouer en ligne</b><small>De 1 à 4, chacun sur son écran : les missions en équipe ou la mêlée.</small></button><button data-m="adv"><b>🗺️ Missions</b><small>${LV.length} missions seul dans trois décors, étoiles enregistrées dans ton profil. ${a.n}/${LV.length} réussies.</small></button><button data-m="solo"><b>Mêlée contre l’ordinateur</b><small>Chacun pour soi contre 1 à 3 chars, sans connexion.</small></button></div>
    <div class="opts">${optsHTML(true)}<h4>Réglages</h4>${window.PROF?PROF.optsHTML():''}</div><div class="acts">${G?'<button class="btn" data-c="close">Fermer</button>':''}</div>`,e=>{ if(ARC.padClick(e)){ if(ARC.coarse&&load('arc-pad')==='cachee'){ store('arc-pad','gauche'); ARC.applyPad(); toast('La manette sert à avancer : elle reste affichée.'); } draw(); return; } const o=e.target.closest('[data-o]'); if(o){ setOpt(o); draw(); return; }
    const m=e.target.closest('[data-m]'); if(!m) return; closeModal(); if(m.dataset.m==='online') NET.startUI(); else if(m.dataset.m==='adv') advMap(); else startLocal(); }); if(window.PROF) PROF.bindOpts($('#mbox')); };
   ARC.tuto('chars',[['🕹️','Avance','Déplace ton char avec la manette ronde, ou avec les flèches du clavier (ZQSD aussi).'],['🎯','Vise et tire','Touche l’arène à l’endroit visé : la tourelle se tourne et tire. À la souris, le viseur suit le pointeur et le clic tire. Tes obus rebondissent une fois : attention au retour !'],['💣','Les mines','Le gros bouton (ou espace) pose une mine. Elle saute au bout de quelques secondes, quand un ennemi approche ou si un obus la touche. Elle seule détruit les blocs de liège.']],draw); }
 function help(){ helpTabs('Bataille de chars',[['Règles','<ul><li>Un seul obus suffit à détruire un char, le tien compris.</li><li>Tes obus <b>rebondissent une fois</b> sur les murs, puis s’écrasent. Cinq obus au plus en même temps.</li><li>Deux obus qui se croisent se détruisent : tu peux abattre un tir ennemi.</li><li><b>Mines</b> : deux au plus. Une mine saute après 9 secondes, à l’approche d’un char adverse, ou si un obus la touche. Elle détruit tout autour d’elle, les blocs de <b>liège</b> compris.</li><li>Les <b>trous</b> arrêtent les chars, mais les obus passent au-dessus.</li></ul>'],
-  ['Missions','<ul><li>Vingt missions : détruis tous les chars ennemis.</li><li><b>Seul</b> : chaque mission réussie débloque la suivante. De 1 à 3 étoiles selon ta rapidité.</li><li><b>En équipe</b> (jusqu’à 4) : un char détruit attend la fin de la mission ; elle est réussie s’il reste un allié debout. Si toute l’équipe est détruite, elle perd un essai et recommence la mission. Trois essais, un de plus toutes les cinq missions. À trois ou quatre joueurs, les ennemis sont plus nombreux.</li><li>Les missions réussies en équipe comptent aussi pour ta progression.</li><li><b>Mêlée</b> : chacun pour soi, le dernier char debout gagne la manche.</li></ul>'],
-  ['Chars ennemis','<ul>'+'spcmrtfn'.split('').map(k=>`<li><i style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${TY[k].col};border:1px solid #0006;margin-right:6px"></i><b>${TY[k].n}</b> : ${TY[k].d}</li>`).join('')+'</ul>'],
+  ['Missions','<ul><li>Soixante missions dans trois décors (le parquet, le tapis vert, l’atelier) : détruis tous les chars ennemis.</li><li><b>Seul</b> : chaque mission réussie débloque la suivante. De 1 à 3 étoiles selon ta rapidité.</li><li><b>En équipe</b> (jusqu’à 4) : un char détruit attend la fin de la mission ; elle est réussie s’il reste un allié debout. Si toute l’équipe est détruite, elle perd un essai et recommence la mission. Trois essais, un de plus toutes les cinq missions. À trois ou quatre joueurs, les ennemis sont plus nombreux.</li><li>Les missions réussies en équipe comptent aussi pour ta progression.</li><li><b>Mêlée</b> : chacun pour soi, le dernier char debout gagne la manche.</li></ul>'],
+  ['Chars ennemis','<ul>'+'spcmrtfvan'.split('').map(k=>`<li><i style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${TY[k].col};border:1px solid #0006;margin-right:6px"></i><b>${TY[k].n}</b> : ${TY[k].d}</li>`).join('')+'</ul>'],
   ['Commandes','<ul><li><b>Tactile</b> : la manette ronde pour avancer ; touche l’arène pour viser et tirer à cet endroit ; le bouton 💣 pose une mine.</li><li><b>Clavier et souris</b> : flèches (ou ZQSD / WASD) pour avancer, la souris pour viser, clic gauche pour tirer, clic droit ou barre d’espace pour une mine.</li></ul>']]); }
-window.GAME={help,menu,state:()=>G,adv:lv=>startAdv(lv),levels:LV,build};
+window.GAME={help,menu,state:()=>G,adv:lv=>startAdv(lv),levels:LV,build,bots:BOT};
 document.addEventListener('sdj-opts',e=>{ if(e.detail.k==='cb'&&G) ARC.recolor(G.players); });
 const baseWire=ARC.wirer({stat:['players'],skip:['w'],drop:{tk:['cd','at']}}); let wn=0, wk=null; const WC={key:null,w:null};
 window.NETGAME={id:'chars',title:'Bataille de chars',min:1,max:4,
