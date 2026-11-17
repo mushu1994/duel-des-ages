@@ -1,4 +1,4 @@
-"""Couvertures des boîtes de jeux : 52 illustrations à fond perdu (240×180), même trait pour toutes.
+"""Couvertures des boîtes de jeux : 55 illustrations à fond perdu (240×180), même trait pour toutes.
 Formes pleines, couleurs franches, ombres portées nettes, aucun émoji ni police système."""
 import math
 INK = '#1a1740'
@@ -533,6 +533,58 @@ def _dessine():
     sh = pen.replace('#ff7a45', SH).replace('#f6d9b0', SH).replace('#ff8fa3', SH).replace(INK, SH)
     return o + G(sh, at(188, 100, 28)) + G(pen, at(184, 94, 28))
 W['dessine'] = _dessine
+
+def _blokus():
+    s = 24
+    o = bg('#1d2a44') + ''.join(R(i * s + 1.5, j * s + 1.5, s - 3, s - 3, 3, '#2a3a5c') for i in range(10) for j in range(8))
+    def pc(cells, ox, oy, col):
+        r = ''.join(R(ox + a * s + 4, oy + b * s + 5, s - 2, s - 2, 4, SH) for a, b in cells)
+        return r + ''.join(R(ox + a * s + 1, oy + b * s + 1, s - 2, s - 2, 4, col) + R(ox + a * s + 4, oy + b * s + 3, s - 8, 6, 3, 'rgba(255,255,255,.3)') for a, b in cells)
+    o += pc([(0, 0), (1, 0), (2, 0), (2, 1), (3, 1)], 0, 0, '#4f8ef7')
+    o += pc([(0, 0), (0, 1), (1, 1), (0, 2)], 96, 48, '#4f8ef7')
+    o += pc([(0, 0), (1, 0), (1, 1), (1, 2), (2, 2)], 144, 0, '#ffc93c')
+    o += pc([(0, 0), (1, 0), (0, 1), (1, 1)], 192, 72, '#ffc93c')
+    o += pc([(1, 0), (0, 1), (1, 1), (2, 1), (1, 2)], 0, 96, '#e5383b')
+    o += pc([(0, 0), (1, 0), (2, 0), (3, 0)], 72, 168, '#e5383b')
+    o += pc([(0, 0), (0, 1), (1, 1), (2, 1), (2, 2)], 144, 120, '#3fb56b')
+    o += pc([(0, 0), (1, 0), (2, 0)], 0, 48, '#e5383b')
+    return o + star(144, 120, 9, '#fff', 4, .3, -90)
+W['blokus'] = _blokus
+
+def _quoridor():
+    s, g = 34, 8
+    o = bg('#5a3418')
+    for i in range(-1, 7):
+        for j in range(-1, 5):
+            x, y = 6 + i * (s + g), 4 + j * (s + g)
+            o += R(x, y, s, s, 5, '#c98d52' if (i + j) % 2 else '#c2864b') + R(x + 3, y + 3, s - 6, 6, 3, 'rgba(255,255,255,.18)')
+    def wall(x, y, w, h):
+        return R(x + 3, y + 4, w, h, 3, SH) + R(x, y, w, h, 3, '#f4e2bd') + R(x, y, w, 3, 2, '#fff7e0')
+    o += wall(48, 0 + 4 + 2 * (s + g) - g + 1, 2 * s + g, g - 2)
+    o += wall(6 + 4 * (s + g) - g + 1, 46, g - 2, 2 * s + g)
+    o += wall(132, 4 + 3 * (s + g) - g + 1, 2 * s + g, g - 2)
+    o += L('M65 124V105H23V36', '#fff', 4, ' stroke-dasharray="3 9" opacity=".75"')
+    for x, y, c in [(149, 64, '#e8433a'), (65, 148, '#2f7fd6')]:
+        o += E(x + 4, y + 22, 18, 7, SH) + P(f'M{x - 16} {y + 20}Q{x - 15} {y - 2} {x} {y - 4}Q{x + 15} {y - 2} {x + 16} {y + 20}Z', c) + C(x, y - 10, 11, c) + C(x - 4, y - 14, 3.5, 'rgba(255,255,255,.45)')
+    return o
+W['quoridor'] = _quoridor
+
+def _limaces():
+    o = bg('#6fc0f5') + C(196, 34, 20, '#fff3b0') + E(60, 40, 30, 10, 'rgba(255,255,255,.7)') + E(84, 34, 20, 9, 'rgba(255,255,255,.7)')
+    o += P('M0 112Q40 92 80 104T160 98T240 110V180H0Z', '#8acb92')
+    o += P('M0 136Q30 112 70 120Q96 126 104 140A26 26 0 0 0 150 138Q170 112 240 126V180H0Z', '#8c5c36')
+    o += L('M0 136Q30 112 70 120Q96 126 104 140M150 138Q170 112 240 126', '#4ab442', 7)
+    o += P('M0 166Q60 158 120 166T240 164V180H0Z', '#2f86d6') + L('M0 166Q60 158 120 166T240 164', '#6cb8f2', 3)
+    def slug(x, y, col, f):
+        b = P('M-22 0Q-19 -11 -5 -14Q6 -27 14 -22Q21 -17 18 -5Q16 0 10 0Z', col, f' stroke="{INK}" stroke-width="2.5"') + E(2, -16, 9, 3.5, 'rgba(255,255,255,.3)', ' transform="rotate(-28 2 -16)"')
+        for a, c in [((8, -21), (6, -37)), ((14, -20), (18, -34))]:
+            b += L(f'M{a[0]} {a[1]}Q{a[0] - 1} {a[1] - 8} {c[0]} {c[1]}', col, 4) + C(c[0], c[1], 5, '#fff', f' stroke="{INK}" stroke-width="1.5"') + C(c[0] + 1.6, c[1], 2.2, INK)
+        return E(x + 2, y + 2, 22, 4, SH) + G(b, f'translate({n(x)} {n(y)}) scale({f} 1)')
+    o += slug(48, 122, '#e8433a', 1) + slug(214, 130, '#4f8ef7', -1)
+    o += L('M66 92Q110 22 160 82', '#fff', 3, ' stroke-dasharray="2 8" opacity=".85"')
+    o += G(R(-9, -4, 16, 8, 4, '#3d4a5c') + P('M7 -4L13 0L7 4Z', '#e8433a'), at(164, 88, 50))
+    return o + star(172, 112, 16, '#ff7a45', 10, .5) + star(172, 112, 8, '#ffc93c', 10, .5)
+W['limaces'] = _limaces
 
 def cover(key):
     return '<svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice">' + W[key]() + '</svg>'

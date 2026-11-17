@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 BASE = next((a for a in sys.argv[1:] if a.startswith('http')), 'http://localhost:8765/')
 ARGS = [a for a in sys.argv[1:] if not a.startswith('http')]
 GAMES = ARGS[0].split(';') if ARGS else ['demineur', '2048', 'mot-du-jour', 'mots-meles', 'awale', 'morpion-geant', 'backgammon', 'yams', 'memory', 'belote', 'mille-bornes',
-         'mille-bornes|2|{"allonge":true}', 'mille-bornes|4|{"equipes":"auto","match":"5000"}', 'mille-bornes|6|{"equipes":"auto"}', 'bataille-corse|3']
+         'mille-bornes|2|{"allonge":true}', 'mille-bornes|4|{"equipes":"auto","match":"5000"}', 'mille-bornes|6|{"equipes":"auto"}', 'bataille-corse|3', 'blokus|4', 'blokus|2|{"duo":true}', 'quoridor', 'quoridor|4', 'limaces', 'limaces|4']
 if ARGS and ';' not in ARGS[0] and '|' not in ARGS[0]: GAMES = ARGS[0].split(',')
 N = {'bataille-corse': 3, 'belote': 4, 'mille-bornes': 3, 'yams': 3, 'memory': 3, 'demineur': 3, '2048': 2, 'mot-du-jour': 3, 'mots-meles': 3}
 async def run(b, spec):
