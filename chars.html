@@ -374,6 +374,16 @@ const TY={
 };
 const BOT={facile:{sp:1.7,ss:3.6,b:1,mx:1,cd:1.8,tr:1.6,err:.12,mv:'w'},normal:{sp:2.2,ss:4.3,b:1,mx:3,cd:.95,tr:2.6,err:.06,mv:'c'},difficile:{sp:2.5,ss:4.3,b:1,mx:4,cd:.6,tr:3.2,err:.03,mv:'c',dodge:1,mn:1}};
 const prof=(Q,S)=>Q.k==='P'?(BOT[(S.players[Q.pi]||{}).level]||BOT.normal):TY[Q.k];
+/* ---------- caisses : améliorations temporaires des armes ---------- */
+const UPG={rap:{n:'Tir rapide',i:'⚡',c:'#ffd23f',d:18,x:'Cadence doublée, 3 obus de plus.'},tri:{n:'Triple tir',i:'🔱',c:'#ff7ad9',d:15,x:'Trois obus en éventail à chaque tir.'},
+  rico:{n:'Super rebonds',i:'🔁',c:'#7cd0ff',d:18,x:'Tes obus rebondissent deux fois de plus.'},vit:{n:'Obus fusées',i:'🚀',c:'#ff9a2e',d:18,x:'Obus très rapides.'},
+  bou:{n:'Bouclier',i:'🛡️',c:'#7be07b',d:25,x:'Encaisse un obus ou une explosion.'},mine:{n:'Mines en plus',i:'💣',c:'#e9b949',d:25,x:'Trois mines de plus en même temps.'}};
+const UK=Object.keys(UPG);
+const base=(Q,S)=>Q.pi>=0&&!ARC.bot(S.players[Q.pi])?TY.P:prof(Q,S);
+function eff(Q,S){ const b=base(Q,S); if(!Q.up) return b; const p=Object.assign({},b);
+  if(Q.up.k==='rap'){ p.cd=b.cd*.45; p.mx=b.mx+3; } else if(Q.up.k==='tri') p.tri=1; else if(Q.up.k==='rico') p.b=b.b+2; else if(Q.up.k==='vit') p.ss=Math.max(b.ss,7); else if(Q.up.k==='mine') p.mn=(b.mn||0)+3; return p; }
+const SD_T=60, SD_EVERY=5, SD_MAX=5;
+const ringOf=i=>{ const x=i%CW, y=i/CW|0; return Math.min(x,y,CW-1-x,CH-1-y); };
 /* ---------- les 20 missions : [type, x, y, largeur, hauteur] ; 1 mur, 2 liège (une mine le détruit), 3 trou (les obus passent) ---------- */
 const W=1, K=2, H=3, F=0;
 const pil=(xs,ys,w,h)=>xs.flatMap(x=>ys.map(y=>[W,x,y,w,h]));
@@ -455,7 +465,7 @@ function build(def,np,melee){ const g=new Uint8Array(CW*CH);
   return {w:Array.from(g).join(''),pl,en}; }
 /* ---------- terrain ---------- */
 let GC={key:null,g:null};
-function grid(S){ const key=S.gid+':'+S.mid+':'+S.br.length; if(GC.key!==key){ const g=new Uint8Array(CW*CH); for(let i=0;i<g.length;i++) g[i]=S.w.charCodeAt(i)-48; S.br.forEach(i=>g[i]=0); GC={key,g}; } return GC.g; }
+function grid(S){ const key=S.gid+':'+S.mid+':'+S.br.length+':'+(S.ring||0); if(GC.key!==key){ const g=new Uint8Array(CW*CH); for(let i=0;i<g.length;i++) g[i]=S.w.charCodeAt(i)-48; S.br.forEach(i=>g[i]=0); if(S.ring) for(let i=0;i<g.length;i++) if(ringOf(i)<=S.ring) g[i]=1; GC={key,g}; } return GC.g; }
 const solidTank=(g,tx,ty)=>tx<0||ty<0||tx>=CW||ty>=CH||g[ty*CW+tx]!==0;
 const solidShell=(g,tx,ty)=>{ if(tx<0||ty<0||tx>=CW||ty>=CH) return true; const v=g[ty*CW+tx]; return v===1||v===2; };
 function canAt(g,x,y){ const x0=Math.floor(x-R), x1=Math.floor(x+R), y0=Math.floor(y-R), y1=Math.floor(y+R);
@@ -482,17 +492,17 @@ function newGame(list,o){ o=Object.assign({},OPT,o||{}); list=list.slice(0,4);
   L={dirty:true,t0:0,res:0,ai:{},rep:{}}; if(window.PROF) PROF.played('chars',ARC.net()); setup(); snap.reset(G); }
 function setup(){ const S=G, melee=S.mode==='melee'; S.mid++; S.round++;
   const def=melee?LV[ARENAS[(S.round-1)%ARENAS.length]]:LV[S.lvl-1], b=build(def,S.players.length,melee);
-  S.w=b.w; S.br=[]; S.sh=[]; S.mn=[]; S.t=0; S.last=null; S.ne=b.en.length;
+  S.w=b.w; S.br=[]; S.sh=[]; S.mn=[]; S.t=0; S.last=null; S.ne=b.en.length; S.cr=[]; S.crn=6+Math.random()*5; S.ring=null; S.sdn=0;
   S.tk=b.pl.map(([x,y],i)=>mkTank('P',x,y,melee?i:0,i)); b.en.forEach(([k,x,y])=>{ const q=mkTank(k,x,y,9,-1); q.cd=2.4+Math.random()*1.2; S.tk.push(q); });
   S.phase='count'; L.t0=performance.now()+3200; L.ai={}; L.rep={}; L.dirty=true; emit({t:'round'}); }
-function fire(i,ang){ const S=G, Q=S.tk[i]; if(!Q||!Q.al||S.phase!=='play'||Q.cd>0) return false; const p=Q.pi>=0&&!ARC.bot(S.players[Q.pi])?TY.P:prof(Q,S);
+function fire(i,ang){ const S=G, Q=S.tk[i]; if(!Q||!Q.al||S.phase!=='play'||Q.cd>0) return false; const p=eff(Q,S);
   if(S.sh.filter(s=>s.o===i).length>=p.mx) return false;
   const g=grid(S), c=Math.cos(ang), s=Math.sin(ang), x=Q.x+c*.62, y=Q.y+s*.62; Q.ta=ang; if(solidShell(g,Math.floor(x),Math.floor(y))){ Q.cd=.2; return false; }
-  S.sh.push({id:S.nid++,x,y,vx:c*p.ss,vy:s*p.ss,b:p.b,o:i,f:p.ss>5?1:0,g:0}); Q.cd=p.cd; emit({t:'shot',k:i,f:p.ss>5?1:0}); L.dirty=true; return true; }
-function layMine(i){ const S=G, Q=S.tk[i]; if(!Q||!Q.al||S.phase!=='play') return false; const p=Q.pi>=0&&!ARC.bot(S.players[Q.pi])?TY.P:prof(Q,S);
+  S.sh.push({id:S.nid++,x,y,vx:c*p.ss,vy:s*p.ss,b:p.b,o:i,f:p.ss>5?1:0,g:0}); if(p.tri) for(const d of [-.2,.2]){ const c2=Math.cos(ang+d), s2=Math.sin(ang+d), x2=Q.x+c2*.62, y2=Q.y+s2*.62; if(!solidShell(g,Math.floor(x2),Math.floor(y2))) S.sh.push({id:S.nid++,x:x2,y:y2,vx:c2*p.ss,vy:s2*p.ss,b:p.b,o:i,f:p.ss>5?1:0,g:0}); } Q.cd=p.cd; emit({t:'shot',k:i,f:p.ss>5?1:0}); L.dirty=true; return true; }
+function layMine(i){ const S=G, Q=S.tk[i]; if(!Q||!Q.al||S.phase!=='play') return false; const p=eff(Q,S);
   if(S.mn.filter(m=>m.o===i).length>=(p.mn||0)||S.mn.some(m=>hyp(m.x-Q.x,m.y-Q.y)<.6)) return false;
   S.mn.push({id:S.nid++,x:Q.x,y:Q.y,o:i,t:MINE_T}); emit({t:'mine',k:i}); L.dirty=true; return true; }
-function kill(i,by){ const S=G, Q=S.tk[i]; if(!Q||!Q.al) return; Q.al=0; Q.mv=0; emit({t:'kill',k:i,x:Q.x,y:Q.y}); const O=S.tk[by]; if(O&&O.pi>=0&&by!==i&&O.tm!==Q.tm) S.sc[O.pi]++; L.dirty=true; }
+function kill(i,by,force){ const S=G, Q=S.tk[i]; if(!Q||!Q.al) return; if(!force&&Q.up&&Q.up.k==='bou'){ Q.up=null; emit({t:'shield',k:i,x:Q.x,y:Q.y}); L.dirty=true; return; } Q.al=0; Q.mv=0; emit({t:'kill',k:i,x:Q.x,y:Q.y}); const O=S.tk[by]; if(O&&O.pi>=0&&by!==i&&O.tm!==Q.tm) S.sc[O.pi]++; L.dirty=true; }
 function explode(m0){ const S=G, q=[m0];
   while(q.length){ const m=q.shift(), k=S.mn.indexOf(m); if(k<0) continue; S.mn.splice(k,1); const g=grid(S);
     for(let i=0;i<g.length;i++) if(g[i]===2&&hyp(i%CW+.5-m.x,(i/CW|0)+.5-m.y)<=BLAST+.2) S.br.push(i);
@@ -524,6 +534,17 @@ function hostStep(now,dt){ const S=G, me=ARC.seat();
   /* mines : minuterie, ou un char adverse qui s'approche */
   for(const m of S.mn.slice()){ if(!S.mn.includes(m)) continue; m.t-=dt; if(m.t<=0){ explode(m); continue; }
     if(m.t<MINE_T-.9&&m.t>.5){ const O=S.tk[m.o]; if(S.tk.some(Q=>Q.al&&(!O||Q.tm!==O.tm)&&hyp(Q.x-m.x,Q.y-m.y)<1.05)) m.t=.5; } }
+  /* caisses : elles tombent à des moments différents ; un char de joueur les ramasse en roulant dessus */
+  S.tk.forEach((Q,i)=>{ if(Q.up){ Q.up.t-=dt; if(Q.up.t<=0){ Q.up=null; emit({t:'upend',k:i}); L.dirty=true; } } });
+  if(S.t>=S.crn){ S.crn=S.t+8+Math.random()*9; if(S.cr.length<2){ const free=[]; for(let i=0;i<g0.length;i++){ if(g0[i]!==0) continue; const x=i%CW+.5, y=(i/CW|0)+.5; if(S.ring!=null&&ringOf(i)<=S.ring+2) continue; if(S.tk.some(Q=>Q.al&&hyp(Q.x-x,Q.y-y)<2.5)||S.mn.some(m=>hyp(m.x-x,m.y-y)<1.5)||S.cr.some(c=>hyp(c.x-x,c.y-y)<3)) continue; free.push([x,y]); }
+      if(free.length){ const [x,y]=free[Math.floor(Math.random()*free.length)]; S.cr.push({id:S.nid++,x,y,k:UK[Math.floor(Math.random()*UK.length)]}); emit({t:'crate',x,y}); L.dirty=true; } } }
+  for(const c of S.cr.slice()){ const i=S.tk.findIndex(Q=>Q.al&&Q.pi>=0&&hyp(Q.x-c.x,Q.y-c.y)<.75); if(i>=0){ S.cr=S.cr.filter(x=>x!==c); S.tk[i].up={k:c.k,t:UPG[c.k].d}; emit({t:'pick',k:i,u:c.k}); L.dirty=true; } }
+  /* mort subite (mêlée) : au bout d'une minute, l'arène se referme anneau par anneau */
+  if(S.mode==='melee'){ if(S.ring==null&&S.t>=SD_T){ S.ring=0; S.sdn=S.t+3; emit({t:'sd'}); L.dirty=true; }
+    else if(S.ring!=null&&S.ring<SD_MAX&&S.t>=S.sdn){ S.ring++; S.sdn=S.t+SD_EVERY; const g2=grid(S);
+      S.tk.forEach((Q,i)=>{ if(Q.al&&(g2[Math.floor(Q.y)*CW+Math.floor(Q.x)]!==0||!canAt(g2,Q.x,Q.y))) kill(i,i,true); });
+      S.mn=S.mn.filter(m=>g2[Math.floor(m.y)*CW+Math.floor(m.x)]===0); S.cr=S.cr.filter(c=>g2[Math.floor(c.y)*CW+Math.floor(c.x)]===0); S.sh=S.sh.filter(s=>!solidShell(g2,Math.floor(s.x),Math.floor(s.y)));
+      emit({t:'ring'}); L.dirty=true; } }
   /* fin de mission ou de manche */
   if(S.mode==='coop'){ const en=S.tk.some(Q=>Q.al&&Q.pi<0), pl=S.tk.some(Q=>Q.al&&Q.pi>=0);
     if(!en){ const st=stars(S); S.last={ok:1,st,msg:`Mission ${S.lvl} réussie !`,sub:`${'★'.repeat(st)}${'☆'.repeat(3-st)}  en ${fmt(S.t)}`}; S.phase='res'; L.res=now+2800; emit({t:'mwin',lvl:S.lvl,st}); L.dirty=true; }
@@ -547,8 +568,8 @@ const tile=Q=>Math.floor(Q.y)*CW+Math.floor(Q.x);
 const nearMine=(S,c)=>S.mn.some(m=>hyp(c%CW+.5-m.x,(c/CW|0)+.5-m.y)<2.4);
 function bfs(S,g,from,ok){ const prev=new Int16Array(CW*CH).fill(-2), dist=new Int16Array(CW*CH), q=[from]; prev[from]=-1; let qi=0;
   while(qi<q.length){ const c=q[qi++]; if(ok(c,dist[c])){ const path=[]; let k=c; while(k!==-1){ path.unshift(k); k=prev[k]; } return path; }
-    for(const n of [c-CW,c+1,c+CW,c-1]){ if(n<0||n>=g.length||prev[n]!==-2||g[n]!==0||nearMine(S,n)) continue; prev[n]=c; dist[n]=dist[c]+1; q.push(n); } } return null; }
-function aiStep(i,now,dt){ const S=G, g=grid(S), Q=S.tk[i], p=prof(Q,S);
+    for(const n of [c-CW,c+1,c+CW,c-1]){ if(n<0||n>=g.length||prev[n]!==-2||g[n]!==0||nearMine(S,n)||S.ring!=null&&ringOf(n)<=S.ring+1) continue; prev[n]=c; dist[n]=dist[c]+1; q.push(n); } } return null; }
+function aiStep(i,now,dt){ const S=G, g=grid(S), Q=S.tk[i], p=eff(Q,S);
   const A=L.ai[i]||(L.ai[i]={next:now+Math.random()*400,aim:Q.ta,fire:0,tgt:-1,d:99,path:null,pn:0,gn:0,dg:0,dx:0,dy:0,mn:now+3000+Math.random()*4000,sw:Math.random()<.5?1:-1,k:0,see:0});
   if(now>=A.next){ A.next=now+160+Math.random()*120; A.k++;
     let best=-1, bd=1e9; S.tk.forEach((E,k)=>{ if(E.al&&E.tm!==Q.tm){ const d=hyp(E.x-Q.x,E.y-Q.y); if(d<bd){ bd=d; best=k; } } }); A.tgt=best; A.d=bd; A.fire=0;
@@ -563,7 +584,10 @@ function aiStep(i,now,dt){ const S=G, g=grid(S), Q=S.tk[i], p=prof(Q,S);
   if(now<A.dg){ mx=A.dx; my=A.dy; }
   else if(mine){ mx=Q.x-mine.x; my=Q.y-mine.y; if(hyp(mx,my)<.05){ mx=Math.cos(Q.a); my=Math.sin(Q.a); } A.path=null; }
   else { if(now>=A.pn||!A.path){ A.pn=now+500+Math.random()*300; const me=tile(Q), E=A.tgt>=0?S.tk[A.tgt]:null; let path;
-      if(p.mv==='c'&&E&&(A.d>5||!los(g,Q.x,Q.y,E.x,E.y))){ const et=tile(E); path=bfs(S,g,me,c=>c===et); }
+      const crate=Q.pi>=0&&S.cr&&S.cr.length?S.cr.slice().sort((a,b)=>hyp(a.x-Q.x,a.y-Q.y)-hyp(b.x-Q.x,b.y-Q.y))[0]:null;
+      if(S.ring!=null&&ringOf(me)<=S.ring+1){ path=bfs(Object.assign({},S,{ring:null}),g,me,c=>ringOf(c)>S.ring+2); }
+      else if(crate&&hyp(crate.x-Q.x,crate.y-Q.y)<7&&!Q.up){ const ct=Math.floor(crate.y)*CW+Math.floor(crate.x); path=bfs(S,g,me,c=>c===ct); }
+      else if(p.mv==='c'&&E&&(A.d>5||!los(g,Q.x,Q.y,E.x,E.y))){ const et=tile(E); path=bfs(S,g,me,c=>c===et); }
       else if(p.mv==='c'&&E&&A.d<3) path=bfs(S,g,me,(c,d)=>d>=2&&hyp(c%CW+.5-E.x,(c/CW|0)+.5-E.y)>4.5);
       else if(now>=A.gn||!A.path||A.path.length<1){ A.gn=now+1500+Math.random()*2000; const r=3+Math.floor(Math.random()*4); path=bfs(S,g,me,(c,d)=>d>=r&&Math.random()<.3)||bfs(S,g,me,(c,d)=>d>=2); }
       if(path!==undefined) A.path=path&&path.length>1?path.slice(1):path; }
@@ -647,11 +671,24 @@ function draw(now){ const ctx=cv.begin(), S=state(), t=now/1000, me=ARC.seat();
   /* mines */
   S.mn.forEach(m=>{ const tl=m.t-(S.phase==='play'?el:0), x=m.x*T, y=m.y*T, hot=tl<2&&Math.sin(t*(tl<.6?40:14))>0; ctx.fillStyle='#3a240f55'; ctx.beginPath(); ctx.ellipse(x+2,y+3,T*.3,T*.26,0,0,7); ctx.fill();
     ctx.fillStyle=hot?'#ff3b30':'#f2c230'; ctx.beginPath(); ctx.arc(x,y,T*.27,0,7); ctx.fill(); ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.stroke(); ctx.fillStyle='#2a2a2a'; ctx.beginPath(); ctx.arc(x,y,T*.1,0,7); ctx.fill(); });
+  /* mort subite : l'anneau suivant clignote avant de se refermer */
+  if(S.ring!=null&&S.ring<SD_MAX&&S.phase==='play'&&S.sdn-S.t<2.2&&Math.sin(t*14)>-.2){ ctx.fillStyle='#ff3b3055'; for(let i=0;i<CW*CH;i++) if(ringOf(i)===S.ring+1&&g[i]!==1){ ctx.fillRect(i%CW*T,(i/CW|0)*T,T,T); } }
+  /* caisses */
+  (S.cr||[]).forEach(c=>{ const x=c.x*T, y=c.y*T, b=Math.sin(t*4+c.id)*2, U=UPG[c.k]; ctx.save(); ctx.translate(x,y+b);
+    ctx.fillStyle=U.c+'55'; ctx.beginPath(); ctx.arc(0,0,T*.55+Math.sin(t*6)*2,0,7); ctx.fill();
+    const h=T*.4; ctx.fillStyle='#3a240f55'; ctx.fillRect(-h+3,-h+4,2*h,2*h);
+    ctx.fillStyle='#c48a4a'; ctx.fillRect(-h,-h,2*h,2*h); ctx.fillStyle='#a8733c'; ctx.fillRect(-h,-h,2*h,4); ctx.fillRect(-h,h-4,2*h,4); ctx.fillRect(-h,-h,4,2*h); ctx.fillRect(h-4,-h,4,2*h); ctx.strokeStyle='#6a4420'; ctx.lineWidth=2; ctx.strokeRect(-h,-h,2*h,2*h);
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(0,0,h*.62,0,7); ctx.fill(); ctx.strokeStyle=U.c; ctx.lineWidth=2; ctx.stroke();
+    ctx.font='11px system-ui,"Apple Color Emoji","Segoe UI Emoji"'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(U.i,0,1); ctx.restore(); });
   /* chars */
   S.tk.forEach((Q,i)=>{ const p=pos[i];
     if(!Q.al){ ctx.save(); ctx.translate(Q.x*T,Q.y*T); ctx.strokeStyle='#2a1a0acc'; ctx.lineWidth=5; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(-9,-9); ctx.lineTo(9,9); ctx.moveTo(9,-9); ctx.lineTo(-9,9); ctx.stroke(); ctx.strokeStyle=colOf(S,Q); ctx.lineWidth=2.5; ctx.stroke(); ctx.restore(); return; }
     let a=1; if(TY[Q.k].ghost){ const v=VIS[i]?1-(now-VIS[i])/700:0; a=Math.max(.05,Math.min(1,v)); }
     drawTank(ctx,p.x,p.y,p.a,p.ta,colOf(S,Q),a,i===me,Q.mv,t,Q.pi<0);
+    if(Q.up){ const U=UPG[Q.up.k], blink=Q.up.t<3&&Math.sin(t*16)<0; if(!blink){ ctx.save(); ctx.translate(p.x*T,p.y*T);
+      if(Q.up.k==='bou'){ ctx.fillStyle='#7be07b2a'; ctx.strokeStyle='#7be07bcc'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(0,0,T*.66,0,7); ctx.fill(); ctx.stroke(); }
+      else { ctx.strokeStyle=U.c; ctx.lineWidth=2.5; ctx.setLineDash([6,5]); ctx.lineDashOffset=-t*20; ctx.beginPath(); ctx.arc(0,0,T*.62,0,7); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.font='13px system-ui,"Apple Color Emoji","Segoe UI Emoji"'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(U.i,T*.5,-T*.5); ctx.restore(); } }
     if(Q.pi>=0) ARC.text(ctx,S.players[Q.pi].name.slice(0,9),p.x*T,p.y*T-T*.78,11,'#fff','#000c'); });
   /* ligne de visée de mon char */
   if(me!=null&&S.tk[me]&&S.tk[me].al&&(S.phase==='play'||S.phase==='count')){ const p=pos[me], c=Math.cos(p.ta), s=Math.sin(p.ta), far=IN.pt&&!ARC.coarse?Math.max(1.2,hyp(IN.ax-p.x,IN.ay-p.y)):3.2;
@@ -678,15 +715,22 @@ function hud(){ const S=state(); window.ARC_PLAYING=!!(S&&S.phase==='play'); con
   if(!S){ ARC.status('Bataille de chars','Choisis un mode : en ligne, missions ou mêlée.','#c2571a'); $('#board').innerHTML=''; return; }
   const P=me!=null?S.players[me]:null, Q=me!=null?S.tk[me]:null, tm=fmt(S.t+(ARC.guest()&&S.phase==='play'?(performance.now()-snap.t)/1000:0));
   if(S.mode==='coop'){ const left=S.tk.filter(q=>q.al&&q.pi<0).length;
-    ARC.status(`Mission ${S.lvl}`,S.phase==='over'?'Partie terminée':S.phase==='count'?esc(LV[S.lvl-1].n):S.phase==='res'?'…':`${left} char${left>1?'s':''} à détruire`,P?P.col:'#c2571a',`${S.solo?'':'♥'.repeat(Math.max(0,S.lives))+' · '}⏱ ${tm}`);
+    ARC.status(`Mission ${S.lvl}`,S.phase==='over'?'Partie terminée':S.phase==='count'?esc(LV[S.lvl-1].n):S.phase==='res'?'…':`${left} char${left>1?'s':''} à détruire`+(Q&&Q.up?` · ${UPG[Q.up.k].i} ${Math.ceil(Q.up.t)} s`:''),P?P.col:'#c2571a',`${S.solo?'':'♥'.repeat(Math.max(0,S.lives))+' · '}⏱ ${tm}`);
     ARC.board($('#board'),S.players.map((p,i)=>({name:p.name,col:p.col,me:i===me,out:S.tk[i]&&!S.tk[i].al,score:`${S.sc[i]} 💥`}))); return; }
-  ARC.status(P?esc(P.name):'Spectateur',S.phase==='over'?'Partie terminée':S.phase==='count'?'Prêt ?':S.phase==='res'?'Fin de la manche':Q&&Q.al?'Sois le dernier char en état de rouler':'détruit',P?P.col:'#c2571a',`Manche ${S.round} · en ${S.target}`);
+  const sdl=S.phase==='play'?(S.ring!=null?'☠️ Mort subite !':`mort subite dans ${fmt(SD_T-S.t)}`):''; const up=Q&&Q.up?` · ${UPG[Q.up.k].i} ${Math.ceil(Q.up.t)} s`:'';
+  ARC.status(P?esc(P.name):'Spectateur',S.phase==='over'?'Partie terminée':S.phase==='count'?'Prêt ?':S.phase==='res'?'Fin de la manche':Q&&Q.al?'Sois le dernier char en état de rouler'+up:'détruit',P?P.col:'#c2571a',`${sdl?sdl+' · ':''}Manche ${S.round} · en ${S.target}`);
   ARC.board($('#board'),S.players.map((p,i)=>({name:p.name,col:p.col,me:i===me,out:S.tk[i]&&!S.tk[i].al&&S.phase==='play',score:'★'.repeat(S.wins[i])||'0'}))); }
 function onEvent(e){ const me=ARC.seat(), S=state(), now=performance.now(); if(!S) return;
   if(e.t==='go') sfx('go'); else if(e.t==='shot'){ sfx(e.f?'flap':'pop'); VIS[e.k]=now; } else if(e.t==='bounce') sfx('ping'); else if(e.t==='mine') sfx('fuse');
   else if(e.t==='puff') FX.push({x:e.x,y:e.y,r:.45,d:260,t:now});
   else if(e.t==='boom'){ FX.push({x:e.x,y:e.y,r:BLAST,d:520,t:now}); sfx('boom'); if(window.PROF) PROF.vibrate(60); }
   else if(e.t==='kill'){ FX.push({x:e.x,y:e.y,r:1,d:420,t:now}); sfx(e.k===me?'die':'hit'); if(e.k===me&&window.PROF) PROF.vibrate(250); }
+  else if(e.t==='crate') sfx('pop');
+  else if(e.t==='pick'){ sfx('ding'); FX.push({x:S.tk[e.k]?S.tk[e.k].x:0,y:S.tk[e.k]?S.tk[e.k].y:0,r:.8,d:300,t:now}); if(e.k===me){ const U=UPG[e.u]; toast(`${U.i} ${U.n} : ${U.x}`); } }
+  else if(e.t==='shield'){ sfx('ping'); FX.push({x:e.x,y:e.y,r:.9,d:350,t:now}); if(e.k===me) toast('🛡️ Ton bouclier t’a sauvé !'); }
+  else if(e.t==='upend'){ if(e.k===me) sfx('pop'); }
+  else if(e.t==='sd'){ sfx('lose'); banner('Mort subite !','L’arène se referme','#e5484d'); if(window.PROF) PROF.vibrate(120); }
+  else if(e.t==='ring'){ sfx('boom'); if(window.PROF) PROF.vibrate(40); }
   else if(e.t==='mwin'){ avSet(e.lvl,e.st); sfx('win'); } else if(e.t==='mlose') sfx('lose'); else if(e.t==='rend'){ if(e.w===me) sfx('win'); } else if(e.t==='over') setTimeout(showEnd,500); }
 /* ---------- progression des missions, gardée dans le profil ---------- */
 function avGet(){ const d=window.PROF&&PROF.data&&PROF.data().av; const x=(d&&d.chars)||load('chars-av')||{}; return {n:x.n||0,st:x.st||{}}; }
@@ -731,6 +775,7 @@ function menu(){ const draw=()=>{ const a=avGet(); openModal(`<h2>Bataille de ch
    const m=e.target.closest('[data-m]'); if(!m) return; closeModal(); if(m.dataset.m==='online') NET.startUI(); else if(m.dataset.m==='adv') advMap(); else startLocal(); }); if(window.PROF) PROF.bindOpts($('#mbox')); };
   ARC.tuto('chars',[['🕹️','Avance','Déplace ton char avec la manette ronde, ou avec les flèches du clavier (ZQSD aussi).'],['🎯','Vise et tire','Touche l’arène à l’endroit visé : la tourelle se tourne et tire. À la souris, le viseur suit le pointeur et le clic tire. Tes obus rebondissent une fois : attention au retour !'],['💣','Les mines','Le gros bouton (ou espace) pose une mine. Elle saute au bout de quelques secondes, quand un ennemi approche ou si un obus la touche. Elle seule détruit les blocs de liège.']],draw); }
 function help(){ helpTabs('Bataille de chars',[['Règles','<ul><li>Un seul obus suffit à détruire un char, le tien compris.</li><li>Tes obus <b>rebondissent une fois</b> sur les murs, puis s’écrasent. Cinq obus au plus en même temps.</li><li>Deux obus qui se croisent se détruisent : tu peux abattre un tir ennemi.</li><li><b>Mines</b> : deux au plus. Une mine saute après 9 secondes, à l’approche d’un char adverse, ou si un obus la touche. Elle détruit tout autour d’elle, les blocs de <b>liège</b> compris.</li><li>Les <b>trous</b> arrêtent les chars, mais les obus passent au-dessus.</li></ul>'],
+  ['Caisses et mort subite','<ul><li>Des <b>caisses</b> apparaissent dans l’arène à des moments au hasard. Roule dessus pour améliorer ton arme quelques secondes :</li>'+UK.map(k=>`<li>${UPG[k].i} <b>${UPG[k].n}</b> (${UPG[k].d} s) : ${UPG[k].x}</li>`).join('')+'<li>En <b>mêlée</b>, au bout d’une minute, c’est la <b>mort subite</b> : l’arène se referme d’un anneau toutes les 5 secondes. La bande qui va se fermer clignote en rouge : un char qui s’y trouve est détruit, bouclier ou pas.</li></ul>'],
   ['Missions','<ul><li>Soixante missions dans trois décors (le parquet, le tapis vert, l’atelier) : détruis tous les chars ennemis.</li><li><b>Seul</b> : chaque mission réussie débloque la suivante. De 1 à 3 étoiles selon ta rapidité.</li><li><b>En équipe</b> (jusqu’à 4) : un char détruit attend la fin de la mission ; elle est réussie s’il reste un allié debout. Si toute l’équipe est détruite, elle perd un essai et recommence la mission. Trois essais, un de plus toutes les cinq missions. À trois ou quatre joueurs, les ennemis sont plus nombreux.</li><li>Les missions réussies en équipe comptent aussi pour ta progression.</li><li><b>Mêlée</b> : chacun pour soi, le dernier char debout gagne la manche.</li></ul>'],
   ['Chars ennemis','<ul>'+'spcmrtfvan'.split('').map(k=>`<li><i style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${TY[k].col};border:1px solid #0006;margin-right:6px"></i><b>${TY[k].n}</b> : ${TY[k].d}</li>`).join('')+'</ul>'],
   ['Commandes','<ul><li><b>Tactile</b> : la manette ronde pour avancer ; touche l’arène pour viser et tirer à cet endroit ; le bouton 💣 pose une mine.</li><li><b>Clavier et souris</b> : flèches (ou ZQSD / WASD) pour avancer, la souris pour viser, clic gauche pour tirer, clic droit ou barre d’espace pour une mine.</li></ul>']]); }

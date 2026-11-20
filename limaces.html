@@ -256,6 +256,7 @@ const TK=(()=>{
    if(guest()){ NET.act('a',[v,a]); return true; } return doAct(v,a); };
  /* plusieurs joueurs sur le même appareil qui agissent en même temps (ex. taper à la bataille corse) */
  T.inputAs=(seat,a)=>{ if(!G||G.over||net()||!G.players[seat]||G.players[seat].ai) return false; return doAct(seat,a); };
+ T.force=(seat,a)=>{ if(!G||G.over||guest()) return false; return doAct(seat,a); };
  function doAct(seat,a){ if(!G||G.over||!D.actors(G).includes(seat)) return false; let ev; try{ ev=D.apply(G,seat,a); }catch(e){ console.error(e); return false; }
    if(ev===false) return false; G.v=(G.v||0)+1; after(ev||[]); return true; }
  function after(ev){ save(); render(ev); if(net()) NET.push(ev.length?ev:null); if(G.over) end(); else schedule(); }
@@ -361,7 +362,7 @@ const TK=(()=>{
 
 /* ===== Limaces à l'assaut (dans l'esprit de Worms) : artillerie au tour par tour sur un terrain destructible ===== */
 (function(){
-const WW=1800, WH=900, GR=520, DT=1/60, BR=8, FD=360, WALK=240, WSPD=62, ROPE=340;
+const WW=1800, WH=900, GR=520, DT=1/60, BR=8, FD=360, WALK=360, WSPD=62, ROPE=340;
 const THEMES={
  jardin:{n:'Jardin',sky:['#5fb6f2','#d6f0ff'],hill:['#9dd8a0','#7cc487'],far:'#b9e3c0',soil:[140,92,54],deep:[86,52,28],grass:[74,180,66],grass2:[134,226,96],stem:[238,228,206],cap:[212,62,50],spot:[255,250,240],rock:[150,140,128],water:['#3f9be0','#1f5fa8'],sun:'#fff6c0',deco:'fleur'},
  potager:{n:'Potager au couchant',sky:['#ff7650','#ffd9a0'],hill:['#e0946c','#c9705a'],far:'#f0b48a',soil:[124,76,43],deep:[78,44,22],grass:[104,160,56],grass2:[156,202,84],stem:[242,224,192],cap:[238,148,38],spot:[255,238,204],rock:[160,128,108],water:['#4a7cc0','#22437c'],sun:'#ffe07a',deco:'legume'},
@@ -432,7 +433,7 @@ function girderPts(c){ const [,x,y,a]=c, r=a*Math.PI/180; return {x,y,ux:Math.co
 function carve(m,c){ if(c[0]==='g'){ const {x,y,ux,uy}=girderPts(c), R=GL/2+GT;
     for(let yy=Math.max(0,Math.floor(y-R));yy<=Math.min(WH-1,y+R);yy++) for(let xx=Math.max(0,Math.floor(x-R));xx<=Math.min(WW-1,x+R);xx++){ const dx=xx-x, dy=yy-y, a=dx*ux+dy*uy, b=-dx*uy+dy*ux; if(Math.abs(a)<=GL/2&&Math.abs(b)<=GT/2) m[yy*WW+xx]=4; } return; }
   const [cx,cy,r]=c, r2=r*r; for(let y=Math.max(0,Math.floor(cy-r));y<=Math.min(WH-1,cy+r);y++){ const dy=y-cy, w=Math.sqrt(Math.max(0,r2-dy*dy)); for(let x=Math.max(0,Math.floor(cx-w));x<=Math.min(WW-1,cx+w);x++) m[y*WW+x]=0; } }
-function mig(G){ if(!G.obj) G.obj=[]; if(!G.oid) G.oid=1; if(G.pend===undefined) G.pend=null; G.teams.forEach(t=>{ if(!t.v2){ t.am=startAmmo('classique'); t.v2=1; } }); }
+function mig(G){ if(G.tt===undefined) G.tt=30; if(!G.obj) G.obj=[]; if(!G.oid) G.oid=1; if(G.pend===undefined) G.pend=null; G.teams.forEach(t=>{ if(!t.v2){ t.am=startAmmo('classique'); t.v2=1; } }); }
 function sync(G){ mig(G); if(T.gid!==G.gid||T.seed!==G.seed){ T.gid=G.gid; T.seed=G.seed; T.theme=G.theme; T.base=gen(G.seed); T.sol=T.base.slice(); T.n=0; T.tex=null; T.texN=0; }
   while(T.n<G.cr.length){ carve(T.sol,G.cr[T.n]); T.n++; } }
 const solid=(x,y)=>{ x=Math.floor(x); y=Math.floor(y); return x>=0&&x<WW&&y>=0&&y<WH&&T.sol[y*WW+x]>0; };
@@ -542,8 +543,11 @@ function simulate(G,S,a){ const W=a.w>=0?WEP[a.w]:null, rec={t:'shot',w:a.w,s:S.
         if(!(b.fz>0)&&armed&&bodies.some(s=>s.s&&s.q.al&&Math.hypot(s.x-b.x,s.y-b.y)<24)){ b.fz=1.3; rec.snd.push([fi(),'beep']); }
         if(b.fz>0){ const before=b.fz; b.fz-=DT; if(Math.floor(before*4)!==Math.floor(b.fz*4)) rec.snd.push([fi(),'beep']); if(b.fz<=0){ removeObj(b,2); E.explode(b.x,b.y-3,40,50); } } }
       else if(o.k==='caisse'){ const s=bodies.find(s=>s.s&&s.q.al&&Math.hypot(s.x-b.x,s.y-b.y)<17); if(s){ removeObj(b,3); pickup(G,s.q,o,rec.pk,fi()); } } }
+    /* une limace à bout de forces explose, l'une après l'autre */
+    for(const b of bodies){ if(!b.s||!b.q.al||b.dz==null) continue; b.dz-=DT; if(b.dz<=0){ b.dz=null; const q=b.q; q.al=false; q.hp=0; q.gs=1; b.mv=false; rec.die.push([fi(),q.id,0]); E.explode(b.x,b.y-BR,30,22); } }
     if(step%2===0) record();
-    if(step>6&&!P.some(p=>!p.dead)&&!bodies.some(b=>(b.s?b.q.al:!b.q.dead)&&(b.mv||b.boom!=null||b.fz>0))) break; }
+    if(step>6&&!P.some(p=>!p.dead)&&!bodies.some(b=>(b.s?b.q.al:!b.q.dead)&&(b.mv||b.boom!=null||b.fz>0||b.dz!=null))){
+      const dying=bodies.filter(b=>b.s&&b.q.al&&b.q.hp<=0); if(!dying.length) break; dying.forEach((b,i)=>{ b.dz=.45+i*.55; rec.snd.push([fi()+Math.round((.45+i*.55)*30)-12,'fuse']); }); } }
   record();
   for(const b of bodies){ const q=b.q; q.x=Math.round(b.x*10)/10; q.y=Math.round(b.y*10)/10; if(b.s&&q.al&&q.hp<=0){ q.al=false; q.hp=0; q.gs=1; rec.die.push([fi(),q.id,0]); } }
   G.obj=G.obj.filter(o=>!o.dead);
@@ -646,7 +650,9 @@ const AIM={e:.55,p:.6,w:0,tx:null,ty:null,g:0,charging:0};
 let LOC=null, PLAY=null, LASTDUR=0, FX=[], TURNKEY=null, PENDBANNER=null, DROPS={}, PLAYEND=0;
 const DP={};
 const TH=()=>THEMES[T.theme]||THEMES.jardin;
-const canAct=()=>{ const G=TK.G(); return !!(G&&!G.over&&TK.canPlay()&&!PLAY); };
+let TKEY=null, TEL=0, TBEEP=0, TFORCED=null;
+const timeLeft=G=>G&&G.tt?G.tt*1000-TEL:Infinity;
+const canAct=()=>{ const G=TK.G(); return !!(G&&!G.over&&TK.canPlay()&&!PLAY&&timeLeft(G)>0); };
 const actSlug=G=>G.sl.find(q=>q.id===G.act);
 function resize(){ const st=$('#stage'); const top=st.getBoundingClientRect().top+scrollY; st.style.height=Math.max(340,innerHeight-top-2)+'px';
   const r=cv.getBoundingClientRect(); DPR=Math.min(2,devicePixelRatio||1); CW=r.width; CH=r.height; cv.width=Math.round(CW*DPR); cv.height=Math.round(CH*DPR); BG.key=null; }
@@ -707,11 +713,12 @@ function snd(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defaultPlayers:2,
   desc:'Chaque équipe de limaces bombarde les autres, chacune à son tour : bazooka, grenades, bananes, vaches folles, âne en béton… Des caisses tombent du ciel, le terrain se creuse sous les explosions, et l’eau ne pardonne pas.',
   tuto:[["🐌","Ton équipe","Chaque joueur dirige une équipe de limaces. À ton tour, une seule de tes limaces joue : elle se déplace, puis utilise une arme."],["🎯","Vise et tire","Glisse depuis ta limace vers où tu veux tirer : plus le geste est long, plus le coup est fort. Puis « Tirer ». Le vent dévie le bazooka !"],["📦","Caisses et explosions","Ramasse les caisses pour gagner des armes ou des points de vie. Les explosions creusent le décor et projettent les limaces : une limace qui tombe à l’eau est perdue."]],
-  opt:{n:3,hp:100,theme:'hasard',sd:8,crates:1,mines:1,ars:'classique'},
+  opt:{n:3,hp:100,theme:'hasard',sd:8,crates:1,mines:1,ars:'classique',tt:30},
   optsHTML(){ const b=(k,v,l)=>`<button class="${D.opt[k]===v?'on':''}" data-o="${k}:${v}">${l}</button>`;
     return `<h4>Limaces par équipe</h4><div class="seg">${[2,3,4].map(n=>b('n',n,n)).join('')}</div>
     <h4>Points de vie</h4><div class="seg">${b('hp',100,'100')}${b('hp',150,'150')}</div>
     <h4>Décor</h4><div class="seg">${b('theme','hasard','Au hasard')}${Object.entries(THEMES).map(([k,t])=>b('theme',k,t.n)).join('')}</div>
+    <h4>Temps pour jouer</h4><div class="seg">${b('tt',30,'30 s')}${b('tt',45,'45 s')}${b('tt',0,'Sans limite')}</div>
     <h4>Arsenal</h4><div class="seg">${b('ars','classique','Classique')}${b('ars','fou','Tout illimité')}</div>
     <h4>Caisses du ciel</h4><div class="seg">${b('crates',1,'Oui')}${b('crates',0,'Non')}</div>
     <h4>Mines et barils sur la carte</h4><div class="seg">${b('mines',1,'Oui')}${b('mines',0,'Non')}</div>
@@ -723,7 +730,7 @@ const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defau
     const teams=players.map(()=>({cur:0,am:startAmmo(opt.ars),v2:1}));
     const obj=[]; let oid=1;
     if(opt.mines==null||+opt.mines!==0){ spawnPts(m,7,water,pos).forEach(([x,y],i)=>obj.push({id:oid++,k:i<4?'mine':'baril',x,y,arm:-1})); }
-    return {seed,theme,cr:[],water,wind:Math.round((Math.random()*2-1)*10)/10,turn:0,act:sl[0].id,walk:WALK,round:0,turns:0,sd:+opt.sd||0,hp,sl,teams,obj,oid,crates:opt.crates==null||+opt.crates!==0,pend:null,players}; },
+    return {seed,theme,cr:[],water,wind:Math.round((Math.random()*2-1)*10)/10,turn:0,act:sl[0].id,walk:WALK,round:0,turns:0,sd:+opt.sd||0,hp,sl,teams,obj,oid,crates:opt.crates==null||+opt.crates!==0,pend:null,tt:opt.tt==null?30:+opt.tt,players}; },
   actors:G=>G.over?[]:[G.turn],
   apply(G,s,a){ if(!a||s!==G.turn) return false; sync(G); const q=actSlug(G); LASTDUR=0;
     if(!q||!q.al){ /* sécurité : la partie ne reste jamais bloquée sur une limace disparue */ if(a.t==='f'){ const ev=[{t:'pass'}]; nextTurn(G,ev); return ev; } return false; }
@@ -739,7 +746,7 @@ const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defau
     if(!G.pend&&!has(G,s,W.k)) return false;
     if(W.k==='cor') return false;
     if(a.x!=null&&okPos(+a.x,+a.y,a.r?-1:150)){ if(!a.r) G.walk=Math.max(0,G.walk-Math.abs(+a.x-q.x)); q.x=+a.x; q.y=+a.y; }
-    if(W.k==='pas'){ const ev=[{t:'pass',id:q.id}]; nextTurn(G,ev); LASTDUR=dropDur(ev); return ev; }
+    if(W.k==='pas'){ const ev=[{t:'pass',id:q.id,to:a.to?1:0}]; nextTurn(G,ev); LASTDUR=dropDur(ev); return ev; }
     const tx=+a.tx, ty=+a.ty;
     if(W.k==='tel'&&!(tx>=10&&tx<=WW-10&&ty>10&&ty<G.water-12&&!solid(tx,ty-2)&&!solid(tx,ty-BR)&&!solid(tx,ty-2*BR))) return false;
     if((W.k==='sel'||W.k==='ane')&&!(tx>=-100&&tx<=WW+100)) return false;
@@ -770,7 +777,7 @@ const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defau
     else if(!PLAY) D.endDelay=900;
     ev.forEach(e=>{ if(e.t==='noy'){ const q=G.sl.find(q=>q.id===e.id); if(q){ splash(q.x,G.water); snd('splash'); toast(`${q.n} est tombée à l’eau !`); } }
       else if(e.t==='eau'){ toast('L’eau monte !'); snd('splash'); }
-      else if(e.t==='pass') toast('Tour passé.');
+      else if(e.t==='pass'){ toast(e.to?'⏱ Temps écoulé : tour suivant !':'Tour passé.'); if(e.to) snd('beep'); }
       else if(e.t==='drop'){ DROPS[e.o.id]={t0:Math.max(now,PLAY?PLAYEND:now)+150}; setTimeout(()=>snd('chute'),Math.max(0,DROPS[e.o.id].t0-now)); }
       else if(e.t==='pk'){ const q=G.sl.find(q=>q.id===e.id); if(q){ FX.push({k:'tx',x:q.x,y:q.y-34,t:0,d:2.2,s:e.txt,c:'#ffe27a',big:1}); snd(e.hp?'heal':'pick'); if(TK.canPlay()) toast(`${q.n} trouve : ${e.txt}`); } }
       else if(e.t==='gird') snd('clonk'); });
@@ -778,7 +785,7 @@ const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defau
     if(G.pend) AIM.w=WI.pom;
     ui(); },
   empty(){ ui(); },
-  help(){ helpTabs('Limaces à l’assaut',[['Règles','<ul><li>Chaque joueur dirige une équipe de limaces (2 à 4). Les équipes jouent chacune à son tour, et dans une équipe les limaces se relaient.</li><li>À ton tour : déplace ta limace (sa bave a ses limites : la jauge sous elle), puis utilise <b>une</b> arme. Le tour passe ensuite à l’équipe suivante. Seuls le fusil à pompe (deux tirs) et la corde de bave laissent rejouer.</li><li>Les explosions blessent, projettent les limaces et <b>creusent le terrain</b>. Une chute de haut fait mal ; une limace qui tombe à l’eau est perdue.</li><li>Le <b>vent</b> (jauge en haut) change à chaque tour et dévie le bazooka, le mortier, la pluie de sel et les météores.</li><li>Avec la montée des eaux, l’eau monte un peu à chaque tour passé le délai choisi.</li><li>La dernière équipe qui a encore une limace en vie gagne.</li></ul>'],
+  help(){ helpTabs('Limaces à l’assaut',[['Règles','<ul><li>Chaque joueur dirige une équipe de limaces (2 à 4). Les équipes jouent chacune à son tour, et dans une équipe les limaces se relaient.</li><li>À ton tour, tu as <b>30 secondes</b> (réglable) : déplace ta limace (sa bave a ses limites : la jauge sous elle), puis utilise <b>une</b> arme. Le temps écoulé, le tour passe. Le tour passe ensuite à l’équipe suivante. Seuls le fusil à pompe (deux tirs) et la corde de bave laissent rejouer.</li><li>Les explosions blessent, projettent les limaces et <b>creusent le terrain</b>. Une chute de haut fait mal ; une limace qui tombe à l’eau est perdue.</li><li>Une limace à bout de forces <b>explose</b> : gare à ses voisines !</li><li>Le <b>vent</b> (jauge en haut) change à chaque tour et dévie le bazooka, le mortier, la pluie de sel et les météores.</li><li>Avec la montée des eaux, l’eau monte un peu à chaque tour passé le délai choisi.</li><li>La dernière équipe qui a encore une limace en vie gagne.</li></ul>'],
     ['Caisses et objets','<ul><li>📦 <b>Caisses d’armes</b> : elles tombent du ciel en parachute. Passe dessus pour récupérer une arme, parfois une super-arme (Sainte grenade, Super banane, Âne en béton, Armageddon).</li><li>➕ <b>Caisses de soin</b> : +25 points de vie.</li><li>⭕ <b>Mines</b> : elles explosent peu après qu’une limace s’approche.</li><li>🛢️ <b>Barils</b> : ils explosent au moindre souffle d’explosion.</li><li>Une caisse touchée par une explosion saute aussi !</li></ul>'],
     ['Armes',CATS.map(([c,l])=>`<h4>${l}</h4><ul>`+WEP.filter(w=>w.c===c).map(w=>`<li><b>${w.i} ${w.n}</b>${w.am>0?` (${w.am} au départ)`:w.am===0?' (dans les caisses)':''} : ${w.d}</li>`).join('')+'</ul>').join('')],
     ['Commandes','<p><b>Sur téléphone ou tablette</b></p><ul><li>◀ ▶ pour avancer, ⤴ pour sauter.</li><li>Pour viser, glisse le doigt <b>depuis ta limace</b> vers la cible : la longueur du geste règle la puissance. Puis « Tirer ».</li><li>Glisse ailleurs sur la carte pour la parcourir ; pince pour zoomer, ⛶ pour la vue d’ensemble.</li><li>Armes à cible (pluie de sel, missile, pigeon, âne, poutre, téléporteur) : touche la carte pour choisir la cible.</li><li>Corde de bave : ◀ ▶ pour se balancer, ▲ ▼ pour monter et descendre, ⤴ pour lâcher.</li></ul><p><b>Au clavier</b></p><ul><li>← → avancer, Entrée sauter, ↑ ↓ viser (ou monter et descendre sur la corde).</li><li>Maintiens Espace pour charger la puissance, relâche pour tirer.</li><li>Tab : choisir l’arme. Molette : zoom.</li></ul>'],
@@ -862,7 +869,7 @@ function playStep(G,now){ const P=PLAY, e=P.e, f=Math.min(e.fr.length-1,Math.flo
     while(P.spI<e.sp.length&&e.sp[P.spI][0]<=P.f){ splash(e.sp[P.spI][1]); snd('splash'); P.spI++; }
     while(P.odI<(e.od||[]).length&&e.od[P.odI][0]<=P.f){ delete P.obj[e.od[P.odI][1]]; P.odI++; }
     while(P.pkI<(e.pk||[]).length&&e.pk[P.pkI][0]<=P.f){ const [,id,,txt,hp]=e.pk[P.pkI]; const p=P.pos[id]; if(p) FX.push({k:'tx',x:p[0],y:p[1]-34,t:0,d:2.2,s:txt,c:'#ffe27a',big:1}); if(hp) P.hp[id]+=hp; snd(hp?'heal':'pick'); P.pkI++; }
-    while(P.dieI<e.die.length&&e.die[P.dieI][0]<=P.f){ const [,id,how]=e.die[P.dieI]; P.al[id]=false; const p=P.pos[id]; if(p&&!how){ FX.push({k:'ko',x:p[0],y:p[1],t:0,d:1.2}); boom(p[0],p[1]-6,14); snd('death'); } P.dieI++; } }
+    while(P.dieI<e.die.length&&e.die[P.dieI][0]<=P.f){ const [,id,how]=e.die[P.dieI]; P.al[id]=false; const p=P.pos[id]; if(p&&!how){ FX.push({k:'ko',x:p[0],y:p[1],t:0,d:1.2}); snd('death'); } P.dieI++; } }
   if(now>PLAYEND){ PLAY=null; ui(); TK.status(); } }
 /* ---------- dessin ---------- */
 function shade(hex,k){ const n=parseInt(hex.slice(1),16), r=n>>16, g=n>>8&255, b=n&255, f=v=>clamp(Math.round(k>0?v+(255-v)*k:v*(1+k)),0,255); return `rgb(${f(r)},${f(g)},${f(b)})`; }
@@ -953,6 +960,12 @@ function frame(now){ requestAnimationFrame(frame); const dt=Math.min(.05,(now-LT
   if(!T.tex||T.gid!==G.gid){ sync(G); paint(); }
   if(PLAY) playStep(G,now);
   const dropping=Object.values(DROPS).some(d=>now<d.t0+1500);
+  /* chronomètre du tour : il ne tourne pas pendant les explosions ni l'arrivée des caisses */
+  const tk=G.gid+':'+G.turns; if(TKEY!==tk){ TKEY=tk; TEL=0; TBEEP=0; }
+  if(G.tt&&!G.over&&!PLAY&&!dropping&&!PENDBANNER){ const was=timeLeft(G); TEL+=dt*1000; const left=timeLeft(G);
+    if(TK.canPlay()&&left>0&&left<=5000&&Math.ceil(left/1000)!==Math.ceil(was/1000)) snd('beep');
+    if(was>0&&left<=0&&TK.canPlay()){ KEYS.left=KEYS.right=KEYS.up=KEYS.down=false; AIM.charging=0; if(LOC&&LOC.rope){ LOC.rope=null; LOC.air=true; } send(true); ui(); }
+    const P=G.players[G.turn]; if(left<=-400&&!TK.guest()&&P&&!P.ai&&TFORCED!==tk){ TFORCED=tk; TK.force(G.turn,{t:'f',w:WI.pas,to:1}); } }
   if(!PLAY&&PENDBANNER&&!dropping){ banner('À '+PENDBANNER[0]+' !',PENDBANNER[1],PENDBANNER[2]); PENDBANNER=null; sfx('go'); }
   const target=PLAY?PLAY.crN:G.cr.length; while(T.texN<Math.min(target,G.cr.length)){ texApply(G.cr[T.texN]); T.texN++; }
   if(canAct()) locStep(G,dt);
@@ -1001,6 +1014,10 @@ function hud(G,S){ ctx.save(); ctx.font='800 12px Figtree,system-ui,sans-serif';
   const wv=G.wind*ww/2; if(wv){ const g=ctx.createLinearGradient(wx,0,wx+wv,0); g.addColorStop(0,'#7cd0ff'); g.addColorStop(1,Math.abs(G.wind)>.6?'#ff7a5c':'#bfeaff'); ctx.fillStyle=g; rr(wv>0?wx:wx+wv,wy-2,Math.abs(wv),10,5); ctx.fill();
     const tt=performance.now()/1000; ctx.fillStyle='rgba(255,255,255,.75)'; for(let i=0;i<3;i++){ const k=((tt*Math.abs(G.wind)*1.5+i/3)%1), xx=wx+wv*k; ctx.beginPath(); ctx.moveTo(xx+Math.sign(wv)*4,wy+3); ctx.lineTo(xx,wy); ctx.lineTo(xx,wy+6); ctx.fill(); } }
   ctx.fillStyle='#fff'; ctx.fillRect(wx-1,wy-5,2,16);
+  if(G.tt&&!G.over&&!G.players[G.turn].ai){ const left=Math.max(0,timeLeft(G)), sec=Math.ceil(left/1000), low=sec<=5, tx=wx, ty=wy+30, k=left/(G.tt*1000);
+    ctx.fillStyle=low?'rgba(232,67,58,.9)':'rgba(16,20,48,.75)'; ctx.beginPath(); ctx.arc(tx,ty,15,0,7); ctx.fill();
+    ctx.strokeStyle=low?'#fff':'#7cf0a0'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(tx,ty,12,-Math.PI/2,-Math.PI/2+Math.PI*2*k); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='900 12px Figtree,system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(String(sec),tx,ty+.5); ctx.textBaseline='alphabetic'; }
   const hpMax=G.hp*Math.max(1,G.sl.filter(q=>q.tm===0).length); let y=12;
   G.players.forEach((P,tm)=>{ const sl=S.filter(s=>s.q.tm===tm), v=sl.reduce((a,s)=>a+Math.max(0,s.hp),0), w=Math.max(0,Math.min(1,v/hpMax))*72;
     ctx.fillStyle='rgba(16,20,48,.75)'; rr(8,y-2,178,18,7); ctx.fill(); ctx.fillStyle='rgba(255,255,255,.12)'; rr(104,y+2,72,10,5); ctx.fill(); ctx.fillStyle=P.col; rr(104,y+2,Math.max(w,v>0?3:0),10,5); ctx.fill(); ctx.fillStyle='#fff'; ctx.textAlign='left';

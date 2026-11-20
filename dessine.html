@@ -164,6 +164,7 @@ body.immersive .stage{padding-top:max(6px,env(safe-area-inset-top))}
 
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
+.ddown{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:4px 0 6px}.ddown input{flex:1;min-width:180px;font:inherit;font-size:16px;padding:10px 12px;border-radius:12px;border:2px solid #cfc9ef;background:#fff;color:#1a1740}.ddown input:focus{outline:none;border-color:#12a594}
 </style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
 <!--NETCSS--><link rel="stylesheet" href="common/salle.css?v=258accaa"><!--/NETCSS-->
 <!--PWA--><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Salle de jeux"><!--/PWA-->
@@ -422,8 +423,9 @@ function pick3(onlySketch){ const pool=(onlySketch?Object.keys(DD_SK):DD_LISTE).
 function nextTurn(){ const S=G, n=S.players.length; S.turn++; S.round=Math.floor(S.turn/n)+1;
   if(S.round>S.rounds){ S.phase='over'; emit({t:'over'}); L.dirty=true; return; }
   S.dr=S.turn%n; const bot=ARC.bot(S.players[S.dr]); S.ch=pick3(bot).map(hide); S.phase='choose'; S.w=''; S.mask=''; S.found=[]; S.gain=S.players.map(()=>0); S.sk=[]; S.skv++;
-  L.dl=performance.now()+15000; L.bot=null; L.botG={}; L.hints=0; say({k:'sys',m:`${S.players[S.dr].name} va dessiner.`}); emit({t:'turn',s:S.dr}); L.dirty=true; }
-function choose(k){ const S=G; if(S.phase!=='choose') return; const w=show(S.ch[k]||S.ch[0]); L.used.add(w); S.w=hide(w); S.ch=[]; S.mask=w.replace(/[a-zœæàâäéèêëîïôöùûüç]/gi,'_'); S.phase='draw'; L.dl=performance.now()+S.time*1000; L.t0=performance.now(); L.hints=0; emit({t:'draw',s:S.dr}); L.dirty=true;
+  L.dl=performance.now()+(S.free?1e12:25000); L.bot=null; L.botG={}; L.hints=0; say({k:'sys',m:`${S.players[S.dr].name} va dessiner.`}); emit({t:'turn',s:S.dr}); L.dirty=true; }
+const ownWord=t=>{ t=String(t||'').replace(/\s+/g,' ').trim(); return t.length>=2&&t.length<=30&&/[a-zà-ÿœæ]/i.test(t)&&/^[a-zà-ÿœæç0-9 '’\-]+$/i.test(t)?t:''; };
+function choose(k,own){ const S=G; if(S.phase!=='choose') return; const mine=ownWord(own); const w=mine||show(S.ch[k]||S.ch[0]); L.used.add(w); S.w=hide(w); S.ch=[]; S.mask=w.replace(/[a-zœæàâäéèêëîïôöùûüç]/gi,'_'); S.phase='draw'; L.dl=performance.now()+S.time*1000; L.t0=performance.now(); L.hints=0; emit({t:'draw',s:S.dr}); L.dirty=true;
   if(ARC.bot(S.players[S.dr])) startBotDraw(w); }
 function reveal(){ const S=G; const w=show(S.w); const lt=w.split('').map((c,i)=>S.mask[i]==='_'?i:-1).filter(i=>i>=0); if(lt.length<=1) return; const i=lt[Math.floor(Math.random()*lt.length)]; S.mask=S.mask.slice(0,i)+w[i]+S.mask.slice(i+1); L.dirty=true; }
 function guess(s,txt){ const S=G; txt=String(txt||'').slice(0,40).trim(); if(!txt) return; const P=S.players[s]; if(!P) return;
@@ -511,7 +513,11 @@ function hud(){ const S=host()?G:snap.cur; window.ARC_PLAYING=!!(S&&S.phase==='d
   const last=S.chat.length?S.chat[S.chat.length-1].i:0; if(last!==chatSeen){ chatSeen=last; const canSee=m=>m.to==null||m.to===me; const priv=m=>m.v==='f'&&!(me===S.dr||S.found.includes(me));
     $('#dlog').innerHTML=S.chat.filter(m=>canSee(m)&&!priv(m)).slice(-30).map(m=>m.k==='sys'?`<p class="sys">${esc(m.m)}</p>`:m.k==='ok'?`<p class="ok">${esc(m.m)}</p>`:m.k==='close'?`<p class="close">${esc(m.m)}</p>`:`<p${m.v==='f'?' class="f"':''}><b style="color:${S.players[m.s]?S.players[m.s].col:'#888'}">${esc(S.players[m.s]?S.players[m.s].name:'?')}</b> ${esc(m.m)}</p>`).join('');
     $('#dlog').scrollTop=1e6; }
-  if(S.phase==='choose'&&me===S.dr&&S.ch.length&&!document.querySelector('#mbox .ddch')&&$('#modal').hidden){ openModal(`<div class="ddch"><h2>À toi de dessiner !</h2><p>Choisis le mot que tu vas faire deviner :</p><div class="ddw">${S.ch.map((h,k)=>`<button class="btn pri" data-k="${k}">${esc(show(h))}</button>`).join('')}</div></div>`,e=>{ const b=e.target.closest('[data-k]'); if(!b) return; closeModal(); if(host()) choose(+b.dataset.k); else ARC.send('c',[+b.dataset.k],0); }); window.MODAL_CLOSABLE=false; }
+  if(S.phase==='choose'&&me===S.dr&&S.ch.length&&!document.querySelector('#mbox .ddch')&&$('#modal').hidden){ const pickW=(k,own)=>{ closeModal(); if(host()) choose(k,own); else ARC.send('c',own?[0,own]:[k],0); };
+    const ownGo=()=>{ const inp=$('#ddown'); const v=ownWord(inp&&inp.value); if(!v){ toast('Écris un mot ou une expression de 2 à 30 lettres.'); if(inp) inp.focus(); return; } pickW(0,v); };
+    openModal(`<div class="ddch"><h2>${S.free?'Que veux-tu dessiner ?':'À toi de dessiner !'}</h2><p>Choisis un des mots proposés…</p><div class="ddw">${S.ch.map((h,k)=>`<button class="btn pri" data-k="${k}">${esc(show(h))}</button>`).join('')}</div>
+      <p>… ou écris le tien :</p><form class="ddown" onsubmit="return false"><input id="ddown" maxlength="30" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Ton mot ou ton expression"><button class="btn pri" data-own="1">Dessiner ce mot</button></form>${S.free?'':'<p class="optnote">Choisis un mot que les autres peuvent deviner, sans faute d’orthographe.</p>'}</div>`,e=>{ if(e.target.closest('[data-own]')){ ownGo(); return; } const b=e.target.closest('[data-k]'); if(!b) return; pickW(+b.dataset.k); });
+    const inp=$('#ddown'); if(inp) inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); ownGo(); } }); window.MODAL_CLOSABLE=false; }
   if(S.phase!=='choose'&&document.querySelector('#mbox .ddch')){ window.MODAL_CLOSABLE=true; closeModal(); } }
 function onEvent(e){ const me=ARC.seat(), S=host()?G:snap.cur; if(!S) return;
   if(e.t==='turn'){ if(e.s===me) sfx('ding'); } else if(e.t==='draw') sfx('go'); else if(e.t==='found'){ sfx(e.s===me?'win':'point'); if(e.s===me) banner('Trouvé !',null,'#3fb85a'); }
@@ -526,7 +532,7 @@ ARC.loop((dt,now)=>{ const S=host()?G:snap.cur; ARC.idle=!S||S.phase==='over';
   if(S) ARC.events(S,onEvent); draw(now); hud(); });
 /* ---------- menu, options ---------- */
 const BOTS=['Ada','Hal','Pixel','Nova','Atlas'];
-function startFree(){ const me=(typeof HALL!=='undefined'&&HALL.pseudo)||'Toi'; OPT.time=3600; newGame([{name:me}]); OPT.time=(load('dessine-opt')||{}).time||80; G.free=true; choose(Math.floor(Math.random()*3)); }
+function startFree(){ const me=(typeof HALL!=='undefined'&&HALL.pseudo)||'Toi'; OPT.time=3600; newGame([{name:me}]); OPT.time=(load('dessine-opt')||{}).time||80; G.free=true; L.dl=performance.now()+1e12; L.dirty=true; }
 function startLocal(){ startFree(); }
 function optsHTML(local){ const sg=(k,vals)=>`<div class="seg">${vals.map(([v,l])=>`<button class="${String(OPT[k])===String(v)?'on':''}" data-o="${k}:${v}">${l}</button>`).join('')}</div>`;
   return `<h4>Tours</h4>${sg('rounds',[[1,'1'],[2,'2'],[3,'3']])}<p class="optnote">À chaque tour, chacun dessine une fois.</p><h4>Temps pour dessiner</h4>${sg('time',[[60,'60 s'],[80,'80 s'],[100,'100 s']])}
@@ -536,10 +542,10 @@ function menu(){ const draw=()=>{ openModal(`<h2>Dessine et devine</h2><p>Chacun
    <div class="bigchoice"><button class="pri" data-m="online"><b>Jouer en ligne</b><small>Avec tes amis connectés, chacun sur son écran (2 à 8).</small></button><button data-m="libre"><b>Dessin libre</b><small>Une feuille blanche pour t’entraîner à dessiner, seul.</small></button></div>
    <div class="opts">${optsHTML(true)}<h4>Réglages</h4>${window.PROF?PROF.optsHTML():''}</div><div class="acts">${G?'<button class="btn" data-c="close">Fermer</button>':''}</div>`,e=>{ const o=e.target.closest('[data-o]'); if(o){ setOpt(o); draw(); return; }
    const m=e.target.closest('[data-m]'); if(!m) return; closeModal(); if(m.dataset.m==='online') NET.startUI(); else startFree(); }); if(window.PROF) PROF.bindOpts($('#mbox')); };
-  ARC.tuto('dessine',[['✏️','Dessine','Quand c’est ton tour, choisis un mot parmi trois et dessine-le avec ton doigt ou la souris. Pas de lettres ni de chiffres !'],['💬','Devine','Quand un autre dessine, tape tes propositions en bas. « Tu chauffes » veut dire qu’il manque une lettre.'],['🏆','Points','Plus tu trouves vite, plus tu gagnes de points. Celui qui dessine marque aussi quand on trouve son mot.']],draw); }
-function help(){ helpTabs('Dessine et devine',[['Règles','<ul><li>À chaque tour, chaque joueur dessine une fois. Le dessinateur choisit un mot parmi trois.</li><li>Les autres tapent leurs propositions. Le premier à trouver gagne un bonus.</li><li>Points : de 100 à 320 selon le temps restant (+50 pour le premier). Le dessinateur gagne une part des points de chaque joueur qui trouve.</li><li>Des lettres du mot apparaissent au fil du temps pour aider.</li><li>Le tour s’arrête quand tout le monde a trouvé ou que le temps est écoulé.</li></ul><p class="ex">Interdit d’écrire le mot ou des lettres sur le dessin !</p>'],
+  ARC.tuto('dessine',[['✏️','Dessine','Quand c’est ton tour, choisis un mot parmi trois (ou écris le tien) et dessine-le avec ton doigt ou la souris. Pas de lettres ni de chiffres !'],['💬','Devine','Quand un autre dessine, tape tes propositions en bas. « Tu chauffes » veut dire qu’il manque une lettre.'],['🏆','Points','Plus tu trouves vite, plus tu gagnes de points. Celui qui dessine marque aussi quand on trouve son mot.']],draw); }
+function help(){ helpTabs('Dessine et devine',[['Règles','<ul><li>À chaque tour, chaque joueur dessine une fois. Le dessinateur choisit un mot parmi trois, ou écrit le mot de son choix.</li><li>Les autres tapent leurs propositions. Le premier à trouver gagne un bonus.</li><li>Points : de 100 à 320 selon le temps restant (+50 pour le premier). Le dessinateur gagne une part des points de chaque joueur qui trouve.</li><li>Des lettres du mot apparaissent au fil du temps pour aider.</li><li>Le tour s’arrête quand tout le monde a trouvé ou que le temps est écoulé.</li></ul><p class="ex">Interdit d’écrire le mot ou des lettres sur le dessin !</p>'],
   ['Outils','<ul><li>Couleurs, trois épaisseurs de trait et une gomme.</li><li>↶ annule le dernier trait, 🗑️ efface tout.</li></ul>'],
-  ['Dessin libre','<p>Une feuille blanche pour t’entraîner : choisis un mot au hasard (ou aucun) et dessine sans limite de temps.</p>']]); }
+  ['Dessin libre','<p>Une feuille blanche pour t’entraîner : choisis un mot proposé ou écris le tien, puis dessine sans limite de temps.</p>']]); }
 window.GAME={help,menu,state:()=>G};
 document.addEventListener('sdj-opts',e=>{ if(e.detail.k==='cb'&&G) ARC.recolor(G.players); });
 const base=ARC.wirer({stat:['players'],skip:['sk']}); let wv=null, wn=0;
@@ -552,7 +558,7 @@ window.NETGAME={id:'dessine',title:'Dessine et devine',min:2,max:8,noAI:true,
   demoted(){ snap.reset(G); },
   act(seat,fn,args){ if(!G||!L) return false; const S=G;
     if(fn==='g'){ guess(seat,args[0]); return true; }
-    if(fn==='c'){ if(S.phase==='choose'&&seat===S.dr) choose(+args[0]||0); return true; }
+    if(fn==='c'){ if(S.phase==='choose'&&seat===S.dr) choose(+args[0]||0,args[1]); return true; }
     if(seat!==S.dr) return true;
     if(fn==='k'){ const [sid,q,c,w,...pts]=args; addChunk(String(sid),+c,+w,pts.map(Number),+q); return true; }
     if(fn==='u'){ undo(); return true; } if(fn==='x'){ clearAll(); return true; } return false; },
