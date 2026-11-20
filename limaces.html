@@ -107,7 +107,7 @@ body{background:#0d1830;--bg:#0d1830;overflow:hidden}
 .coach{outline:4px solid #ffd84a!important;outline-offset:2px;box-shadow:0 0 18px #ffd84a!important;animation:coachp 1.2s ease-in-out infinite}
 @keyframes coachp{50%{outline-color:#ffb02e}}
 
-.lm-stage{position:relative;width:100%;height:calc(100dvh - 140px);min-height:340px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.lm-stage{position:relative;width:100%;height:calc(100dvh - 140px);min-height:170px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
 #lm{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
 .lm-bar{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;gap:8px;padding:8px max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-bottom));pointer-events:none;flex-wrap:wrap}
 .lm-bar .grp{display:flex;gap:6px;pointer-events:auto}
@@ -138,6 +138,13 @@ body{background:#0d1830;--bg:#0d1830;overflow:hidden}
 .lm-wp button.sup{background:linear-gradient(160deg,#fff4c8,#ffe08a);border-color:#e8b030}
 .lm-wp button.sup.on{border-color:#e8433a}
 .lb[hidden]{display:none}
+
+.lm-wp{max-height:calc(100% - 80px);overflow:auto;-webkit-overflow-scrolling:touch}
+.lm-wp .g{max-height:none}
+@media (max-height:520px){.lm-bar{padding-top:4px;padding-bottom:max(4px,env(safe-area-inset-bottom))}.lb{min-width:42px;height:42px;font-size:17px}.lb.sm{min-width:36px;height:36px}.lm-bar .grp.mid{order:0;flex-basis:auto}.lm-wp{bottom:54px;max-height:calc(100% - 60px);padding:8px}.lm-wp .g{grid-template-columns:repeat(4,1fr)}.lm-wp button{padding:5px 3px}.lm-wp p{display:none}}
+@media (max-height:520px) and (orientation:landscape){header.top{padding-top:4px!important;padding-bottom:4px!important}}
+
+@media (max-width:560px) and (min-height:521px){.lm-wp{max-height:calc(100% - 126px)}}
 
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
@@ -393,11 +400,14 @@ const WEP=[
  {k:'bat',c:'spe',n:'Batte de baseball',i:'🏏',am:1,aim:1,d:'Un coup terrible : la limace d’à côté part très loin, dans la direction visée. Idéal pour l’envoyer à l’eau.'},
  {k:'pic',c:'spe',n:'Pichenette',i:'👉',am:-1,d:'Une petite poussée sans dégâts, vers l’avant. Parfait au bord de l’eau.'},
  {k:'cor',c:'obj',n:'Corde de bave',i:'🪢',am:-1,aim:1,d:'Lance une corde qui s’accroche au décor : balance-toi avec ◀ ▶, monte ou descends avec ▲ ▼, puis lâche avec ⤴. Ton tour continue ensuite.'},
+ {k:'cha',c:'obj',n:'Chalumeau',i:'🔦',am:-1,aim:1,d:'Creuse un tunnel dans la direction visée (tout droit, vers le haut ou vers le bas). Ton tour continue ensuite.'},
+ {k:'mar',c:'obj',n:'Marteau-piqueur',i:'⛏️',am:-1,d:'Creuse droit vers le bas. Ton tour continue ensuite.'},
+ {k:'jet',c:'obj',n:'Jetpack',i:'🎒',am:3,d:'Vole quelques secondes : ▲ pour monter, ◀ ▶ pour te diriger, ⤴ pour couper le moteur. Ton tour continue ensuite.'},
  {k:'pou',c:'obj',n:'Poutre',i:'🏗️',am:2,tgt:1,d:'Pose une poutre d’acier où tu veux. Touche de nouveau la cible pour la faire pivoter.'},
  {k:'tel',c:'obj',n:'Téléporteur',i:'✨',am:2,tgt:1,d:'Emmène ta limace où tu veux. Touche la carte pour choisir l’endroit.'},
  {k:'pas',c:'obj',n:'Passer',i:'⏭️',am:-1,d:'Passe ton tour sans rien faire.'}];
 const WI=Object.fromEntries(WEP.map((w,i)=>[w.k,i])), WK=k=>WEP[WI[k]];
-const CRATE={mor:8,hom:6,uzi:6,min:4,grp:8,ste:3,ban:5,sba:2,dyn:6,mne:6,sel:5,arm:1.5,ane:2,vac:4,esc:5,mam:4,pig:5,bat:5,pou:4,tel:5};
+const CRATE={jet:6,mor:8,hom:6,uzi:6,min:4,grp:8,ste:3,ban:5,sba:2,dyn:6,mne:6,sel:5,arm:1.5,ane:2,vac:4,esc:5,mam:4,pig:5,bat:5,pou:4,tel:5};
 const PK={baz:{m:'b',wind:1,r:38,d:48},hom:{m:'b',r:38,d:50},mor:{m:'b',wind:1,r:22,d:18,frag:6},frag:{m:'b',r:18,d:16},sel:{m:'b',wind:1,r:26,d:26},met:{m:'b',wind:1,r:34,d:30},banf:{m:'b',r:44,d:46},
   gre:{m:'r',e:.5,fuse:3,r:36,d:45},grp:{m:'r',e:.5,fuse:3,r:28,d:26,clu:5},ste:{m:'r',e:.22,fuse:3,r:95,d:100},ban:{m:'r',e:.5,fuse:3,r:40,d:45,ban:5},sba:{m:'r',e:.5,fuse:3,r:40,d:45,ban:5,gen:2},dyn:{m:'r',e:.18,fuse:4,r:64,d:72},
   esc:{m:'w',sp:78,fuse:5,r:54,d:62,touch:1},vac:{m:'w',sp:96,fuse:6,r:42,d:46,touch:1},mam:{m:'w',sp:30,fuse:7,r:60,d:64,touch:0},
@@ -484,7 +494,7 @@ function projStep(p,E){ if(p.wait>0){ p.wait-=DT; return; } p.t+=DT; const water
       if(p.vy>0&&p.y>-40&&(solid(p.x,p.y+18)||solid(p.x-12,p.y+16)||solid(p.x+12,p.y+16)||touchBody(E,{x:p.x,y:p.y+8,t:1,k:'ane'},14))){ p.hits=(p.hits||0)+1; E.explode(p.x,p.y+12,P.r,P.d,p); p.vy=-170; if(p.hits>=9) p.dead=1; return; } } } }
 /* ---------- la simulation complète d'un tir (sur l'appareil de l'hôte) ---------- */
 function mkBody(q,s){ return s?{s:1,q,x:q.x,y:q.y,vx:0,vy:0,mv:false,h:2*BR}:{s:0,q,x:q.x,y:q.y,vx:0,vy:0,mv:false,h:q.k==='mine'?5:q.k==='baril'?18:15}; }
-function simulate(G,S,a){ const W=a.w>=0?WEP[a.w]:null, rec={t:'shot',w:a.w,s:S.id,fr:[],ex:[],dm:[],die:[],sp:[],tr:[],snd:[],oc:[],od:[],pk:[],fx:[],cr0:G.cr.length,
+function simulate(G,S,a){ const W=a.w>=0?WEP[a.w]:null, rec={t:'shot',w:a.w,s:S.id,fr:[],ex:[],dm:[],die:[],sp:[],tr:[],snd:[],oc:[],od:[],pk:[],fx:[],dig:[],cr0:G.cr.length,
     pre:G.sl.map(q=>[q.id,Math.round(q.x),Math.round(q.y),q.hp,q.al?1:0]),preO:G.obj.map(o=>[o.id,o.k,Math.round(o.x),Math.round(o.y),o.c?o.c.t:0])};
   const bodies=G.sl.map(q=>mkBody(q,1)).concat(G.obj.map(o=>mkBody(o,0))), P=[], fi=()=>rec.fr.length, last={}; let simT=0;
   const key=b=>(b.s?'s':'o')+b.q.id;
@@ -530,11 +540,17 @@ function simulate(G,S,a){ const W=a.w>=0?WEP[a.w]:null, rec={t:'shot',w:a.w,s:S.
   else if(k==='vac'){ for(let i=0;i<3;i++) P.push({k:'vac',x:S.x+face*16,y:S.y-1,vx:0,vy:0,t:0,dir:face,air:false,wait:i*.7}); rec.snd.push([0,'moo'],[21,'moo'],[42,'moo']); }
   else if(k==='pig'){ P.push({k:'pig',x:cx,y:cy-10,vx:face*120,vy:-200,t:0,tx:a.tx,ty:a.ty}); rec.snd.push([0,'coo']); }
   else if(k==='mne'){ const o={id:G.oid++,k:'mine',x:cx+face*10,y:cy,arm:G.turns}; G.obj.push(o); const b=mkBody(o,0); b.vx=face*110; b.vy=-90; b.mv=true; b.pt=0; bodies.push(b); last[key(b)]=[Math.round(b.x),Math.round(b.y)]; rec.oc.push([0,o.id,'mine',Math.round(o.x),Math.round(o.y),0]); rec.snd.push([0,'throw']); }
+  let drill=null;
+  if(k==='cha'||k==='mar'){ drill={dx:k==='mar'?0:ca,dy:k==='mar'?1:sa,left:k==='mar'?110:150,acc:99,k}; rec.snd.push([0,'drill']); }
   else if(k==='tel'){ me.x=a.tx; me.y=a.ty; me.mv=true; rec.snd.push([0,'tel']); rec.ex.push([0,Math.round(cx),Math.round(cy+BR),0]); rec.fx.push([1,'tel',Math.round(a.tx),Math.round(a.ty)]); }
   const record=()=>{ const pa=[], sa2=[], oa=[]; for(const p of P) if(!p.dead&&!(p.wait>0)) pa.push(KI[p.k],Math.round(p.x),Math.round(p.y));
     for(const b of bodies){ if(!b.s&&b.q.dead) continue; const kk=key(b), x=Math.round(b.x), y=Math.round(b.y); if(last[kk][0]===x&&last[kk][1]===y) continue; last[kk]=[x,y]; (b.s?sa2:oa).push(b.q.id,x,y); }
     rec.fr.push([pa,sa2,oa]); };
   for(let step=0;step<60*20;step++){ simT+=DT;
+    if(drill){ const st=72*DT; me.x+=drill.dx*st; me.y+=drill.dy*st; me.vx=me.vy=0; me.mv=false; drill.left-=st; drill.acc+=st;
+      if(drill.acc>=4){ drill.acc=0; const c=drill.k==='mar'?[Math.round(me.x),Math.round(me.y-3),11]:[Math.round(me.x+drill.dx*5),Math.round(me.y-BR+drill.dy*5),12];
+        const hit=solid(c[0],c[1])||solid(c[0]+drill.dx*9,c[1]+drill.dy*9)||solid(c[0]+drill.dx*9-drill.dy*8,c[1]+drill.dy*9+drill.dx*8)||solid(c[0]+drill.dx*9+drill.dy*8,c[1]+drill.dy*9-drill.dx*8); if(hit){ drill.hit=1; drill.air=0; } else drill.air=(drill.air||0)+1; if(drill.air>=(drill.hit?6:10)){ drill.left=0; } carve(T.sol,c); G.cr.push(c); T.n++; rec.dig.push([fi(),c[0],c[1],c[2]]); if(rec.dig.length%6===0) rec.snd.push([fi(),'drill']); }
+      if(drill.left<=0||me.y>=G.water-6||me.x<6||me.x>WW-6||me.y<16){ drill=null; me.mv=true; } }
     for(let i=0;i<P.length;i++){ const p=P[i]; if(!p.dead) projStep(p,E); }
     for(const b of bodies){ if(b.s?!b.q.al:b.q.dead) continue; if(b.mv) stepBody(b,G,rec,fi,drown,hurt); }
     for(const b of bodies){ if(b.s||b.q.dead) continue; const o=b.q;
@@ -546,7 +562,7 @@ function simulate(G,S,a){ const W=a.w>=0?WEP[a.w]:null, rec={t:'shot',w:a.w,s:S.
     /* une limace à bout de forces explose, l'une après l'autre */
     for(const b of bodies){ if(!b.s||!b.q.al||b.dz==null) continue; b.dz-=DT; if(b.dz<=0){ b.dz=null; const q=b.q; q.al=false; q.hp=0; q.gs=1; b.mv=false; rec.die.push([fi(),q.id,0]); E.explode(b.x,b.y-BR,30,22); } }
     if(step%2===0) record();
-    if(step>6&&!P.some(p=>!p.dead)&&!bodies.some(b=>(b.s?b.q.al:!b.q.dead)&&(b.mv||b.boom!=null||b.fz>0||b.dz!=null))){
+    if(step>6&&!drill&&!P.some(p=>!p.dead)&&!bodies.some(b=>(b.s?b.q.al:!b.q.dead)&&(b.mv||b.boom!=null||b.fz>0||b.dz!=null))){
       const dying=bodies.filter(b=>b.s&&b.q.al&&b.q.hp<=0); if(!dying.length) break; dying.forEach((b,i)=>{ b.dz=.45+i*.55; rec.snd.push([fi()+Math.round((.45+i*.55)*30)-12,'fuse']); }); } }
   record();
   for(const b of bodies){ const q=b.q; q.x=Math.round(b.x*10)/10; q.y=Math.round(b.y*10)/10; if(b.s&&q.al&&q.hp<=0){ q.al=false; q.hp=0; q.gs=1; rec.die.push([fi(),q.id,0]); } }
@@ -570,7 +586,7 @@ function stepBody(b,G,rec,fi,drown,hurt){ b.vy+=GR*DT; const n=Math.max(1,Math.c
 const alive=(G,t)=>G.sl.some(q=>q.tm===t&&q.al);
 function endCheck(G){ if(G.over) return true; const al=G.players.map((_,t)=>alive(G,t)), na=al.filter(Boolean).length; if(na>1) return false;
   const w=al.indexOf(true); G.over=w>=0?{winners:[w],title:`${G.players[w].name} gagne !`,text:'Ses limaces sont les dernières encore debout.'}:{winners:[],title:'Match nul',text:'Plus aucune limace en vie.'}; return true; }
-function nextTurn(G,ev){ const N=G.players.length; G.pend=null;
+function nextTurn(G,ev){ const N=G.players.length; G.pend=null; G.sub=0;
   if(endCheck(G)) return;
   /* 1. l'eau monte AVANT de choisir qui joue : on ne désigne jamais une limace qui vient de se noyer */
   if(G.sd&&G.round>=G.sd){ G.water=Math.max(WH*.3,G.water-18); ev.push({t:'eau'});
@@ -637,6 +653,7 @@ function walkFrom(G,S,dir,dist){ let x=S.x,y=S.y,d=0; while(d<dist){ const nx=x+
 function aiPlan(G,S,lv){ let shot=bestShot(G,S,lv,S.x,S.y), mv=null;
   if(shot.v<18&&!G.pend){ const foes=G.sl.filter(q=>q.al&&q.tm!==S.tm).sort((a,b)=>Math.abs(a.x-S.x)-Math.abs(b.x-S.x)); const dir=foes.length&&foes[0].x<S.x?-1:1;
     for(const dd of [dir,-dir]){ const w=walkFrom(G,S,dd,WALK*.8); if(w.d<30) continue; const s2=bestShot(G,S,lv,w.x,w.y); if(s2.v>shot.v+6){ shot=s2; mv={x:w.x,y:w.y,f:dd}; break; } } }
+  if(shot.v<5&&!G.pend&&!mv&&(G.sub||0)<1&&walkFrom(G,S,1,40).d<30&&walkFrom(G,S,-1,40).d<30){ const foes=G.sl.filter(q=>q.al&&q.tm!==S.tm).sort((a,b)=>Math.abs(a.x-S.x)-Math.abs(b.x-S.x)); const f=foes[0]; const ang=f?Math.atan2(clamp(f.y-S.y,-80,40),f.x-S.x):-Math.PI/2; return {mv:null,fire:{t:'f',w:WI.cha,a:ang,p:1}}; }
   const a=Object.assign({},shot.a), W=WEP[a.w], er=lv==='facile'?[6,.1]:lv==='normal'?[1.6,.035]:[.5,.012];
   if(W.aim&&W.k!=='bat'&&W.k!=='fpu'&&W.k!=='pic'){ a.a+=(Math.random()*2-1)*er[0]*Math.PI/180; if(W.pow) a.p=clamp(a.p*(1+(Math.random()*2-1)*er[1]),.1,1); }
   if(W.k==='sel'||W.k==='ane') a.tx+=Math.round((Math.random()*2-1)*er[0]*6);
@@ -654,9 +671,10 @@ let TKEY=null, TEL=0, TBEEP=0, TFORCED=null;
 const timeLeft=G=>G&&G.tt?G.tt*1000-TEL:Infinity;
 const canAct=()=>{ const G=TK.G(); return !!(G&&!G.over&&TK.canPlay()&&!PLAY&&timeLeft(G)>0); };
 const actSlug=G=>G.sl.find(q=>q.id===G.act);
-function resize(){ const st=$('#stage'); const top=st.getBoundingClientRect().top+scrollY; st.style.height=Math.max(340,innerHeight-top-2)+'px';
+const VH=()=>Math.round(window.visualViewport?visualViewport.height:innerHeight);
+function resize(){ const st=$('#stage'); if(scrollY) scrollTo(0,0); const top=st.getBoundingClientRect().top; st.style.height=Math.max(170,VH()-top-2)+'px';
   const r=cv.getBoundingClientRect(); DPR=Math.min(2,devicePixelRatio||1); CW=r.width; CH=r.height; cv.width=Math.round(CW*DPR); cv.height=Math.round(CH*DPR); BG.key=null; }
-addEventListener('resize',resize);
+addEventListener('resize',resize); if(window.visualViewport) visualViewport.addEventListener('resize',resize); addEventListener('orientationchange',()=>setTimeout(resize,250));
 const defZ=()=>clamp(CW<700?Math.min(CW/470,CH/380):Math.min(CW/820,CH/480),.32,1.5), fitZ=()=>Math.min(CW/WW,CH/(WH-80))*.98;
 const w2s=(x,y)=>[(x-cam.x)*cam.z+CW/2,(y-cam.y)*cam.z+CH/2], s2w=(x,y)=>[(x-CW/2)/cam.z+cam.x,(y-CH/2)/cam.z+cam.y];
 /* ---------- bruitages (synthétisés) ---------- */
@@ -708,6 +726,8 @@ function snd(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
   case 'thud': vo(a,t,{type:'sine',f:130,f1:60,d:.12,v:.25}); break;
   case 'clonk': vo(a,t,{type:'triangle',f:240,f1:180,d:.1,v:.18}); break;
   case 'step': nzf(a,t,.05,.05,'lowpass',500); break;
+  case 'drill': for(let i=0;i<6;i++) nzf(a,t+i*.05,.04,.22,'bandpass',300+R()*500,0,4); vo(a,t,{type:'square',f:70,d:.3,v:.05,lp:400}); break;
+  case 'jet': nzf(a,t,.25,.12,'lowpass',900,500); break;
   default: sfx(n); } }
 /* ---------- règles et définition du jeu ---------- */
 const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defaultPlayers:2,
@@ -745,6 +765,7 @@ const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defau
     if(G.pend&&W.k!=='pom'&&W.k!=='pas') return false;
     if(!G.pend&&!has(G,s,W.k)) return false;
     if(W.k==='cor') return false;
+    if(W.k==='jet'){ if(G.pend) return false; if(tm.am.jet>0) tm.am.jet--; return [{t:'jet',id:q.id}]; }
     if(a.x!=null&&okPos(+a.x,+a.y,a.r?-1:150)){ if(!a.r) G.walk=Math.max(0,G.walk-Math.abs(+a.x-q.x)); q.x=+a.x; q.y=+a.y; }
     if(W.k==='pas'){ const ev=[{t:'pass',id:q.id,to:a.to?1:0}]; nextTurn(G,ev); LASTDUR=dropDur(ev); return ev; }
     const tx=+a.tx, ty=+a.ty;
@@ -758,8 +779,9 @@ const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defau
     if(!G.pend&&tm.am[W.k]>0) tm.am[W.k]--;
     const r=simulate(G,q,{w,a:+a.a||0,p:+a.p||0,tx,ty}); const ev=[r]; LASTDUR=Math.round(r.fr.length/30*1000)+400;
     if(W.k==='pom'&&!G.pend&&q.al&&!endCheck(G)){ G.pend={w:'pom',n:1}; return ev; }
+    if((W.k==='cha'||W.k==='mar')&&q.al&&!endCheck(G)){ G.sub=(G.sub||0)+1; return ev; }
     nextTurn(G,ev); LASTDUR+=dropDur(ev); return ev; },
-  ai(G,s,lv){ sync(G); const S=actSlug(G); if(!S||!S.al) return {t:'f',w:WI.pas}; const key=G.gid+':'+G.turns+':'+(G.pend?1:0);
+  ai(G,s,lv){ sync(G); const S=actSlug(G); if(!S||!S.al) return {t:'f',w:WI.pas}; const key=G.gid+':'+G.turns+':'+(G.pend?1:0)+':'+(G.sub||0);
     if(PLAN.key!==key){ PLAN=Object.assign({key,step:0},aiPlan(G,S,lv)); }
     if(PLAN.mv&&PLAN.step===0){ PLAN.step=1; return {t:'mv',x:PLAN.mv.x,y:PLAN.mv.y,f:PLAN.mv.f}; }
     if(PLAN.step>=2) return {t:'f',w:G.pend?WI.pom:WI.pas,a:S.f>0?0:Math.PI,p:1}; PLAN.step=2; return PLAN.fire; },
@@ -788,7 +810,7 @@ const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defau
   help(){ helpTabs('Limaces à l’assaut',[['Règles','<ul><li>Chaque joueur dirige une équipe de limaces (2 à 4). Les équipes jouent chacune à son tour, et dans une équipe les limaces se relaient.</li><li>À ton tour, tu as <b>30 secondes</b> (réglable) : déplace ta limace (sa bave a ses limites : la jauge sous elle), puis utilise <b>une</b> arme. Le temps écoulé, le tour passe. Le tour passe ensuite à l’équipe suivante. Seuls le fusil à pompe (deux tirs) et la corde de bave laissent rejouer.</li><li>Les explosions blessent, projettent les limaces et <b>creusent le terrain</b>. Une chute de haut fait mal ; une limace qui tombe à l’eau est perdue.</li><li>Une limace à bout de forces <b>explose</b> : gare à ses voisines !</li><li>Le <b>vent</b> (jauge en haut) change à chaque tour et dévie le bazooka, le mortier, la pluie de sel et les météores.</li><li>Avec la montée des eaux, l’eau monte un peu à chaque tour passé le délai choisi.</li><li>La dernière équipe qui a encore une limace en vie gagne.</li></ul>'],
     ['Caisses et objets','<ul><li>📦 <b>Caisses d’armes</b> : elles tombent du ciel en parachute. Passe dessus pour récupérer une arme, parfois une super-arme (Sainte grenade, Super banane, Âne en béton, Armageddon).</li><li>➕ <b>Caisses de soin</b> : +25 points de vie.</li><li>⭕ <b>Mines</b> : elles explosent peu après qu’une limace s’approche.</li><li>🛢️ <b>Barils</b> : ils explosent au moindre souffle d’explosion.</li><li>Une caisse touchée par une explosion saute aussi !</li></ul>'],
     ['Armes',CATS.map(([c,l])=>`<h4>${l}</h4><ul>`+WEP.filter(w=>w.c===c).map(w=>`<li><b>${w.i} ${w.n}</b>${w.am>0?` (${w.am} au départ)`:w.am===0?' (dans les caisses)':''} : ${w.d}</li>`).join('')+'</ul>').join('')],
-    ['Commandes','<p><b>Sur téléphone ou tablette</b></p><ul><li>◀ ▶ pour avancer, ⤴ pour sauter.</li><li>Pour viser, glisse le doigt <b>depuis ta limace</b> vers la cible : la longueur du geste règle la puissance. Puis « Tirer ».</li><li>Glisse ailleurs sur la carte pour la parcourir ; pince pour zoomer, ⛶ pour la vue d’ensemble.</li><li>Armes à cible (pluie de sel, missile, pigeon, âne, poutre, téléporteur) : touche la carte pour choisir la cible.</li><li>Corde de bave : ◀ ▶ pour se balancer, ▲ ▼ pour monter et descendre, ⤴ pour lâcher.</li></ul><p><b>Au clavier</b></p><ul><li>← → avancer, Entrée sauter, ↑ ↓ viser (ou monter et descendre sur la corde).</li><li>Maintiens Espace pour charger la puissance, relâche pour tirer.</li><li>Tab : choisir l’arme. Molette : zoom.</li></ul>'],
+    ['Commandes','<p><b>Sur téléphone ou tablette</b></p><ul><li>◀ ▶ pour avancer, ⤴ pour sauter.</li><li>Pour viser, glisse le doigt <b>depuis ta limace</b> vers la cible : la longueur du geste règle la puissance. Puis « Tirer ».</li><li>Glisse ailleurs sur la carte pour la parcourir ; pince pour zoomer, ⛶ pour la vue d’ensemble.</li><li>Armes à cible (pluie de sel, missile, pigeon, âne, poutre, téléporteur) : touche la carte pour choisir la cible.</li><li>Corde de bave : ◀ ▶ pour se balancer, ▲ ▼ pour monter et descendre, ⤴ pour lâcher.</li><li>Jetpack : ▲ pour monter, ◀ ▶ pour te diriger, ⤴ pour couper le moteur.</li><li>Coincé dans un trou ? Le chalumeau, le marteau-piqueur, le jetpack, la corde ou le téléporteur te sortent de là.</li></ul><p><b>Au clavier</b></p><ul><li>← → avancer, Entrée sauter, ↑ ↓ viser (ou monter et descendre sur la corde).</li><li>Maintiens Espace pour charger la puissance, relâche pour tirer.</li><li>Tab : choisir l’arme. Molette : zoom.</li></ul>'],
     ['Conseils','<ul><li>Tire un peu au-dessus de la cible et compte avec le vent.</li><li>La grenade ignore le vent : idéale pour atteindre une limace cachée derrière une butte.</li><li>Une limace au bord de l’eau est en danger : une batte ou une pichenette suffit parfois…</li><li>Va chercher les caisses : une Sainte grenade peut renverser une partie.</li></ul>']]); } };
 function dropDur(ev){ return ev.some(e=>e.t==='drop')?1900:0; }
 TK.def(D);
@@ -869,6 +891,7 @@ function playStep(G,now){ const P=PLAY, e=P.e, f=Math.min(e.fr.length-1,Math.flo
     while(P.spI<e.sp.length&&e.sp[P.spI][0]<=P.f){ splash(e.sp[P.spI][1]); snd('splash'); P.spI++; }
     while(P.odI<(e.od||[]).length&&e.od[P.odI][0]<=P.f){ delete P.obj[e.od[P.odI][1]]; P.odI++; }
     while(P.pkI<(e.pk||[]).length&&e.pk[P.pkI][0]<=P.f){ const [,id,,txt,hp]=e.pk[P.pkI]; const p=P.pos[id]; if(p) FX.push({k:'tx',x:p[0],y:p[1]-34,t:0,d:2.2,s:txt,c:'#ffe27a',big:1}); if(hp) P.hp[id]+=hp; snd(hp?'heal':'pick'); P.pkI++; }
+    P.digI=P.digI||0; while(P.digI<(e.dig||[]).length&&e.dig[P.digI][0]<=P.f){ const [,x,y,r]=e.dig[P.digI]; P.crN++; for(let i=0;i<3;i++){ const a=Math.random()*6.28, sp=60+Math.random()*120; FX.push({k:'db',x:x+Math.cos(a)*r,y:y+Math.sin(a)*r,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-60,t:0,d:.5,c:rgb(TH().soil)}); } FX.push({k:'sp',x,y,vx:(Math.random()-.5)*80,vy:-40,t:0,d:.25}); P.digI++; }
     while(P.dieI<e.die.length&&e.die[P.dieI][0]<=P.f){ const [,id,how]=e.die[P.dieI]; P.al[id]=false; const p=P.pos[id]; if(p&&!how){ FX.push({k:'ko',x:p[0],y:p[1],t:0,d:1.2}); snd('death'); } P.dieI++; } }
   if(now>PLAYEND){ PLAY=null; ui(); TK.status(); } }
 /* ---------- dessin ---------- */
@@ -953,9 +976,9 @@ function viewSlugs(G){ const out=[];
   return out; }
 function drawGraves(G){ for(const q of G.sl){ if(q.al||!q.gs) continue; if(PLAY&&PLAY.al[q.id]) continue; const y=groundBelow(q.x,q.y,300); if(y>=G.water) continue;
   ctx.fillStyle='rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(q.x+1,y+1,9,2.5,0,0,7); ctx.fill(); ctx.fillStyle='#9aa0b4'; ctx.beginPath(); ctx.moveTo(q.x-7,y); ctx.lineTo(q.x-7,y-12); ctx.arc(q.x,y-12,7,Math.PI,0); ctx.lineTo(q.x+7,y); ctx.fill(); ctx.fillStyle='#6a7090'; ctx.fillRect(q.x-1,y-15,2,9); ctx.fillRect(q.x-3.5,y-12,7,2); } }
-let LT=performance.now(), LTOP=0;
+let LT=performance.now(), LTOP=0, LVH=0;
 function frame(now){ requestAnimationFrame(frame); const dt=Math.min(.05,(now-LT)/1000); LT=now; const G=TK.G(), t=now/1000;
-  const tp=$('#stage').getBoundingClientRect().top; if(!CW||Math.abs(tp-LTOP)>1){ LTOP=tp; resize(); } ctx.setTransform(DPR,0,0,DPR,0,0);
+  const tp=$('#stage').getBoundingClientRect().top, vh=VH(); if(!CW||Math.abs(tp-LTOP)>1||vh!==LVH){ LTOP=tp; LVH=vh; resize(); } ctx.setTransform(DPR,0,0,DPR,0,0);
   if(!G){ ctx.fillStyle='#0d1830'; ctx.fillRect(0,0,CW,CH); return; }
   if(!T.tex||T.gid!==G.gid){ sync(G); paint(); }
   if(PLAY) playStep(G,now);
@@ -987,11 +1010,11 @@ function frame(now){ requestAnimationFrame(frame); const dt=Math.min(.05,(now-LT
   drawGraves(G);
   const objs=PLAY?Object.entries(PLAY.obj).map(([id,o])=>{ const g=G.obj.find(x=>x.id===+id); return {id:+id,k:o.k,x:o.x,y:o.y,c:o.c==='hp'?{t:'hp'}:{t:'w'},arm:g?g.arm:-1}; }):G.obj;
   for(const o of objs){ const dr=DROPS[o.id]; if(dr&&!PLAY){ if(now<dr.t0) continue; const k=(now-dr.t0)/1500; if(k<1){ drawObj(o,t,G,-(1-k)*(o.y+80),true); continue; } } drawObj(o,t,G); }
-  const walking=LOC&&(KEYS.left||KEYS.right)&&!LOC.rope;
+  const walking=LOC&&(KEYS.left||KEYS.right)&&!LOC.rope&&!LOC.jet;
   for(const s of S){ const q=s.q, isA=!PLAY&&a&&q.id===a.id&&!G.over, me=isA&&canAct(), face=isA&&LOC?LOC.face:q.f; const look=me&&WEP[AIM.w].aim?aimAngle():face>0?0:Math.PI;
     const hurt=PLAY&&PLAY.hurt&&PLAY.hurt[q.id]&&now-PLAY.hurt[q.id]<180;
     if(me&&LOC&&LOC.rope){ ctx.lineCap='round'; ctx.strokeStyle='rgba(20,40,10,.5)'; ctx.lineWidth=4.5; ctx.beginPath(); ctx.moveTo(s.x,s.y-BR); ctx.lineTo(LOC.rope.x,LOC.rope.y); ctx.stroke(); ctx.strokeStyle='#c8f59a'; ctx.lineWidth=2.5; ctx.stroke(); ctx.fillStyle='#bff0a0'; ctx.beginPath(); ctx.arc(LOC.rope.x,LOC.rope.y,3,0,7); ctx.fill(); }
-    drawSlug(s.x,s.y,G.players[q.tm].col,face,s.hp,q.n,isA,t+q.id*1.7,look,isA&&walking,hurt,me&&!(LOC&&LOC.rope)?WEP[AIM.w].i:null); }
+    drawSlug(s.x,s.y,G.players[q.tm].col,face,s.hp,q.n,isA,t+q.id*1.7,look,isA&&walking,hurt,me&&!(LOC&&(LOC.rope||LOC.jet))?WEP[AIM.w].i:null); }
   if(PLAY&&PLAY.proj){ const pr=PLAY.proj, prev=PLAY.prev||pr; for(let i=0;i<pr.length;i+=3){ const px=prev[i]===pr[i]&&prev[i+1]!=null?prev[i+1]:pr[i+1]-1, py=prev[i]===pr[i]&&prev[i+2]!=null?prev[i+2]:pr[i+2]; drawProj(pr[i],pr[i+1],pr[i+2],px,py,t); } }
   drawFX(dt);
   drawWater(G,t,true);
@@ -1001,14 +1024,16 @@ function frame(now){ requestAnimationFrame(frame); const dt=Math.min(.05,(now-LT
 requestAnimationFrame(frame);
 function aimAngle(){ const f=LOC?LOC.face:1; return f>0?-AIM.e:Math.PI+AIM.e; }
 function drawAim(G,a,t){ const W=WEP[AIM.w], x=LOC?LOC.x:a.x, y=(LOC?LOC.y:a.y)-BR;
-  if(LOC&&LOC.rope) return;
+  if(LOC&&(LOC.rope||LOC.jet)){ if(LOC.jet) drawFuel(); return; }
+  function drawFuel(){ const k=LOC.jet.fuel/5; ctx.fillStyle='rgba(16,20,48,.6)'; rr(x-16,y+BR+5,32,5,2.5); ctx.fill(); ctx.fillStyle=k>.3?'#ffb02e':'#e8433a'; rr(x-16,y+BR+5,32*k,5,2.5); ctx.fill(); }
   if(W.aim){ const ang=aimAngle(), r=W.k==='bat'||W.k==='fpu'?26:56, X=x+Math.cos(ang)*r, Y=y+Math.sin(ang)*r; ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(X,Y,6,0,7); ctx.stroke(); ctx.beginPath(); ctx.moveTo(X-9,Y); ctx.lineTo(X-4,Y); ctx.moveTo(X+4,Y); ctx.lineTo(X+9,Y); ctx.moveTo(X,Y-9); ctx.lineTo(X,Y-4); ctx.moveTo(X,Y+4); ctx.lineTo(X,Y+9); ctx.stroke(); ctx.fillStyle='#e8433a'; ctx.beginPath(); ctx.arc(X,Y,1.6,0,7); ctx.fill();
     if(W.k==='cor'){ ctx.setLineDash([4,6]); ctx.strokeStyle='rgba(190,240,160,.6)'; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+Math.cos(ang)*ROPE,y+Math.sin(ang)*ROPE); ctx.stroke(); ctx.setLineDash([]); }
     if(W.pow){ const p=AIM.charging?Math.min(1,(performance.now()-AIM.charging)/1400):AIM.p; for(let i=1;i<=12;i++){ const k=i/12; if(k>p+.001) break; const d=16+k*70, rad=2+k*4.5; ctx.fillStyle=`hsl(${55-k*55},95%,55%)`; ctx.beginPath(); ctx.arc(x+Math.cos(ang)*d,y+Math.sin(ang)*d,rad,0,7); ctx.fill(); } } }
   if(W.tgt&&AIM.tx!=null){ const s=1+Math.sin(t*6)*.08, ty=AIM.ty-(W.k==='tel'?BR:0);
     if(W.k==='pou'){ const {ux,uy}=girderPts(['g',AIM.tx,AIM.ty,AIM.g]); ctx.save(); ctx.translate(AIM.tx,AIM.ty); ctx.rotate(Math.atan2(uy,ux)); ctx.fillStyle='rgba(184,101,60,.6)'; ctx.fillRect(-GL/2,-GT/2,GL,GT); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.strokeRect(-GL/2,-GT/2,GL,GT); ctx.restore(); }
     else { ctx.strokeStyle=W.k==='tel'?'#c9b0ff':'#fff'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(AIM.tx,ty,14*s,0,7); ctx.moveTo(AIM.tx-20,ty); ctx.lineTo(AIM.tx-8,ty); ctx.moveTo(AIM.tx+8,ty); ctx.lineTo(AIM.tx+20,ty); ctx.moveTo(AIM.tx,ty-20); ctx.lineTo(AIM.tx,ty-8); ctx.moveTo(AIM.tx,ty+8); ctx.lineTo(AIM.tx,ty+20); ctx.stroke(); } }
-  if(LOC&&!LOC.rp){ const k=clamp(WALK-LOC.used,0,WALK)/WALK; ctx.fillStyle='rgba(16,20,48,.6)'; rr(x-16,y+BR+5,32,5,2.5); ctx.fill(); ctx.fillStyle=k>.25?'#7cf0a0':'#ffb02e'; rr(x-16,y+BR+5,32*k,5,2.5); ctx.fill(); } }
+  if(LOC&&LOC.jet){ const k=LOC.jet.fuel/5; ctx.fillStyle='rgba(16,20,48,.6)'; rr(x-16,y+BR+5,32,5,2.5); ctx.fill(); ctx.fillStyle=k>.3?'#ffb02e':'#e8433a'; rr(x-16,y+BR+5,32*k,5,2.5); ctx.fill(); }
+  else if(LOC&&!LOC.rp){ const k=clamp(WALK-LOC.used,0,WALK)/WALK; ctx.fillStyle='rgba(16,20,48,.6)'; rr(x-16,y+BR+5,32,5,2.5); ctx.fill(); ctx.fillStyle=k>.25?'#7cf0a0':'#ffb02e'; rr(x-16,y+BR+5,32*k,5,2.5); ctx.fill(); } }
 function hud(G,S){ ctx.save(); ctx.font='800 12px Figtree,system-ui,sans-serif';
   const ww=CW<560?96:130, wx=CW<560?CW-ww/2-16:CW/2, wy=16; ctx.fillStyle='rgba(16,20,48,.75)'; rr(wx-ww/2-8,wy-10,ww+16,26,9); ctx.fill(); ctx.fillStyle='rgba(255,255,255,.16)'; rr(wx-ww/2,wy-2,ww,10,5); ctx.fill();
   const wv=G.wind*ww/2; if(wv){ const g=ctx.createLinearGradient(wx,0,wx+wv,0); g.addColorStop(0,'#7cd0ff'); g.addColorStop(1,Math.abs(G.wind)>.6?'#ff7a5c':'#bfeaff'); ctx.fillStyle=g; rr(wv>0?wx:wx+wv,wy-2,Math.abs(wv),10,5); ctx.fill();
@@ -1025,9 +1050,18 @@ function hud(G,S){ ctx.save(); ctx.font='800 12px Figtree,system-ui,sans-serif';
   ctx.restore(); }
 /* ---------- déplacement de sa limace (sur son propre appareil) ---------- */
 const KEYS={left:false,right:false,up:false,down:false};
-function locStep(G,dt){ const q=actSlug(G); if(!q||!q.al) return; const key=G.gid+':'+G.turns+':'+(G.pend?1:0);
-  if(!LOC||LOC.key!==key) LOC={key,id:q.id,x:q.x,y:q.y,vx:0,vy:0,air:!supported(q.x,q.y),face:q.f,used:G.walk<WALK?WALK-G.walk:0,sent:[q.x,q.y],st:0,rp:false,rope:null};
+function locStep(G,dt){ const q=actSlug(G); if(!q||!q.al) return; const key=G.gid+':'+G.turns+':'+(G.pend?1:0)+':'+(G.sub||0);
+  if(!LOC||LOC.key!==key){ const rp=LOC&&LOC.key&&LOC.key.split(':').slice(0,2).join(':')===key.split(':').slice(0,2).join(':')&&LOC.rp; LOC={key,id:q.id,x:q.x,y:q.y,vx:0,vy:0,air:!supported(q.x,q.y),face:q.f,used:G.walk<WALK?WALK-G.walk:0,sent:[q.x,q.y],st:0,rp:!!rp,rope:null,jet:null}; }
   const L=LOC, dir=(KEYS.right?1:0)-(KEYS.left?1:0); L.st+=dt;
+  if(L.jet){ const J=L.jet, thr=KEYS.up&&J.fuel>0; if(thr||dir) J.fuel=Math.max(0,J.fuel-dt*(thr?1:.4)); if(dir) L.face=dir;
+    L.vy+=GR*dt; if(thr) L.vy-=GR*2.15*dt; if(dir&&J.fuel>0) L.vx+=dir*440*dt; L.vx*=Math.pow(.45,dt); L.vy=clamp(L.vy,-250,420); L.vx=clamp(L.vx,-190,190);
+    if((thr||dir)&&Math.random()<dt*8) snd('jet'); if(thr) FX.push({k:'fi',x:L.x-L.face*6,y:L.y-4,vx:(Math.random()-.5)*40,vy:80+Math.random()*60,t:0,d:.35});
+    let nx=L.x+L.vx*dt, ny=L.y+L.vy*dt;
+    if(solid(nx,ny-BR)||solid(nx,ny-2*BR)){ if(solid(L.x,ny-2*BR)&&L.vy<0){ L.vy=0; ny=L.y; } if(solid(nx,L.y-BR)){ L.vx=0; nx=L.x; } }
+    if(solid(nx,ny)){ if(L.vy>=0){ ny=settle(nx,ny); L.vy=0; L.vx*=.5; } else ny=L.y; }
+    L.x=clamp(nx,-40,WW+40); L.y=ny; if(L.y>=G.water){ L.jet=null; send(true); return; }
+    if(J.fuel<=0&&!supported(L.x,L.y)){ L.jet=null; L.air=true; ui(); } else if(J.fuel<=0){ L.jet=null; ui(); }
+    if(L.st>.12){ L.st=0; send(false); } return; }
   if(L.rope){ const R=L.rope; L.vy+=GR*dt; L.vx+=dir*300*dt; if(dir) L.face=dir;
     if(KEYS.up) R.len=Math.max(24,R.len-150*dt); if(KEYS.down) R.len=Math.min(ROPE,R.len+150*dt);
     let nx=L.x+L.vx*dt, ny=L.y+L.vy*dt; const dx=nx-R.x, dy=ny-BR-R.y, d=Math.hypot(dx,dy);
@@ -1044,10 +1078,11 @@ function locStep(G,dt){ const q=actSlug(G); if(!q||!q.al) return; const key=G.gi
   if(L.st>.16){ L.st=0; send(false); } }
 function send(force){ const L=LOC; if(!L||!canAct()) return; if(!force&&Math.abs(L.x-L.sent[0])<.5&&Math.abs(L.y-L.sent[1])<.5&&L.face===L.sf) return;
   L.sent=[L.x,L.y]; L.sf=L.face; const a={t:'mv',x:Math.round(L.x*10)/10,y:Math.round(L.y*10)/10,f:L.face}; if(L.rp) a.r=1; TK.input(a); }
-function jump(){ if(!canAct()||!LOC) return; if(LOC.rope){ LOC.rope=null; LOC.air=true; snd('rope'); ui(); return; } if(LOC.air) return; if(LOC.used>WALK-12&&!LOC.rp){ toast('Ta limace est à bout de bave pour ce tour.'); return; } LOC.air=true; LOC.vy=-235; LOC.vx=LOC.face*100; LOC.y-=1; snd('flap'); }
+function jump(){ if(!canAct()||!LOC) return; if(LOC.jet){ LOC.jet=null; LOC.air=!supported(LOC.x,LOC.y); send(true); ui(); return; } if(LOC.rope){ LOC.rope=null; LOC.air=true; snd('rope'); ui(); return; } if(LOC.air) return; if(LOC.used>WALK-12&&!LOC.rp){ toast('Ta limace est à bout de bave pour ce tour.'); return; } LOC.air=true; LOC.vy=-235; LOC.vx=LOC.face*100; LOC.y-=1; snd('flap'); }
 function fire(){ const G=TK.G(); if(!canAct()) return; const W=WEP[AIM.w];
-  if(LOC&&LOC.rope){ jump(); return; }
+  if(LOC&&(LOC.rope||LOC.jet)){ jump(); return; }
   if(!G.pend&&!has(G,G.turn,W.k)){ toast('Plus de munitions pour cette arme.'); return; }
+  if(W.k==='jet'){ if(!LOC) locStep(G,0); if(!LOC) return; if(TK.input({t:'f',w:AIM.w})){ LOC.jet={fuel:5}; LOC.air=true; LOC.rp=true; LOC.vy=-60; snd('jet'); ui(); } return; }
   if(W.tgt&&AIM.tx==null){ toast('Touche la carte pour choisir la cible.'); return; }
   if(W.k==='tel'&&(solid(AIM.tx,AIM.ty-BR)||solid(AIM.tx,AIM.ty-2)||AIM.ty>=G.water-12)){ toast('Impossible d’aller là : choisis un endroit dégagé.'); return; }
   if(W.k==='cor'){ if(!LOC) locStep(G,0); const L=LOC; if(!L) return; const ang=aimAngle(), x0=L.x, y0=L.y-BR;
@@ -1061,10 +1096,10 @@ function fire(){ const G=TK.G(); if(!canAct()) return; const W=WEP[AIM.w];
 /* ---------- barre de commandes ---------- */
 function ui(){ const G=TK.G(), on=canAct(), bar=$('#bar'); bar.classList.toggle('off',!on);
   if(G&&on&&!G.pend&&!has(G,G.turn,WEP[AIM.w].k)) AIM.w=0; if(G&&G.pend) AIM.w=WI.pom;
-  const W2=WEP[AIM.w], rope=!!(LOC&&LOC.rope); $('#wbtn').textContent=`${W2.i} ${W2.n}`; $('#wbtn').disabled=!on||!!(G&&G.pend)||rope;
-  $$('#bar [data-k="up"],#bar [data-k="down"]').forEach(b=>b.hidden=!rope);
+  const W2=WEP[AIM.w], rope=!!(LOC&&(LOC.rope||LOC.jet)), jet=!!(LOC&&LOC.jet); $('#wbtn').textContent=`${W2.i} ${W2.n}`; $('#wbtn').disabled=!on||!!(G&&G.pend)||rope;
+  $$('#bar [data-k="up"]').forEach(b=>b.hidden=!rope); $$('#bar [data-k="down"]').forEach(b=>b.hidden=!rope||jet);
   const f=$('#fire'); f.disabled=!on;
-  f.textContent=rope?'Lâcher':G&&G.pend?'2e tir':W2.k==='pas'?'Passer':W2.k==='cor'?'Lancer la corde':W2.tgt&&AIM.tx==null?'Choisis la cible':W2.k==='dyn'?`Lancer · ${Math.round(AIM.p*100)} %`:W2.pow?`Tirer · ${Math.round(AIM.p*100)} %`:W2.k==='mne'?'Lancer':W2.k==='esc'||W2.k==='vac'||W2.k==='mam'?'Lâcher':W2.k==='tel'?'Y aller':W2.k==='pou'?'Poser':W2.k==='bat'||W2.k==='fpu'||W2.k==='pic'?'Frapper':'Tirer';
+  f.textContent=jet?'Couper le moteur':rope?'Lâcher':G&&G.pend?'2e tir':W2.k==='pas'?'Passer':W2.k==='cor'?'Lancer la corde':W2.tgt&&AIM.tx==null?'Choisis la cible':W2.k==='dyn'?`Lancer · ${Math.round(AIM.p*100)} %`:W2.pow?`Tirer · ${Math.round(AIM.p*100)} %`:W2.k==='mne'?'Lancer':W2.k==='esc'||W2.k==='vac'||W2.k==='mam'?'Lâcher':W2.k==='tel'?'Y aller':W2.k==='pou'?'Poser':W2.k==='cha'||W2.k==='mar'?'Creuser':W2.k==='jet'?'Décoller':W2.k==='bat'||W2.k==='fpu'||W2.k==='pic'?'Frapper':'Tirer';
   if(!on) $('#wp').hidden=true; }
 let WTAB='tir';
 function weaponPanel(){ const G=TK.G(); if(!canAct()||G.pend) return; const p=$('#wp'); if(!p.hidden){ p.hidden=true; return; } const tm=G.teams[G.turn]; WTAB=WEP[AIM.w].c;
@@ -1080,7 +1115,7 @@ const PT=new Map(); let GEST=null;
 cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); PT.set(e.pointerId,[e.offsetX,e.offsetY]); $('#wp').hidden=true; if(!MUTED) ac();
   if(PT.size===2){ const [a,b]=[...PT.values()]; GEST={k:'pinch',d:Math.hypot(a[0]-b[0],a[1]-b[1]),z:cam.zu||cam.z}; return; }
   const G=TK.G(), q=G&&actSlug(G); let mode='pan';
-  if(canAct()&&q&&!(LOC&&LOC.rope)){ const [sx,sy]=w2s(LOC?LOC.x:q.x,(LOC?LOC.y:q.y)-BR), W=WEP[AIM.w]; if(W.aim&&Math.hypot(e.offsetX-sx,e.offsetY-sy)<Math.max(70,34*cam.z)) mode='aim'; else if(W.tgt) mode='tap'; }
+  if(canAct()&&q&&!(LOC&&(LOC.rope||LOC.jet))){ const [sx,sy]=w2s(LOC?LOC.x:q.x,(LOC?LOC.y:q.y)-BR), W=WEP[AIM.w]; if(W.aim&&Math.hypot(e.offsetX-sx,e.offsetY-sy)<Math.max(70,34*cam.z)) mode='aim'; else if(W.tgt) mode='tap'; }
   GEST={k:mode,x0:e.offsetX,y0:e.offsetY,cx:cam.x,cy:cam.y,moved:0}; if(mode==='aim') aimTo(e.offsetX,e.offsetY); });
 cv.addEventListener('pointermove',e=>{ if(!PT.has(e.pointerId)) return; PT.set(e.pointerId,[e.offsetX,e.offsetY]); if(!GEST) return;
   if(GEST.k==='pinch'&&PT.size>=2){ const [a,b]=[...PT.values()]; const d=Math.hypot(a[0]-b[0],a[1]-b[1]); cam.fit=false; cam.zu=clamp(GEST.z*d/GEST.d,fitZ(),2.2); return; }
@@ -1099,7 +1134,7 @@ function aimTo(px,py){ const G=TK.G(), q=G&&actSlug(G); if(!q) return; const [sx
 /* ---------- clavier ---------- */
 addEventListener('keydown',e=>{ if(e.target.closest&&e.target.closest('input,textarea')) return; if(!$('#modal').hidden) return; const k=e.key;
   if(k==='ArrowLeft'||k==='ArrowRight'){ e.preventDefault(); KEYS[k==='ArrowLeft'?'left':'right']=true; if(LOC&&canAct()) LOC.face=k==='ArrowLeft'?-1:1; }
-  else if(k==='ArrowUp'||k==='ArrowDown'){ e.preventDefault(); if(LOC&&LOC.rope){ KEYS[k==='ArrowUp'?'up':'down']=true; return; } AIM.e=clamp(AIM.e+(k==='ArrowUp'?.04:-.04),-Math.PI/2+.02,Math.PI/2-.02); }
+  else if(k==='ArrowUp'||k==='ArrowDown'){ e.preventDefault(); if(LOC&&(LOC.rope||LOC.jet)){ KEYS[k==='ArrowUp'?'up':'down']=true; return; } AIM.e=clamp(AIM.e+(k==='ArrowUp'?.04:-.04),-Math.PI/2+.02,Math.PI/2-.02); }
   else if(k==='Enter'){ e.preventDefault(); jump(); }
   else if(k===' '){ e.preventDefault(); if(!canAct()) return; const W=WEP[AIM.w]; if(W.pow&&!(LOC&&LOC.rope)){ if(!AIM.charging&&!e.repeat) AIM.charging=performance.now(); } else if(!e.repeat) fire(); }
   else if(k==='Tab'&&canAct()){ e.preventDefault(); weaponPanel(); } });

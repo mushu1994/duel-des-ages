@@ -586,6 +586,18 @@ def _limaces():
     return o + star(172, 112, 16, '#ff7a45', 10, .5) + star(172, 112, 8, '#ffc93c', 10, .5)
 W['limaces'] = _limaces
 
+def _telephone():
+    o = bg('#ffb347') + C(40, 40, 70, 'rgba(255,255,255,.18)') + C(210, 160, 80, 'rgba(255,255,255,.15)')
+    def sheet(x, y, r, inner):
+        return G(R(4, 6, 92, 72, 8, SH) + R(0, 0, 92, 72, 8, '#fff') + R(0, 0, 92, 72, 8, 'none', f' stroke="{INK}" stroke-width="3"') + inner, f'translate({n(x)} {n(y)}) rotate({r})')
+    o += sheet(18, 24, -8, R(10, 14, 72, 10, 5, '#e3ddd0') + R(10, 32, 54, 10, 5, '#e3ddd0') + R(10, 50, 64, 10, 5, '#e3ddd0'))
+    o += sheet(128, 18, 7, C(46, 36, 18, '#ffd23f', f' stroke="{INK}" stroke-width="3"') + L('M46 8V2M46 70V64M18 36H12M80 36H74M27 17L22 12M65 55L70 60M65 17L70 12M27 55L22 60', INK, 3))
+    o += sheet(70, 92, -4, P('M20 56Q22 20 46 18Q70 20 72 56Z', '#e8433a', f' stroke="{INK}" stroke-width="3"') + C(36, 40, 4, '#fff') + C(56, 40, 4, '#fff') + L('M14 58H78', INK, 3))
+    o += L('M108 52Q120 48 126 40', '#fff', 5, ' stroke-dasharray="2 9"') + L('M150 98Q150 112 160 118', '#fff', 5, ' stroke-dasharray="2 9"')
+    o += G(R(-14, -12, 52, 34, 14, '#fff', f' stroke="{INK}" stroke-width="3"') + P('M2 20L-4 32L12 22Z', '#fff', f' stroke="{INK}" stroke-width="3" stroke-linejoin="round"') + C(0, 5, 3.5, INK) + C(12, 5, 3.5, INK) + C(24, 5, 3.5, INK), 'translate(186 128)')
+    return o
+W['telephone'] = _telephone
+
 def cover(key):
     return '<svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice">' + W[key]() + '</svg>'
 
