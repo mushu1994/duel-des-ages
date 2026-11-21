@@ -598,6 +598,18 @@ def _telephone():
     return o
 W['telephone'] = _telephone
 
+def _trio():
+    o = bg('#5b2a86', C(30, 160, 90, 'rgba(255,107,157,.25)') + C(220, 20, 70, 'rgba(255,255,255,.12)'))
+    def tc(x, y, rot, col):
+        inner = C(0, 0, 17, col, ' opacity=".18"') + T(0, 11, 30, '7', col) + T(-18, -21, 11, '7', col)
+        return card(x, y, rot, 52, 72, '#fffdf7', inner + R(-26, -36, 52, 72, 7, 'none', f' stroke="{col}" stroke-width="3"'))
+    o += card(52, 104, -16, 52, 72, '#3a1a6e', T(0, 8, 22, '3', '#fff'))
+    o += card(188, 104, 16, 52, 72, '#3a1a6e', T(0, 8, 22, '3', '#fff'))
+    o += tc(92, 96, -10, '#d6336c') + tc(120, 88, 0, '#d6336c') + tc(148, 96, 10, '#d6336c')
+    o += star(38, 40, 10, '#ffe066') + star(204, 44, 8, '#ffe066') + star(120, 156, 7, '#fff')
+    return o
+W['trio'] = _trio
+
 def cover(key):
     return '<svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice">' + W[key]() + '</svg>'
 
