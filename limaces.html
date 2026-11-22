@@ -145,6 +145,12 @@ body{background:#0d1830;--bg:#0d1830;overflow:hidden}
 @media (max-height:520px) and (orientation:landscape){header.top{padding-top:4px!important;padding-bottom:4px!important}}
 
 @media (max-width:560px) and (min-height:521px){.lm-wp{max-height:calc(100% - 126px)}}
+.lm-rp{position:absolute;left:50%;top:46px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:rgba(16,20,48,.88);color:#fff;border-radius:14px;padding:7px 8px 7px 14px;z-index:6;max-width:94%;box-shadow:0 8px 24px #0006;font-size:14px;line-height:1.3}
+.lm-rp[hidden]{display:none}
+.lm-rp .t{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.lm-rp .n{background:#e8433a;border-radius:8px;padding:1px 7px;font-weight:900}
+.lm-rp .d{color:#ffe27a;font-weight:800}
+.lm-rp .btn{flex:none;padding:7px 11px;font-size:13px}
 
 /*top-above*//*hh*/#modal,#cover{top:var(--hh,0px)!important}#modal>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
@@ -377,36 +383,38 @@ const THEMES={
 const CATS=[['tir','Tir'],['exp','Explosifs'],['spe','Spéciales'],['obj','Objets']];
 const WEP=[
  {k:'baz',c:'tir',n:'Bazooka',i:'🚀',am:-1,aim:1,pow:1,d:'Tir puissant, dévié par le vent. Explose au contact.'},
- {k:'mor',c:'tir',n:'Mortier',i:'🎇',am:2,aim:1,d:'Toujours tiré à pleine puissance, dévié par le vent : à l’impact, l’obus éclate en six fragments.'},
- {k:'hom',c:'tir',n:'Missile téléguidé',i:'🎯',am:1,aim:1,pow:1,tgt:1,d:'Touche la carte pour choisir la cible, puis tire : après un court envol, le missile file droit vers elle.'},
+ {k:'mor',c:'tir',n:'Mortier',i:'🎇',am:1,aim:1,d:'Toujours tiré à pleine puissance, dévié par le vent : à l’impact, l’obus éclate en six fragments.'},
+ {k:'hom',c:'tir',n:'Missile téléguidé',i:'🎯',am:0,aim:1,pow:1,tgt:1,d:'Touche la carte pour choisir la cible, puis tire : après un court envol, le missile file droit vers elle.'},
  {k:'pom',c:'tir',n:'Fusil à pompe',i:'🔫',am:-1,aim:1,d:'Deux tirs en ligne droite dans le même tour, sans vent. Tu peux viser autre chose entre les deux.'},
- {k:'uzi',c:'tir',n:'Uzi',i:'💨',am:2,aim:1,d:'Une rafale de douze balles qui repoussent les limaces.'},
- {k:'min',c:'tir',n:'Minigun',i:'⚙️',am:1,aim:1,d:'Une longue rafale de vingt-quatre balles : de quoi pousser une limace à l’eau.'},
+ {k:'uzi',c:'tir',n:'Uzi',i:'💨',am:1,aim:1,d:'Une rafale de douze balles qui repoussent les limaces.'},
+ {k:'min',c:'tir',n:'Minigun',i:'⚙️',am:0,aim:1,d:'Une longue rafale de vingt-quatre balles : de quoi pousser une limace à l’eau.'},
  {k:'fpu',c:'tir',n:'Poing de feu',i:'🔥',am:-1,aim:1,d:'Un uppercut enflammé : ta limace bondit et envoie en l’air celle qui est juste devant elle.'},
  {k:'gre',c:'exp',n:'Grenade',i:'💣',am:-1,aim:1,pow:1,d:'Rebondit puis explose au bout de 3 secondes. Le vent ne la dévie pas.'},
- {k:'grp',c:'exp',n:'Grappe',i:'🍇',am:2,aim:1,pow:1,d:'Une grenade qui libère cinq petites bombes en explosant.'},
+ {k:'grp',c:'exp',n:'Grappe',i:'🍇',am:1,aim:1,pow:1,d:'Une grenade qui libère cinq petites bombes en explosant.'},
  {k:'ste',c:'exp',n:'Sainte grenade',i:'👼',am:0,aim:1,pow:1,sup:1,d:'Lourde, elle roule peu… et son explosion divine rase tout alentour. Alléluia !'},
- {k:'ban',c:'exp',n:'Bombe banane',i:'🍌',am:1,aim:1,pow:1,d:'Explose en projetant cinq bananes qui explosent à leur tour au contact.'},
+ {k:'ban',c:'exp',n:'Bombe banane',i:'🍌',am:0,aim:1,pow:1,d:'Explose en projetant cinq bananes qui explosent à leur tour au contact.'},
  {k:'sba',c:'exp',n:'Super banane',i:'🌟',am:0,aim:1,pow:1,sup:1,d:'Comme la bombe banane, mais chaque banane se divise encore une fois. Chaos garanti.'},
  {k:'dyn',c:'exp',n:'Dynamite',i:'🧨',am:1,aim:1,pow:1,d:'Lancée à courte distance, elle explose au bout de 4 secondes. Énorme explosion : garde tes distances !'},
- {k:'mne',c:'exp',n:'Mine',i:'⭕',am:2,aim:1,d:'Lancée doucement devant toi. Elle s’arme, puis explose quand une limace s’approche.'},
- {k:'sel',c:'spe',n:'Pluie de sel',i:'🧂',am:1,tgt:1,d:'La frappe aérienne : cinq bombes de sel tombent du ciel sur la cible choisie.'},
+ {k:'mne',c:'exp',n:'Mine',i:'⭕',am:1,aim:1,d:'Lancée doucement devant toi. Elle s’arme, puis explose quand une limace s’approche.'},
+ {k:'sel',c:'spe',n:'Pluie de sel',i:'🧂',am:0,tgt:1,d:'La frappe aérienne : cinq bombes de sel tombent du ciel sur la cible choisie.'},
  {k:'arm',c:'spe',n:'Armageddon',i:'☄️',am:0,sup:1,d:'Une pluie de météores s’abat sur toute la carte. Personne n’est à l’abri.'},
  {k:'ane',c:'spe',n:'Âne en béton',i:'🐴',am:0,tgt:1,sup:1,d:'Un âne en béton tombe du ciel sur la cible et écrase tout sur son passage, jusqu’à l’eau.'},
- {k:'vac',c:'spe',n:'Vaches folles',i:'🐄',am:1,d:'Trois vaches chargent droit devant et explosent au contact d’une limace ennemie.'},
+ {k:'vac',c:'spe',n:'Vaches folles',i:'🐄',am:0,d:'Trois vaches chargent droit devant et explosent au contact d’une limace ennemie.'},
  {k:'esc',c:'spe',n:'Escargot fou',i:'🐌',am:1,d:'Il fonce droit devant, saute les obstacles et explose au contact d’une limace ennemie ou au bout de 5 secondes.'},
- {k:'mam',c:'spe',n:'Mamie limace',i:'👵',am:1,d:'Elle avance lentement en ronchonnant… puis explose au bout de 7 secondes.'},
- {k:'pig',c:'spe',n:'Pigeon voyageur',i:'🕊️',am:1,tgt:1,d:'Touche la carte pour choisir la cible : le pigeon y vole en contournant le décor, puis explose.'},
+ {k:'mam',c:'spe',n:'Mamie limace',i:'👵',am:0,d:'Elle avance lentement en ronchonnant… puis explose au bout de 7 secondes.'},
+ {k:'pig',c:'spe',n:'Pigeon voyageur',i:'🕊️',am:0,tgt:1,d:'Touche la carte pour choisir la cible : le pigeon y vole en contournant le décor, puis explose.'},
  {k:'bat',c:'spe',n:'Batte de baseball',i:'🏏',am:1,aim:1,d:'Un coup terrible : la limace d’à côté part très loin, dans la direction visée. Idéal pour l’envoyer à l’eau.'},
  {k:'pic',c:'spe',n:'Pichenette',i:'👉',am:-1,d:'Une petite poussée sans dégâts, vers l’avant. Parfait au bord de l’eau.'},
  {k:'cor',c:'obj',n:'Corde de bave',i:'🪢',am:-1,aim:1,d:'Lance une corde qui s’accroche au décor : balance-toi avec ◀ ▶, monte ou descends avec ▲ ▼, puis lâche avec ⤴. Ton tour continue ensuite.'},
  {k:'cha',c:'obj',n:'Chalumeau',i:'🔦',am:-1,aim:1,d:'Creuse un tunnel dans la direction visée (tout droit, vers le haut ou vers le bas). Ton tour continue ensuite.'},
  {k:'mar',c:'obj',n:'Marteau-piqueur',i:'⛏️',am:-1,d:'Creuse droit vers le bas. Ton tour continue ensuite.'},
- {k:'jet',c:'obj',n:'Jetpack',i:'🎒',am:3,d:'Vole quelques secondes : ▲ pour monter, ◀ ▶ pour te diriger, ⤴ pour couper le moteur. Ton tour continue ensuite.'},
- {k:'pou',c:'obj',n:'Poutre',i:'🏗️',am:2,tgt:1,d:'Pose une poutre d’acier où tu veux. Touche de nouveau la cible pour la faire pivoter.'},
- {k:'tel',c:'obj',n:'Téléporteur',i:'✨',am:2,tgt:1,d:'Emmène ta limace où tu veux. Touche la carte pour choisir l’endroit.'},
+ {k:'jet',c:'obj',n:'Jetpack',i:'🎒',am:2,d:'Vole quelques secondes : ▲ pour monter, ◀ ▶ pour te diriger, ⤴ pour couper le moteur. Ton tour continue ensuite.'},
+ {k:'pou',c:'obj',n:'Poutre',i:'🏗️',am:1,tgt:1,d:'Pose une poutre d’acier où tu veux. Touche de nouveau la cible pour la faire pivoter.'},
+ {k:'tel',c:'obj',n:'Téléporteur',i:'✨',am:1,tgt:1,d:'Emmène ta limace où tu veux. Touche la carte pour choisir l’endroit.'},
  {k:'pas',c:'obj',n:'Passer',i:'⏭️',am:-1,d:'Passe ton tour sans rien faire.'}];
 const WI=Object.fromEntries(WEP.map((w,i)=>[w.k,i])), WK=k=>WEP[WI[k]];
+const HEAVY={ste:1,sba:1,arm:1,ane:1,ban:1,dyn:1,hom:1,sel:1,mor:1,grp:1,min:1,mam:1};
+const RET={dyn:1,mne:1,pou:1}, RETW=110, RETT=10;
 const CRATE={jet:6,mor:8,hom:6,uzi:6,min:4,grp:8,ste:3,ban:5,sba:2,dyn:6,mne:6,sel:5,arm:1.5,ane:2,vac:4,esc:5,mam:4,pig:5,bat:5,pou:4,tel:5};
 const PK={baz:{m:'b',wind:1,r:38,d:48},hom:{m:'b',r:38,d:50},mor:{m:'b',wind:1,r:22,d:18,frag:6},frag:{m:'b',r:18,d:16},sel:{m:'b',wind:1,r:26,d:26},met:{m:'b',wind:1,r:34,d:30},banf:{m:'b',r:44,d:46},
   gre:{m:'r',e:.5,fuse:3,r:36,d:45},grp:{m:'r',e:.5,fuse:3,r:28,d:26,clu:5},ste:{m:'r',e:.22,fuse:3,r:95,d:100},ban:{m:'r',e:.5,fuse:3,r:40,d:45,ban:5},sba:{m:'r',e:.5,fuse:3,r:40,d:45,ban:5,gen:2},dyn:{m:'r',e:.18,fuse:4,r:64,d:72},
@@ -493,8 +501,8 @@ function projStep(p,E){ if(p.wait>0){ p.wait-=DT; return; } p.t+=DT; const water
     for(let i=0;i<n;i++){ p.y+=p.vy*h; if(p.y>=water+10){ p.dead=1; E.splash(p.x); return; }
       if(p.vy>0&&p.y>-40&&(solid(p.x,p.y+18)||solid(p.x-12,p.y+16)||solid(p.x+12,p.y+16)||touchBody(E,{x:p.x,y:p.y+8,t:1,k:'ane'},14))){ p.hits=(p.hits||0)+1; E.explode(p.x,p.y+12,P.r,P.d,p); p.vy=-170; if(p.hits>=9) p.dead=1; return; } } } }
 /* ---------- la simulation complète d'un tir (sur l'appareil de l'hôte) ---------- */
-function mkBody(q,s){ return s?{s:1,q,x:q.x,y:q.y,vx:0,vy:0,mv:false,h:2*BR}:{s:0,q,x:q.x,y:q.y,vx:0,vy:0,mv:false,h:q.k==='mine'?5:q.k==='baril'?18:15}; }
-function simulate(G,S,a){ const W=a.w>=0?WEP[a.w]:null, rec={t:'shot',w:a.w,s:S.id,fr:[],ex:[],dm:[],die:[],sp:[],tr:[],snd:[],oc:[],od:[],pk:[],fx:[],dig:[],cr0:G.cr.length,
+function mkBody(q,s){ return s?{s:1,q,x:q.x,y:q.y,vx:0,vy:0,mv:false,h:2*BR}:{s:0,q,x:q.x,y:q.y,vx:0,vy:0,mv:false,h:q.k==='mine'?5:q.k==='baril'?18:q.k==='tnt'?12:15}; }
+function simulate(G,S,a){ const W=a.w>=0?WEP[a.w]:null, rec={t:'shot',w:a.w,s:S.id,wt:G.water,fin:a.fin?1:0,fr:[],ex:[],dm:[],die:[],sp:[],tr:[],snd:[],oc:[],od:[],pk:[],fx:[],dig:[],cr0:G.cr.length,
     pre:G.sl.map(q=>[q.id,Math.round(q.x),Math.round(q.y),q.hp,q.al?1:0]),preO:G.obj.map(o=>[o.id,o.k,Math.round(o.x),Math.round(o.y),o.c?o.c.t:0])};
   const bodies=G.sl.map(q=>mkBody(q,1)).concat(G.obj.map(o=>mkBody(o,0))), P=[], fi=()=>rec.fr.length, last={}; let simT=0;
   const key=b=>(b.s?'s':'o')+b.q.id;
@@ -510,7 +518,7 @@ function simulate(G,S,a){ const W=a.w>=0?WEP[a.w]:null, rec={t:'shot',w:a.w,s:S.
       rec.ex.push([fi(),Math.round(x),Math.round(y),r]);
       if(dmg>0) for(const b of bodies){ if(b.s?!b.q.al:b.q.dead) continue; const dx=b.x-x, dy=b.y-b.h/2-y, d=Math.hypot(dx,dy), R=r*1.3+b.h/2; if(d>=R) continue; const k=1-d/R;
         if(b.s) hurt(b,Math.max(1,Math.round(dmg*(.35+.65*k))));
-        else if(b.q.k==='baril'){ if(b.boom==null) b.boom=.1; } else if(b.q.k==='caisse'){ if(b.boom==null) b.boom=.06; } else if(b.q.k==='mine'){ if(!(b.fz>0)) b.fz=.25; }
+        else if(b.q.k==='baril'){ if(b.boom==null) b.boom=.1; } else if(b.q.k==='caisse'){ if(b.boom==null) b.boom=.06; } else if(b.q.k==='mine'){ if(!(b.fz>0)) b.fz=.25; } else if(b.q.k==='tnt'){ if(b.boom==null) b.boom=.05; }
         let ux=d>.5?dx/d:(Math.random()-.5), uy=d>.5?dy/d:-1; uy-=.6; const L=Math.hypot(ux,uy)||1, sp=(150+430*k)*Math.min(1.5,dmg/45);
         b.vx+=ux/L*sp; b.vy+=uy/L*sp; b.mv=true; }
       for(const p of P) if(!p.dead&&PK[p.k].m==='r'){ const d=Math.hypot(p.x-x,p.y-y); if(d<r*1.6){ p.vx+=(p.x-x)/(d+1)*220; p.vy-=200; p.rest=false; } }
@@ -540,6 +548,7 @@ function simulate(G,S,a){ const W=a.w>=0?WEP[a.w]:null, rec={t:'shot',w:a.w,s:S.
   else if(k==='vac'){ for(let i=0;i<3;i++) P.push({k:'vac',x:S.x+face*16,y:S.y-1,vx:0,vy:0,t:0,dir:face,air:false,wait:i*.7}); rec.snd.push([0,'moo'],[21,'moo'],[42,'moo']); }
   else if(k==='pig'){ P.push({k:'pig',x:cx,y:cy-10,vx:face*120,vy:-200,t:0,tx:a.tx,ty:a.ty}); rec.snd.push([0,'coo']); }
   else if(k==='mne'){ const o={id:G.oid++,k:'mine',x:cx+face*10,y:cy,arm:G.turns}; G.obj.push(o); const b=mkBody(o,0); b.vx=face*110; b.vy=-90; b.mv=true; b.pt=0; bodies.push(b); last[key(b)]=[Math.round(b.x),Math.round(b.y)]; rec.oc.push([0,o.id,'mine',Math.round(o.x),Math.round(o.y),0]); rec.snd.push([0,'throw']); }
+  if(a.fin){ let i=0; for(const b of bodies) if(!b.s&&b.q.k==='tnt'&&!b.q.dead){ b.boom=.7+i*.35; i++; } if(i) rec.snd.push([0,'fuse']); }
   let drill=null;
   if(k==='cha'||k==='mar'){ drill={dx:k==='mar'?0:ca,dy:k==='mar'?1:sa,left:k==='mar'?110:150,acc:99,k}; rec.snd.push([0,'drill']); }
   else if(k==='tel'){ me.x=a.tx; me.y=a.ty; me.mv=true; rec.snd.push([0,'tel']); rec.ex.push([0,Math.round(cx),Math.round(cy+BR),0]); rec.fx.push([1,'tel',Math.round(a.tx),Math.round(a.ty)]); }
@@ -551,10 +560,11 @@ function simulate(G,S,a){ const W=a.w>=0?WEP[a.w]:null, rec={t:'shot',w:a.w,s:S.
       if(drill.acc>=4){ drill.acc=0; const c=drill.k==='mar'?[Math.round(me.x),Math.round(me.y-3),11]:[Math.round(me.x+drill.dx*5),Math.round(me.y-BR+drill.dy*5),12];
         const hit=solid(c[0],c[1])||solid(c[0]+drill.dx*9,c[1]+drill.dy*9)||solid(c[0]+drill.dx*9-drill.dy*8,c[1]+drill.dy*9+drill.dx*8)||solid(c[0]+drill.dx*9+drill.dy*8,c[1]+drill.dy*9-drill.dx*8); if(hit){ drill.hit=1; drill.air=0; } else drill.air=(drill.air||0)+1; if(drill.air>=(drill.hit?6:10)){ drill.left=0; } carve(T.sol,c); G.cr.push(c); T.n++; rec.dig.push([fi(),c[0],c[1],c[2]]); if(rec.dig.length%6===0) rec.snd.push([fi(),'drill']); }
       if(drill.left<=0||me.y>=G.water-6||me.x<6||me.x>WW-6||me.y<16){ drill=null; me.mv=true; } }
-    for(let i=0;i<P.length;i++){ const p=P[i]; if(!p.dead) projStep(p,E); }
+    for(let i=0;i<P.length;i++){ const p=P[i]; if(!p.dead) projStep(p,E);
+      if(a.defer&&p.k==='dyn'&&!p.dead&&(p.rest||p.t>3.4)){ p.dead=1; const o={id:G.oid++,k:'tnt',x:Math.round(p.x),y:Math.round(p.y),arm:G.turns}; G.obj.push(o); const b=mkBody(o,0); b.mv=!p.rest; bodies.push(b); last[key(b)]=[o.x,o.y]; rec.oc.push([fi(),o.id,'tnt',o.x,o.y,0]); } }
     for(const b of bodies){ if(b.s?!b.q.al:b.q.dead) continue; if(b.mv) stepBody(b,G,rec,fi,drown,hurt); }
     for(const b of bodies){ if(b.s||b.q.dead) continue; const o=b.q;
-      if(b.boom!=null){ b.boom-=DT; if(b.boom<=0){ b.boom=null; removeObj(b,2); if(o.k==='baril'){ E.explode(b.x,b.y-9,44,40); rec.fx.push([fi(),'fire',Math.round(b.x),Math.round(b.y-6)]); } else E.explode(b.x,b.y-8,24,18); } continue; }
+      if(b.boom!=null){ b.boom-=DT; if(b.boom<=0){ b.boom=null; removeObj(b,2); if(o.k==='baril'){ E.explode(b.x,b.y-9,44,40); rec.fx.push([fi(),'fire',Math.round(b.x),Math.round(b.y-6)]); } else if(o.k==='tnt') E.explode(b.x,b.y-4,64,72); else E.explode(b.x,b.y-8,24,18); } continue; }
       if(o.k==='mine'){ const armed=o.arm<G.turns||b.pt!=null&&simT-b.pt>2;
         if(!(b.fz>0)&&armed&&bodies.some(s=>s.s&&s.q.al&&Math.hypot(s.x-b.x,s.y-b.y)<24)){ b.fz=1.3; rec.snd.push([fi(),'beep']); }
         if(b.fz>0){ const before=b.fz; b.fz-=DT; if(Math.floor(before*4)!==Math.floor(b.fz*4)) rec.snd.push([fi(),'beep']); if(b.fz<=0){ removeObj(b,2); E.explode(b.x,b.y-3,40,50); } } }
@@ -583,10 +593,11 @@ function stepBody(b,G,rec,fi,drown,hurt){ b.vy+=GR*DT; const n=Math.max(1,Math.c
     b.x=nx; b.y=ny; }
   if(Math.abs(b.vy)<1&&supported(b.x,b.y)){ b.vx*=.85; if(Math.abs(b.vx)<25){ b.vx=0; b.mv=false; } } }
 /* ---------- déroulement ---------- */
+const RPBTN='<br><button class="btn" data-rp="1" style="margin-top:10px">🎬 Revoir les meilleurs moments</button>';
 const alive=(G,t)=>G.sl.some(q=>q.tm===t&&q.al);
 function endCheck(G){ if(G.over) return true; const al=G.players.map((_,t)=>alive(G,t)), na=al.filter(Boolean).length; if(na>1) return false;
-  const w=al.indexOf(true); G.over=w>=0?{winners:[w],title:`${G.players[w].name} gagne !`,text:'Ses limaces sont les dernières encore debout.'}:{winners:[],title:'Match nul',text:'Plus aucune limace en vie.'}; return true; }
-function nextTurn(G,ev){ const N=G.players.length; G.pend=null; G.sub=0;
+  const w=al.indexOf(true); G.over=w>=0?{winners:[w],title:`${G.players[w].name} gagne !`,text:'Ses limaces sont les dernières encore debout.'+RPBTN}:{winners:[],title:'Match nul',text:'Plus aucune limace en vie.'+RPBTN}; return true; }
+function nextTurn(G,ev){ const N=G.players.length; G.pend=null; G.sub=0; G.ret=null;
   if(endCheck(G)) return;
   /* 1. l'eau monte AVANT de choisir qui joue : on ne désigne jamais une limace qui vient de se noyer */
   if(G.sd&&G.round>=G.sd){ G.water=Math.max(WH*.3,G.water-18); ev.push({t:'eau'});
@@ -601,10 +612,23 @@ function nextTurn(G,ev){ const N=G.players.length; G.pend=null; G.sub=0;
   for(let k=1;k<=mine.length;k++){ const i=(tm.cur+k)%mine.length; if(mine[i].al){ tm.cur=i; break; } }
   G.act=mine[tm.cur].id; G.walk=WALK; G.wind=Math.round((Math.random()*2-1)*10)/10; G.turns++;
   /* 3. une caisse tombe du ciel */
-  if(G.crates&&G.turns>=2&&Math.random()<.42){ const c=dropCrate(G); if(c) ev.push({t:'drop',o:c}); } }
-function dropCrate(G){ for(let tr=0;tr<40;tr++){ const x=40+Math.random()*(WW-80); let y=0; while(y<WH&&!solid(x,y)) y++; if(y>=G.water-14||y<30) continue; if(solid(x-6,y-12)||solid(x+6,y-12)) continue;
+  if(G.crates){ const rising=G.sd&&G.round>=G.sd; let k=0; if(!G.ic){ G.ic=1; k+=2; } if(Math.random()<(rising?1:.7)) k++; if(rising&&Math.random()<.55) k++; drops(G,ev,k); } }
+function drops(G,ev,k){ for(let i=0;i<k;i++){ if(G.obj.filter(o=>o.k==='caisse').length>=10) return; const c=dropCrate(G); if(c) ev.push({t:'drop',o:c}); } }
+/* la dynamite posée explose quand le tour se termine */
+function finishTurn(G,q,ev){ if(G.obj.some(o=>o.k==='tnt'&&!o.dead)){ const r=simulate(G,q,{w:-1,fin:1}); ev.unshift(r); LASTDUR=Math.max(LASTDUR,Math.round(r.fr.length/30*1000)+400); } nextTurn(G,ev); LASTDUR+=dropDur(ev); }
+/* placement des limaces au début */
+function placeSpot(G,x,y,id){ x=Math.round(x); y=Math.round(y); if(!(x>=15&&x<=WW-15)) return null; if(y<0) y=0;
+  if(solid(x,y)){ let k=0; while(k<80&&solid(x,y)){ y--; k++; } if(solid(x,y)) return null; } else y=groundBelow(x,y,WH);
+  if(y>=G.water-20||y<10||!supported(x,y)) return null; if(solid(x,y-BR)||solid(x,y-2*BR)||solid(x-4,y-BR-2)||solid(x+4,y-BR-2)) return null;
+  if(G.sl.some(q=>q.id!==id&&!q.un&&q.al&&Math.hypot(q.x-x,q.y-y)<26)||G.obj.some(o=>!o.dead&&Math.hypot(o.x-x,o.y-y)<22)) return null; return [x,y]; }
+function randomSpot(G,id){ let any=null; for(let tr=0;tr<400;tr++){ const p=placeSpot(G,30+Math.random()*(WW-60),0,id); if(!p) continue; any=any||p; if(tr>250||!G.sl.some(q=>q.id!==id&&!q.un&&Math.hypot(q.x-p[0],q.y-p[1])<90)) return p; } return any; }
+function aiPlace(G,s,id){ let best=null,bv=-1e9; for(let tr=0;tr<90;tr++){ const p=placeSpot(G,30+Math.random()*(WW-60),0,id); if(!p) continue; const foes=G.sl.filter(q=>!q.un&&q.tm!==s), mates=G.sl.filter(q=>!q.un&&q.tm===s&&q.id!==id);
+    const dF=foes.length?Math.min(...foes.map(q=>Math.hypot(q.x-p[0],q.y-p[1]))):300, dM=mates.length?Math.min(...mates.map(q=>Math.hypot(q.x-p[0],q.y-p[1]))):300;
+    const v=Math.min(dF,420)*.6+Math.min(dM,200)*.2+(G.water-p[1])*.35+(supported(p[0]-8,p[1])&&supported(p[0]+8,p[1])?30:0)+Math.random()*60; if(v>bv){ bv=v; best=p; } }
+  return best||randomSpot(G,id); }
+function dropCrate(G){ const rising=G.sd&&G.round>=G.sd; for(let tr=0;tr<40;tr++){ const x=40+Math.random()*(WW-80); let y=0; while(y<WH&&!solid(x,y)) y++; if(y>=G.water-14||y<30) continue; if(solid(x-6,y-12)||solid(x+6,y-12)) continue;
     if(G.sl.some(q=>q.al&&Math.hypot(q.x-x,q.y-y)<30)||G.obj.some(o=>Math.abs(o.x-x)<20&&Math.abs(o.y-y)<20)) continue;
-    let c; if(Math.random()<.32) c={t:'hp',v:25}; else { let tot=0; for(const k in CRATE) tot+=CRATE[k]; let r=Math.random()*tot, w='baz'; for(const k in CRATE){ r-=CRATE[k]; if(r<=0){ w=k; break; } } c={t:'w',w}; }
+    let c; const wt=k=>CRATE[k]*(rising&&HEAVY[k]?4:1); if(Math.random()<(rising?.18:.28)) c={t:'hp',v:25}; else { let tot=0; for(const k in CRATE) tot+=wt(k); let r=Math.random()*tot, w='baz'; for(const k in CRATE){ r-=wt(k); if(r<=0){ w=k; break; } } c={t:'w',w}; }
     const o={id:G.oid++,k:'caisse',x:Math.round(x),y:y-1,c}; G.obj.push(o); return o; } return null; }
 function spawnPts(m,n,water,others){ const out=[], solidM=(x,y)=>x>=0&&x<WW&&y>=0&&y<WH&&m[(y|0)*WW+(x|0)]>0;
   for(let i=0;i<n;i++){ let best=null;
@@ -668,7 +692,8 @@ let LOC=null, PLAY=null, LASTDUR=0, FX=[], TURNKEY=null, PENDBANNER=null, DROPS=
 const DP={};
 const TH=()=>THEMES[T.theme]||THEMES.jardin;
 let TKEY=null, TEL=0, TBEEP=0, TFORCED=null;
-const timeLeft=G=>G&&G.tt?G.tt*1000-TEL:Infinity;
+const tlim=G=>!G?0:G.ret?(G.tt?RETT:0):G.tt;
+const timeLeft=G=>G&&tlim(G)?tlim(G)*1000-TEL:Infinity;
 const canAct=()=>{ const G=TK.G(); return !!(G&&!G.over&&TK.canPlay()&&!PLAY&&timeLeft(G)>0); };
 const actSlug=G=>G.sl.find(q=>q.id===G.act);
 const VH=()=>Math.round(window.visualViewport?visualViewport.height:innerHeight);
@@ -733,9 +758,10 @@ function snd(n){ if(MUTED) return; const a=ac(); if(!a||a.state!=='running') ret
 const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defaultPlayers:2,
   desc:'Chaque équipe de limaces bombarde les autres, chacune à son tour : bazooka, grenades, bananes, vaches folles, âne en béton… Des caisses tombent du ciel, le terrain se creuse sous les explosions, et l’eau ne pardonne pas.',
   tuto:[["🐌","Ton équipe","Chaque joueur dirige une équipe de limaces. À ton tour, une seule de tes limaces joue : elle se déplace, puis utilise une arme."],["🎯","Vise et tire","Glisse depuis ta limace vers où tu veux tirer : plus le geste est long, plus le coup est fort. Puis « Tirer ». Le vent dévie le bazooka !"],["📦","Caisses et explosions","Ramasse les caisses pour gagner des armes ou des points de vie. Les explosions creusent le décor et projettent les limaces : une limace qui tombe à l’eau est perdue."]],
-  opt:{n:3,hp:100,theme:'hasard',sd:8,crates:1,mines:1,ars:'classique',tt:30},
+  opt:{n:3,hp:100,theme:'hasard',sd:8,crates:1,mines:1,ars:'classique',tt:30,pl:'choix'},
   optsHTML(){ const b=(k,v,l)=>`<button class="${D.opt[k]===v?'on':''}" data-o="${k}:${v}">${l}</button>`;
     return `<h4>Limaces par équipe</h4><div class="seg">${[2,3,4].map(n=>b('n',n,n)).join('')}</div>
+    <h4>Placement des limaces</h4><div class="seg">${b('pl','choix','Chacun son tour')}${b('pl','hasard','Au hasard')}</div>
     <h4>Points de vie</h4><div class="seg">${b('hp',100,'100')}${b('hp',150,'150')}</div>
     <h4>Décor</h4><div class="seg">${b('theme','hasard','Au hasard')}${Object.entries(THEMES).map(([k,t])=>b('theme',k,t.n)).join('')}</div>
     <h4>Temps pour jouer</h4><div class="seg">${b('tt',30,'30 s')}${b('tt',45,'45 s')}${b('tt',0,'Sans limite')}</div>
@@ -747,47 +773,61 @@ const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defau
   init(players,opt){ const n=clamp(+opt.n||3,1,4), hp=+opt.hp||100, keys=Object.keys(THEMES), theme=THEMES[opt.theme]?opt.theme:keys[Math.floor(Math.random()*keys.length)];
     const seed=Math.floor(Math.random()*2e9), m=gen(seed), water=WH-62, pos=spawnPts(m,players.length*n,water), names=TK.shuffle(SN.slice());
     const sl=[]; let id=0; for(let k=0;k<n;k++) players.forEach((P,t)=>{ const [x,y]=pos[id]; sl.push({id,tm:t,n:names[id%names.length],x,y,hp,al:true,f:x<WW/2?1:-1}); id++; });
-    const teams=players.map(()=>({cur:0,am:startAmmo(opt.ars),v2:1}));
+    const teams=players.map(()=>({cur:0,am:startAmmo(opt.ars),v2:1})), place=opt.pl!=='hasard'; if(place) sl.forEach(q=>q.un=1);
     const obj=[]; let oid=1;
     if(opt.mines==null||+opt.mines!==0){ spawnPts(m,7,water,pos).forEach(([x,y],i)=>obj.push({id:oid++,k:i<4?'mine':'baril',x,y,arm:-1})); }
-    return {seed,theme,cr:[],water,wind:Math.round((Math.random()*2-1)*10)/10,turn:0,act:sl[0].id,walk:WALK,round:0,turns:0,sd:+opt.sd||0,hp,sl,teams,obj,oid,crates:opt.crates==null||+opt.crates!==0,pend:null,tt:opt.tt==null?30:+opt.tt,players}; },
+    return {seed,theme,cr:[],water,wind:Math.round((Math.random()*2-1)*10)/10,turn:0,act:sl[0].id,walk:WALK,round:0,turns:0,sd:+opt.sd||0,hp,sl,teams,obj,oid,crates:opt.crates==null||+opt.crates!==0,pend:null,tt:opt.tt==null?30:+opt.tt,ph:place?'place':null,pi:0,players}; },
   actors:G=>G.over?[]:[G.turn],
   apply(G,s,a){ if(!a||s!==G.turn) return false; sync(G); const q=actSlug(G); LASTDUR=0;
-    if(!q||!q.al){ /* sécurité : la partie ne reste jamais bloquée sur une limace disparue */ if(a.t==='f'){ const ev=[{t:'pass'}]; nextTurn(G,ev); return ev; } return false; }
+    if(G.ph==='place'){ const P2=G.sl[G.pi]; if(!P2||P2.tm!==s) return false; let p=null;
+      if(a.t==='pl') p=placeSpot(G,+a.x,+a.y,P2.id); else if(a.t==='f') p=randomSpot(G,P2.id); if(!p) return false;
+      P2.x=p[0]; P2.y=p[1]; P2.un=0; P2.f=P2.x<WW/2?1:-1; G.pi++; const ev=[{t:'pl',id:P2.id,auto:a.t==='f'?1:0}]; G.turns++;
+      if(G.pi>=G.sl.length){ G.ph=null; G.turn=G.sl[0].tm; G.act=G.sl[0].id; G.teams.forEach(t=>t.cur=0); G.walk=WALK; if(G.crates){ G.ic=1; drops(G,ev,2); } LASTDUR=dropDur(ev); }
+      else { const n=G.sl[G.pi]; G.turn=n.tm; G.act=n.id; } return ev; }
+    if(!q||!q.al){ /* sécurité : la partie ne reste jamais bloquée sur une limace disparue */ if(a.t==='f'){ const ev=[{t:'pass'}]; finishTurn(G,q,ev); return ev; } return false; }
     const okPos=(x,y,tol)=>x>=-40&&x<WW+40&&y>-400&&y<WH&&(tol<0||Math.abs(x-q.x)<=G.walk+tol)&&!solid(x,y-BR);
     if(a.t==='mv'){ const x=+a.x,y=+a.y, r=!!a.r; if(!okPos(x,y,r?-1:150)) return false; if(!r) G.walk=Math.max(0,G.walk-Math.abs(x-q.x)); q.x=x; q.y=y; q.f=+a.f<0?-1:1;
       const ev=[{t:'mv',id:q.id}];
-      if(q.y>=G.water){ q.al=false; q.hp=0; ev.push({t:'noy',id:q.id}); nextTurn(G,ev); LASTDUR=900+dropDur(ev); return ev; }
+      if(q.y>=G.water){ q.al=false; q.hp=0; ev.push({t:'noy',id:q.id}); LASTDUR=900; finishTurn(G,q,ev); return ev; }
       for(const o of G.obj.slice()) if(o.k==='caisse'&&Math.hypot(o.x-q.x,o.y-q.y)<18){ const pk=[]; pickup(G,q,o,pk,0); G.obj=G.obj.filter(x=>x!==o); ev.push({t:'pk',id:q.id,oid:o.id,txt:pk[0][3],hp:pk[0][4]}); }
-      if(G.obj.some(o=>o.k==='mine'&&o.arm<G.turns&&Math.hypot(o.x-q.x,o.y-q.y)<24)){ const r2=simulate(G,q,{w:-1}); ev.push(r2); nextTurn(G,ev); LASTDUR=Math.round(r2.fr.length/30*1000)+400+dropDur(ev); }
+      if(G.obj.some(o=>o.k==='mine'&&o.arm<G.turns&&Math.hypot(o.x-q.x,o.y-q.y)<24)){ const r2=simulate(G,q,{w:-1,fin:1}); ev.push(r2); nextTurn(G,ev); LASTDUR=Math.round(r2.fr.length/30*1000)+400+dropDur(ev); }
       return ev; }
     if(a.t!=='f') return false; const w=+a.w, W=WEP[w]; if(!W) return false; const tm=G.teams[s];
     if(G.pend&&W.k!=='pom'&&W.k!=='pas') return false;
+    if(G.ret&&W.k!=='pas') return false;
     if(!G.pend&&!has(G,s,W.k)) return false;
     if(W.k==='cor') return false;
     if(W.k==='jet'){ if(G.pend) return false; if(tm.am.jet>0) tm.am.jet--; return [{t:'jet',id:q.id}]; }
     if(a.x!=null&&okPos(+a.x,+a.y,a.r?-1:150)){ if(!a.r) G.walk=Math.max(0,G.walk-Math.abs(+a.x-q.x)); q.x=+a.x; q.y=+a.y; }
-    if(W.k==='pas'){ const ev=[{t:'pass',id:q.id,to:a.to?1:0}]; nextTurn(G,ev); LASTDUR=dropDur(ev); return ev; }
+    if(W.k==='pas'){ const ev=[{t:'pass',id:q.id,to:a.to?1:0,ret:G.ret?1:0}]; finishTurn(G,q,ev); return ev; }
     const tx=+a.tx, ty=+a.ty;
     if(W.k==='tel'&&!(tx>=10&&tx<=WW-10&&ty>10&&ty<G.water-12&&!solid(tx,ty-2)&&!solid(tx,ty-BR)&&!solid(tx,ty-2*BR))) return false;
     if((W.k==='sel'||W.k==='ane')&&!(tx>=-100&&tx<=WW+100)) return false;
     if((W.k==='hom'||W.k==='pig')&&!(tx>=-200&&tx<=WW+200&&ty>-400&&ty<WH)) return false;
     if(W.k==='pou'){ const g=+a.g||0, c=['g',Math.round(tx),Math.round(ty),g]; if(!(tx>=0&&tx<=WW&&ty>20&&ty<G.water-5)) return false; const {x,y,ux,uy}=girderPts(c);
       if(G.sl.some(o=>{ if(!o.al) return false; const dx=o.x-x, dy=o.y-BR-y, aa=dx*ux+dy*uy, bb=-dx*uy+dy*ux; return Math.abs(aa)<GL/2+8&&Math.abs(bb)<GT/2+9; })) return false;
-      if(tm.am.pou>0) tm.am.pou--; G.cr.push(c); carve(T.sol,c); T.n++; const ev=[{t:'gird'}]; nextTurn(G,ev); LASTDUR=600+dropDur(ev); return ev; }
+      if(tm.am.pou>0) tm.am.pou--; G.cr.push(c); carve(T.sol,c); T.n++; const ev=[{t:'gird'}]; LASTDUR=600; if(q.al){ startRet(G,ev); return ev; } finishTurn(G,q,ev); return ev; }
     if(W.aim) q.f=Math.cos(+a.a||0)>=0?1:-1; else if(W.tgt) q.f=tx>=q.x?1:-1;
     if(!G.pend&&tm.am[W.k]>0) tm.am[W.k]--;
-    const r=simulate(G,q,{w,a:+a.a||0,p:+a.p||0,tx,ty}); const ev=[r]; LASTDUR=Math.round(r.fr.length/30*1000)+400;
+    const r=simulate(G,q,{w,a:+a.a||0,p:+a.p||0,tx,ty,defer:W.k==='dyn'}); const ev=[r]; LASTDUR=Math.round(r.fr.length/30*1000)+400;
     if(W.k==='pom'&&!G.pend&&q.al&&!endCheck(G)){ G.pend={w:'pom',n:1}; return ev; }
     if((W.k==='cha'||W.k==='mar')&&q.al&&!endCheck(G)){ G.sub=(G.sub||0)+1; return ev; }
-    nextTurn(G,ev); LASTDUR+=dropDur(ev); return ev; },
-  ai(G,s,lv){ sync(G); const S=actSlug(G); if(!S||!S.al) return {t:'f',w:WI.pas}; const key=G.gid+':'+G.turns+':'+(G.pend?1:0)+':'+(G.sub||0);
+    if(RET[W.k]&&q.al&&!endCheck(G)){ startRet(G,ev); return ev; }
+    finishTurn(G,q,ev); return ev; },
+  ai(G,s,lv){ sync(G); if(G.ph==='place'){ const P2=G.sl[G.pi], p=P2&&aiPlace(G,s,P2.id); return p?{t:'pl',x:p[0],y:p[1]}:{t:'f',w:WI.pas}; }
+    const S=actSlug(G); if(!S||!S.al) return {t:'f',w:WI.pas};
+    if(G.ret){ const rk='r'+G.gid+':'+G.turns; if(PLAN.key!==rk){ const o=G.obj.filter(o=>(o.k==='tnt'||o.k==='mine')&&o.arm===G.turns&&!o.dead).pop(); let mv=null;
+        if(o){ const dir=S.x>=o.x?1:-1; let w=walkFrom(G,S,dir,G.walk); if(w.d<40){ const w2=walkFrom(G,S,-dir,G.walk); if(Math.abs(w2.x-o.x)>Math.abs(w.x-o.x)) w=w2; } if(w.d>=8) mv={x:w.x,y:w.y,f:w.x>=S.x?1:-1}; }
+        PLAN={key:rk,step:0,mv}; }
+      if(PLAN.mv&&PLAN.step===0){ PLAN.step=1; return {t:'mv',x:PLAN.mv.x,y:PLAN.mv.y,f:PLAN.mv.f}; } return {t:'f',w:WI.pas}; } const key=G.gid+':'+G.turns+':'+(G.pend?1:0)+':'+(G.sub||0);
     if(PLAN.key!==key){ PLAN=Object.assign({key,step:0},aiPlan(G,S,lv)); }
     if(PLAN.mv&&PLAN.step===0){ PLAN.step=1; return {t:'mv',x:PLAN.mv.x,y:PLAN.mv.y,f:PLAN.mv.f}; }
     if(PLAN.step>=2) return {t:'f',w:G.pend?WI.pom:WI.pas,a:S.f>0?0:Math.PI,p:1}; PLAN.step=2; return PLAN.fire; },
-  aiDelay:()=>TK.FAST?15:LASTDUR+(PLAN.step===1?600:1100),
+  aiDelay:G=>TK.FAST?15:G&&G.ph?750:LASTDUR+(PLAN.step===1?600:1100),
   ranking(G){ return G.players.map((_,t)=>{ const m=G.sl.filter(q=>q.tm===t&&q.al); return {seat:t,n:m.length,hp:m.reduce((a,q)=>a+q.hp,0)}; }).sort((a,b)=>b.n-a.n||b.hp-a.hp).map(r=>({seat:r.seat,score:r.n?`${r.n} limace${r.n>1?'s':''} · ${r.hp} PV`:'éliminée'})); },
   status(G,v){ if(G.over) return {who:'Partie terminée',msg:'',col:'#24406e'}; const P=G.players[G.turn], q=actSlug(G);
+    if(G.ph==='place') return {who:q?q.n:'',msg:`<span style="opacity:.85">(${esc(P.name)})</span> `+(TK.canPlay()?'touche la carte pour placer ta limace, puis « Placer ici ».':P.ai?'choisit sa place…':'se place…'),col:P.col,right:`Placement ${G.pi+1} / ${G.sl.length}`};
+    if(G.ret) return {who:q?q.n:'',msg:`<span style="opacity:.85">(${esc(P.name)})</span> `+(PLAY?'…':TK.canPlay()?'vite, mets-toi à l’abri ! Puis « Finir le tour ».':'se met à l’abri…'),col:P.col,right:'Retraite'};
     return {who:`${q?q.n:''}`,msg:`<span style="opacity:.85">(${esc(P.name)})</span> `+(PLAY?'…':TK.canPlay()?(G.pend?'deuxième tir !':'à toi : déplace-toi, vise et tire.'):(P.ai?'réfléchit…':'joue…')),col:P.col,right:`Vent ${G.wind>0?'→':G.wind<0?'←':'·'} ${Math.round(Math.abs(G.wind)*100)}${G.sd?` · ${G.round>=G.sd?'l’eau monte !':'eau dans '+(G.sd-G.round)+' tour'+(G.sd-G.round>1?'s':'')}`:''}`}; },
   render(G,v,ev){ sync(G); if(!T.tex) paint(); const now=performance.now();
     if(PLAY&&PLAY.gid!==G.gid) PLAY=null;
@@ -802,16 +842,21 @@ const D={id:'limaces',title:'Limaces à l’assaut',min:2,max:4,maxLocal:4,defau
       else if(e.t==='pass'){ toast(e.to?'⏱ Temps écoulé : tour suivant !':'Tour passé.'); if(e.to) snd('beep'); }
       else if(e.t==='drop'){ DROPS[e.o.id]={t0:Math.max(now,PLAY?PLAYEND:now)+150}; setTimeout(()=>snd('chute'),Math.max(0,DROPS[e.o.id].t0-now)); }
       else if(e.t==='pk'){ const q=G.sl.find(q=>q.id===e.id); if(q){ FX.push({k:'tx',x:q.x,y:q.y-34,t:0,d:2.2,s:e.txt,c:'#ffe27a',big:1}); snd(e.hp?'heal':'pick'); if(TK.canPlay()) toast(`${q.n} trouve : ${e.txt}`); } }
-      else if(e.t==='gird') snd('clonk'); });
-    if(TURNKEY!==G.gid+':'+G.turns){ TURNKEY=G.gid+':'+G.turns; LOC=null; AIM.tx=AIM.ty=null; cam.manual=false; const q=actSlug(G); if(q&&!G.over&&TK.canPlay()) PENDBANNER=[q.n,G.players[G.turn].name,G.players[G.turn].col]; }
+      else if(e.t==='gird') snd('clonk');
+      else if(e.t==='pl'){ snd('thud'); const q=G.sl.find(q=>q.id===e.id); if(q){ DP[q.id]=[q.x,q.y]; FX.push({k:'tel',x:q.x,y:q.y,t:0,d:.6}); } }
+      else if(e.t==='ret'){ if(TK.canPlay()) toast('Vite, mets-toi à l’abri !'); }
+      else if(e.t==='shot') hlRecord(G,e); });
+    if(TURNKEY!==G.gid+':'+G.turns){ TURNKEY=G.gid+':'+G.turns; LOC=null; AIM.tx=AIM.ty=null; cam.manual=false; const q=actSlug(G); if(q&&!G.over&&TK.canPlay()) PENDBANNER=[q.n,G.players[G.turn].name,G.players[G.turn].col,G.ph?'Place ':'À ']; }
     if(G.pend) AIM.w=WI.pom;
     ui(); },
   empty(){ ui(); },
-  help(){ helpTabs('Limaces à l’assaut',[['Règles','<ul><li>Chaque joueur dirige une équipe de limaces (2 à 4). Les équipes jouent chacune à son tour, et dans une équipe les limaces se relaient.</li><li>À ton tour, tu as <b>30 secondes</b> (réglable) : déplace ta limace (sa bave a ses limites : la jauge sous elle), puis utilise <b>une</b> arme. Le temps écoulé, le tour passe. Le tour passe ensuite à l’équipe suivante. Seuls le fusil à pompe (deux tirs) et la corde de bave laissent rejouer.</li><li>Les explosions blessent, projettent les limaces et <b>creusent le terrain</b>. Une chute de haut fait mal ; une limace qui tombe à l’eau est perdue.</li><li>Une limace à bout de forces <b>explose</b> : gare à ses voisines !</li><li>Le <b>vent</b> (jauge en haut) change à chaque tour et dévie le bazooka, le mortier, la pluie de sel et les météores.</li><li>Avec la montée des eaux, l’eau monte un peu à chaque tour passé le délai choisi.</li><li>La dernière équipe qui a encore une limace en vie gagne.</li></ul>'],
-    ['Caisses et objets','<ul><li>📦 <b>Caisses d’armes</b> : elles tombent du ciel en parachute. Passe dessus pour récupérer une arme, parfois une super-arme (Sainte grenade, Super banane, Âne en béton, Armageddon).</li><li>➕ <b>Caisses de soin</b> : +25 points de vie.</li><li>⭕ <b>Mines</b> : elles explosent peu après qu’une limace s’approche.</li><li>🛢️ <b>Barils</b> : ils explosent au moindre souffle d’explosion.</li><li>Une caisse touchée par une explosion saute aussi !</li></ul>'],
+  help(){ helpTabs('Limaces à l’assaut',[['Règles','<ul><li>Chaque joueur dirige une équipe de limaces (2 à 4). Au début, chaque équipe <b>place ses limaces</b> chacune à son tour : touche la carte, puis « Placer ici » (ou choisis le placement au hasard dans les réglages).</li><li>Les équipes jouent ensuite chacune à son tour, et dans une équipe les limaces se relaient.</li><li>À ton tour, tu as <b>30 secondes</b> (réglable) : déplace ta limace (sa bave a ses limites : la jauge sous elle), puis utilise <b>une</b> arme. Le temps écoulé, le tour passe. Le tour passe ensuite à l’équipe suivante. Seuls le fusil à pompe (deux tirs) et les outils de déplacement laissent rejouer.</li><li>Après avoir posé une <b>dynamite</b>, une <b>mine</b> ou une <b>poutre</b>, tu as <b>10 secondes de retraite</b> pour t’éloigner avec ce qu’il te reste de bave (au moins un petit bout de chemin). La dynamite n’explose qu’à la fin du tour : touche « Finir le tour » quand tu es à l’abri.</li><li>Les explosions blessent, projettent les limaces et <b>creusent le terrain</b>. Une chute de haut fait mal ; une limace qui tombe à l’eau est perdue.</li><li>Une limace à bout de forces <b>explose</b> : gare à ses voisines !</li><li>Le <b>vent</b> (jauge en haut) change à chaque tour et dévie le bazooka, le mortier, la pluie de sel et les météores.</li><li>Avec la montée des eaux, l’eau monte un peu à chaque tour passé le délai choisi.</li><li>La dernière équipe qui a encore une limace en vie gagne.</li></ul>'],
+    ['Caisses et objets','<ul><li>On commence avec peu de munitions : les caisses tombent souvent (souvent plusieurs à la fois). Quand l’eau monte, il en tombe encore plus, et les grosses armes (Sainte grenade, Super banane, Armageddon, Âne en béton, dynamite…) sortent bien plus souvent.</li><li>📦 <b>Caisses d’armes</b> : elles tombent du ciel en parachute. Passe dessus pour récupérer une arme, parfois une super-arme (Sainte grenade, Super banane, Âne en béton, Armageddon).</li><li>➕ <b>Caisses de soin</b> : +25 points de vie.</li><li>⭕ <b>Mines</b> : elles explosent peu après qu’une limace s’approche.</li><li>🛢️ <b>Barils</b> : ils explosent au moindre souffle d’explosion.</li><li>Une caisse touchée par une explosion saute aussi !</li></ul>'],
+    ['Fin de partie','<p>À la fin de la partie, le <b>résumé</b> rejoue les trois actions qui ont fait perdre le plus de points de vie, de la n°3 à la n°1. Tu peux le passer, ou le revoir depuis l’écran de fin.</p>'],
     ['Armes',CATS.map(([c,l])=>`<h4>${l}</h4><ul>`+WEP.filter(w=>w.c===c).map(w=>`<li><b>${w.i} ${w.n}</b>${w.am>0?` (${w.am} au départ)`:w.am===0?' (dans les caisses)':''} : ${w.d}</li>`).join('')+'</ul>').join('')],
     ['Commandes','<p><b>Sur téléphone ou tablette</b></p><ul><li>◀ ▶ pour avancer, ⤴ pour sauter.</li><li>Pour viser, glisse le doigt <b>depuis ta limace</b> vers la cible : la longueur du geste règle la puissance. Puis « Tirer ».</li><li>Glisse ailleurs sur la carte pour la parcourir ; pince pour zoomer, ⛶ pour la vue d’ensemble.</li><li>Armes à cible (pluie de sel, missile, pigeon, âne, poutre, téléporteur) : touche la carte pour choisir la cible.</li><li>Corde de bave : ◀ ▶ pour se balancer, ▲ ▼ pour monter et descendre, ⤴ pour lâcher.</li><li>Jetpack : ▲ pour monter, ◀ ▶ pour te diriger, ⤴ pour couper le moteur.</li><li>Coincé dans un trou ? Le chalumeau, le marteau-piqueur, le jetpack, la corde ou le téléporteur te sortent de là.</li></ul><p><b>Au clavier</b></p><ul><li>← → avancer, Entrée sauter, ↑ ↓ viser (ou monter et descendre sur la corde).</li><li>Maintiens Espace pour charger la puissance, relâche pour tirer.</li><li>Tab : choisir l’arme. Molette : zoom.</li></ul>'],
     ['Conseils','<ul><li>Tire un peu au-dessus de la cible et compte avec le vent.</li><li>La grenade ignore le vent : idéale pour atteindre une limace cachée derrière une butte.</li><li>Une limace au bord de l’eau est en danger : une batte ou une pichenette suffit parfois…</li><li>Va chercher les caisses : une Sainte grenade peut renverser une partie.</li></ul>']]); } };
+function startRet(G,ev){ G.ret=1; G.sub=(G.sub||0)+1; G.walk=Math.max(G.walk,RETW); ev.push({t:'ret'}); }
 function dropDur(ev){ return ev.some(e=>e.t==='drop')?1900:0; }
 TK.def(D);
 /* ---------- texture du terrain ---------- */
@@ -894,6 +939,33 @@ function playStep(G,now){ const P=PLAY, e=P.e, f=Math.min(e.fr.length-1,Math.flo
     P.digI=P.digI||0; while(P.digI<(e.dig||[]).length&&e.dig[P.digI][0]<=P.f){ const [,x,y,r]=e.dig[P.digI]; P.crN++; for(let i=0;i<3;i++){ const a=Math.random()*6.28, sp=60+Math.random()*120; FX.push({k:'db',x:x+Math.cos(a)*r,y:y+Math.sin(a)*r,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-60,t:0,d:.5,c:rgb(TH().soil)}); } FX.push({k:'sp',x,y,vx:(Math.random()-.5)*80,vy:-40,t:0,d:.25}); P.digI++; }
     while(P.dieI<e.die.length&&e.die[P.dieI][0]<=P.f){ const [,id,how]=e.die[P.dieI]; P.al[id]=false; const p=P.pos[id]; if(p&&!how){ FX.push({k:'ko',x:p[0],y:p[1],t:0,d:1.2}); snd('death'); } P.dieI++; } }
   if(now>PLAYEND){ PLAY=null; ui(); TK.status(); } }
+/* ---------- résumé de fin : les trois actions qui ont fait perdre le plus de points de vie ---------- */
+const HL={gid:null,top:[]}, RP={on:false,list:[],i:-1,next:0,html:null,fn:null,wt:null,auto:null};
+function hlRecord(G,e){ if(!e||!e.fr||!e.fr.length) return; if(HL.gid!==G.gid){ HL.gid=G.gid; HL.top=[]; }
+  const pre={}; e.pre.forEach(([id,,,hp,al])=>{ if(al) pre[id]=hp; }); const dm={}; e.dm.forEach(([,id,v])=>{ dm[id]=(dm[id]||0)+v; });
+  let lost=0, kills=0; for(const id in pre){ const drowned=e.die.some(d=>d[1]===+id&&d[2]===1); lost+=drowned?pre[id]:Math.min(pre[id],dm[id]||0); if(e.die.some(d=>d[1]===+id)) kills++; }
+  if(lost<=0) return; const sh=G.sl.find(q=>q.id===e.s), W=e.w>=0?WEP[e.w]:e.fin?WK('dyn'):{i:'⭕',n:'Mine'};
+  HL.top.push({e,lost,kills,name:sh?sh.n:'?',tm:sh?sh.tm:0,w:`${W.i} ${W.n}`}); HL.top.sort((a,b)=>b.lost-a.lost); HL.top.length=Math.min(3,HL.top.length); }
+const RPO=document.createElement('div'); RPO.className='lm-rp'; RPO.hidden=true; RPO.innerHTML='<div class="t"></div><button class="btn">Passer ⏭</button>'; $('#stage').appendChild(RPO);
+RPO.querySelector('button').onclick=()=>endReplay();
+function startReplay(){ const G=TK.G(); if(!G||RP.on) return; const L=HL.gid===G.gid?HL.top.slice():[]; if(!L.length){ toast('Aucune action marquante à revoir.'); return; }
+  RP.html=$('#mbox').innerHTML; RP.fn=$('#mbox').onclick; $('#modal').hidden=true; RP.on=true; RP.list=L.map((x,k)=>Object.assign({rank:k+1},x)).reverse(); RP.i=-1; RP.next=performance.now()+200; RPO.hidden=false; }
+function rpStep(G,now){ if(PLAY||now<RP.next) return; RP.i++; if(RP.i>=RP.list.length){ endReplay(); return; }
+  const it=RP.list[RP.i], e=it.e, P=G.players[it.tm]||{col:'#fff',name:''}; RP.wt=e.wt;
+  RPO.querySelector('.t').innerHTML=`<span class="n">🎬 N°${it.rank}</span> <b style="color:${P.col}">${esc(it.name)}</b> <span class="w">${it.w}</span> <span class="d">−${it.lost} PV${it.kills?` · ${it.kills} limace${it.kills>1?'s':''} K.O.`:''}</span>`;
+  FX=[]; DROPS={}; const t0=now+1300;
+  PLAY={gid:G.gid,e,t0,f:-1,pos:{},hp:{},al:{},obj:{},exI:0,dmI:0,dieI:0,spI:0,sndI:0,trI:0,ocI:0,odI:0,pkI:0,fxI:0,crN:e.cr0,rp:1}; paint();
+  e.pre.forEach(([id,x,y,hp,al])=>{ PLAY.pos[id]=[x,y]; PLAY.hp[id]=hp; PLAY.al[id]=!!al; }); (e.preO||[]).forEach(([id,k,x,y,c])=>PLAY.obj[id]={k,x,y,c});
+  const s0=e.pre.find(r=>r[0]===e.s); cam.manual=false; cam.fit=false; cam.zu=null; if(s0){ cam.x=s0[1]; cam.y=s0[2]-40; }
+  PLAYEND=t0+e.fr.length/30*1000+900; RP.next=PLAYEND+500; banner(`Meilleure action n°${it.rank}`,`${it.name} · −${it.lost} PV`,P.col); }
+function endReplay(){ if(!RP.on) return; RP.on=false; RP.wt=null; PLAY=null; FX=[]; paint(); RPO.hidden=true;
+  if(RP.html!=null){ $('#mbox').innerHTML=RP.html; $('#mbox').onclick=RP.fn; $('#modal').hidden=false; RP.html=null; } }
+document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('#mbox [data-rp]'); if(!b) return; e.stopPropagation(); e.preventDefault(); RP.auto=TK.G()&&TK.G().gid; startReplay(); },true);
+window.LMDBG={HL,RP,startReplay,placeSpot:(x,y)=>{ const G=TK.G(); return placeSpot(G,x,y,G.act); }};
+function drawGhost(G,t){ if(AIM.tx==null) return; const q=actSlug(G); if(!q) return; const p=placeSpot(G,AIM.tx,AIM.ty,q.id);
+  if(p){ ctx.save(); ctx.globalAlpha=.75; const f=p[0]<WW/2?1:-1; drawSlug(p[0],p[1],G.players[q.tm].col,f,G.hp,q.n,true,t,f>0?0:Math.PI,false,false,null); ctx.restore();
+    ctx.strokeStyle='#7cf0a0'; ctx.lineWidth=2.5; ctx.setLineDash([5,5]); ctx.beginPath(); ctx.ellipse(p[0],p[1],16,5,0,0,7); ctx.stroke(); ctx.setLineDash([]); }
+  else { const x=AIM.tx, y=AIM.ty; ctx.strokeStyle='#ff5a4a'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(x-9,y-9); ctx.lineTo(x+9,y+9); ctx.moveTo(x+9,y-9); ctx.lineTo(x-9,y+9); ctx.stroke(); } }
 /* ---------- dessin ---------- */
 function shade(hex,k){ const n=parseInt(hex.slice(1),16), r=n>>16, g=n>>8&255, b=n&255, f=v=>clamp(Math.round(k>0?v+(255-v)*k:v*(1+k)),0,255); return `rgb(${f(r)},${f(g)},${f(b)})`; }
 function drawSlug(x,y,col,face,hp,name,act,t,look,walk,hurt,wi){ ctx.save(); ctx.translate(x,y); ctx.scale(face,1);
@@ -940,7 +1012,9 @@ function drawProj(k,x,y,px,py,t){ const K=KL[k], ang=Math.atan2(y-py,x-px), f=x>
   ctx.restore(); }
 function drawObj(o,t,G,yOff,chute){ const x=o.x, y=o.y+(yOff||0); ctx.save(); ctx.translate(x,y);
   if(chute){ ctx.strokeStyle='rgba(255,255,255,.8)'; ctx.lineWidth=.8; ctx.beginPath(); ctx.moveTo(-8,-15); ctx.lineTo(-18,-38); ctx.moveTo(8,-15); ctx.lineTo(18,-38); ctx.moveTo(0,-15); ctx.lineTo(0,-44); ctx.stroke(); const sw=Math.sin(t*3)*2; ctx.fillStyle='#ff5c5c'; ctx.beginPath(); ctx.ellipse(sw,-40,22,11,0,Math.PI,0); ctx.fill(); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.ellipse(sw,-40,8,11,0,Math.PI,0); ctx.fill(); }
-  if(o.k==='mine'){ const armed=!G||o.arm<G.turns, on=armed&&Math.sin(t*6+o.id)>0; ctx.fillStyle='#2a2d36'; ctx.beginPath(); ctx.ellipse(0,-2.5,6.5,3.5,0,Math.PI,0); ctx.fill(); ctx.fillRect(-7,-3,14,3); ctx.fillStyle=on?'#ff3a2a':'#5a1a14'; ctx.beginPath(); ctx.arc(0,-5.5,1.6,0,7); ctx.fill(); if(on){ ctx.fillStyle='rgba(255,60,40,.3)'; ctx.beginPath(); ctx.arc(0,-5.5,5,0,7); ctx.fill(); } }
+  if(o.k==='tnt'){ ctx.rotate(.25); ctx.fillStyle='#d8322a'; rr(-4,-14,8,14,2); ctx.fill(); ctx.fillStyle='rgba(255,255,255,.25)'; ctx.fillRect(-3,-13,1.6,12); ctx.fillStyle='#f4e3b0'; ctx.fillRect(-4,-9,8,3); ctx.strokeStyle='#5a3a20'; ctx.lineWidth=1.3; ctx.beginPath(); ctx.moveTo(0,-14); ctx.quadraticCurveTo(4,-18,1,-22); ctx.stroke();
+    for(let i=0;i<3;i++){ const a=t*9+i*2.1, r=2+Math.sin(t*20+i)*1.5; ctx.fillStyle=i?'#ffd24a':'#fff'; ctx.beginPath(); ctx.arc(1+Math.cos(a)*r,-22+Math.sin(a)*r,1.4,0,7); ctx.fill(); } }
+  else if(o.k==='mine'){ const armed=!G||o.arm<G.turns, on=armed&&Math.sin(t*6+o.id)>0; ctx.fillStyle='#2a2d36'; ctx.beginPath(); ctx.ellipse(0,-2.5,6.5,3.5,0,Math.PI,0); ctx.fill(); ctx.fillRect(-7,-3,14,3); ctx.fillStyle=on?'#ff3a2a':'#5a1a14'; ctx.beginPath(); ctx.arc(0,-5.5,1.6,0,7); ctx.fill(); if(on){ ctx.fillStyle='rgba(255,60,40,.3)'; ctx.beginPath(); ctx.arc(0,-5.5,5,0,7); ctx.fill(); } }
   else if(o.k==='baril'){ const g=ctx.createLinearGradient(-8,0,8,0); g.addColorStop(0,'#2f7a3a'); g.addColorStop(.4,'#5cc06a'); g.addColorStop(1,'#1f5a28'); ctx.fillStyle=g; rr(-8,-19,16,19,3); ctx.fill(); ctx.fillStyle='#ffd84a'; ctx.fillRect(-8,-12,16,4); ctx.fillStyle='#222'; for(let i=-8;i<8;i+=4){ ctx.beginPath(); ctx.moveTo(i,-12); ctx.lineTo(i+2,-12); ctx.lineTo(i,-8); ctx.lineTo(i-2,-8); ctx.fill(); } ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fillRect(-8,-19,16,2); ctx.fillRect(-8,-2,16,2); }
   else if(o.k==='caisse'){ const hp=o.c==='hp'||o.c&&o.c.t==='hp';
     if(hp){ ctx.fillStyle='#f4f4f8'; rr(-8,-16,16,16,2); ctx.fill(); ctx.strokeStyle='#9aa'; ctx.lineWidth=1; ctx.stroke(); ctx.fillStyle='#e8433a'; ctx.fillRect(-2,-13,4,10); ctx.fillRect(-5,-10,10,4); }
@@ -961,7 +1035,7 @@ function drawFX(dt){ for(const f of FX){ f.t+=dt; const k=Math.min(1,f.t/f.d);
     else if(f.k==='ko'){ ctx.globalAlpha=Math.min(1,(1-k)*3); ctx.fillStyle='#fff'; ctx.font='900 14px Figtree,system-ui'; ctx.textAlign='center'; ctx.fillText('✝',f.x,f.y-20-k*30); ctx.globalAlpha=1; }
     else if(f.k==='tel'){ ctx.strokeStyle=`rgba(200,170,255,${1-k})`; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(f.x,f.y-8,8+k*26,0,7); ctx.stroke(); for(let i=0;i<6;i++){ const a=i*1.05+k*3; ctx.fillStyle=`rgba(255,255,255,${1-k})`; ctx.beginPath(); ctx.arc(f.x+Math.cos(a)*(10+k*30),f.y-8+Math.sin(a)*(10+k*30),2,0,7); ctx.fill(); } } }
   FX=FX.filter(f=>f.t<f.d); if(FX.length>900) FX.splice(0,FX.length-900); }
-function drawWater(G,t,front){ const th=TH(), y0=G?G.water:WH-62; const [l]=s2w(0,0), [r]=s2w(CW,0);
+function drawWater(G,t,front){ const th=TH(), y0=RP.on&&RP.wt?RP.wt:G?G.water:WH-62; const [l]=s2w(0,0), [r]=s2w(CW,0);
   if(!front){ ctx.fillStyle=th.water[0]; ctx.globalAlpha=.5; ctx.beginPath(); ctx.moveTo(l-20,WH+400); for(let x=Math.floor(l/12)*12-24;x<=r+24;x+=12) ctx.lineTo(x,y0-4+Math.sin(x*.03+t*1.5+2)*4); ctx.lineTo(r+20,WH+400); ctx.closePath(); ctx.fill(); ctx.globalAlpha=1; return; }
   const wv=x=>y0+4+Math.sin(x*.035+t*2.2)*4+Math.sin(x*.011-t*1.1)*2;
   const g=ctx.createLinearGradient(0,y0,0,y0+140); g.addColorStop(0,th.water[0]); g.addColorStop(1,th.water[1]); ctx.fillStyle=g; ctx.globalAlpha=.9; ctx.beginPath(); ctx.moveTo(l-20,WH+400);
@@ -969,7 +1043,7 @@ function drawWater(G,t,front){ const th=TH(), y0=G?G.water:WH-62; const [l]=s2w(
   ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.lineWidth=2; ctx.beginPath(); for(let x=Math.floor(l/10)*10-20;x<=r+20;x+=10) ctx.lineTo(x,wv(x)); ctx.stroke();
   ctx.fillStyle='rgba(255,255,255,.3)'; const span=r-l+40; for(let i=0;i<30;i++){ const x=l-20+((((i*97+t*18*(i%2?1:-1))%span)+span)%span), y=y0+14+(i*37)%60; ctx.fillRect(x,y,8+(i%3)*4,1.5); } }
 function viewSlugs(G){ const out=[];
-  for(const q of G.sl){ let x,y,hp,al;
+  for(const q of G.sl){ if(q.un) continue; let x,y,hp,al;
     if(PLAY){ const p=PLAY.pos[q.id]; x=p?p[0]:q.x; y=p?p[1]:q.y; hp=PLAY.hp[q.id]; al=PLAY.al[q.id]; DP[q.id]=[x,y]; }
     else { al=q.al; hp=q.hp; if(LOC&&LOC.id===q.id){ x=LOC.x; y=LOC.y; } else { const d=DP[q.id]||(DP[q.id]=[q.x,q.y]); d[0]+=(q.x-d[0])*.25; d[1]+=(q.y-d[1])*.25; if(Math.hypot(q.x-d[0],q.y-d[1])>300){ d[0]=q.x; d[1]=q.y; } x=d[0]; y=d[1]; } }
     if(al) out.push({q,x,y,hp}); }
@@ -982,43 +1056,45 @@ function frame(now){ requestAnimationFrame(frame); const dt=Math.min(.05,(now-LT
   if(!G){ ctx.fillStyle='#0d1830'; ctx.fillRect(0,0,CW,CH); return; }
   if(!T.tex||T.gid!==G.gid){ sync(G); paint(); }
   if(PLAY) playStep(G,now);
+  if(RP.on) rpStep(G,now); else if(G.over&&RP.auto!==G.gid&&!TK.FAST&&!$('#modal').hidden&&$('#mbox [data-rp]')&&HL.gid===G.gid&&HL.top.length){ RP.auto=G.gid; startReplay(); }
   const dropping=Object.values(DROPS).some(d=>now<d.t0+1500);
   /* chronomètre du tour : il ne tourne pas pendant les explosions ni l'arrivée des caisses */
-  const tk=G.gid+':'+G.turns; if(TKEY!==tk){ TKEY=tk; TEL=0; TBEEP=0; }
-  if(G.tt&&!G.over&&!PLAY&&!dropping&&!PENDBANNER){ const was=timeLeft(G); TEL+=dt*1000; const left=timeLeft(G);
+  const tk=G.gid+':'+G.turns+':'+(G.ret?1:0); if(TKEY!==tk){ TKEY=tk; TEL=0; TBEEP=0; }
+  if(tlim(G)&&!G.over&&!PLAY&&!dropping&&!PENDBANNER&&!RP.on){ const was=timeLeft(G); TEL+=dt*1000; const left=timeLeft(G);
     if(TK.canPlay()&&left>0&&left<=5000&&Math.ceil(left/1000)!==Math.ceil(was/1000)) snd('beep');
     if(was>0&&left<=0&&TK.canPlay()){ KEYS.left=KEYS.right=KEYS.up=KEYS.down=false; AIM.charging=0; if(LOC&&LOC.rope){ LOC.rope=null; LOC.air=true; } send(true); ui(); }
     const P=G.players[G.turn]; if(left<=-400&&!TK.guest()&&P&&!P.ai&&TFORCED!==tk){ TFORCED=tk; TK.force(G.turn,{t:'f',w:WI.pas,to:1}); } }
-  if(!PLAY&&PENDBANNER&&!dropping){ banner('À '+PENDBANNER[0]+' !',PENDBANNER[1],PENDBANNER[2]); PENDBANNER=null; sfx('go'); }
+  if(!PLAY&&PENDBANNER&&!dropping){ banner((PENDBANNER[3]||'À ')+PENDBANNER[0]+' !',PENDBANNER[1],PENDBANNER[2]); PENDBANNER=null; sfx('go'); }
   const target=PLAY?PLAY.crN:G.cr.length; while(T.texN<Math.min(target,G.cr.length)){ texApply(G.cr[T.texN]); T.texN++; }
-  if(canAct()) locStep(G,dt);
+  if(canAct()&&!G.ph) locStep(G,dt);
   const S=viewSlugs(G), a=actSlug(G);
   if(!cam.manual){ let fx=null,fy=null;
     if(PLAY&&PLAY.proj&&PLAY.proj.length>=12){ fx=WW/2; fy=WH/2; }
     else if(PLAY&&PLAY.proj&&PLAY.proj.length){ fx=PLAY.proj[1]; fy=PLAY.proj[2]; }
     else if(PLAY){ const mv=PLAY.e.fr[PLAY.f]&&PLAY.e.fr[PLAY.f][1]; if(mv&&mv.length){ fx=mv[1]; fy=mv[2]; } }
     else { const dr=Object.entries(DROPS).find(([,d])=>now>=d.t0&&now<d.t0+1500); if(dr){ const o=G.obj.find(o=>o.id===+dr[0]); if(o){ fx=o.x; fy=o.y-60; } }
-      if(fx==null&&a&&!G.over){ const s=S.find(s=>s.q.id===a.id); if(s){ fx=s.x; fy=s.y-40; } } }
+      if(fx==null&&G.ph){ fx=WW/2; fy=WH/2-60; } if(fx==null&&a&&!G.over&&!G.ph){ const s=S.find(s=>s.q.id===a.id); if(s){ fx=s.x; fy=s.y-40; } } }
     if(fx!=null){ const k=Math.min(1,dt*(PLAY?5:3)); cam.x+=(fx-cam.x)*k; cam.y+=(fy-cam.y)*k; } }
-  const many=PLAY&&PLAY.proj&&PLAY.proj.length>=12&&!cam.manual; const zt=cam.fit||many?fitZ():cam.zu||defZ(); cam.z+=(zt-cam.z)*Math.min(1,dt*6);
+  const many=PLAY&&PLAY.proj&&PLAY.proj.length>=12&&!cam.manual; const zt=cam.fit||many||(G.ph&&!cam.zu)?fitZ():cam.zu||defZ(); cam.z+=(zt-cam.z)*Math.min(1,dt*6);
   const hw=CW/2/cam.z, hh=CH/2/cam.z; cam.x=hw*2>=WW+200?WW/2:clamp(cam.x,hw-100,WW+100-hw); cam.y=hh*2>=WH+300?WH/2-100:clamp(cam.y,hh-300,WH-hh);
   cam.shake*=Math.pow(.02,dt); const shx=(Math.random()-.5)*cam.shake, shy=(Math.random()-.5)*cam.shake;
   ctx.drawImage(background(),0,0,CW,CH); clouds(t); farDeco(t); hills(TH());
   ctx.save(); ctx.translate(CW/2+shx,CH/2+shy); ctx.scale(cam.z,cam.z); ctx.translate(-cam.x,-cam.y);
   drawWater(G,t,false);
   ctx.drawImage(T.tex,0,0);
-  drawGraves(G);
+  if(!RP.on) drawGraves(G);
   const objs=PLAY?Object.entries(PLAY.obj).map(([id,o])=>{ const g=G.obj.find(x=>x.id===+id); return {id:+id,k:o.k,x:o.x,y:o.y,c:o.c==='hp'?{t:'hp'}:{t:'w'},arm:g?g.arm:-1}; }):G.obj;
   for(const o of objs){ const dr=DROPS[o.id]; if(dr&&!PLAY){ if(now<dr.t0) continue; const k=(now-dr.t0)/1500; if(k<1){ drawObj(o,t,G,-(1-k)*(o.y+80),true); continue; } } drawObj(o,t,G); }
   const walking=LOC&&(KEYS.left||KEYS.right)&&!LOC.rope&&!LOC.jet;
   for(const s of S){ const q=s.q, isA=!PLAY&&a&&q.id===a.id&&!G.over, me=isA&&canAct(), face=isA&&LOC?LOC.face:q.f; const look=me&&WEP[AIM.w].aim?aimAngle():face>0?0:Math.PI;
     const hurt=PLAY&&PLAY.hurt&&PLAY.hurt[q.id]&&now-PLAY.hurt[q.id]<180;
     if(me&&LOC&&LOC.rope){ ctx.lineCap='round'; ctx.strokeStyle='rgba(20,40,10,.5)'; ctx.lineWidth=4.5; ctx.beginPath(); ctx.moveTo(s.x,s.y-BR); ctx.lineTo(LOC.rope.x,LOC.rope.y); ctx.stroke(); ctx.strokeStyle='#c8f59a'; ctx.lineWidth=2.5; ctx.stroke(); ctx.fillStyle='#bff0a0'; ctx.beginPath(); ctx.arc(LOC.rope.x,LOC.rope.y,3,0,7); ctx.fill(); }
-    drawSlug(s.x,s.y,G.players[q.tm].col,face,s.hp,q.n,isA,t+q.id*1.7,look,isA&&walking,hurt,me&&!(LOC&&(LOC.rope||LOC.jet))?WEP[AIM.w].i:null); }
+    drawSlug(s.x,s.y,G.players[q.tm].col,face,s.hp,q.n,isA,t+q.id*1.7,look,isA&&walking,hurt,me&&!G.ret&&!(LOC&&(LOC.rope||LOC.jet))?WEP[AIM.w].i:null); }
   if(PLAY&&PLAY.proj){ const pr=PLAY.proj, prev=PLAY.prev||pr; for(let i=0;i<pr.length;i+=3){ const px=prev[i]===pr[i]&&prev[i+1]!=null?prev[i+1]:pr[i+1]-1, py=prev[i]===pr[i]&&prev[i+2]!=null?prev[i+2]:pr[i+2]; drawProj(pr[i],pr[i+1],pr[i+2],px,py,t); } }
   drawFX(dt);
   drawWater(G,t,true);
-  if(canAct()&&a) drawAim(G,a,t);
+  if(canAct()&&a&&!G.ph&&!G.ret) drawAim(G,a,t);
+  if(G.ph&&canAct()) drawGhost(G,t);
   ctx.restore();
   hud(G,S); }
 requestAnimationFrame(frame);
@@ -1039,7 +1115,7 @@ function hud(G,S){ ctx.save(); ctx.font='800 12px Figtree,system-ui,sans-serif';
   const wv=G.wind*ww/2; if(wv){ const g=ctx.createLinearGradient(wx,0,wx+wv,0); g.addColorStop(0,'#7cd0ff'); g.addColorStop(1,Math.abs(G.wind)>.6?'#ff7a5c':'#bfeaff'); ctx.fillStyle=g; rr(wv>0?wx:wx+wv,wy-2,Math.abs(wv),10,5); ctx.fill();
     const tt=performance.now()/1000; ctx.fillStyle='rgba(255,255,255,.75)'; for(let i=0;i<3;i++){ const k=((tt*Math.abs(G.wind)*1.5+i/3)%1), xx=wx+wv*k; ctx.beginPath(); ctx.moveTo(xx+Math.sign(wv)*4,wy+3); ctx.lineTo(xx,wy); ctx.lineTo(xx,wy+6); ctx.fill(); } }
   ctx.fillStyle='#fff'; ctx.fillRect(wx-1,wy-5,2,16);
-  if(G.tt&&!G.over&&!G.players[G.turn].ai){ const left=Math.max(0,timeLeft(G)), sec=Math.ceil(left/1000), low=sec<=5, tx=wx, ty=wy+30, k=left/(G.tt*1000);
+  if(tlim(G)&&!G.over&&!G.players[G.turn].ai){ const left=Math.max(0,timeLeft(G)), sec=Math.ceil(left/1000), low=sec<=5, tx=wx, ty=wy+30, k=left/(tlim(G)*1000);
     ctx.fillStyle=low?'rgba(232,67,58,.9)':'rgba(16,20,48,.75)'; ctx.beginPath(); ctx.arc(tx,ty,15,0,7); ctx.fill();
     ctx.strokeStyle=low?'#fff':'#7cf0a0'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(tx,ty,12,-Math.PI/2,-Math.PI/2+Math.PI*2*k); ctx.stroke();
     ctx.fillStyle='#fff'; ctx.font='900 12px Figtree,system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(String(sec),tx,ty+.5); ctx.textBaseline='alphabetic'; }
@@ -1070,7 +1146,7 @@ function locStep(G,dt){ const q=actSlug(G); if(!q||!q.al) return; const key=G.gi
     L.vx*=Math.pow(.6,dt); if(L.y>=G.water){ L.rope=null; send(true); return; }
     if(L.st>.12){ L.st=0; send(false); } return; }
   if(L.air){ L.vy+=GR*dt; let nx=L.x+L.vx*dt, ny=L.y+L.vy*dt; if(solid(nx,ny-BR)||solid(nx,ny-2*BR)){ nx=L.x; L.vx=0; }
-    if(solid(nx,ny)){ if(L.vy>0){ ny=settle(nx,ny); if(L.vy>250) snd('thud'); L.air=false; L.vy=0; L.vx=0; } else { L.vy=0; ny=L.y; } }
+    if(solid(nx,ny)){ if(L.vy>0){ ny=settle(nx,ny); if(L.vy>250) snd('thud'); L.air=false; L.vy=0; L.vx=0; if(L.endq){ L.endq=0; setTimeout(fire,30); } } else { L.vy=0; ny=L.y; } }
     if(!L.rp) L.used+=Math.abs(nx-L.x); L.x=clamp(nx,-40,WW+40); L.y=ny; if(L.y>=G.water){ send(true); return; } }
   else if(!supported(L.x,L.y)){ L.air=true; L.vx=0; L.vy=0; }
   else if(dir){ L.face=dir; if(L.used<WALK||L.rp){ const nx=L.x+dir*WSPD*dt; let ny=L.y,k=0; while(k<7&&solid(nx,ny)){ ny--; k++; }
@@ -1080,6 +1156,8 @@ function send(force){ const L=LOC; if(!L||!canAct()) return; if(!force&&Math.abs
   L.sent=[L.x,L.y]; L.sf=L.face; const a={t:'mv',x:Math.round(L.x*10)/10,y:Math.round(L.y*10)/10,f:L.face}; if(L.rp) a.r=1; TK.input(a); }
 function jump(){ if(!canAct()||!LOC) return; if(LOC.jet){ LOC.jet=null; LOC.air=!supported(LOC.x,LOC.y); send(true); ui(); return; } if(LOC.rope){ LOC.rope=null; LOC.air=true; snd('rope'); ui(); return; } if(LOC.air) return; if(LOC.used>WALK-12&&!LOC.rp){ toast('Ta limace est à bout de bave pour ce tour.'); return; } LOC.air=true; LOC.vy=-235; LOC.vx=LOC.face*100; LOC.y-=1; snd('flap'); }
 function fire(){ const G=TK.G(); if(!canAct()) return; const W=WEP[AIM.w];
+  if(G.ph){ if(AIM.tx==null){ toast('Touche la carte pour choisir où te placer.'); return; } const p=placeSpot(G,AIM.tx,AIM.ty,G.act); if(!p){ toast('Impossible de te placer ici : choisis un sol dégagé, hors de l’eau.'); sfx('error'); return; } TK.input({t:'pl',x:p[0],y:p[1]}); return; }
+  if(G.ret){ const a={t:'f',w:WI.pas}; if(LOC){ if(LOC.air){ LOC.endq=1; toast('Le tour se termine dès que ta limace atterrit.'); return; } a.x=Math.round(LOC.x*10)/10; a.y=Math.round(LOC.y*10)/10; if(LOC.rp) a.r=1; } TK.input(a); ui(); return; }
   if(LOC&&(LOC.rope||LOC.jet)){ jump(); return; }
   if(!G.pend&&!has(G,G.turn,W.k)){ toast('Plus de munitions pour cette arme.'); return; }
   if(W.k==='jet'){ if(!LOC) locStep(G,0); if(!LOC) return; if(TK.input({t:'f',w:AIM.w})){ LOC.jet={fuel:5}; LOC.air=true; LOC.rp=true; LOC.vy=-60; snd('jet'); ui(); } return; }
@@ -1096,13 +1174,13 @@ function fire(){ const G=TK.G(); if(!canAct()) return; const W=WEP[AIM.w];
 /* ---------- barre de commandes ---------- */
 function ui(){ const G=TK.G(), on=canAct(), bar=$('#bar'); bar.classList.toggle('off',!on);
   if(G&&on&&!G.pend&&!has(G,G.turn,WEP[AIM.w].k)) AIM.w=0; if(G&&G.pend) AIM.w=WI.pom;
-  const W2=WEP[AIM.w], rope=!!(LOC&&(LOC.rope||LOC.jet)), jet=!!(LOC&&LOC.jet); $('#wbtn').textContent=`${W2.i} ${W2.n}`; $('#wbtn').disabled=!on||!!(G&&G.pend)||rope;
+  const W2=WEP[AIM.w], rope=!!(LOC&&(LOC.rope||LOC.jet)), jet=!!(LOC&&LOC.jet); $('#wbtn').textContent=`${W2.i} ${W2.n}`; $('#wbtn').disabled=!on||!!(G&&(G.pend||G.ph||G.ret))||rope; if(G&&G.ph) $('#wbtn').textContent='📍 Placement'; else if(G&&G.ret) $('#wbtn').textContent='🏃 Retraite';
   $$('#bar [data-k="up"]').forEach(b=>b.hidden=!rope); $$('#bar [data-k="down"]').forEach(b=>b.hidden=!rope||jet);
   const f=$('#fire'); f.disabled=!on;
-  f.textContent=jet?'Couper le moteur':rope?'Lâcher':G&&G.pend?'2e tir':W2.k==='pas'?'Passer':W2.k==='cor'?'Lancer la corde':W2.tgt&&AIM.tx==null?'Choisis la cible':W2.k==='dyn'?`Lancer · ${Math.round(AIM.p*100)} %`:W2.pow?`Tirer · ${Math.round(AIM.p*100)} %`:W2.k==='mne'?'Lancer':W2.k==='esc'||W2.k==='vac'||W2.k==='mam'?'Lâcher':W2.k==='tel'?'Y aller':W2.k==='pou'?'Poser':W2.k==='cha'||W2.k==='mar'?'Creuser':W2.k==='jet'?'Décoller':W2.k==='bat'||W2.k==='fpu'||W2.k==='pic'?'Frapper':'Tirer';
+  f.textContent=G&&G.ph?(AIM.tx==null?'Touche la carte':'Placer ici'):G&&G.ret?'Finir le tour':jet?'Couper le moteur':rope?'Lâcher':G&&G.pend?'2e tir':W2.k==='pas'?'Passer':W2.k==='cor'?'Lancer la corde':W2.tgt&&AIM.tx==null?'Choisis la cible':W2.k==='dyn'?`Lancer · ${Math.round(AIM.p*100)} %`:W2.pow?`Tirer · ${Math.round(AIM.p*100)} %`:W2.k==='mne'?'Lancer':W2.k==='esc'||W2.k==='vac'||W2.k==='mam'?'Lâcher':W2.k==='tel'?'Y aller':W2.k==='pou'?'Poser':W2.k==='cha'||W2.k==='mar'?'Creuser':W2.k==='jet'?'Décoller':W2.k==='bat'||W2.k==='fpu'||W2.k==='pic'?'Frapper':'Tirer';
   if(!on) $('#wp').hidden=true; }
 let WTAB='tir';
-function weaponPanel(){ const G=TK.G(); if(!canAct()||G.pend) return; const p=$('#wp'); if(!p.hidden){ p.hidden=true; return; } const tm=G.teams[G.turn]; WTAB=WEP[AIM.w].c;
+function weaponPanel(){ const G=TK.G(); if(!canAct()||G.pend||G.ph||G.ret) return; const p=$('#wp'); if(!p.hidden){ p.hidden=true; return; } const tm=G.teams[G.turn]; WTAB=WEP[AIM.w].c;
   const draw=()=>{ const W=WEP[AIM.w]; p.innerHTML=`<div class="tb">${CATS.map(([c,l])=>`<button class="${c===WTAB?'on':''}" data-c2="${c}">${l}</button>`).join('')}</div><div class="g">${WEP.map((w,i)=>{ if(w.c!==WTAB) return ''; const left=tm.am[w.k]; return `<button class="${i===AIM.w?'on':''}${w.sup?' sup':''}" data-w="${i}" ${left===0?'disabled':''}><b>${w.i}</b>${w.n}<small>${left===-1?'∞':left===0?'—':left+' restant'+(left>1?'s':'')}</small></button>`; }).join('')}</div><p><b>${W.n}</b> : ${W.d}</p>`; };
   draw(); p.hidden=false; p.onclick=e=>{ const t=e.target.closest('[data-c2]'); if(t){ WTAB=t.dataset.c2; draw(); return; } const b=e.target.closest('[data-w]'); if(!b||b.disabled) return; AIM.w=+b.dataset.w; AIM.tx=AIM.ty=null; AIM.g=0; sfx('click'); p.hidden=true; ui(); }; }
 $('#wbtn').onclick=weaponPanel; $('#fire').onclick=fire;
@@ -1115,7 +1193,8 @@ const PT=new Map(); let GEST=null;
 cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); PT.set(e.pointerId,[e.offsetX,e.offsetY]); $('#wp').hidden=true; if(!MUTED) ac();
   if(PT.size===2){ const [a,b]=[...PT.values()]; GEST={k:'pinch',d:Math.hypot(a[0]-b[0],a[1]-b[1]),z:cam.zu||cam.z}; return; }
   const G=TK.G(), q=G&&actSlug(G); let mode='pan';
-  if(canAct()&&q&&!(LOC&&(LOC.rope||LOC.jet))){ const [sx,sy]=w2s(LOC?LOC.x:q.x,(LOC?LOC.y:q.y)-BR), W=WEP[AIM.w]; if(W.aim&&Math.hypot(e.offsetX-sx,e.offsetY-sy)<Math.max(70,34*cam.z)) mode='aim'; else if(W.tgt) mode='tap'; }
+  if(canAct()&&G.ph) mode='tap';
+  else if(canAct()&&q&&!G.ret&&!(LOC&&(LOC.rope||LOC.jet))){ const [sx,sy]=w2s(LOC?LOC.x:q.x,(LOC?LOC.y:q.y)-BR), W=WEP[AIM.w]; if(W.aim&&Math.hypot(e.offsetX-sx,e.offsetY-sy)<Math.max(70,34*cam.z)) mode='aim'; else if(W.tgt) mode='tap'; }
   GEST={k:mode,x0:e.offsetX,y0:e.offsetY,cx:cam.x,cy:cam.y,moved:0}; if(mode==='aim') aimTo(e.offsetX,e.offsetY); });
 cv.addEventListener('pointermove',e=>{ if(!PT.has(e.pointerId)) return; PT.set(e.pointerId,[e.offsetX,e.offsetY]); if(!GEST) return;
   if(GEST.k==='pinch'&&PT.size>=2){ const [a,b]=[...PT.values()]; const d=Math.hypot(a[0]-b[0],a[1]-b[1]); cam.fit=false; cam.zu=clamp(GEST.z*d/GEST.d,fitZ(),2.2); return; }
@@ -1125,7 +1204,7 @@ cv.addEventListener('pointermove',e=>{ if(!PT.has(e.pointerId)) return; PT.set(e
 const up=e=>{ if(!PT.has(e.pointerId)) return; PT.delete(e.pointerId); const g=GEST; if(PT.size===0) GEST=null; if(!g) return;
   if(g.k==='tap'&&g.moved<=8&&canAct()){ const [x,y]=s2w(e.offsetX,e.offsetY), W=WEP[AIM.w], ANG=[0,30,60,90,-60,-30];
     if(W.k==='pou'&&AIM.tx!=null&&Math.hypot(x-AIM.tx,y-AIM.ty)<26){ AIM.g=ANG[(ANG.indexOf(AIM.g)+1)%ANG.length]; sfx('rot'); ui(); return; }
-    AIM.tx=x; AIM.ty=W.k==='tel'?y+BR:y; sfx('click'); ui(); }
+    const G0=TK.G(); AIM.tx=x; AIM.ty=G0&&G0.ph?y:W.k==='tel'?y+BR:y; sfx('click'); ui(); }
   if(g.k==='aim') ui(); };
 cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
 cv.addEventListener('wheel',e=>{ e.preventDefault(); cam.fit=false; cam.zu=clamp((cam.zu||cam.z)*(e.deltaY>0?1/1.12:1.12),fitZ(),2.2); },{passive:false});
