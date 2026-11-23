@@ -226,6 +226,8 @@ body{background:radial-gradient(ellipse at 40% 0%,#1f625a,#0b2826 72%) fixed,#0b
 
 /*top-above*//*hh*/#modal,#cover,#info{top:var(--hh,0px)!important}#modal>*,#info>*{max-height:calc(100vh - var(--hh,0px) - 24px)!important;max-height:calc(100dvh - var(--hh,0px) - 24px)!important;overflow:auto}
 /*top-above*/header.top{position:relative;z-index:61!important}
+.lymt{display:grid;place-items:center;width:calc(var(--u)*.46);height:calc(var(--u)*.46);border-radius:50%;background:var(--lc);color:#fff;font:900 calc(var(--u)*.26) var(--title,Georgia);box-shadow:0 0 0 calc(var(--u)*.04) #fff,0 0 0 calc(var(--u)*.07) var(--lc);margin:calc(var(--u)*.04) auto}
+#center.lyon .rib{background:#d93025}
 </style>
 
 
@@ -416,12 +418,33 @@ const CARDS={
   {k:'repair',h:40,H:115,x:"Travaux de voirie devant chez vous : payez 40 € par maison et 115 € par hôtel."},
   {k:'cash',a:10,x:"Deuxième prix au concours de pâtisserie : recevez 10 €."},
   {k:'cash',a:100,x:"Un grand-oncle vous laisse un héritage de 100 €."}]};
+
+/* ---------- plateau lyonnais (fusion des « Affaires de Lyon ») ---------- */
+const SQ0=SQ.map(q=>q.n), CX0={destin:CARDS.destin.map(c=>c.x),caisse:CARDS.caisse.map(c=>c.x)};
+const LYON={n:["Départ", "Vaulx-en-Velin", "Caisse de communauté", "Bron", "Impôt sur le revenu", "Métro ligne A", "Villeurbanne", "Chance", "Mermoz", "Monplaisir", "Prison", "Guillotière", "Électricité de la Saône", "Jean-Macé", "Gerland", "Métro ligne B", "Vaise", "Caisse de communauté", "Saint-Just", "Croix-Rousse", "Parc de la Tête d’Or", "Brotteaux", "Chance", "Part-Dieu", "Cité Internationale", "Métro ligne C", "Perrache", "Ainay", "Eaux du Rhône", "Confluence", "Allez en prison", "Cordeliers", "Terreaux", "Caisse de communauté", "Place Bellecour", "Métro ligne D", "Chance", "Vieux-Lyon", "Taxe de luxe", "Fourvière"],destin:["Fête des Lumières : montez admirer les illuminations à Fourvière.", "Avancez jusqu’à la case Départ et recevez 200 €.", "Rendez-vous à la Cité Internationale. Si vous passez par Départ, recevez 200 €.", "Allez manger un bouchon à la Guillotière. Si vous passez par Départ, recevez 200 €.", "Avancez jusqu’à la prochaine station de métro. Si elle a un propriétaire, payez-lui le double du loyer ; sinon vous pouvez l’acheter.", "Correspondance ! Avancez jusqu’à la prochaine station de métro. Propriétaire : loyer doublé. Libre : à vendre.", "Avancez jusqu’à la prochaine compagnie. Si elle a un propriétaire, lancez les dés et payez-lui 10 fois le résultat.", "La banque vous verse un dividende de 50 €.", "Vous êtes libéré de prison. Gardez cette carte jusqu’à ce que vous en ayez besoin.", "Vous avez oublié vos clés : reculez de trois cases.", "Allez directement en prison, sans passer par Départ et sans toucher 200 €.", "Ravalement de façades : payez 25 € par maison et 100 € par hôtel.", "Excès de vitesse sur le périphérique : payez 15 €.", "Prenez la ligne A du métro. Si vous passez par Départ, recevez 200 €.", "Vous présidez le comité des fêtes du quartier : versez 50 € à chaque joueur.", "Votre bouchon lyonnais décroche une étoile : recevez 150 €."],caisse:["Avancez jusqu’à la case Départ et recevez 200 €.", "Erreur de la banque en votre faveur : recevez 200 €.", "Visite chez le médecin : payez 50 €.", "Vente de vos actions : recevez 50 €.", "Vous êtes libéré de prison. Gardez cette carte jusqu’à ce que vous en ayez besoin.", "Allez directement en prison, sans passer par Départ et sans toucher 200 €.", "Votre livret d’épargne arrive à échéance : recevez 100 €.", "Remboursement d’impôts : recevez 20 €.", "C’est votre anniversaire : chaque joueur vous offre 10 €.", "Votre assurance vie vous verse 100 €.", "Frais d’hôpital : payez 100 €.", "Frais de scolarité : payez 50 €.", "Vous animez un atelier quenelles : recevez 25 €.", "Travaux de voirie devant chez vous : payez 40 € par maison et 115 € par hôtel.", "Deuxième prix au concours de la plus belle praline : recevez 10 €.", "Vous héritez de 100 €."],mc:{5:['A','#e4007c'],15:['B','#0085ca'],25:['C','#f39200'],35:['D','#00a650']}};
+const LYMAP=`<svg class="map" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+ <defs><pattern id="mgl" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#8a6a30" stroke-width=".12" opacity=".45"/></pattern></defs>
+ <rect width="100" height="100" fill="url(#mgl)"/>
+ <path d="M14 46 Q20 38 28 44 Q32 52 26 62 Q18 66 13 58Z" fill="#c9b27a" opacity=".45"/><path d="M15 50 Q22 44 27 50" fill="none" stroke="#7a5a2a" stroke-width=".25" stroke-dasharray="1 1" opacity=".6"/>
+ <path d="M60 14 Q72 8 82 16 Q86 26 78 32 Q66 34 61 26Z" fill="#9fd29a" opacity=".55"/><ellipse cx="72" cy="22" rx="5" ry="2.6" fill="#9fc9dc" opacity=".9"/>
+ <path d="M30 0 Q26 10 34 18 Q42 26 36 36 Q30 46 38 58 Q44 68 46 78" fill="none" stroke="#5a8fb0" stroke-width="2.2" opacity=".55" stroke-linecap="round"/>
+ <path d="M96 0 Q88 10 80 34 Q72 50 62 60 Q54 70 48 80 Q47 90 50 100" fill="none" stroke="#5a8fb0" stroke-width="3.2" opacity=".55" stroke-linecap="round"/>
+ <g fill="#7a5a2a" opacity=".55"><path d="M20 46h4v-3l2-2 2 2v3h4v3H20z"/><rect x="74" y="50" width="2.2" height="9" rx="1"/><rect x="70" y="53" width="2.6" height="6"/></g>
+ <g font-family="Cinzel,Georgia,serif" font-weight="700" fill="#4a3618" text-anchor="middle">
+  <text x="21" y="68" font-size="3">Fourvière</text><text x="46" y="30" font-size="3">Croix-Rousse</text><text x="47" y="56" font-size="2.8">Presqu’île</text>
+  <text x="76" y="63" font-size="2.8">Part-Dieu</text><text x="72" y="38" font-size="2.6">Tête d’Or</text><text x="40" y="88" font-size="2.6">Confluence</text>
+  <text x="33" y="10" font-size="2.4" font-style="italic" fill="#3d6f8f">Saône</text><text x="88" y="24" font-size="2.6" font-style="italic" fill="#3d6f8f">Rhône</text></g>
+</svg>`;
+let TH='fantasy'; const LY=()=>TH==='lyon'; const TX=(f,l)=>LY()?l:f;
+const DN=d=>LY()?(d==='destin'?'Chance':'Caisse de communauté'):(d==='destin'?'Imprévus du Destin':'Primes & Trésors');
+function setTheme(b){ b=b==='lyon'?'lyon':'fantasy'; if(TH===b) return false; TH=b; SQ.forEach((q,i)=>q.n=b==='lyon'?LYON.n[i]:SQ0[i]); ['destin','caisse'].forEach(d=>CARDS[d].forEach((c,k)=>c.x=b==='lyon'?LYON[d][k]:CX0[d][k])); return true; }
+const metroIco=i=>`<span class="lymt" style="--lc:${LYON.mc[i][1]}">${LYON.mc[i][0]}</span>`;
 const R=n=>Math.floor(Math.random()*n);
 function shuf(a){ for(let i=a.length-1;i>0;i--){ const j=R(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function newGame(cfg){
   const G={v:1,players:cfg.players.map(p=>({name:p.name,ai:!!p.ai,level:p.level||'normal',col:p.col,cash:cfg.cash||1500,pos:0,jail:0,jt:0,cards:[],lap:false,out:false})),
     own:{},cur:0,deck:{destin:shuf([...Array(16).keys()]),caisse:shuf([...Array(16).keys()])},bank:{h:32,H:12},phase:'start',dbl:0,round:1,turns:0,
-    opt:{speed:cfg.speed!==false,limit:cfg.limit||0,auction:cfg.auction!==false},log:[],over:null,dice:[1,1,null],tradeMem:{}};
+    opt:{speed:cfg.speed!==false,limit:cfg.limit||0,auction:cfg.auction!==false,board:cfg.board==='lyon'?'lyon':'fantasy'},log:[],over:null,dice:[1,1,null],tradeMem:{}};
   OWNABLE.forEach(i=>G.own[i]={o:-1,h:0,m:false});
   return G; }
 const alive=G=>G.players.map((p,i)=>i).filter(i=>!G.players[i].out);
@@ -505,7 +528,7 @@ async function land(G,io,pid,ctx){ const p=G.players[pid],i=p.pos,s=SQ[i]; ctx=c
 
 async function drawCard(G,io,pid,deck){ const p=G.players[pid]; const id=G.deck[deck].shift(); const c=CARDS[deck][id];
   if(c.k!=='free') G.deck[deck].push(id);
-  log(G,`${p.name} tire une carte ${deck==='destin'?'Imprévus du Destin':'Primes & Trésors'} : ${c.x}`);
+  log(G,`${p.name} tire une carte ${DN(deck)} : ${c.x}`);
   await io.card(G,pid,deck,c);
   switch(c.k){
     case 'goto': await moveTo(G,io,pid,c.to); return land(G,io,pid,{});
@@ -791,27 +814,27 @@ const nmFs=n=>{ const L=Math.max(...n.split(/[\s-]/).map(w=>w.length)); const f=
 function cellInner(i){ const s=SQ[i];
   switch(s.t){
     case 'prop': return `<div class="band" style="background:${GR[s.g].c}"><div class="hs" style="display:flex;gap:1px;align-items:flex-end"></div></div><div class="nm" style="${nmFs(s.n)}">${esc(s.n)}</div><div class="pr">${s.p} €</div>`;
-    case 'rail': return `<div class="nm tp">${esc(s.n)}</div>${ICON['r'+i]}<div class="pr">${s.p} €</div>`;
+    case 'rail': return `<div class="nm tp">${esc(s.n)}</div>${LY()?metroIco(i):ICON['r'+i]}<div class="pr">${s.p} €</div>`;
     case 'util': return `<div class="nm tp">${esc(s.n)}</div>${i===12?ICON.bolt:ICON.drop}<div class="pr">${s.p} €</div>`;
-    case 'destin': return `<div class="nm tp">Imprévus du Destin</div>${ICON.destin}<div class="pr"></div>`;
-    case 'caisse': return `<div class="nm tp">Primes &amp; Trésors</div>${ICON.caisse}<div class="pr"></div>`;
+    case 'destin': return `<div class="nm tp">${DN('destin')}</div>${ICON.destin}<div class="pr"></div>`;
+    case 'caisse': return `<div class="nm tp">${esc(DN('caisse'))}</div>${ICON.caisse}<div class="pr"></div>`;
     case 'tax': return `<div class="nm tp">${esc(s.n)}</div>${ICON.tax}<div class="pr">Payez ${s.a} €</div>`;
-    case 'go': return `<div class="ksub" style="font-size:calc(var(--u)*.11)">Prêt pour l’aventure !</div><div class="kgo">DÉPART</div><div class="ksub">+200 € en passant</div><div style="width:55%">${ICON.go}</div>`;
+    case 'go': return `<div class="ksub" style="font-size:calc(var(--u)*.11)">${TX('Prêt pour l’aventure !','Bienvenue à Lyon !')}</div><div class="kgo">DÉPART</div><div class="ksub">+200 € en passant</div><div style="width:55%">${ICON.go}</div>`;
     case 'jail': return '';
-    case 'park': return `<div class="ksub">La Pause Café</div>${ICON.park}<div class="ksub">Refuge du repos</div>`;
-    case 'gojail': return `<div class="ksub">Attrapé par les autorités !</div>${ICON.police}<div class="ksub">Direction la GAV</div>`; } }
-function buildBoard(){ const B=$('#board'); B.innerHTML=''; CELLS=[];
+    case 'park': return `<div class="ksub">${TX('La Pause Café','Parc de la Tête d’Or')}</div>${ICON.park}<div class="ksub">${TX('Refuge du repos','Pause au bord du lac')}</div>`;
+    case 'gojail': return `<div class="ksub">${TX('Attrapé par les autorités !','Allez en prison')}</div>${ICON.police}<div class="ksub">${TX('Direction la GAV','Sans passer par Départ')}</div>`; } }
+function buildBoard(){ const b0=G&&G.opt&&G.opt.board==='lyon'?'lyon':'fantasy'; setTheme(b0); const B=$('#board'); B.innerHTML=''; CELLS=[];
   for(let i=0;i<40;i++){ const {r,c,s}=cellRC(i); const d=document.createElement('div'); d.className='cell '+s+(i%10===0?' k':''); d.style.gridArea=`${r}/${c}`; d.dataset.i=i;
-    if(i===10) d.innerHTML=`<div class="jailbox"><b>GEÔLES</b></div><div class="visit">Simple visite</div><div class="visit v2">Simple visite</div>`;
+    if(i===10) d.innerHTML=`<div class="jailbox"><b>${TX('GEÔLES','PRISON')}</b></div><div class="visit">Simple visite</div><div class="visit v2">Simple visite</div>`;
     else d.innerHTML=`<div class="in">${cellInner(i)}</div>`;
     B.appendChild(d); CELLS[i]=d; }
   const c=document.createElement('div'); c.id='center';
-  c.innerHTML=`${MAPSVG}
-   <div class="bdg b1">${ICON.park.replace('<svg','<svg')}<b>La Pause Café</b><small>Refuge du repos</small></div>
-   <div class="bdg b2">${ICON.police}<b>Les Geôles</b><small>En GAV, vous êtes fait !</small></div>
-   <div class="bdg b3">${ICON.r35.replace(' class="ico"','')}<b>Le Grand Cachalot</b><small>Cap sur le large</small></div>
-   <div class="bdg b4">${ICON.caisse.replace(' class="ico"','')}<b>Primes &amp; Trésors</b><small>Fortune à saisir</small></div>
-   <div class="hub"><div class="crest">${COMPASS}<div class="ttl"><small>GRAND</small>PROPRIÉTAIRE</div><div class="rib">Édition Multivers Géolocalisée</div></div>
+  c.classList.toggle('lyon',LY()); c.innerHTML=`${LY()?LYMAP:MAPSVG}
+   <div class="bdg b1">${ICON.park.replace('<svg','<svg')}<b>${TX('La Pause Café','Parc de la Tête d’Or')}</b><small>${TX('Refuge du repos','Le poumon vert de Lyon')}</small></div>
+   <div class="bdg b2">${ICON.police}<b>${TX('Les Geôles','La prison')}</b><small>${TX('En GAV, vous êtes fait !','Trois doubles, et hop !')}</small></div>
+   <div class="bdg b3">${LY()?metroIco(35):ICON.r35.replace(' class="ico"','')}<b>${TX('Le Grand Cachalot','Métro ligne D')}</b><small>${TX('Cap sur le large','De Vaise à Vénissieux')}</small></div>
+   <div class="bdg b4">${ICON.caisse.replace(' class="ico"','')}<b>${esc(DN('caisse'))}</b><small>${TX('Fortune à saisir','Coups de pouce et imprévus')}</small></div>
+   <div class="hub"><div class="crest">${COMPASS}<div class="ttl"><small>${TX('GRAND','LES AFFAIRES')}</small>${TX('PROPRIÉTAIRE','DE LYON')}</div><div class="rib">${TX('Édition Multivers Géolocalisée','Édition lyonnaise')}</div></div>
    <div class="tray"><div class="deck destin">${ICON.destin}</div><div id="dice">${dieHTML(false)}${dieHTML(false)}${dieHTML(true)}</div><div class="deck caisse">${ICON.caisse}</div></div>
    <div id="msg"></div><div id="act"></div></div><div id="cardshow" hidden></div>`;
   B.appendChild(c); const pw=document.createElement('div'); pw.id='pawns'; B.appendChild(pw); const fx=document.createElement('div'); fx.id='fx'; B.appendChild(fx);
@@ -870,7 +893,7 @@ async function fxJail(pid,why){ const triple=why==='trois doubles';
   const bars=fxEl('bars'); snd('clang');
   await bars.animate([{transform:'translateY(-105%)'},{transform:'translateY(0)',offset:.7},{transform:'translateY(-4%)',offset:.85},{transform:'translateY(0)'}],{duration:spd(650),easing:'cubic-bezier(.6,0,.4,1)',fill:'forwards'}).finished.catch(()=>{});
   $('#board').classList.add('shake');
-  const st=stamp('EN GAV !',why==='carte'?'Une carte vous y envoie':why==='trois doubles'?'Trois doubles d’affilée':'Attrapé par les autorités !','#c23a2b',-7);
+  const st=stamp(TX('EN GAV !','EN PRISON !'),why==='carte'?'Une carte vous y envoie':why==='trois doubles'?'Trois doubles d’affilée':'Attrapé par les autorités !','#c23a2b',-7);
   await wait(spd(1300)); $('#board').classList.remove('shake');
   fadeOut(st,250); await bars.animate([{transform:'translateY(0)'},{transform:'translateY(-105%)'}],{duration:spd(450),easing:'ease-in',fill:'forwards'}).finished.catch(()=>{}); bars.remove(); fadeOut(sir,200); }
 async function fxFree(pid){ snd('free'); const p=G.players[pid]; const {x,y}=center(10,0,1,true); const t=fxEl('float','Libéré !',`left:${x}px;top:${y-U()*.5}px;color:#8ff0a8;font-size:${U()*.38}px`); setTimeout(()=>t.remove(),1500);
@@ -907,7 +930,8 @@ function renderPlayers(){ $('#plist').innerHTML=G.players.map((p,k)=>{ const {h,
 function renderLog(){ $('#log').innerHTML=G.log.slice().reverse().slice(0,40).map(l=>`<div>${esc(l)}</div>`).join(''); }
 function renderStatus(){ const p=G.players[G.cur]; const st=$('#status'); st.style.setProperty('--pc',PC[p.col].h);
   st.innerHTML=G.over?`<span class="who">🏆 ${esc(nm(G,G.over.win))} gagne !</span>`:`<span class="who">${esc(p.name)}</span><span class="msg">${p.ai||(NETON()&&p.cid!==NET.cid)?'joue…':'à toi de jouer'}</span><span class="right">Tour ${G.round}${G.opt.limit?' / '+G.opt.limit:''} · Banque : ${G.bank.h} 🏠 ${G.bank.H} 🏨</span>`; }
-function renderAll(){ renderCells(); renderPlayers(); renderLog(); renderStatus(); placePawns(); if(NETON()&&NET.host) NET.push(); }
+function ensureTheme(){ const b=G&&G.opt&&G.opt.board==='lyon'?'lyon':'fantasy'; if(TH!==b&&document.getElementById('board')){ buildBoard(); PAWNS=[]; } }
+function renderAll(){ ensureTheme(); renderCells(); renderPlayers(); renderLog(); renderStatus(); placePawns(); if(NETON()&&NET.host) NET.push(); }
 function setMsg(h){ $('#msg').innerHTML=h; }
 function who(pid){ return `<i style="background:${pcol(pid)}">${esc(nm(G,pid))}</i>`; }
 /* ---------- fenêtres ---------- */
@@ -923,7 +947,7 @@ function deedHTML(i){ const s=SQ[i],o=G?G.own[i]:null; let b='';
   const dk=s.t==='prop'&&[0,2,4,6,7].includes(s.g)||s.t!=='prop';
   return `<div class="deed"><div class="dh${dk?' dk':''}" style="background:${sqCol(i)}"><small>Titre de propriété</small>${esc(s.n)}</div>${b}<div class="dl">Prix : ${s.p} € · Hypothèque : ${s.p/2} € · Levée : ${Math.round(s.p/2*1.1)} €</div>${o?`<div class="dl"><b>${o.o>=0?'Propriétaire : '+esc(nm(G,o.o))+(o.m?' (hypothéqué)':''):'À vendre (banque)'}</b></div>`:''}</div>`; }
 function sqInfo(i){ const s=SQ[i]; if(G&&G.own[i]) return info(`<h2>${esc(s.n)}</h2>${deedHTML(i)}`);
-  const T={go:'Point de départ : prêt pour l’aventure ! Chaque passage rapporte 200 €.',jail:'Simple visite si tu t’arrêtes ici. En prison : fais un double, paie 50 € ou utilise un laissez-passer (3 essais maximum).',park:'Refuge du repos : une pause café bien méritée, il ne se passe rien.',gojail:'Attrapé par les autorités ! Direction la GAV dans les Geôles, sans passer par Départ.',destin:'Tire une carte Imprévus du Destin.',caisse:'Tire une carte Primes & Trésors.',tax:`Payez ${s.a} € à la banque.`};
+  const T={go:'Point de départ : prêt pour l’aventure ! Chaque passage rapporte 200 €.',jail:'Simple visite si tu t’arrêtes ici. En prison : fais un double, paie 50 € ou utilise un laissez-passer (3 essais maximum).',park:'Refuge du repos : une pause café bien méritée, il ne se passe rien.',gojail:TX('Attrapé par les autorités ! Direction la GAV dans les Geôles, sans passer par Départ.','Allez directement en prison, sans passer par Départ.'),destin:`Tire une carte ${DN('destin')}.`,caisse:`Tire une carte ${DN('caisse')}.`,tax:`Payez ${s.a} € à la banque.`};
   info(`<h2>${esc(s.n)}</h2><p>${T[s.t]}</p>`); }
 $('#board').addEventListener('click',e=>{ const c=e.target.closest('.cell'); if(!c) return; const i=+c.dataset.i;
   if(PICK){ const f=PICK; PICK=null; $('#board').classList.remove('pick'); f(i); return; } if(G) sqInfo(i); });
@@ -1010,7 +1034,7 @@ function tradeModal(pid){ const others=alive(G).filter(k=>k!==pid); if(!others.l
 function busModal(pid,a,b){ return new Promise(res=>{ const p=G.players[pid]; const opt=[['a',a],['b',b],['sum',a+b]];
   gm(`<h2>🚌 Bus !</h2><p>Tu peux avancer avec un seul dé ou avec les deux :</p><div class="acts" style="justify-content:center;flex-direction:column;align-items:stretch">${opt.map(([k,n])=>`<button class="btn${k==='sum'?' pri':''}" data-x="${k}">Avancer de ${n} → ${esc(SQ[(p.pos+n)%40].n)}</button>`).join('')}</div>`);
   $('#mbox').onclick=e=>{ const x=e.target.closest('[data-x]'); if(!x) return; closeModal(); res(x.dataset.x); }; }); }
-async function showCard(deck,c,hum){ const el=$('#cardshow'); el.innerHTML=`<div class="gcard ${deck}"><div class="gc-front"><h4>${deck==='destin'?'Imprévus du Destin':'Primes &amp; Trésors'}</h4><p>${esc(c.x)}</p>${hum?'<button class="btn pri" data-cc>OK</button>':''}</div><div class="gc-back">${deck==='destin'?ICON.destin:ICON.caisse}</div></div>`;
+async function showCard(deck,c,hum){ const el=$('#cardshow'); el.innerHTML=`<div class="gcard ${deck}"><div class="gc-front"><h4>${esc(DN(deck))}</h4><p>${esc(c.x)}</p>${hum?'<button class="btn pri" data-cc>OK</button>':''}</div><div class="gc-back">${deck==='destin'?ICON.destin:ICON.caisse}</div></div>`;
   el.hidden=false; snd('card'); await wait(40); el.firstChild.classList.add('flip'); await wait(spd(500)); snd('flip');
   if(hum) await new Promise(r=>{ el.querySelector('[data-cc]').onclick=()=>{snd('click');r();}; }); else await wait(spd(2300));
   el.hidden=true; el.innerHTML=''; }
@@ -1079,6 +1103,7 @@ function finish(){ const w=G.over.win; $('#act').innerHTML='<button class="btn p
 /* ---------- menu ---------- */
 function menu(){ const s0=load(SAVE),s=s0&&s0.net?null:s0; const prev={h:$('#mbox').innerHTML,oc:$('#mbox').onclick,hid:$('#modal').hidden,cl:window.MODAL_CLOSABLE};
   const draw=()=>gm(`<h2>Nouvelle partie</h2>${s&&!s.over?'<div class="prow"><button class="btn pri" data-m="resume">Reprendre la partie en cours</button></div>':''}
+   <h4>Plateau</h4><div class="seg"><button class="${M.board!=='lyon'?'on':''}" data-m="board:fantasy">🗺️ Fantastique</button><button class="${M.board==='lyon'?'on':''}" data-m="board:lyon">🦁 Lyon</button></div>
    <h4>Joueurs</h4><div class="seg">${[2,3,4,5,6].map(n=>`<button class="${M.n===n?'on':''}" data-m="n:${n}">${n}</button>`).join('')}</div>
    ${M.slots.slice(0,M.n).map((p,i)=>`<div class="prow" style="--pc:${PC[i].h}"><span class="dot"></span><input type="text" data-nm="${i}" value="${esc(p.name)}" placeholder="${p.h?HN[i]:AIN[i]}" maxlength="14"><div class="seg"><button class="${p.h?'on':''}" data-m="h:${i}:1">Humain</button><button class="${!p.h?'on':''}" data-m="h:${i}:0">Ordinateur</button></div></div>`).join('')}
    <h4>Niveau de l’ordinateur</h4><div class="seg">${['facile','normal','difficile'].map(l=>`<button class="${M.level===l?'on':''}" data-m="level:${l}">${l}</button>`).join('')}</div>
@@ -1092,13 +1117,13 @@ function menu(){ const s0=load(SAVE),s=s0&&s0.net?null:s0; const prev={h:$('#mbo
     if(a[0]==='cancel'){ $('#mbox').innerHTML=prev.h; $('#mbox').onclick=prev.oc; $('#modal').hidden=prev.hid; window.MODAL_CLOSABLE=prev.cl; return; }
     if(a[0]==='resume'){ closeModal(); G=s; PAWNS=[]; loop(); return; }
     if(a[0]==='start'){ closeModal(); store(PREF,M); start(); return; }
-    if(a[0]==='n') M.n=+a[1]; if(a[0]==='level') M.level=a[1]; if(a[0]==='speed') M.speed=a[1]==='1'; if(a[0]==='auction') M.auction=a[1]==='1'; if(a[0]==='limit') M.limit=+a[1]; if(a[0]==='fast'){ M.fast=a[1]==='1'; store(PREF,M); }
+    if(a[0]==='board') M.board=a[1]; if(a[0]==='n') M.n=+a[1]; if(a[0]==='level') M.level=a[1]; if(a[0]==='speed') M.speed=a[1]==='1'; if(a[0]==='auction') M.auction=a[1]==='1'; if(a[0]==='limit') M.limit=+a[1]; if(a[0]==='fast'){ M.fast=a[1]==='1'; store(PREF,M); }
     if(a[0]==='h'){ const p=M.slots[+a[1]]; p.h=a[2]==='1'; if(p.h&&AIN.includes(p.name)) p.name=''; if(!p.h&&HN.includes(p.name)) p.name=''; }
     draw(); }; }
-function start(){ G=newGame({players:M.slots.slice(0,M.n).map((p,i)=>({name:(p.name||'').trim()||(p.h?HN[i]:AIN[i]),ai:!p.h,level:M.level,col:i})),speed:M.speed,auction:M.auction,limit:M.limit});
-  G.cur=0; PAWNS=[]; LASTCASH=[]; log(G,'Bienvenue au Grand Propriétaire ! Chacun reçoit 1 500 €.'); loop(); }
+function start(){ G=newGame({players:M.slots.slice(0,M.n).map((p,i)=>({name:(p.name||'').trim()||(p.h?HN[i]:AIN[i]),ai:!p.h,level:M.level,col:i})),speed:M.speed,auction:M.auction,limit:M.limit,board:M.board});
+  G.cur=0; PAWNS=[]; LASTCASH=[]; log(G,G.opt.board==='lyon'?'Bienvenue à Lyon ! Chacun reçoit 1 500 €.':'Bienvenue au Grand Propriétaire ! Chacun reçoit 1 500 €.'); loop(); }
 function help(){ info(`<h2>Règles du Grand Propriétaire</h2>
- <p>Les règles sont celles du grand classique de l’immobilier, avec le <b>dé de rapidité</b>.</p>
+ <p><b>Deux plateaux au choix</b> : le plateau Fantastique, ou le plateau <b>Lyon 🦁</b> (de Vaulx-en-Velin à Fourvière, avec les quatre lignes de métro, le Parc de la Tête d’Or et des cartes lyonnaises). Les règles et les prix sont les mêmes.</p><p>Les règles sont celles du grand classique de l’immobilier, avec le <b>dé de rapidité</b>.</p>
  <h4>Le tour</h4><ul><li>Chacun commence avec <b>1 500 €</b> sur la case Départ. Lance les dés et avance ; chaque passage par Départ rapporte <b>200 €</b>.</li>
  <li>Sur un terrain libre : achète-le au prix affiché ou laisse-le partir <b>aux enchères</b> (tous les joueurs peuvent enchérir, toi compris).</li>
  <li>Sur le terrain d’un adversaire : paie le loyer indiqué sur son titre (rien s’il est hypothéqué).</li>
@@ -1123,12 +1148,12 @@ const GAME=window.GAME={help,menu};
 window.GP={get G(){ return G; }};
 window.NETGAME={id:'grand-proprietaire',title:'Grand Propriétaire',min:2,max:6,
   rules(){ const sg=(k,arr)=>`<div class="seg">${arr.map(([v,l])=>`<button class="${String(M[k])===String(v)?'on':''}" data-m="${k}:${v}">${l}</button>`).join('')}</div>`;
-    return `<h4>Dé de rapidité</h4>${sg('speed',[[true,'Oui'],[false,'Non, deux dés']])}<h4>Terrain refusé</h4>${sg('auction',[[true,'Aux enchères'],[false,'Reste à la banque']])}<h4>Durée</h4>${sg('limit',[[0,'Jusqu’à la faillite'],[25,'25 tours'],[40,'40 tours']])}<h4>Animations</h4>${sg('fast',[[false,'Normales'],[true,'Rapides']])}`; },
-  rulesClick(e){ const x=e.target.closest('[data-m]'); if(!x) return false; const [k,v]=x.dataset.m.split(':'); if(!['speed','auction','limit','fast'].includes(k)) return false; M[k]=k==='limit'?+v:v==='true'; store(PREF,M); return true; },
+    return `<h4>Plateau</h4>${sg('board',[['fantasy','🗺️ Fantastique'],['lyon','🦁 Lyon']])}<h4>Dé de rapidité</h4>${sg('speed',[[true,'Oui'],[false,'Non, deux dés']])}<h4>Terrain refusé</h4>${sg('auction',[[true,'Aux enchères'],[false,'Reste à la banque']])}<h4>Durée</h4>${sg('limit',[[0,'Jusqu’à la faillite'],[25,'25 tours'],[40,'40 tours']])}<h4>Animations</h4>${sg('fast',[[false,'Normales'],[true,'Rapides']])}`; },
+  rulesClick(e){ const x=e.target.closest('[data-m]'); if(!x) return false; const [k,v]=x.dataset.m.split(':'); if(!['speed','auction','limit','fast','board'].includes(k)) return false; M[k]=k==='limit'?+v:k==='board'?v:v==='true'; store(PREF,M); return true; },
   start(list){ GEN++; REQ=null; OFF=null; RES=null; PICK=null; AUC=null; closeModal(); $('#cardshow').hidden=true;
-    G=newGame({players:list.map((x,i)=>({name:x.name,ai:!!x.ai,level:x.level||M.level,col:i})),speed:M.speed,auction:M.auction,limit:M.limit});
+    G=newGame({players:list.map((x,i)=>({name:x.name,ai:!!x.ai,level:x.level||M.level,col:i})),speed:M.speed,auction:M.auction,limit:M.limit,board:M.board});
     G.players.forEach((p,i)=>p.cid=list[i].cid||null); G.net=true; G.fast=!!M.fast; G.cur=0; PAWNS=[]; LASTCASH=[]; ENDSHOWN=false;
-    log(G,'Bienvenue au Grand Propriétaire ! Chacun reçoit 1 500 €.'); NET.push(null,'new'); loop(); },
+    log(G,G.opt.board==='lyon'?'Bienvenue à Lyon ! Chacun reçoit 1 500 €.':'Bienvenue au Grand Propriétaire ! Chacun reçoit 1 500 €.'); NET.push(null,'new'); loop(); },
   state:()=>G, busy:()=>false,
   resume(){ if(!G) return;
     if(OFF&&G.players[OFF.pid].ai&&G.off) OFF.res(evalOffer(G,G.off.T));
