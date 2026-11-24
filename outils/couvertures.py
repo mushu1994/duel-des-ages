@@ -610,6 +610,27 @@ def _trio():
     return o
 W['trio'] = _trio
 
+def _bastion():
+    o = bg('#6fb24f', C(40, 30, 60, 'rgba(255,255,255,.12)') + C(220, 170, 70, 'rgba(0,0,0,.10)'))
+    o += P('M-10 120 Q60 120 70 80 T150 60 T250 70 V100 Q170 90 150 110 T80 150 T-10 150Z', '#d8b57a', f' stroke="#8a6a3e" stroke-width="3"')
+    # château
+    o += G(R(-26, -18, 52, 40, 3, '#cfc6b3', f' stroke="{INK}" stroke-width="3"') + R(-34, -34, 18, 56, 2, '#e2dac8', f' stroke="{INK}" stroke-width="3"') + R(16, -34, 18, 56, 2, '#e2dac8', f' stroke="{INK}" stroke-width="3"')
+           + P('M-8 22V6Q0-4 8 6V22Z', '#5a3a24') + L('M-25 -34V-52', INK, 2.5) + P('M-25 -52L-10 -47-25 -42Z', '#e8433a', f' stroke="{INK}" stroke-width="2" stroke-linejoin="round"'), 'translate(204 58)')
+    # tours de défense
+    def tower(x, y, ring, top):
+        return G(C(0, 6, 16, '#8f8576') + C(0, 0, 16, '#b5ab9a', f' stroke="{ring}" stroke-width="4"') + top, f'translate({n(x)} {n(y)})')
+    o += tower(62, 64, '#4aa3ff', C(0, -2, 7, '#22252a') + R(-3, -16, 6, 12, 1, '#3a3d44'))
+    o += tower(118, 128, '#ff5a5a', P('M0-12L5-2 0 2-5-2Z', '#bdefff', f' stroke="#3aa8d8" stroke-width="1.5"'))
+    o += tower(168, 112, '#ffd23f', C(0, -6, 5, '#ffe27a') + R(-4, -4, 8, 10, 1, '#4a4e58'))
+    # monstres
+    def gob(x, y, c):
+        return G(E(0, 0, 9, 10, c) + C(2, -10, 7, c) + C(5, -11, 1.8, '#fff'), f'translate({n(x)} {n(y)})')
+    o += gob(20, 118, '#5aa83c') + gob(44, 112, '#5aa83c') + gob(88, 86, '#3f7a3a')
+    # éclair
+    o += C(150, 92, 9, 'rgba(255,170,40,.85)') + C(150, 92, 5, '#ffe27a') + L('M168 104L156 96', '#ffe27a', 3)
+    return o
+W['bastion'] = _bastion
+
 def cover(key):
     return '<svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice">' + W[key]() + '</svg>'
 
